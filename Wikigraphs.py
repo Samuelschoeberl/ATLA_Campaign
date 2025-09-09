@@ -37,6 +37,32 @@ def hsv_to_hex(h: float, s: float, v: float) -> str:
     return '#{0:02x}{1:02x}{2:02x}'.format(int(r * 255), int(g * 255), int(b * 255))
 
 
+def generate_readable_color(h: float, is_directory: bool = False) -> str:
+    """Generate readable grayscale/monochrome colors for better readability.
+    
+    Args:
+        h: Hue value (0-1) used to determine brightness level
+        is_directory: Whether this is a directory (gets slightly darker shade)
+    
+    Returns:
+        Hex color string optimized for readability
+    """
+    # Convert hue to a brightness level between light grey and dark grey
+    # Use the hue to create variation while keeping colors readable
+    brightness_base = 0.3 + (h * 0.5)  # Range from 30% to 80% brightness
+    
+    if is_directory:
+        # Directories get slightly darker shades to distinguish from files
+        brightness = max(0.2, brightness_base - 0.1)
+    else:
+        # Files get lighter shades for better text readability
+        brightness = min(0.9, brightness_base + 0.1)
+    
+    # Create a grayscale color
+    gray_value = int(brightness * 255)
+    return '#{0:02x}{1:02x}{2:02x}'.format(gray_value, gray_value, gray_value)
+
+
 # Hardcoded recolors you want preserved across runs. Each entry is a tuple
 # (node_id_or_suffix, hex_color). Node ids are the same ids used by the
 # visualization (directories end with '/'); suffix matching is supported.
@@ -434,19 +460,13 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
                 colors_by_id[node_id] = hex_override.lower()
             else:
                 hue = center % 1.0
-                if sat_override is not None and val_override is not None:
-                    sat = sat_override
-                    val = val_override
-                else:
-                    if node_id.endswith('/'):
-                        sat, val = 0.40, 0.92
-                    else:
-                        sat, val = 0.55, 0.95
-                colors_by_id[node_id] = hsv_to_hex(hue, sat, val)
+                # Always use readable color generation for consistent black-on-white theme
+                is_directory = node_id.endswith('/')
+                colors_by_id[node_id] = generate_readable_color(hue, is_directory)
             if protect:
                 protected_ids.add(node_id)
         except Exception:
-            colors_by_id.setdefault(node_id, '#dddddd')
+            colors_by_id.setdefault(node_id, '#cccccc')
 
         children = parent_children.get(node_id, [])
         if not children:
@@ -477,36 +497,17 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         # Ensure the current node (folder or file) has a color based on the center
         try:
             mid_hue_node = center % 1.0
-            # Directories get a slightly lower saturation/value so they're visually
-            # distinguishable from file leaves. Files keep the brighter values.
-            if node_id.endswith('/'):
-                sat = 0.40
-                val = 0.92
-            else:
-                sat = 0.55
-                val = 0.95
             # Do not overwrite colors for protected ids
             if node_id not in protected_ids:
-                colors_by_id[node_id] = hsv_to_hex(mid_hue_node, sat, val)
+                is_directory = node_id.endswith('/')
+                colors_by_id[node_id] = generate_readable_color(mid_hue_node, is_directory)
         except Exception:
             # fallback color
-            colors_by_id.setdefault(node_id, '#dddddd')
+            colors_by_id.setdefault(node_id, '#cccccc')
     # Use the module-level deterministic_child_center (declared above)
 
-        # Special-case: Avatar Spirit Bridge subtree should be white -> near-white
-        # Only apply this when the node represents a directory to avoid matching
-        # filenames that contain the phrase.
-        if node_id.endswith('/') and 'avatar spirit bridge' in node_id.lower():
-            # Recolor the Avatar Spirit Bridge subtree to a white->grey range.
-            # Use low saturation and values from ~0.98 (white) down to ~0.82 (grey).
-            n = len(children)
-            for idx, child in enumerate(children):
-                frac = idx / (n - 1) if n > 1 else 0.5
-                value = 0.98 - frac * 0.16  # range ~0.98 -> ~0.82
-                sat = 0.02
-                # Recolor the full subtree under this child with the sat/value overrides
-                recolor_subtree(child, center, spread, sat_override=sat, val_override=value, level=level + 1)
-            return
+        # Avatar Spirit Bridge uses the same grayscale approach as other sections
+        # for consistent readability
         # Special-case: if we're at a 'Bending Rules' folder, give the four
         # primary element folders fixed hue subranges so they map to the
         # requested color palettes. Only apply to directories.
@@ -545,7 +546,9 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
                         # avoid zero span
                         if span == 0:
                             span = 0.04
-                        colors_by_id[child] = hsv_to_hex(mid_hue, 0.55, 0.95)
+                        # Use readable colors for Bending Rules elements
+                        is_directory = child.endswith('/')
+                        colors_by_id[child] = generate_readable_color(mid_hue, is_directory)
                         # recolor full subtree under this child using the
                         # mid_hue and span so all descendants get updated.
                         recolor_subtree(child, mid_hue, span)
@@ -559,7 +562,8 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         if not children:
             # leaf node: pick center hue
             hue = center % 1.0
-            colors_by_id[node_id] = hsv_to_hex(hue, 0.55, 0.95)
+            is_directory = node_id.endswith('/')
+            colors_by_id[node_id] = generate_readable_color(hue, is_directory)
             return
         # compute weights proportional to descendant leaf counts
         weights = [max(1, descendant_leaves(c)) for c in children]
@@ -581,7 +585,8 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
             acc += child_span
             # assign mid color for the child
             mid_hue = child_center
-            colors_by_id[child] = hsv_to_hex(mid_hue, 0.55, 0.95)
+            is_directory = child.endswith('/')
+            colors_by_id[child] = generate_readable_color(mid_hue, is_directory)
             # next level spread grows/shrinks by spread_growth
             next_spread = min(1.0, spread * spread_growth)
             assign_hues(child, child_center, next_spread, level + 1)
@@ -756,10 +761,11 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
             # Use md5 of the node id to get a stable pseudo-random hue in [0,1)
             digest = hashlib.md5(n.encode('utf-8')).hexdigest()
             h = int(digest[:8], 16) / float(2**32)
-            colors_by_id[n] = hsv_to_hex(h % 1.0, 0.55, 0.95)
+            is_directory = n.endswith('/')
+            colors_by_id[n] = generate_readable_color(h % 1.0, is_directory)
 
     # Final ordered colors list aligned with ids
-    colors: List[str] = [colors_by_id.get(n, '#dddddd') for n in ids]
+    colors: List[str] = [colors_by_id.get(n, '#cccccc') for n in ids]
 
     # Prepare short cell text for treemap nodes (sanitized and trimmed)
     cell_texts: List[str] = []
@@ -834,12 +840,26 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         branchvalues="total",
         hovertext=hovertexts,
         hovertemplate='%{label}<br>%{hovertext}<extra></extra>',
-        marker=dict(colors=colors, line=dict(width=0.5, color='white')),
+        marker=dict(colors=colors, line=dict(width=1, color='black')),
+        textfont=dict(size=14, color='black', family='Arial'),
     )
     fig_sun = go.Figure(sun)
-    fig_sun.update_layout(margin=dict(t=10, l=10, r=10, b=10))
+    fig_sun.update_layout(
+        margin=dict(t=10, l=10, r=10, b=10),
+        paper_bgcolor='#2a2a2a',  # Dark grey background
+        plot_bgcolor='white',     # White plot area
+        font=dict(color='black', family='Arial', size=12)
+    )
     sun_path = outdir / "wikigraph_sunburst.html"
-    fig_sun.write_html(str(sun_path), include_plotlyjs='cdn' if not embed_js else True)
+    fig_sun.write_html(str(sun_path), include_plotlyjs='cdn' if not embed_js else True,
+                       config={'displayModeBar': False},
+                       div_id="my-div",
+                       include_mathjax=False,
+                       post_script="""
+                       <style>
+                           body { background-color: #2a2a2a !important; margin: 0; padding: 20px; }
+                       </style>
+                       """)
 
     tre = go.Treemap(
         ids=ids,
@@ -850,14 +870,27 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         hovertext=treemap_hovertexts,
         hovertemplate='%{label}<br>%{hovertext}<extra></extra>',
         text=cell_texts,
-    texttemplate='%{label}<br>%{text}<extra></extra>',
-    textfont=dict(size=12),
-        marker=dict(colors=colors, line=dict(width=0.5, color='white')),
+        texttemplate='%{label}<br>%{text}<extra></extra>',
+        textfont=dict(size=12, color='black', family='Arial'),
+        marker=dict(colors=colors, line=dict(width=1, color='black')),
     )
     fig_treemap = go.Figure(tre)
-    fig_treemap.update_layout(margin=dict(t=10, l=10, r=10, b=10))
+    fig_treemap.update_layout(
+        margin=dict(t=10, l=10, r=10, b=10),
+        paper_bgcolor='#2a2a2a',  # Dark grey background
+        plot_bgcolor='white',     # White plot area  
+        font=dict(color='black', family='Arial', size=12)
+    )
     tre_path = outdir / "wikigraph_treemap.html"
-    fig_treemap.write_html(str(tre_path), include_plotlyjs='cdn' if not embed_js else True)
+    fig_treemap.write_html(str(tre_path), include_plotlyjs='cdn' if not embed_js else True,
+                           config={'displayModeBar': False},
+                           div_id="my-div",
+                           include_mathjax=False,
+                           post_script="""
+                           <style>
+                               body { background-color: #2a2a2a !important; margin: 0; padding: 20px; }
+                           </style>
+                           """)
 
     print(f"Wrote: {sun_path}\nWrote: {tre_path}")
 
@@ -878,10 +911,29 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         names = [k for k, _ in top]
         vals = [v for _, v in top]
         if px:
-            fig = px.bar(x=vals, y=names, orientation='h', labels={'x': 'Value', 'y': 'File'}, title=f'Top {n} files by {"size" if mode=="size" else "count"}')
-            fig.update_layout(yaxis={'automargin': True}, margin=dict(t=30, l=200))
+            fig = px.bar(x=vals, y=names, orientation='h', 
+                        labels={'x': 'Value', 'y': 'File'}, 
+                        title=f'Top {n} files by {"size" if mode=="size" else "count"}',
+                        color_discrete_sequence=['#666666'])  # Single grey color for all bars
+            fig.update_layout(
+                yaxis={'automargin': True}, 
+                margin=dict(t=30, l=200),
+                paper_bgcolor='#2a2a2a',  # Dark grey background
+                plot_bgcolor='white',     # White plot area
+                font=dict(color='black', family='Arial', size=12),
+                title=dict(font=dict(color='white'))  # White title text on dark background
+            )
+            fig.update_traces(marker_line_color='black', marker_line_width=1)
             out = outdir / f"wikigraph_top_{n}_files.html"
-            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True)
+            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True,
+                           config={'displayModeBar': False},
+                           div_id="my-div",
+                           include_mathjax=False,
+                           post_script="""
+                           <style>
+                               body { background-color: #2a2a2a !important; margin: 0; padding: 20px; }
+                           </style>
+                           """)
         else:
             # Fallback: basic text file
             out = outdir / f"wikigraph_top_{n}_files.txt"
@@ -896,10 +948,29 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         names = [k for k, _ in top]
         vals = [v for _, v in top]
         if px:
-            fig = px.bar(x=vals, y=names, orientation='h', labels={'x': 'Value', 'y': 'Directory'}, title=f'Top {n} directories by {"size" if mode=="size" else "count"}')
-            fig.update_layout(yaxis={'automargin': True}, margin=dict(t=30, l=200))
+            fig = px.bar(x=vals, y=names, orientation='h', 
+                        labels={'x': 'Value', 'y': 'Directory'}, 
+                        title=f'Top {n} directories by {"size" if mode=="size" else "count"}',
+                        color_discrete_sequence=['#666666'])  # Single grey color for all bars
+            fig.update_layout(
+                yaxis={'automargin': True}, 
+                margin=dict(t=30, l=200),
+                paper_bgcolor='#2a2a2a',  # Dark grey background
+                plot_bgcolor='white',     # White plot area
+                font=dict(color='black', family='Arial', size=12),
+                title=dict(font=dict(color='white'))  # White title text on dark background
+            )
+            fig.update_traces(marker_line_color='black', marker_line_width=1)
             out = outdir / f"wikigraph_top_{n}_dirs.html"
-            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True)
+            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True,
+                           config={'displayModeBar': False},
+                           div_id="my-div",
+                           include_mathjax=False,
+                           post_script="""
+                           <style>
+                               body { background-color: #2a2a2a !important; margin: 0; padding: 20px; }
+                           </style>
+                           """)
         else:
             out = outdir / f"wikigraph_top_{n}_dirs.txt"
             out.write_text('\n'.join(f"{v}\t{k}" for k, v in top))
@@ -913,10 +984,28 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
             import numpy as _np
             # Use log-scale bins for readability when sizes vary widely
             log_vals = _np.log10(_np.array(vals))
-            fig = px.histogram(x=log_vals, nbins=bins, labels={'x': 'log10(Value)'}, title='File size distribution (log10 scale)')
-            fig.update_layout(margin=dict(t=30, l=10, r=10, b=10))
+            fig = px.histogram(x=log_vals, nbins=bins, 
+                             labels={'x': 'log10(Value)'}, 
+                             title='File size distribution (log10 scale)',
+                             color_discrete_sequence=['#666666'])  # Single grey color
+            fig.update_layout(
+                margin=dict(t=30, l=10, r=10, b=10),
+                paper_bgcolor='#2a2a2a',  # Dark grey background
+                plot_bgcolor='white',     # White plot area
+                font=dict(color='black', family='Arial', size=12),
+                title=dict(font=dict(color='white'))  # White title text on dark background
+            )
+            fig.update_traces(marker_line_color='black', marker_line_width=1)
             out = outdir / "wikigraph_file_size_histogram.html"
-            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True)
+            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True,
+                           config={'displayModeBar': False},
+                           div_id="my-div",
+                           include_mathjax=False,
+                           post_script="""
+                           <style>
+                               body { background-color: #2a2a2a !important; margin: 0; padding: 20px; }
+                           </style>
+                           """)
         else:
             out = outdir / "wikigraph_file_size_histogram.txt"
             out.write_text('\n'.join(str(v) for v in vals))
