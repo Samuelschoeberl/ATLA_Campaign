@@ -4,20 +4,21 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   ├── Players Part
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
-                  └── [[Luma’tik.md]]
+                  └── Level 2
+                      └── [[Luma’tik.md]]
       └── Rules
           └── Bending Rules
               ├── Earth
-                  ├── Earthbending Moves
+                  └── Earthbending Moves
                       ├── Base Moves
                           ├── [[Earth Shift.md]]
                           └── [[Stone Knuckles.md]]
+                      ├── glass fruit bending
+                          └── [[Glassfruit Seed Mechanics.md]]
                       ├── Level 1
                           ├── [[Earth Brace.md]]
                           └── [[Rock Hurl.md]]
@@ -37,15 +38,14 @@
                           ├── [[Catapult Step.md]]
                           ├── [[Level 5 Moves.md]]
                           └── [[Shard Storm.md]]
-                  └── glass fruit bending
-                      └── [[Glassfruit Seed Mechanics.md]]
               └── Team-up Moves
                   └── Air-Earth
                       └── [[Sandstream.md]]
-  ├── [[Wiki_File_System_Manager.py]]
   └── [[Wikigraphs_MANUAL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

@@ -4,9 +4,7 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
-  ├── Players Part
+  └── Players Part
       └── Rules
           ├── Bending Rules
               ├── Air
@@ -16,17 +14,17 @@
                       └── Level 3
                           └── [[Hovering Hands.md]]
               ├── Earth
-                  ├── Earthbending Moves
+                  └── Earthbending Moves
+                      ├── glass fruit bending
+                          └── [[Glassfruit Seed Mechanics.md]]
                       ├── Level 1
                           └── [[Rock Hurl.md]]
                       └── Level 2 Moves
                           ├── [[Gravel Vortex.md]]
                           ├── [[Ground Lock.md]]
                           └── [[Stone Shield.md]]
-                  └── glass fruit bending
-                      └── [[Glassfruit Seed Mechanics.md]]
               ├── Fire
-                  ├── Firebending Moves
+                  └── Firebending Moves
                       ├── Level 1
                           ├── [[Burning Fists.md]]
                           └── [[Flame Jet.md]]
@@ -45,11 +43,6 @@
                           ├── [[Infernal_Form.md]]
                           ├── [[Meteor_Shower.md]]
                           └── [[Volcanic_Eruption.md]]
-                  └── Styles
-                      ├── [[Agni_Kai_Style.md]]
-                      ├── [[Dancing_Dragon_Style.md]]
-                      ├── [[Explosive_Firebending.md]]
-                      └── [[Lightning_Generation.md]]
               ├── Team-up Moves
                   └── Air-Fire
                       └── [[Heat Mirage.md]]
@@ -87,9 +80,10 @@
                       └── Level 3 Moves
                           └── [[Chi Surge.md]]
           └── [[Teamwork Moves.md]]
-  └── [[Wiki_File_System_Manager.py]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Flying Lemur Form.md]]
 
 ---

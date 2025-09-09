@@ -4,13 +4,12 @@ d20 + [[Element Level]]
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
-                  └── [[Luma’tik.md]]
+                  └── Level 2
+                      └── [[Luma’tik.md]]
       └── Rules
           └── Bending Rules
               ├── Air
@@ -27,11 +26,14 @@ d20 + [[Element Level]]
                       └── Level 4
                           ├── [[Lightning Strike.md]]
                           └── [[Seething Inferno.md]]
-                  └── [[Stress Level.md]]
+                  └── Mechanics
+                      └── [[Stress Level.md]]
               └── Water
                   └── Waterbending Moves
                       └── Level 2
                           └── [[Ice Daggers.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 

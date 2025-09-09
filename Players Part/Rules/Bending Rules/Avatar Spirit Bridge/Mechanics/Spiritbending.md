@@ -31,10 +31,17 @@ Quick references:
       └── Rules
           └── Bending Rules
               └── Avatar Spirit Bridge
-                  ├── [[Avatar Spirit Check.md]]
-                  └── [[Spiritbending Moves.md]]
+                  ├── ExpandedCollections
+                      ├── [[ExpandedAvatar Spirit Bridge Level.md]]
+                      └── [[ExpandedSpiritbending Moves.md]]
+                  ├── Mechanics
+                      └── [[Avatar Spirit Check.md]]
+                  └── Spiritbending Moves
+                      └── [[Spiritbending Moves.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

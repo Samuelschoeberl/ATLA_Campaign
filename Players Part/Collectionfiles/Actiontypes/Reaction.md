@@ -4,14 +4,13 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
-                  ├── [[Bearturtle.md]]
-                  └── [[Luma’tik.md]]
+                  └── Level 2
+                      ├── [[Bearturtle.md]]
+                      └── [[Luma’tik.md]]
       └── Rules
           ├── Bending Rules
               ├── Air
@@ -20,21 +19,20 @@
                       └── Level 1
                           └── [[Air Blade.md]]
               ├── Earth
-                  ├── Earthbending Moves
+                  └── Earthbending Moves
+                      ├── glass fruit bending
+                          └── [[Glassfruit Seed Mechanics.md]]
                       ├── Level 1
                           └── [[Earth Brace.md]]
                       └── Level 2 Moves
                           ├── [[Gravel Vortex.md]]
                           └── [[Stone Shield.md]]
-                  └── glass fruit bending
-                      └── [[Glassfruit Seed Mechanics.md]]
               └── Water
-                  ├── Waterbending Moves
+                  └── Waterbending Moves
                       ├── Level 2
                           └── [[Freeze.md]]
                       └── Level 3
                           └── [[Icicle Ammunition.md]]
-                  └── [[Waterbending rules.md]]
           ├── Non Bending Rules
               └── Chi Blocking
                   └── Chi Blocking Moves
@@ -45,6 +43,8 @@
           └── [[Teamwork Moves.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

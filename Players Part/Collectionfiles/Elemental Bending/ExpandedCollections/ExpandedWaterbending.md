@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Glassfruit Seed Mechanics.md]]
 
 ---
@@ -41,6 +35,12 @@
 ---
 
 ![[Waterbending Level.md]]
+
+---
+---
+---
+
+![[Waterbottle Water Charges.md]]
 
 ---
 ---
@@ -149,18 +149,6 @@
 ---
 
 ![[Shockfreeze.md]]
-
----
----
----
-
-![[Waterbending rules.md]]
-
----
----
----
-
-![[Waterbottle Water Charges.md]]
 
 ---
 ---

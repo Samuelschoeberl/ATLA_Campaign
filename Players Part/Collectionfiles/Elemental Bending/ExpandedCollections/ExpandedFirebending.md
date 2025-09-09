@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Luma’tik.md]]
 
 ---
@@ -11,18 +5,6 @@
 ---
 
 ![[Glassfruit Seed Mechanics.md]]
-
----
----
----
-
-![[Core Attributes.md]]
-
----
----
----
-
-![[Firebending DC.md]]
 
 ---
 ---
@@ -124,37 +106,13 @@
 ---
 ---
 
+![[Firebending DC.md]]
+
+---
+---
+---
+
 ![[Firebending Slot.md]]
-
----
----
----
-
-![[Agni_Kai_Style.md]]
-
----
----
----
-
-![[Classic_Firebending.md]]
-
----
----
----
-
-![[Dancing_Dragon_Style.md]]
-
----
----
----
-
-![[Explosive_Firebending.md]]
-
----
----
----
-
-![[Lightning_Generation.md]]
 
 ---
 ---

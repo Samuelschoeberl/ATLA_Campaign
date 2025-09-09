@@ -6,15 +6,16 @@ You have your [[CL]] * 2  amount of [[Transformation Points]]
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── PCs
           └── Mahogany
-              ├── [[Mahogany.md]]
               └── Shapeshifting Forms
-                  ├── [[Flying Lemur Form.md]]
-                  └── [[Luma’tik.md]]
+                  ├── Level 1
+                      └── [[Flying Lemur Form.md]]
+                  └── Level 2
+                      └── [[Luma’tik.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 

@@ -1,10 +1,10 @@
-![[Avatar Spirit Check.md]]
+![[Avatar Spirit Check]]
 
 ---
 ---
 ---
 
-![[Spiritbending.md]]
+![[Spiritbending]]
 
 ---
 ---

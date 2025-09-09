@@ -4,24 +4,25 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
               ├── Earth
-                  └── glass fruit bending
-                      └── [[Glassfruit Seed Mechanics.md]]
+                  └── Earthbending Moves
+                      └── glass fruit bending
+                          └── [[Glassfruit Seed Mechanics.md]]
               ├── Team-up Moves
                   └── Water-Water
                       ├── [[Freeze Projectiles.md]]
                       └── [[Frozen Aegis.md]]
               └── Water
-                  ├── [[Cyclic Flow.md]]
-                  ├── [[Water Charges.md]]
-                  ├── [[Waterbending DC.md]]
-                  ├── [[Waterbending Level.md]]
-                  ├── Waterbending Moves
+                  ├── Mechanics
+                      ├── [[Cyclic Flow.md]]
+                      ├── [[Water Charges.md]]
+                      ├── [[Waterbending DC.md]]
+                      ├── [[Waterbending Level.md]]
+                      └── [[Waterbottle Water Charges.md]]
+                  └── Waterbending Moves
                       ├── Cantrips
                           ├── [[Backflow.md]]
                           ├── [[Icecubes.md]]
@@ -45,10 +46,10 @@
                           └── [[Surfing.md]]
                       └── Level 4
                           └── [[Shockfreeze.md]]
-                  ├── [[Waterbending rules.md]]
-                  └── [[Waterbottle Water Charges.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

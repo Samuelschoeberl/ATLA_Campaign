@@ -3,13 +3,12 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
-                  └── [[Luma’tik.md]]
+                  └── Level 2
+                      └── [[Luma’tik.md]]
       └── Rules
           └── Bending Rules
               ├── Air
@@ -20,7 +19,8 @@
                   └── Mechanics
                       └── [[Airbending Slot.md]]
               ├── Earth
-                  └── [[Earthbending Slot.md]]
+                  └── mechanics
+                      └── [[Earthbending Slot.md]]
               ├── Fire
                   ├── Firebending Moves
                       └── Level 2
@@ -28,9 +28,11 @@
                           ├── [[Emberlash.md]]
                           ├── [[Flame Barrage.md]]
                           └── [[Inferno Wave.md]]
-                  └── [[Firebending Slot.md]]
+                  └── Mechanics
+                      └── [[Firebending Slot.md]]
               └── Water
-                  ├── [[Water Charges.md]]
+                  ├── Mechanics
+                      └── [[Water Charges.md]]
                   └── Waterbending Moves
                       └── Level 2
                           ├── [[Freeze.md]]
@@ -39,6 +41,8 @@
                           └── [[Water Tentacles.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

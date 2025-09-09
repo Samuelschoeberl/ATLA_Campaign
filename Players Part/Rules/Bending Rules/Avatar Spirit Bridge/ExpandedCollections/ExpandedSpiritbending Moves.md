@@ -1,4 +1,4 @@
-![[Spiritbending.md]]
+![[Spiritbending]]
 
 ---
 ---

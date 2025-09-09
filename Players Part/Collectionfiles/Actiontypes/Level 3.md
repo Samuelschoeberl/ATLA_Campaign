@@ -3,8 +3,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
@@ -17,17 +15,20 @@
                   └── Mechanics
                       └── [[Airbending Slot.md]]
               ├── Earth
-                  └── [[Earthbending Slot.md]]
+                  └── mechanics
+                      └── [[Earthbending Slot.md]]
               ├── Fire
                   ├── Firebending Moves
                       └── Level 3
                           └── [[Rage Fuel.md]]
-                  └── [[Firebending Slot.md]]
+                  └── Mechanics
+                      └── [[Firebending Slot.md]]
               ├── Team-up Moves
                   └── Air-Fire
                       └── [[Heat Mirage.md]]
               └── Water
-                  ├── [[Water Charges.md]]
+                  ├── Mechanics
+                      └── [[Water Charges.md]]
                   └── Waterbending Moves
                       └── Level 3
                           ├── [[Healing Mist.md]]
@@ -36,6 +37,8 @@
                           └── [[Surfing.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

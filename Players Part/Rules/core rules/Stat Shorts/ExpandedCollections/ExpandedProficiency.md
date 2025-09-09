@@ -28,7 +28,7 @@
 ---
 ---
 
-![[Waterbending DC.md]]
+![[Waterbending DC]]
 
 ---
 ---

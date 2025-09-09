@@ -32,13 +32,14 @@ Water Charges represent the amount of water available for a water-bender to mani
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
               └── Water
-                  ├── [[Cyclic Flow.md]]
+                  ├── ExpandedCollections
+                      └── [[ExpandedCyclic Flow.md]]
+                  ├── Mechanics
+                      └── [[Cyclic Flow.md]]
                   └── Waterbending Moves
                       ├── Level 1
                           ├── [[Piercing Water.md]]
@@ -50,6 +51,8 @@ Water Charges represent the amount of water available for a water-bender to mani
                           └── [[Healing Mist.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

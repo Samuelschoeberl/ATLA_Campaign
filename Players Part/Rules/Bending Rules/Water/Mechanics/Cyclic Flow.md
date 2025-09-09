@@ -6,13 +6,14 @@ If Concentration is not broken the [[Water Charges]] are refunded.
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
               └── Water
-                  ├── [[Water Charges.md]]
+                  ├── ExpandedCollections
+                      └── [[ExpandedWater Charges.md]]
+                  ├── Mechanics
+                      └── [[Water Charges.md]]
                   └── Waterbending Moves
                       ├── Level 1
                           └── [[Healing Water.md]]
@@ -20,6 +21,8 @@ If Concentration is not broken the [[Water Charges]] are refunded.
                           └── [[Healing Mist.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

@@ -13,7 +13,10 @@
                           └── [[Flame Jet.md]]
                       └── Level 4
                           └── [[Seething Inferno.md]]
-                  └── [[Stress Level.md]]
+                  └── Mechanics
+                      └── [[Stress Level.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 

@@ -4,26 +4,29 @@ The Level the character is at this Element
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
-                  └── [[Luma’tik.md]]
+                  └── Level 2
+                      └── [[Luma’tik.md]]
       └── Rules
           ├── Bending Rules
               ├── Air
                   └── Mechanics
                       └── [[Airbending DC.md]]
               ├── Earth
-                  └── [[Earthbending DC.md]]
+                  └── mechanics
+                      └── [[Earthbending DC.md]]
               └── Fire
-                  └── [[Firebending DC.md]]
+                  └── Mechanics
+                      └── [[Firebending DC.md]]
           └── core rules
               ├── [[Attack Roll.md]]
               └── Stat Shorts
                   └── [[CL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 

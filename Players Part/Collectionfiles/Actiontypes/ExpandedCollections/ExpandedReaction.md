@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Bearturtle.md]]
 
 ---
@@ -28,6 +22,12 @@
 ---
 ---
 
+![[Glassfruit Seed Mechanics.md]]
+
+---
+---
+---
+
 ![[Earth Brace.md]]
 
 ---
@@ -46,12 +46,6 @@
 ---
 ---
 
-![[Glassfruit Seed Mechanics.md]]
-
----
----
----
-
 ![[Freeze.md]]
 
 ---
@@ -59,12 +53,6 @@
 ---
 
 ![[Icicle Ammunition.md]]
-
----
----
----
-
-![[Waterbending rules.md]]
 
 ---
 ---

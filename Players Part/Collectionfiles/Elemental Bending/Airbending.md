@@ -4,8 +4,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── Collectionfiles
           └── Actiontypes
@@ -34,13 +32,16 @@
                       ├── [[Shifting Winds.md]]
                       └── [[Speed Boost.md]]
               ├── Earth
-                  └── glass fruit bending
-                      └── [[Glassfruit Seed Mechanics.md]]
+                  └── Earthbending Moves
+                      └── glass fruit bending
+                          └── [[Glassfruit Seed Mechanics.md]]
               └── Team-up Moves
                   └── Air-Earth
                       └── [[Sandstream.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

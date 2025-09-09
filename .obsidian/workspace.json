@@ -4,17 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "e374eda2deea2cd3",
+        "id": "3156ba73c6cdf70e",
         "type": "tabs",
         "children": [
           {
-            "id": "e5ff2dc1a4026915",
+            "id": "0ebb1f240cb3ad66",
             "type": "leaf",
-            "pinned": true,
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Players Part/Collectionfiles/Elemental Bending/Airbending.md",
+                "file": "Players Part/Rules/core rules/Stat Shorts/Armor.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -28,18 +27,17 @@
                   "unlinkedCollapsed": true
                 }
               },
-              "pinned": true,
               "icon": "lucide-file",
-              "title": "Airbending"
+              "title": "Armor"
             }
           },
           {
-            "id": "5331686191fc5f9d",
+            "id": "791d5b915b7d611c",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Wikigraphs_MANUAL.md",
+                "file": "Players Part/Rules/Bending Rules/Water/Mechanics/Cyclic Flow.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -54,16 +52,16 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Wikigraphs_MANUAL"
+              "title": "Cyclic Flow"
             }
           },
           {
-            "id": "9b7d549a4a57d8fc",
+            "id": "dc48048a866eddc5",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Avatar Spirit Bridge Level.md",
+                "file": "Players Part/PCs/Character Sheet Template.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -78,545 +76,11 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Avatar Spirit Bridge Level"
-            }
-          },
-          {
-            "id": "abb4262f3717b8d4",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Collectionfiles/Actiontypes/Danger Sense Reaction.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Danger Sense Reaction"
-            }
-          },
-          {
-            "id": "fbb405e3e9bc4696",
-            "type": "leaf",
-            "pinned": true,
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Collectionfiles/Elemental Bending/Earthbending.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "pinned": true,
-              "icon": "lucide-file",
-              "title": "Earthbending"
-            }
-          },
-          {
-            "id": "d3f91c2ed1ddcd01",
-            "type": "leaf",
-            "pinned": true,
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Collectionfiles/Elemental Bending/Firebending.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "pinned": true,
-              "icon": "lucide-file",
-              "title": "Firebending"
-            }
-          },
-          {
-            "id": "94edc1080aa81477",
-            "type": "leaf",
-            "pinned": true,
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Collectionfiles/Elemental Bending/Waterbending.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "pinned": true,
-              "icon": "lucide-file",
-              "title": "Waterbending"
-            }
-          },
-          {
-            "id": "8f41c7f6c3321352",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Bending Rules/Air/Airbending Moves/Level 4/Cyclone Shield.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Cyclone Shield"
-            }
-          },
-          {
-            "id": "bdec2a9dd24e6f88",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Collectionfiles/Actiontypes/ExpandedCollections/ExpandedLevel 5.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "ExpandedLevel 5"
-            }
-          },
-          {
-            "id": "cc1e0d16b1442142",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Wikigraphs_MANUAL.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Wikigraphs_MANUAL"
-            }
-          },
-          {
-            "id": "90054382e079ba83",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Bending Rules/Air/Airbending Moves/Level 1/Airdash.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Airdash"
-            }
-          },
-          {
-            "id": "e5aa54f7b2cb5045",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Collectionfiles/Actiontypes/Level 9.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Level 9"
-            }
-          },
-          {
-            "id": "591921a2fd5b2ae9",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 3/Rage Fuel.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Rage Fuel"
-            }
-          },
-          {
-            "id": "1fc8a8df6bed86da",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 2/Emberlash.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Emberlash"
-            }
-          },
-          {
-            "id": "781a277e511ea2f1",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 4/Seething Inferno.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Seething Inferno"
-            }
-          },
-          {
-            "id": "515653b05d0c1b71",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Burning Fists.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Burning Fists"
-            }
-          },
-          {
-            "id": "c153d68aa0cff0e1",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/PCs/Mahogany/Shapeshifting Forms/Luma’tik.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Luma’tik"
-            }
-          },
-          {
-            "id": "caebd66f3161f4e8",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Special Attacks.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Special Attacks"
-            }
-          },
-          {
-            "id": "23507299bebc71e5",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Special Attacks.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Special Attacks"
-            }
-          },
-          {
-            "id": "ca483a1633a4843e",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/core rules/Stat Shorts/CL.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "CL"
-            }
-          },
-          {
-            "id": "43f401d4b286e211",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Physical Attack Roll.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Physical Attack Roll"
-            }
-          },
-          {
-            "id": "b9f6f747b1da4086",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Element Level.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Element Level"
-            }
-          },
-          {
-            "id": "39fc90c0ce147c82",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Element Level.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Element Level"
-            }
-          },
-          {
-            "id": "5459ccd6d2065f54",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Bending Rules/Fire/Stress Level.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Stress Level"
-            }
-          },
-          {
-            "id": "011993b3cc0d5a3f",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Players Part/Rules/Bending Rules/Fire/Firebending DC.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Firebending DC"
+              "title": "Character Sheet Template"
             }
           }
         ],
-        "currentTab": 17
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -649,7 +113,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "proficiency",
+                "query": "armor",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -717,7 +181,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Players Part/Rules/Special Attacks.md",
+                "file": "Players Part/PCs/Character Sheet Template.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -727,7 +191,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Special Attacks"
+              "title": "Backlinks for Character Sheet Template"
             }
           },
           {
@@ -794,44 +258,45 @@
       "runjs:RunJS": false
     }
   },
-  "active": "caebd66f3161f4e8",
+  "active": "dc48048a866eddc5",
   "lastOpenFiles": [
-    "Players Part/Rules/core rules/ExpandedCollections/ExpandedAttack Roll.md",
-    "Players Part/Rules/core rules/ExpandedCollections/ExpandedCluster.md",
-    "Players Part/Rules/core rules/ExpandedCollections",
-    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/ExpandedCollections/ExpandedUtility.md",
-    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/ExpandedCollections",
+    "Players Part/Rules/Bending Rules/Fire/Mechanics/ExpandedCollections/ExpandedStress Level.md",
+    "Players Part/Rules/Bending Rules/Fire/Mechanics/ExpandedCollections",
+    "Players Part/Rules/Bending Rules/Water/Mechanics/ExpandedCollections/ExpandedWater Charges.md",
+    "Players Part/Rules/Bending Rules/Water/Mechanics/ExpandedCollections/ExpandedCyclic Flow.md",
+    "Players Part/Rules/Bending Rules/Water/Mechanics/ExpandedCollections",
+    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Spiritbending Moves/ExpandedCollections/ExpandedSpiritbending Moves.md",
+    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Spiritbending Moves/ExpandedCollections",
+    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics/ExpandedCollections/ExpandedSpiritbending.md",
+    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics/ExpandedCollections/ExpandedAvatar Spirit Bridge Level.md",
+    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics/ExpandedCollections",
+    "Players Part/PCs/Anju/Anyu Character Sheet Template.md",
+    "Players Part/PCs/Character Sheet Template.md",
+    "Players Part/PCs/Anju/Anju.md",
+    "Players Part/PCs/character-sheet.pdf",
+    "Players Part/Rules/Bending Rules/Water/Mechanics/Waterbottle Water Charges.md",
+    "Players Part/Rules/Bending Rules/Water/Waterbending rules.md",
+    "Players Part/Rules/Bending Rules/Water/Mechanics/Water Charges.md",
+    "Players Part/Rules/Bending Rules/Water/Mechanics/Cyclic Flow.md",
+    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics/Spiritbending.md",
+    "Players Part/Rules/Bending Rules/Water/Mechanics",
+    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Spiritbending Moves",
+    "Players Part/Rules/Bending Rules/Fire/Mechanics/Firebending DC.md",
+    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics",
     "Players Part/Rules/Bending Rules/Fire/ExpandedCollections/ExpandedStress Level.md",
-    "Players Part/Rules/Bending Rules/Fire/ExpandedCollections",
-    "Players Part/PCs/Mahogany/ExpandedCollections/ExpandedTransformation Points.md",
-    "Players Part/PCs/Mahogany/ExpandedCollections",
-    "ExpandedCollections/ExpandedMelee.md",
-    "ExpandedCollections/ExpandedElement Level.md",
-    "ExpandedCollections/ExpandedDamaging Move.md",
-    "Players Part/PCs/Mahogany/Shapeshifting Forms/Luma’tik.md",
-    "Players Part/Rules/Special Attacks.md",
-    "DMs Part/PCs/Mahogany/Luma’tik.md",
-    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 2/Flame Barrage.md",
-    "Players Part/Rules/core rules/Stat Shorts/CL.md",
-    "Players Part/PCs/Mahogany/Transformation Points.md",
+    "Players Part/Rules/Bending Rules/Fire/Mechanics",
+    "Players Part/Rules/Bending Rules/Fire/Core Attributes.md",
+    "Players Part/Rules/Bending Rules/Fire/Advanced Techniques/Advanced_Techniques.md",
+    "Players Part/Rules/Bending Rules/Earth/mechanics/Earthbending DC.md",
+    "Players Part/Rules/Bending Rules/Earth/mechanics/Earthbending Level.md",
+    "Players Part/Rules/Bending Rules/Earth/mechanics",
+    "Players Part/Rules/core rules/Stat Shorts/Armor.md",
+    "Players Part/Rules/Bending Rules/Fire/Mechanics/Stress Level.md",
+    "Element Level.md",
     "Physical Attack Roll.md",
-    "Players Part/Rules/Bending Rules/Water/Waterbending Moves/Level 2/Ice Daggers.md",
-    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 4/Lightning Strike.md",
-    "Players Part/Rules/Bending Rules/Earth/Earthbending Moves/Level 2 Moves/Ground Unlock.md",
-    "Players Part/PCs/Mahogany/Shapeshifting Forms/Flying Lemur Form.md",
-    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Flame Jet.md",
-    "Players Part/Rules/core rules/Attack Roll.md",
-    "Players Part/Rules/Bending Rules/Fire/Firebending DC.md",
-    "Players Part/Rules/core rules/Stat Shorts/ExpandedCollections/ExpandedCL.md",
-    "Players Part/Rules/Bending Rules/Earth/Earthbending DC.md",
-    "Players Part/Rules/Non Bending Rules/Chi Blocking/Chi Blocking Moves/Level 3 Moves/Chi Surge.md",
-    "Melee.md",
-    "graphs/wikigraph_file_size_histogram.html",
-    "graphs/wikigraph_top_20_dirs.html",
-    "graphs/wikigraph_top_20_files.html",
-    "Players Part/Rules/Bending Rules/Water/Waterbending Moves/Level 1/Untitled.base",
-    "Players Part/Rules/Bending Rules/Air/Airbending Moves/Level 4",
-    "__pycache__/Wikigraphs.cpython-312.pyc",
+    "Players Part/Rules/core rules/Stat Shorts/CL.md",
+    "Players Part/Rules/Special Attacks.md",
+    "Players Part/PCs/Mahogany/Shapeshifting Forms/Pics/Luma'tik.png",
     "DMs Part/Story/Airbender Nomands/3atljldbkbk41.jpg",
     "DMs Part/Story/Airbender Nomands/1664411181325.jpg",
     "DMs Part/Locations/Visual References/Pasted image 20250104171805.png",
@@ -840,7 +305,6 @@
     "DMs Part/NPCs/Night Bloom/Dark Spirits/Holiday Spirit.png",
     "DMs Part/NPCs/Night Bloom/Dark Spirits/Frostling puppetier.png",
     "DMs Part/NPCs/Spirits/assets_task_01jqk4rq81fnsrfydwnb0gnxr1_img_1.webp",
-    "DMs Part/NPCs/Spirits/assets_task_01jqk424c7ea58gb9jdd0zmvqj_img_0.webp",
-    "DMs Part/NPCs/Spirits/Jellytee.webp"
+    "DMs Part/NPCs/Spirits/assets_task_01jqk424c7ea58gb9jdd0zmvqj_img_0.webp"
   ]
 }

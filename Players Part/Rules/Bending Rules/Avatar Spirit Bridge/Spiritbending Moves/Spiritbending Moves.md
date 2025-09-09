@@ -46,9 +46,14 @@ Design notes:
       └── Rules
           └── Bending Rules
               └── Avatar Spirit Bridge
-                  └── [[Spiritbending.md]]
+                  ├── ExpandedCollections
+                      └── [[ExpandedSpiritbending.md]]
+                  └── Mechanics
+                      └── [[Spiritbending.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

@@ -16,13 +16,18 @@
                   └── Mechanics
                       └── [[Airbending Slot.md]]
               ├── Earth
-                  └── [[Earthbending Slot.md]]
+                  └── mechanics
+                      └── [[Earthbending Slot.md]]
               ├── Fire
-                  └── [[Firebending Slot.md]]
+                  └── Mechanics
+                      └── [[Firebending Slot.md]]
               └── Water
-                  └── [[Water Charges.md]]
+                  └── Mechanics
+                      └── [[Water Charges.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

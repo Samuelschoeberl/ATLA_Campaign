@@ -3,8 +3,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
@@ -15,7 +13,8 @@
                   └── Mechanics
                       └── [[Airbending Slot.md]]
               ├── Earth
-                  └── [[Earthbending Slot.md]]
+                  └── mechanics
+                      └── [[Earthbending Slot.md]]
               ├── Fire
                   ├── Firebending Moves
                       ├── Level 4
@@ -23,14 +22,18 @@
                           └── [[Lightning Strike.md]]
                       └── Level 5
                           └── [[Blazing Phoenix.md]]
-                  └── [[Firebending Slot.md]]
+                  └── Mechanics
+                      └── [[Firebending Slot.md]]
               └── Water
-                  ├── [[Water Charges.md]]
+                  ├── Mechanics
+                      └── [[Water Charges.md]]
                   └── Waterbending Moves
                       └── Level 4
                           └── [[Shockfreeze.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

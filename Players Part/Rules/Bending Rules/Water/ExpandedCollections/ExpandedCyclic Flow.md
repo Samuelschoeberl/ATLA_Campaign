@@ -1,10 +1,4 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
-![[Water Charges.md]]
+![[Water Charges]]
 
 ---
 ---

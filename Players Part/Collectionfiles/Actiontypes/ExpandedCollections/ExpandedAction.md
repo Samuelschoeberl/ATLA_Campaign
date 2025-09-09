@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Wind spiral.md]]
 
 ---
@@ -11,6 +5,12 @@
 ---
 
 ![[Hovering Hands.md]]
+
+---
+---
+---
+
+![[Glassfruit Seed Mechanics.md]]
 
 ---
 ---
@@ -35,12 +35,6 @@
 ---
 
 ![[Stone Shield.md]]
-
----
----
----
-
-![[Glassfruit Seed Mechanics.md]]
 
 ---
 ---
@@ -119,30 +113,6 @@
 ---
 
 ![[Volcanic_Eruption.md]]
-
----
----
----
-
-![[Agni_Kai_Style.md]]
-
----
----
----
-
-![[Dancing_Dragon_Style.md]]
-
----
----
----
-
-![[Explosive_Firebending.md]]
-
----
----
----
-
-![[Lightning_Generation.md]]
 
 ---
 ---
@@ -263,12 +233,6 @@
 ---
 
 ![[Teamwork Moves.md]]
-
----
----
----
-
-![[Wiki_File_System_Manager.py]]
 
 ---
 ---

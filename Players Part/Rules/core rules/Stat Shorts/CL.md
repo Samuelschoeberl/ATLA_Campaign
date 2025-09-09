@@ -21,14 +21,15 @@ Character Level so the Sum of all your [[Element Level]]s
                           └── [[Ice Daggers.md]]
           ├── core rules
               └── Stat Shorts
-                  ├── [[Max Hitpoints.md]]
-                  └── [[Proficiency.md]]
+                  └── [[Max Hitpoints.md]]
           └── Non Bending Rules
               └── Chi Blocking
                   └── Chi Blocking Mechanics
                       └── [[EP.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

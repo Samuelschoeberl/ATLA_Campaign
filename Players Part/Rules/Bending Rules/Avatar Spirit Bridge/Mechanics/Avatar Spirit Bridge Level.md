@@ -115,10 +115,13 @@ Tags:
       └── Rules
           └── Bending Rules
               └── Avatar Spirit Bridge
-                  ├── [[Avatar Spirit Check.md]]
-                  └── [[Spiritbending.md]]
+                  └── Mechanics
+                      ├── [[Avatar Spirit Check.md]]
+                      └── [[Spiritbending.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

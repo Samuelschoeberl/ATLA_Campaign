@@ -4,21 +4,19 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
-                  └── [[Luma’tik.md]]
+                  └── Level 2
+                      └── [[Luma’tik.md]]
       └── Rules
           └── Bending Rules
               ├── Earth
-                  └── glass fruit bending
-                      └── [[Glassfruit Seed Mechanics.md]]
+                  └── Earthbending Moves
+                      └── glass fruit bending
+                          └── [[Glassfruit Seed Mechanics.md]]
               ├── Fire
-                  ├── [[Core Attributes.md]]
-                  ├── [[Firebending DC.md]]
                   ├── Firebending Moves
                       ├── Level 1
                           ├── [[Burning Fists.md]]
@@ -41,18 +39,16 @@
                           ├── [[Infernal_Form.md]]
                           ├── [[Meteor_Shower.md]]
                           └── [[Volcanic_Eruption.md]]
-                  ├── [[Firebending Slot.md]]
-                  └── Styles
-                      ├── [[Agni_Kai_Style.md]]
-                      ├── [[Classic_Firebending.md]]
-                      ├── [[Dancing_Dragon_Style.md]]
-                      ├── [[Explosive_Firebending.md]]
-                      └── [[Lightning_Generation.md]]
+                  └── Mechanics
+                      ├── [[Firebending DC.md]]
+                      └── [[Firebending Slot.md]]
               └── Team-up Moves
                   └── Air-Fire
                       └── [[Heat Mirage.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

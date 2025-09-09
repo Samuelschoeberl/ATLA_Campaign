@@ -7,9 +7,12 @@
       └── Rules
           └── Bending Rules
               └── Avatar Spirit Bridge
-                  └── [[Spiritbending Moves.md]]
+                  └── Spiritbending Moves
+                      └── [[Spiritbending Moves.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
 
 
 

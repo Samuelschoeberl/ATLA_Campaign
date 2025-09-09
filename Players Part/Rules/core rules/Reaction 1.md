@@ -6,8 +6,8 @@
   ├── PCs
   │   └── Mahogany
   │       └── Shapeshifting Forms
-  │           ├── [[Bearturtle.md]]
-  │           └── [[Players Part/PCs/Mahogany/Shapeshifting Forms/Luma’tik]]
+  │           ├── [[Bearturtle]]
+  │           └── [[Players Part/PCs/Mahogany/Shapeshifting Forms/Level 2/Luma’tik]]
   └── Rules
       ├── Bending Rules
       │   ├── Air
@@ -23,7 +23,7 @@
       │   │   │       ├── [[Gravel Vortex.md]]
       │   │   │       └── [[Stone Shield.md]]
       │   │   └── glass fruit bending
-      │   │       └── [[Glassfruit Seed Mechanics.md]]
+      │   │       └── [[Glassfruit Seed Mechanics]]
       │   ├── Fire
       │   │   └── Firebending Moves
       │   │       └── General Moves
