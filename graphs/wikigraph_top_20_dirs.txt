@@ -1,0 +1,20 @@
+182315	/
+163959	Players Part/
+93249	Players Part/Rules/
+72867	Players Part/Rules/Bending Rules/
+51752	Players Part/Collectionfiles/
+24801	Players Part/Collectionfiles/Elemental Bending/
+24419	Players Part/Collectionfiles/Actiontypes/
+18316	Players Part/Rules/Bending Rules/Earth/
+16719	Players Part/Collectionfiles/Elemental Bending/ExpandedCollections/
+15475	Players Part/Rules/Bending Rules/Water/
+15401	Players Part/Rules/Bending Rules/Fire/
+14103	Players Part/Rules/core rules/
+12758	Players Part/Rules/Bending Rules/Avatar Spirit Bridge/
+11136	Players Part/Rules/core rules/Stat Shorts/
+9551	Players Part/PCs/
+9336	Players Part/Rules/Bending Rules/Air/
+8966	Players Part/Rules/Bending Rules/Water/Waterbending Moves/
+8175	Players Part/PCs/Mahogany/
+7397	Players Part/Rules/Bending Rules/Earth/glass fruit bending/
+6404	Players Part/Collectionfiles/Actiontypes/ExpandedCollections/

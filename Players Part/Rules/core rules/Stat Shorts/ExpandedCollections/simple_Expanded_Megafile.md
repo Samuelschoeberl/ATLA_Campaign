@@ -88,6 +88,8 @@ Collectionfile
 Backlinks
 
   ./
+  ├── graphs
+      └── wikigraphtreemap.html
   └── Players Part
       ├── PCs
           └── Mahogany
@@ -156,21 +158,13 @@ Backlinks
 ---
 
 
-Catapult Step
+Energy Points
 
-Level 5 Slot
-- Launch yourself or an ally up to 60ft.
-- Range: Self.
-- Duration: Instantaneous.
+Chi Blockers use Energy Points (EP) to perform their moves. EP are a finite resource that replenishes during rests or by using specific techniques. 
 
-Usage: Effective for repositioning or surprise attacks.
-
-Links:
-- Catapult Step
-
-Tags:
-Earthbending
-Earthbending
+Managing EP
+- Base EP: 2CL
+- Replenish: Gain 2 EP at the End of your turn if not using any EP this Turn.
 
 
 ---

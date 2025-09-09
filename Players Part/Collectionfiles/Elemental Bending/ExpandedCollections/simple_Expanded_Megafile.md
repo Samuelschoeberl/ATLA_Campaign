@@ -1,3 +1,291 @@
+wikigraph_treemap.html
+
+---
+---
+---
+
+
+Collectionfile 
+You have Danger Sense Reactions per Turn scaling with your Airbending Level
+
+| Airbending Level | Danger Sense Reaction |
+| -------------------- | ------------------------- |
+| 1-4                  | 1                         |
+| 5-8                  | 2                         |
+| 9-12                 | 3                         |
+| 13-16                | 4                         |
+| 17-20                | 5                         |
+
+Airbending
+
+<!-- BEGIN-AUTO-COLLECTION:Danger Sense Reaction -->
+Backlinks
+
+  ./
+  ├── graphs
+      └── wikigraphtreemap.html
+  └── Players Part
+      └── Rules
+          └── Bending Rules
+              └── Air
+                  └── Airbending Moves
+                      ├── Level 1
+                          ├── Gentle Push.md
+                          └── Tail Wind.md
+                      └── Level 2
+                          └── Air Vortex.md
+
+<!-- END-AUTO-COLLECTION -->
+
+
+---
+---
+---
+
+
+Reaction
+Range: 3  Airbending Slot meters
+Effect:
+Area control technique that lets you push 2  Airbending Slot Creatures within a radius 1  Airbending Slot meters.
+Airbending
+
+
+---
+---
+---
+
+
+Reaction
+Level 1
+- Range: 5  Airbending Slot meters.
+- Duration: Instantaneous.
+- Damage: 1d6 bludgeoning per Airbending Slot.
+- Attack Roll: Dex + Proficiency.
+- Use airbending to send a blade of Air hurling at a creature within range
+
+Airbending
+
+
+---
+---
+---
+
+
+Bonus Action
+Movement
+
+Level 1
+- Range: Self.
+- Duration: 1 Turn.
+- Enhance agility by propelling yourself with gusts of air.
+
+Effects:
+- Spend 1 Airbending Slot to add 5  Airbending Slot meters to your movement for this turn.
+
+Tags:
+Airbending #Mobility
+Airbending
+
+
+---
+---
+---
+
+
+Danger Sense Reaction
+Level 3
+	- Range: Self
+
+Effects:
+	- Gain Advantage on dexterity saving throws until the start of your turn
+
+Airbending
+
+
+---
+---
+---
+
+
+Danger Sense Reaction
+Level 2
+	- Range: 2  Airbending Slot meters radius.
+- Duration: Instantaneous.
+
+Effects:
+	Create a swirling vortex of air around you to deflect projectiles and disperse lingering Damgage effects.
+
+Airbending
+Level 2
+
+
+---
+---
+---
+
+
+Action
+Level 2
+- Range: 5  Airbending Slot meters.
+- Attack Roll: Dex + Proficiency.
+- Damage: 1d10 bludgeoning per Airbending Slot. Deals another 1d10  Airbending Slot if the Creature hits a Wall.
+- Effects:
+	- Utilize airbending to dash towards an enemy within range within line of sight and hit them with a fast blow of pressurised air. The Target has to succeed a Strength saving throw against your Airbending DC or be knocked back your travelled distance this turn. Deals another 1d10  Airbending Slot if the Creature hits a Wall or similar.
+
+Movement
+
+Airbending
+Movement
+
+Level 2
+
+
+---
+---
+---
+
+
+Action
+Level 3 
+- Range: CL  1 meters.
+- Duration: Concentration, up to 1 Minute.
+
+Effects:
+- Harness precision air currents to perform subtle or delicate tasks from a distance.
+-  Manipulate a small pbject within range or make fine adjustments as if using your hands.
+- You can perform sleight-of-hand checks or disable small mechanisms remotely.
+
+Usage: Precision tool for intricate tasks or stealth.
+
+Links:
+
+- Utility
+
+Airbending
+
+Level 3
+
+
+---
+---
+---
+
+
+Bonus Action
+Level 4
+Concentration
+- Range: 2  Airbending Slot Meter radius centered on yourself that moves with you.
+- Duration: Until the start of your next Turn.
+- Create a rotating shield of air to protect yourself or allies.
+
+Effects:
+- Spend  Airbending Slot. to create a protective barrier of swirling air.
+- The shield grants 5  Airbending Slot Evasion to all creatures within Range.
+
+Lingering Effect:  All Ranged Attacks that enter or exit the are made with Disadvantage.
+
+Evasion
+Airbending
+Level 4
+
+
+---
+---
+---
+
+
+Airbending
+Level 5
+
+
+---
+---
+---
+
+
+10 + Dex + Proficiency
+Airbending
+
+
+---
+---
+---
+
+
+Airbending Moves Progression Table
+
+| Level | Accessible Slots                                          | Total Moves (Newly Learned)                                                                                                                                  |
+| --------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Level 1                                                       | 1 Slot from Level 1                                                                                                                                              |
+| 2     | Level 1                                                       | 2 Slots from Level 1                                                                                                                                             |
+| 3     | Level 1, Level 2                                              | 4 Slots (3 from Level 1, 1 from Level 2)                                                                                                                         |
+| 4     | Level 1, Level 2                                              | 6 Slots (4 from Level 1, 2 from Level 2)                                                                                                                         |
+| 5     | Level 1, Level 2, Level 3                                     | 9 Slots (5 from Level 1, 3 from Level 2, 1 from Level 3)                                                                                                         |
+| 6     | Level 1, Level 2, Level 3                                     | 12 Slots (6 from Level 1, 4 from Level 2, 2 from Level 3)                                                                                                        |
+| 7     | Level 1, Level 2, Level 3, Level 4                            | 16 Slots (7 from Level 1, 5 from Level 2, 3 from Level 3, 1 from Level 4)                                                                                        |
+| 8     | Level 1, Level 2, Level 3, Level 4                            | 20 Slots (8 from Level 1, 6 from Level 2, 4 from Level 3, 2 from Level 4)                                                                                        |
+| 9     | Level 1, Level 2, Level 3, Level 4, Level 5                   | 25 Slots (9 from Level 1, 7 from Level 2, 5 from Level 3, 3 from Level 4, 1 from Level 5)                                                                        |
+| 10    | Level 1, Level 2, Level 3, Level 4, Level 5                   | 30 Slots (10 from Level 1, 8 from Level 2, 6 from Level 3, 4 from Level 4, 2 from Level 5)                                                                       |
+| 11    | Level 1, Level 2, Level 3, Level 4, Level 5, Level 6          | 36 Slots (11 from Level 1, 9 from Level 2, 7 from Level 3, 5 from Level 4, 3 from Level 5, 1 from Level 6)                                                       |
+| 12    | Level 1, Level 2, Level 3, Level 4, Level 5, Level 6          | 42 Slots (12 from Level 1, 10 from Level 2, 8 from Level 3, 6 from Level 4, 4 from Level 5, 2 from Level 6)                                                      |
+| 13    | Level 1, Level 2, Level 3, Level 4, Level 5, Level 6, Level 7 | 49 Slots (13 from Level 1, 11 from Level 2, 9 from Level 3, 7 from Level 4, 5 from Level 5, 3 from Level 6, 1 from Level 7)                                      |
+| 14    | Level 1, Level 2, Level 3, Level 4, Level 5, Level 6, Level 7 | 56 Slots (14 from Level 1, 12 from Level 2, 10 from Level 3, 8 from Level 4, 6 from Level 5, 4 from Level 6, 2 from Level 7)                                     |
+| 15    | Level 1 - Level 8                                             | 64 Slots (15 from Level 1, 13 from Level 2, 11 from Level 3, 9 from Level 4, 7 from Level 5, 5 from Level 6, 3 from Level 7, 1 from Level 8)                     |
+| 16    | Level 1 - Level 8                                             | 72 Slots (16 from Level 1, 14 from Level 2, 12 from Level 3, 10 from Level 4, 8 from Level 5, 6 from Level 6, 4 from Level 7, 2 from Level 8)                    |
+| 17    | Level 1 - Level 9                                             | 81 Slots (17 from Level 1, 15 from Level 2, 13 from Level 3, 11 from Level 4, 9 from Level 5, 7 from Level 6, 5 from Level 7, 3 from Level 8, 1 from Level 9)    |
+| 18    | Level 1 - Level 9                                             | 90 Slots (18 from Level 1, 16 from Level 2, 14 from Level 3, 12 from Level 4, 10 from Level 5, 8 from Level 6, 6 from Level 7, 4 from Level 8, 2 from Level 9)   |
+| 19    | Level 1 - Level 9                                             | 99 Slots (19 from Level 1, 17 from Level 2, 15 from Level 3, 13 from Level 4, 11 from Level 5, 9 from Level 6, 7 from Level 7, 5 from Level 8, 3 from Level 9)   |
+| 20    | Level 1 - Level 9                                             | 108 Slots (20 from Level 1, 18 from Level 2, 16 from Level 3, 14 from Level 4, 12 from Level 5, 10 from Level 6, 8 from Level 7, 6 from Level 8, 4 from Level 9) |
+
+---
+
+Explanation:
+
+1. Slots Increase Each Level: As characters level up, they gain slots to learn new moves, and the distribution of slots ensures steady growth and access to higher-level moves.
+2. Balanced Progression: Players gain slots evenly while progressively unlocking new levels at Levels 3, 5, 7, 9, 11, 13, 15, and 17.
+
+Level 1
+Level 2
+Level 3
+Level 4
+Level 5
+Level 6
+Level 7
+Level 8
+Level 9
+
+[
+
+Tags:
+Airbending
+Airbending
+
+
+---
+---
+---
+
+
+Move or disperse most Lingering Damage effects
+Airbending
+
+
+---
+---
+---
+
+
+Movement 
+
+Many Airbending techniques can boost movement
+Airbending
+
+
+---
+---
+---
+
+
 Glassfruit Team-Up Techniques 
 
 X = yz
@@ -115,644 +403,18 @@ Team-up Moves
 ---
 
 
-You may use Levels from Water only.
+You may use Levels from Air and Earth .
 Each Bender-decides to which pool to add their Bending slots:
--  X: X number of projectiles 
--  Y: Yd6 Damage per projectile
+-  Y(Earth): Yd12 Damage per projectile
+- X(Air): X Sand Projectiles
+
+- Z(Earth  Air): Z  5 meter Cone Range
  
-- One waterbender shoots X Water Projectiles (rolls the attack role) and the other one Freezes them  rolls the damage rolls)
+- One Earthbender shoots Y Sand Projectiles (rolls the Damage roll) and the Airbender controlls them to home to the X Targets)
 
-Waterbending
+Earthbending 
+Airbending
 Team-up Moves
-
-
----
----
----
-
-
-Must be initiated by at least two Waterbenders.  
-You may use Levels from Water only.
-Each Bender-decides to which pool to add their Bending slots:
--  X: X  10 Barrier Armor 
--  Y: Y  5 Healing at the start of their turn
-
-- Encase a willing ally in a jagged prism of glacial ice with a liquid healing core.
-    
-- The ally immediately gains the effects of Barrier Armor
-    
-- At the start of their next turn, as the ice thaws, they are healed for 2 × Y but their movement is halved.
-
-Waterbending
-Team-up Moves
-Healing
-
-
----
----
----
-
-
-Collectionfile 
-If Concentration is not broken the Water Charges are refunded.
-
-Waterbending
-<!-- BEGIN-AUTO-COLLECTION:Cyclic Flow -->
-Backlinks
-
-  ./
-  └── Players Part
-      └── Rules
-          └── Bending Rules
-              └── Water
-                  ├── Water Charges.md
-                  └── Waterbending Moves
-                      ├── Level 1
-                          └── Healing Water.md
-                      └── Level 3
-                          └── Healing Mist.md
-
-<!-- END-AUTO-COLLECTION -->
-
-
----
----
----
-
-
-Collectionfile 
-Water Charges represent the amount of water available for a water-bender to manipulate.
-
-Waterbottle Water Charges 
-
-- Environmental Influence:  
-    The number of Water Charges available at the start of combat or during an encounter depends on the setting. Feel free to get creative where to find water.:
-    
-    - Desert/Dry Area: 0 Water Charges (minimum water source).
-    - Humid Area: 5-10 Water Charges.
-    - Near Water Source (Lake, Ocean, etc.): 15 Water Charges.
-    - In Lake, Ocean, etc.: 50+ charges
-	    
-- Restoring Water Charges:
-    
-    - Skill Checks: A waterbender can perform a skill check to draw water from their surroundings DC is determined by how dry the area is. Success restores Water Charges, depending on the environment.
-    - Abilities: Certain abilities allow Water Charges recovery or Cyclic Flow.
-    
-Waterbending
-Waterbottle Water Charges
-Level 1
-Level 2
-Level 3
-Level 4
-Level 5
-Level 6
-Level 7
-Level 8
-Level 9
-<!-- BEGIN-AUTO-COLLECTION:Water Charges -->
-Backlinks
-
-  ./
-  └── Players Part
-      └── Rules
-          └── Bending Rules
-              └── Water
-                  ├── Cyclic Flow.md
-                  └── Waterbending Moves
-                      ├── Level 1
-                          ├── Piercing Water.md
-                          └── Puffy Clouds.md
-                      ├── Level 2
-                          ├── Freeze.md
-                          └── Ice Daggers.md
-                      └── Level 3
-                          └── Healing Mist.md
-
-<!-- END-AUTO-COLLECTION -->
-
-
----
----
----
-
-
-10 + Int + Proficiency
-Waterbending
-
-
----
----
----
-
-
-Your Waterbending Level.
-Waterbending
-
-
----
----
----
-
-
-- Cost: None.
-- Type: Bonus Action.
-- Range: 15 ft.
-- Effect:  
-    The waterbender can freeze a small amount of water, such as a puddle or a drink-sized volume. The higher the Level the more water can be frozen.
-    - Duration: Permanent until thawed naturally.
-    - Uses: Create slippery surfaces, small barriers, or tools.
-
-Links:
-- Icecubes
-
-Tags:
-Waterbending
-Waterbending
-
-
----
----
----
-
-
-Icecubes (Cantrip)
-
-- Cost: None.
-- Type: Action.
-- Range: 3m
-- Effect:  
-    The waterbender can freeze a small amount of water, such as a puddle or a drink-sized volume. The higher the Level the more water can be frozen.
-    - Duration: Permanent until thawed naturally.
-    - Uses: Create slippery surfaces, small barriers, or tools.
-
-Links:
-- Icecubes
-
-Tags:
-Waterbending
-freezing
-Waterbending
-
-
----
----
----
-
-
-- Creating Mist:
-- Cost: 1 Water Charge per 10 ft radius .
-- Type: Action.
-- Range: 10 ft radius centered on self.
-    - Will grow 10 feet per round until full sized
-    - Creates a heavily obscured area for concealment that can be absorbed to regain charges (10 feeet radius per Turn) or blown await by air.
-
-Tags:
-Waterbending
-Waterbending
-
-
----
----
----
-
-
-Shape Water (Cantrip)
-
-- Cost: None.
-- Range: 30 ft.
-- Type: Action.
-- Duration: At Will. Concentration.
-- Effect:  
-    You can manipulate a water, shaping it into simple forms, moving it, or changing its state (solid, liquid, mist) temporarily.
-    - Limitations: Cannot deal damage but can be used for utility (e.g., extinguishing flames, creating distractions). The higher your Level is the more water can be shaped. Might need an Int ability check.
-
-Links:
-- Shape Water
-- Rules
-- Int
-- Waterbending Moves
-
-Tags:
-Waterbending
-Waterbending
-
-
----
----
----
-
-
-Cyclic Flow
-Level 1
-
-- Cost: 1-3 Water Charges.
-- Type: Action.
-- Duration: 1 round Concentration.
-- Range: Touch (through water).
-- Effect:  
-    You channel healing energy through water, restoring health to a creature. 
-	- If the creature is unconscious the creature becomes stable.
-    - Healing: 2d8 per charge + Int modifier at the beginning of your next Turn.
-    - Limitations: Cannot heal constructs or undead.
-
-Cyclic Flow
-Waterbending
-Level 1
-
-
----
----
----
-
-
-Action
-Level 1
-
-- Cost: 1-3 Water Charges.
-- Range: 3  Water Charges meter.
-- Effect:  
-    The waterbender shoots a sharp, pressurized stream of water at a target.
-    - Attack Roll: Int + Proficiency.
-    - Damage: Water Charges d8 piercing or Water Charges d6 bludgeoning damage per Charge.
-    
-
-Links:
-- Proficiency
-- Piercing Water
-- Int
-
-Tags:
-Waterbending
-Waterbending
-Level 1
-
-
----
----
----
-
-
-Type: Waterbending spiritbending sub-skill  
-
-Effect:  
-The bender draws a small amount of water and vaporizes it into a dense mist that spreads over a small to medium area. All creatures within the mist gain Fire Armour.  
-
-Mechanics (TTRPG style):
-
-- Cost: 1-5 Water Charges
-    
-- Area: 1 Water Charges Meter radius 
-    
-- Concentration: Water Charges Turns. Every Creature in the area has 10  Water Charges Fire Armor.
-    
-- Effect: Gradual healing, mental clarity, emotional soothing
-    
-- Interactions:
-    
-    - Can be moved by airbenders using wind techniques.
-        
-    - Can be dispersed or destroyed by strong firebending or extreme heat.
-        
-        
-
-Advanced Technique (Mastery Level):
-
-- Cleansing Veil: Condenses the mist into a swirling cloak around allies, granting them resistance to poison, disease, or negative spiritual effects for a short duration.
-Waterbending
-Level 1
-
-
----
----
----
-
-
-Slicing Water (1st Level Move)
-
-- Cost: 2 Water Charges.
-- Type: Action.
-- Range: 15 ft cone.
-- Effect:  
-    The waterbender unleashes a slicing wave of water in a cone, dealing damage to multiple targets.
-    - Saving Throw: Targets make a Dexterity save (DC = 8 + Proficiency + Int mod).
-    - Damage: 1d6 slashing damage on a failed save, half on success.
-
-Links:
-- Rules
-- Slicing Water
-- Waterbending Moves
-- Proficiency
-- Int
-
-Tags:
-Waterbending
-Waterbending
-Level 1
-
-
----
----
----
-
-
-Water Whip (Level 1 Ability)
-
-- Cost: 1 Water Charge.
-- Range: 20 ft.
-- Action: 1 Action.
-- Effect:  
-    The waterbender lashes out with a tendril of water, striking a target within range.
-    - Attack Roll: Intelligence + Proficiency Bonus.
-    - Damage: 1d8 + Int modifier bludgeoning damage.
-    - Special: The target must succeed on a Strength saving throw (DC 10 + Int modifier + Proficiency) or be knocked back 10 feet.
-    
-
-Links:
-- Strength
-- Rules
-- Water Whip
-- Proficiency
-- Int
-
-Tags:
-Waterbending
-Waterbending
-Level 1
-
-
----
----
----
-
-
-Reaction
-
-- Range: 5  Waterbending Levelmeter.
-- Effect:  
-    The waterbender can attempt to freeze a creature that has been hit by a Move using Water Charges. It has to succeed a Strength Saving throw against your Waterbending DC or become Immobilised.
-
-Links:
-- Waterbending Level
-Waterbending
-Level 2
-
-
----
----
----
-
-
-Ice Daggers (2nd Level Move)
-
-- Cost: 1-2CL Water Charges.
-- Type: Action.
-- Range: 20 ft.
-- Effect:  
-    The waterbender creates sharp daggers of ice to hurl at targets.
-    - Attack Roll: Int + Proficiency
-- Damage: 1d8 + Int modifier piercing damage per dagger (can create up to 2CL daggers).
-
-Links:
-- CL
-- Proficiency
-- Ice Daggers
-- Int
-
-Tags:
-Waterbending
-Waterbending
-Level 2
-
-
----
----
----
-
-
-Wall of Water (2nd Level Move)
-
-- Cost: 3 Water Charges.
-- Type: Action.
-- Range: 60 ft.
-- Effect:  
-    The waterbender creates a wall of water up to 30 ft long, 10 ft high, and 1 ft thick.
-    - Duration: Concentration, up to 1 minute.
-    - Effect: Provides partial cover and can extinguish flames.
-
-Links:
-- Wall of water
-
-Tags:
-Waterbendingx 
-Waterbending
-Level 2
-
-
----
----
----
-
-
-Water Tentacles (2nd Level Move)
-
-- Cost: 2 Water Charges.
-- Type: Action.
-- Range: 15 ft.
-- Effect:  
-    The waterbender summons two water tentacles to attack or grapple targets.
-    - Attack Roll: Int + Proficiency.
-    - Damage: 1d10 bludgeoning damage per tentacle.
-    - Grapple: A creature hit by the tentacle must succeed on a Strength saving throw or be restrained.
-
-Links:
-- Strength
-- Rules
-- Waterbending Moves
-- Proficiency
-- Water Tentacles
-- Int
-
-Tags:
-Waterbending
-Waterbending
-Level 2
-
-
----
----
----
-
-
-Cyclic Flow
-Concentration
-Level 3
-    
-Range: 1  Water Charges Meter radius cloud
-Effect:
- Water Charges  d8 Healing to every creature that was in the clouds radius during the Concentration
-
-- Interactions:
-    - Can be moved by Airbenders.
-        
-    - Can be dispersed or destroyed by strong firebending or extreme heat breaking Cyclic Flow
-        
-
-Waterbending
-Cyclic Flow
-Level 3
-
-
----
----
----
-
-
-Level 3
-- Cost: 4 Water Charges.
-- Type: Action.
-- Range: 60 ft.
-- Effect:  
-    The waterbender creates a solid wall of ice, up to 30ft long 10 ft tall and 10 ft wide.
-    - HP: 30 HP.
-    - AC: 12.
-    - Duration: 1 minute.
-
-Links:
-- Ice Wall
-
-Tags:
-Waterbending
-Waterbending
-Level 3
-
-
----
----
----
-
-
-- Cost: 3- 2  CL Water Charges.
-- Type: Action.
-- Range: 5 Meter.
-- Effect:  
-    You create A number of Icicles equal to the used charges.
-	They swirl around the Target and grants them the Reaction to send any or all of the Ammunition against one target within 100 Meters of them until all Icicles are used.
-	Ammunition:
-    - HP: 20 HP.
-    - AC: 12.
-    - Damage 5d12 + Int Piercing Damage
-    - Duration: 1 minute.
-
-Tags:
-Waterbending
-
-Waterbending
-Level 3
-
-
----
----
----
-
-
-- Cost: None.
-- Type: Passive.
-- Range: Self.
-- Effect:  
-    The waterbender rides atop a thin sheet of water or ice, moving with increased agility.
-    - Speed Boost: Gain +30 ft movement speed.
-    - Prerequisite: Accessible at a higher level(TBA).
-
-Tags:
-Waterbending
-Waterbending
-Level 3
-
-
----
----
----
-
-
-Shockfreeze (Cantrip)
-
-- Cost: None.
-- Type: Bonus Action.
-- Range: The same as the Waterbending used as Action f
-- Effect:  
-    After using an Action to use a Waterbending Move that consumes water charges you can use your Bonus Action to let every creature hit by your Action roll a Strength Saving throw against your Waterbending DC or become Immobilised. 
-
-Links:
-- Shockfreeze
-
-Tags:
-Waterbending
-freezing
-Immobilisation 
-Waterbending
-Level 4
-
-
----
----
----
-
-
-Overview:
-
-Waterbenders are versatile combatants who manipulate water, ice, and mist with fluid, adaptive techniques. Unlike other benders, they rely on a resource called Water Charges to perform bending abilities. Their style focuses on redirection, control, and adaptability, drawing power from their environment.
-
----
-
-Core Mechanics:
-
-1. Redirection Mechanic:
-
-Waterbenders excel at using their enemies’ attacks against them. This mechanic reflects their unique style.
-
-As a Reaction when hit by ranged physical attack.
-- Counter-Redirect physical:
-    - Cost: 1 Water Charge per 1d10 Damage redirected.
-    - When targeted by a ranged physical attack, the Waterbender can redirect it back to the attacker or a different target. This attack has the same range as the initial attack. If you reduce the damage you take to 0 you get back all used Watercharges.
-    - Redirected attacks deal half damage.
-
-As a Reaction when hit by a physical melee attack
-- Parry:
-    - Cost: 1 Water Charge per 1d6 Damage parried.
-    - Reduce incoming physical melee damage by 1d6 + Dexterity modifier.
-    
-As a Reaction when hit by a Waterbending Attack
--Counter Waterbending
-    - Cost: None.
-    - When targeted by a Waterbending attack, you can use their own Waterbending to reduce the Damage by 1d10 per Character Level.
-    - If the Damage is reduced to 0 you can use one of your own Waterbending attacks with the same (or less) Watercharges cost.
-	
-
----
-
-Mud bending costs more charges as it is harder to bend than pure water. (1.5)
-
-Tags:
-Waterbending
-Waterbending
-
-
----
----
----
-
-
-How efficiently you use your Waterbottle  that you can carry with you.
-
-| Waterbending Level | Waterbottle Water Charges |
-| ---------------------- | ----------------------------- |
-| 1-4                    | 1                             |
-| 5-8                    | 2                             |
-| 9-12                   | 3                             |
-| 13-16                  | 4                             |
-| 17-20                  | 5                             |
-
-Waterbending
 
 
 ---
