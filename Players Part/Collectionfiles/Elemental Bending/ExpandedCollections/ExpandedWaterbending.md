@@ -1,3 +1,9 @@
+![[wikigraph_treemap.html]]
+
+---
+---
+---
+
 ![[Glassfruit Seed Mechanics.md]]
 
 ---

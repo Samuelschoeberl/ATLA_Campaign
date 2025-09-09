@@ -17,7 +17,7 @@ When you loose [[Stress Level]]:
   ./
   └── Players Part
       └── Rules
-          ├── Bending Rules
+          └── Bending Rules
               └── Fire
                   ├── Firebending Moves
                       ├── Level 1
@@ -31,12 +31,9 @@ When you loose [[Stress Level]]:
                           └── [[Seething Inferno.md]]
                   └── Mechanics
                       └── [[Firebending DC.md]]
-          └── core rules
-              ├── [[Attack Roll.md]]
-              └── ExpandedCollections
-                  └── [[ExpandedAttack Roll.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

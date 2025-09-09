@@ -4,6 +4,8 @@
 ## Backlinks
 
   ./
+  ├── graphs
+      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
@@ -47,6 +49,7 @@
                       └── [[Heat Mirage.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

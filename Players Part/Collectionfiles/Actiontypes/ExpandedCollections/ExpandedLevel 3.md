@@ -1,3 +1,9 @@
+![[wikigraph_treemap.html]]
+
+---
+---
+---
+
 ![[Tail Wind.md]]
 
 ---

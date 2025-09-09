@@ -4,6 +4,8 @@ The Level the character is at this Element
 ## Backlinks
 
   ./
+  ├── graphs
+      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
@@ -27,6 +29,7 @@ The Level the character is at this Element
                   └── [[CL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

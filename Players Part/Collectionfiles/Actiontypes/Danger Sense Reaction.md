@@ -17,6 +17,8 @@ You have [[Danger Sense Reaction]]s per Turn scaling with your Airbending Level
 ## Backlinks
 
   ./
+  ├── graphs
+      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
@@ -29,6 +31,7 @@ You have [[Danger Sense Reaction]]s per Turn scaling with your Airbending Level
                           └── [[Air Vortex.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 
