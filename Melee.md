@@ -12,3 +12,4 @@
                           └── [[Burning Fists.md]]
 
 <!-- END-AUTO-COLLECTION -->
+

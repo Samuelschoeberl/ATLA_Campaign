@@ -4,6 +4,8 @@ d20 + [[Element Level]]
 ## Backlinks
 
   ./
+  ├── graphs
+      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
@@ -32,3 +34,4 @@ d20 + [[Element Level]]
                           └── [[Ice Daggers.md]]
 
 <!-- END-AUTO-COLLECTION -->
+

@@ -5,6 +5,8 @@ These Moves can be used without expending slots and are meant for out of combat 
 ## Backlinks
 
   ./
+  ├── graphs
+      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
@@ -18,3 +20,4 @@ These Moves can be used without expending slots and are meant for out of combat 
                           └── [[Control Flame.md]]
 
 <!-- END-AUTO-COLLECTION -->
+

@@ -4,6 +4,8 @@
 ## Backlinks
 
   ./
+  ├── graphs
+      └── [[wikigraph_treemap.html]]
   ├── Players Part
       ├── PCs
           └── Mahogany
@@ -44,6 +46,7 @@
   └── [[Wikigraphs_MANUAL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

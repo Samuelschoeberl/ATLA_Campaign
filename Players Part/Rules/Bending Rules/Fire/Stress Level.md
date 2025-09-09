@@ -33,3 +33,4 @@ When you loose [[Stress Level]]:
                           └── [[Seething Inferno.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
