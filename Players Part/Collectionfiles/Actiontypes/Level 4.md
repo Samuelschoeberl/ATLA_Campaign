@@ -18,10 +18,11 @@
                   └── [[Earthbending Slot.md]]
               ├── Fire
                   ├── Firebending Moves
-                      ├── Level_4
-                          └── [[Firestorm]]
-                      └── Level_5
-                          └── [[Blazing Phoenix]]
+                      ├── Level 4
+                          ├── [[Firestorm.md]]
+                          └── [[Lightning Strike.md]]
+                      └── Level 5
+                          └── [[Blazing Phoenix.md]]
                   └── [[Firebending Slot.md]]
               └── Water
                   ├── [[Water Charges.md]]
@@ -30,6 +31,7 @@
                           └── [[Shockfreeze.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

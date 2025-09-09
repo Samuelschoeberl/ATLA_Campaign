@@ -4,6 +4,12 @@
 ---
 ---
 
+![[Luma’tik.md]]
+
+---
+---
+---
+
 ![[Glassfruit Seed Mechanics.md]]
 
 ---
@@ -22,115 +28,103 @@
 ---
 ---
 
-![[Cantrips.md]]
+![[Burning Fists.md]]
 
 ---
 ---
 ---
 
-![[Fire Blast.md]]
+![[Control Flame.md]]
 
 ---
 ---
 ---
 
-![[Burning Fists]]
+![[Flame Jet.md]]
 
 ---
 ---
 ---
 
-![[Flame Jet]]
+![[Breath Control.md]]
 
 ---
 ---
 ---
 
-![[Fireburst]]
+![[Fireburst.md]]
 
 ---
 ---
 ---
 
-![[Flame Barrage]]
+![[Flame Barrage.md]]
 
 ---
 ---
 ---
 
-![[Inferno Wave]]
+![[Inferno Wave.md]]
 
 ---
 ---
 ---
 
-![[Rage Fuel]]
+![[Rage Fuel.md]]
 
 ---
 ---
 ---
 
-![[Scorching_Aura]]
+![[Scorching_Aura.md]]
 
 ---
 ---
 ---
 
-![[Firestorm]]
+![[Firestorm.md]]
 
 ---
 ---
 ---
 
-![[Lightning Strike]]
+![[Lightning Strike.md]]
 
 ---
 ---
 ---
 
-![[Blazing Phoenix]]
+![[Seething Inferno.md]]
 
 ---
 ---
 ---
 
-![[Infernal_Form]]
+![[Blazing Phoenix.md]]
 
 ---
 ---
 ---
 
-![[Meteor_Shower]]
+![[Infernal_Form.md]]
 
 ---
 ---
 ---
 
-![[Volcanic_Eruption]]
+![[Meteor_Shower.md]]
 
 ---
 ---
 ---
 
-![[Core_Attributes.md]]
+![[Volcanic_Eruption.md]]
 
 ---
 ---
 ---
 
 ![[Firebending Slot.md]]
-
----
----
----
-
-![[Stress Level.md]]
-
----
----
----
-
-![[Stress_Management_Moves.md]]
 
 ---
 ---

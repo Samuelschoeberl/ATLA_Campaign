@@ -11,4 +11,25 @@ When do you gain [[Stress Level]]:
 - For every [[Firebending Slot]] used in a [[Damaging Move]]
 When you loose [[Stress Level]]:
 - 1 [[Stress Level]] after every turn
+<!-- BEGIN-AUTO-COLLECTION:Stress Level -->
+## Backlinks
 
+  ./
+  └── Players Part
+      └── Rules
+          └── Bending Rules
+              └── Fire
+                  ├── [[Core Attributes.md]]
+                  ├── [[Firebending DC.md]]
+                  └── Firebending Moves
+                      ├── Level 1
+                          └── [[Burning Fists.md]]
+                      ├── Level 2
+                          ├── [[Breath Control.md]]
+                          └── [[Emberlash.md]]
+                      ├── Level 3
+                          └── [[Rage Fuel.md]]
+                      └── Level 4
+                          └── [[Seething Inferno.md]]
+
+<!-- END-AUTO-COLLECTION -->

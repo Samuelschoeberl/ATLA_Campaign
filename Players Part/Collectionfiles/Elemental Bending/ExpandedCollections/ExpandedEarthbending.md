@@ -1,3 +1,9 @@
+![[Luma’tik.md]]
+
+---
+---
+---
+
 ![[Earth Shift.md]]
 
 ---
@@ -107,6 +113,12 @@
 ---
 
 ![[Wiki_File_System_Manager.py]]
+
+---
+---
+---
+
+![[Wikigraphs_MANUAL.md]]
 
 ---
 ---

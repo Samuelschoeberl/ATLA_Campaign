@@ -28,10 +28,6 @@
                           └── [[Stone Shield.md]]
                   └── glass fruit bending
                       └── [[Glassfruit Seed Mechanics.md]]
-              ├── Fire
-                  └── Firebending Moves
-                      └── General Moves
-                          └── [[Cantrips.md]]
               └── Water
                   ├── Waterbending Moves
                       ├── Level 2
@@ -49,6 +45,7 @@
           └── [[Teamwork Moves.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

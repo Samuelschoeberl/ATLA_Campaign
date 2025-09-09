@@ -6,7 +6,7 @@
   ./
   ├── graphs
       └── [[wikigraph_treemap.html]]
-  └── Players Part
+  ├── Players Part
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
@@ -29,17 +29,15 @@
                       └── Level 4 Moves
                           └── [[Sandsuit.md]]
               ├── Fire
-                  ├── Firebending Moves
-                      ├── General Moves
-                          └── [[Cantrips.md]]
-                      ├── Level_2
-                          └── [[Inferno Wave]]
-                      ├── Level_3
-                          ├── [[Rage Fuel]]
-                          └── [[Scorching_Aura]]
-                      └── Level_5
-                          └── [[Infernal_Form]]
-                  └── [[Stress_Management_Moves.md]]
+                  └── Firebending Moves
+                      ├── Level 2
+                          ├── [[Breath Control.md]]
+                          └── [[Inferno Wave.md]]
+                      ├── Level 3
+                          ├── [[Rage Fuel.md]]
+                          └── [[Scorching_Aura.md]]
+                      └── Level 5
+                          └── [[Infernal_Form.md]]
               └── Water
                   └── Waterbending Moves
                       ├── Cantrips
@@ -53,8 +51,10 @@
                           └── [[Quick Jab.md]]
                       └── Level 2 Moves
                           └── [[Enhanced Reflexes.md]]
+  └── [[Wikigraphs_MANUAL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

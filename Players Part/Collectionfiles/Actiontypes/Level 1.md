@@ -6,9 +6,16 @@
   ├── graphs
       └── [[wikigraph_treemap.html]]
   └── Players Part
+      ├── PCs
+          └── Mahogany
+              └── Shapeshifting Forms
+                  └── [[Luma’tik.md]]
       └── Rules
           └── Bending Rules
               ├── Air
+                  ├── Airbending Moves
+                      └── Level 1
+                          └── [[Airdash.md]]
                   └── Mechanics
                       └── [[Airbending Slot.md]]
               ├── Earth
@@ -19,11 +26,10 @@
                   └── [[Earthbending Slot.md]]
               ├── Fire
                   ├── Firebending Moves
-                      ├── General Moves
-                          └── [[Fire Blast.md]]
-                      └── Level_1
-                          ├── [[Burning Fists]]
-                          └── [[Flame Jet]]
+                      └── Level 1
+                          ├── [[Burning Fists.md]]
+                          ├── [[Control Flame.md]]
+                          └── [[Flame Jet.md]]
                   └── [[Firebending Slot.md]]
               └── Water
                   ├── [[Water Charges.md]]
@@ -36,6 +42,7 @@
                           └── [[Water Whip.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

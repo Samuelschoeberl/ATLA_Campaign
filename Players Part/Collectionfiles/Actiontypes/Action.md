@@ -27,27 +27,24 @@
                       └── [[Glassfruit Seed Mechanics.md]]
               ├── Fire
                   ├── Firebending Moves
-                      ├── General Moves
-                          ├── [[Cantrips.md]]
-                          └── [[Fire Blast.md]]
-                      ├── Level_1
-                          ├── [[Burning Fists]]
-                          └── [[Flame Jet]]
-                      ├── Level_2
-                          ├── [[Fireburst]]
-                          └── [[Flame Barrage]]
-                      ├── Level_3
-                          ├── [[Rage Fuel]]
-                          └── [[Scorching_Aura]]
-                      ├── Level_4
-                          ├── [[Firestorm]]
-                          └── [[Lightning Strike]]
-                      └── Level_5
-                          ├── [[Blazing Phoenix]]
-                          ├── [[Infernal_Form]]
-                          ├── [[Meteor_Shower]]
-                          └── [[Volcanic_Eruption]]
-                  ├── [[Stress_Management_Moves.md]]
+                      ├── Level 1
+                          ├── [[Burning Fists.md]]
+                          └── [[Flame Jet.md]]
+                      ├── Level 2
+                          ├── [[Fireburst.md]]
+                          └── [[Flame Barrage.md]]
+                      ├── Level 3
+                          ├── [[Rage Fuel.md]]
+                          └── [[Scorching_Aura.md]]
+                      ├── Level 4
+                          ├── [[Firestorm.md]]
+                          ├── [[Lightning Strike.md]]
+                          └── [[Seething Inferno.md]]
+                      └── Level 5
+                          ├── [[Blazing Phoenix.md]]
+                          ├── [[Infernal_Form.md]]
+                          ├── [[Meteor_Shower.md]]
+                          └── [[Volcanic_Eruption.md]]
                   └── Styles
                       ├── [[Agni_Kai_Style.md]]
                       ├── [[Dancing_Dragon_Style.md]]
@@ -93,6 +90,7 @@
   └── [[Wiki_File_System_Manager.py]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

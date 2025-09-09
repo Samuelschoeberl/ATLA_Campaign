@@ -46,37 +46,31 @@
 ---
 ---
 
-![[Cantrips.md]]
+![[Breath Control.md]]
 
 ---
 ---
 ---
 
-![[Inferno Wave]]
+![[Inferno Wave.md]]
 
 ---
 ---
 ---
 
-![[Rage Fuel]]
+![[Rage Fuel.md]]
 
 ---
 ---
 ---
 
-![[Scorching_Aura]]
+![[Scorching_Aura.md]]
 
 ---
 ---
 ---
 
-![[Infernal_Form]]
-
----
----
----
-
-![[Stress_Management_Moves.md]]
+![[Infernal_Form.md]]
 
 ---
 ---
@@ -101,6 +95,12 @@
 ---
 
 ![[Enhanced Reflexes.md]]
+
+---
+---
+---
+
+![[Wikigraphs_MANUAL.md]]
 
 ---
 ---

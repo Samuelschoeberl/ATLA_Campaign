@@ -4,6 +4,18 @@
 ---
 ---
 
+![[Luma’tik.md]]
+
+---
+---
+---
+
+![[Airdash.md]]
+
+---
+---
+---
+
 ![[Airbending Slot.md]]
 
 ---
@@ -28,19 +40,19 @@
 ---
 ---
 
-![[Fire Blast.md]]
+![[Burning Fists.md]]
 
 ---
 ---
 ---
 
-![[Burning Fists]]
+![[Control Flame.md]]
 
 ---
 ---
 ---
 
-![[Flame Jet]]
+![[Flame Jet.md]]
 
 ---
 ---

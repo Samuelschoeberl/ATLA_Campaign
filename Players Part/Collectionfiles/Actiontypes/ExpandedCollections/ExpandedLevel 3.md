@@ -28,6 +28,12 @@
 ---
 ---
 
+![[Rage Fuel.md]]
+
+---
+---
+---
+
 ![[Firebending Slot.md]]
 
 ---

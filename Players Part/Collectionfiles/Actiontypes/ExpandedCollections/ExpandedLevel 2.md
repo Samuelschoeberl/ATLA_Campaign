@@ -4,6 +4,12 @@
 ---
 ---
 
+![[Luma’tik.md]]
+
+---
+---
+---
+
 ![[Air Vortex.md]]
 
 ---
@@ -28,7 +34,25 @@
 ---
 ---
 
-![[Inferno Wave]]
+![[Breath Control.md]]
+
+---
+---
+---
+
+![[Emberlash.md]]
+
+---
+---
+---
+
+![[Flame Barrage.md]]
+
+---
+---
+---
+
+![[Inferno Wave.md]]
 
 ---
 ---

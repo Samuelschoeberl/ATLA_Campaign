@@ -19,6 +19,9 @@
               ├── Earth
                   └── [[Earthbending Slot.md]]
               ├── Fire
+                  ├── Firebending Moves
+                      └── Level 3
+                          └── [[Rage Fuel.md]]
                   └── [[Firebending Slot.md]]
               ├── Team-up Moves
                   └── Air-Fire
@@ -33,6 +36,7 @@
                           └── [[Surfing.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

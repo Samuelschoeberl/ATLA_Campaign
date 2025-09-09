@@ -6,6 +6,10 @@
   ├── graphs
       └── [[wikigraph_treemap.html]]
   └── Players Part
+      ├── PCs
+          └── Mahogany
+              └── Shapeshifting Forms
+                  └── [[Luma’tik.md]]
       └── Rules
           └── Bending Rules
               ├── Air
@@ -19,8 +23,11 @@
                   └── [[Earthbending Slot.md]]
               ├── Fire
                   ├── Firebending Moves
-                      └── Level_2
-                          └── [[Inferno Wave]]
+                      └── Level 2
+                          ├── [[Breath Control.md]]
+                          ├── [[Emberlash.md]]
+                          ├── [[Flame Barrage.md]]
+                          └── [[Inferno Wave.md]]
                   └── [[Firebending Slot.md]]
               └── Water
                   ├── [[Water Charges.md]]
@@ -32,6 +39,7 @@
                           └── [[Water Tentacles.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

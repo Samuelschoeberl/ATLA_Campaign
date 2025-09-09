@@ -5,6 +5,10 @@
 
   ./
   ├── Players Part
+      ├── PCs
+          └── Mahogany
+              └── Shapeshifting Forms
+                  └── [[Luma’tik.md]]
       └── Rules
           └── Bending Rules
               ├── Earth
@@ -36,9 +40,11 @@
               └── Team-up Moves
                   └── Air-Earth
                       └── [[Sandstream.md]]
-  └── [[Wiki_File_System_Manager.py]]
+  ├── [[Wiki_File_System_Manager.py]]
+  └── [[Wikigraphs_MANUAL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 
