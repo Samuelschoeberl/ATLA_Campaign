@@ -825,6 +825,29 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         raise RuntimeError("plotly is required; install with: pip install plotly") from e
 
     outdir.mkdir(parents=True, exist_ok=True)
+    
+    def save_chart_with_styling(fig, output_path, embed_js=False):
+        """Helper function to apply consistent styling and save charts with dark background."""
+        # Apply the improved color scheme: white plot background, dark grey page background
+        # Note: Individual layout updates are preserved, this only adds the custom CSS
+        
+        # Add custom CSS for dark grey page background
+        config = {'displayModeBar': False}  # Hide the toolbar for cleaner look
+        html_string = fig.to_html(include_plotlyjs='cdn' if not embed_js else True, config=config)
+        
+        # Insert custom CSS for dark grey background
+        custom_css = """
+    <style>
+    body {
+        background-color: #404040 !important;
+        margin: 0;
+        padding: 20px;
+    }
+    </style>
+    """
+        html_string = html_string.replace('<head>', '<head>' + custom_css)
+        with open(output_path, 'w') as f:
+            f.write(html_string)
 
     sun = go.Sunburst(
         ids=ids,
@@ -837,9 +860,15 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         marker=dict(colors=colors, line=dict(width=0.5, color='white')),
     )
     fig_sun = go.Figure(sun)
-    fig_sun.update_layout(margin=dict(t=10, l=10, r=10, b=10))
+    fig_sun.update_layout(
+        margin=dict(t=10, l=10, r=10, b=10),
+        plot_bgcolor='white',
+        paper_bgcolor='#404040',
+        font=dict(color='black', size=12),
+        title_font=dict(color='white', size=16)
+    )
     sun_path = outdir / "wikigraph_sunburst.html"
-    fig_sun.write_html(str(sun_path), include_plotlyjs='cdn' if not embed_js else True)
+    save_chart_with_styling(fig_sun, sun_path, embed_js)
 
     tre = go.Treemap(
         ids=ids,
@@ -855,9 +884,15 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         marker=dict(colors=colors, line=dict(width=0.5, color='white')),
     )
     fig_treemap = go.Figure(tre)
-    fig_treemap.update_layout(margin=dict(t=10, l=10, r=10, b=10))
+    fig_treemap.update_layout(
+        margin=dict(t=10, l=10, r=10, b=10),
+        plot_bgcolor='white',
+        paper_bgcolor='#404040',
+        font=dict(color='black', size=12),
+        title_font=dict(color='white', size=16)
+    )
     tre_path = outdir / "wikigraph_treemap.html"
-    fig_treemap.write_html(str(tre_path), include_plotlyjs='cdn' if not embed_js else True)
+    save_chart_with_styling(fig_treemap, tre_path, embed_js)
 
     print(f"Wrote: {sun_path}\nWrote: {tre_path}")
 
@@ -879,9 +914,16 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         vals = [v for _, v in top]
         if px:
             fig = px.bar(x=vals, y=names, orientation='h', labels={'x': 'Value', 'y': 'File'}, title=f'Top {n} files by {"size" if mode=="size" else "count"}')
-            fig.update_layout(yaxis={'automargin': True}, margin=dict(t=30, l=200))
+            fig.update_layout(
+                yaxis={'automargin': True}, 
+                margin=dict(t=30, l=200),
+                plot_bgcolor='white',
+                paper_bgcolor='#404040',
+                font=dict(color='black', size=12),
+                title_font=dict(color='white', size=16)
+            )
             out = outdir / f"wikigraph_top_{n}_files.html"
-            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True)
+            save_chart_with_styling(fig, out, embed_js)
         else:
             # Fallback: basic text file
             out = outdir / f"wikigraph_top_{n}_files.txt"
@@ -897,9 +939,16 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         vals = [v for _, v in top]
         if px:
             fig = px.bar(x=vals, y=names, orientation='h', labels={'x': 'Value', 'y': 'Directory'}, title=f'Top {n} directories by {"size" if mode=="size" else "count"}')
-            fig.update_layout(yaxis={'automargin': True}, margin=dict(t=30, l=200))
+            fig.update_layout(
+                yaxis={'automargin': True}, 
+                margin=dict(t=30, l=200),
+                plot_bgcolor='white',
+                paper_bgcolor='#404040',
+                font=dict(color='black', size=12),
+                title_font=dict(color='white', size=16)
+            )
             out = outdir / f"wikigraph_top_{n}_dirs.html"
-            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True)
+            save_chart_with_styling(fig, out, embed_js)
         else:
             out = outdir / f"wikigraph_top_{n}_dirs.txt"
             out.write_text('\n'.join(f"{v}\t{k}" for k, v in top))
@@ -914,9 +963,15 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
             # Use log-scale bins for readability when sizes vary widely
             log_vals = _np.log10(_np.array(vals))
             fig = px.histogram(x=log_vals, nbins=bins, labels={'x': 'log10(Value)'}, title='File size distribution (log10 scale)')
-            fig.update_layout(margin=dict(t=30, l=10, r=10, b=10))
+            fig.update_layout(
+                margin=dict(t=30, l=10, r=10, b=10),
+                plot_bgcolor='white',
+                paper_bgcolor='#404040',
+                font=dict(color='black', size=12),
+                title_font=dict(color='white', size=16)
+            )
             out = outdir / "wikigraph_file_size_histogram.html"
-            fig.write_html(str(out), include_plotlyjs='cdn' if not embed_js else True)
+            save_chart_with_styling(fig, out, embed_js)
         else:
             out = outdir / "wikigraph_file_size_histogram.txt"
             out.write_text('\n'.join(str(v) for v in vals))
