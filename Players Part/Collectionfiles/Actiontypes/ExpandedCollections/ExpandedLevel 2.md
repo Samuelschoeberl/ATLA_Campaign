@@ -28,7 +28,7 @@
 ---
 ---
 
-![[Inferno Wave.md]]
+![[Inferno Wave]]
 
 ---
 ---

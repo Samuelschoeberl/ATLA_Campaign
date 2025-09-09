@@ -49,12 +49,12 @@
                       ├── General Moves
                           └── [[Fire Blast.md]]
                       ├── Level_1
-                          ├── [[Burning Fists.md]]
-                          └── [[Flame Jet.md]]
+                          ├── [[Burning Fists]]
+                          └── [[Flame Jet]]
                       ├── Level_2
-                          └── [[Flame Barrage.md]]
+                          └── [[Flame Barrage]]
                       └── Level_4
-                          └── [[Lightning_Strike.md]]
+                          └── [[Lightning Strike]]
               └── Water
                   ├── [[Waterbending DC.md]]
                   └── Waterbending Moves

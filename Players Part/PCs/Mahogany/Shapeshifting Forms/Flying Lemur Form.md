@@ -24,7 +24,7 @@
     - [[Evasion]]: 20
     - HP: 6 (fragile but evasive).
     - Attacks:
-        - **Razor Claws:** Melee Weapon Attack, [[Dex]]+[[Proficiency]] to hit, 1d4 slashing damage.
+        - **Razor Claws:** Melee Weapon Attack, d20 + [[Dex]] to hit, 1d4 slashing damage.
 - **Uses:**  
     Perfect for scouting, infiltration, or swift movement through difficult terrain. The form allows quick evasion and small-scale reconnaissance.
 

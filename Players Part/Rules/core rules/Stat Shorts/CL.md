@@ -1,6 +1,6 @@
 #Collectionfile 
 
-Character Level. This will be important to scale moves.
+Character Level so the Sum of all your [[Element Level]]s
 <!-- BEGIN-AUTO-COLLECTION:CL -->
 ## Backlinks
 

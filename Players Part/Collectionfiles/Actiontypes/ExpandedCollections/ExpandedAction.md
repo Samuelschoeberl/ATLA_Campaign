@@ -58,73 +58,73 @@
 ---
 ---
 
-![[Burning Fists.md]]
+![[Burning Fists]]
 
 ---
 ---
 ---
 
-![[Flame Jet.md]]
+![[Flame Jet]]
 
 ---
 ---
 ---
 
-![[Fireburst.md]]
+![[Fireburst]]
 
 ---
 ---
 ---
 
-![[Flame Barrage.md]]
+![[Flame Barrage]]
 
 ---
 ---
 ---
 
-![[Rage Fuel.md]]
+![[Rage Fuel]]
 
 ---
 ---
 ---
 
-![[Scorching_Aura.md]]
+![[Scorching_Aura]]
 
 ---
 ---
 ---
 
-![[Firestorm.md]]
+![[Firestorm]]
 
 ---
 ---
 ---
 
-![[Lightning_Strike.md]]
+![[Lightning Strike]]
 
 ---
 ---
 ---
 
-![[Blazing Phoenix.md]]
+![[Blazing Phoenix]]
 
 ---
 ---
 ---
 
-![[Infernal_Form.md]]
+![[Infernal_Form]]
 
 ---
 ---
 ---
 
-![[Meteor_Shower.md]]
+![[Meteor_Shower]]
 
 ---
 ---
 ---
 
-![[Volcanic_Eruption.md]]
+![[Volcanic_Eruption]]
 
 ---
 ---

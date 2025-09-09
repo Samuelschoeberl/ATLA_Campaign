@@ -1,7 +1,7 @@
 [[Bonus Action]]
 [[Movement]]
+[[Level 1]]
 
-**Level 1**
 - **Range:** Self.
 - **Duration:** 1 Turn.
 - Enhance agility by propelling yourself with gusts of air.

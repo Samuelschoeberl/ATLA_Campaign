@@ -27,5 +27,14 @@
       ],
       "key": "`"
     }
+  ],
+  "templater-obsidian:create-new-note-from-template": [
+    {
+      "modifiers": [
+        "Alt",
+        "Ctrl"
+      ],
+      "key": "F"
+    }
   ]
 }

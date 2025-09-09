@@ -2,6 +2,10 @@
 **Type:** Lesser Spirit  
 **Domain:** Light, Trickery  
 **Transformation Points cost:** 2 [[Transformation Points]]
+[[Element Level]]:
+	[[Firebending]]: [[Level 2]] 
+	[[Earthbending]]: [[Level 1]]
+
 
 ---
 ![[Luma'tik.png]]
@@ -36,7 +40,6 @@
     
 - **Mirage Flicker (1/[[Short Rest]]):** As a [[Bonus Action]], Luma’tik can create up to two illusionary duplicates for 1 minute. Each duplicate mimics its movements and grants attackers disadvantage on attack rolls until they hit Luma’tik.
     
-- **Pulse of Dazzling Light (3/rest):** Emit a flash in a 10 m radius. Creatures must succeed on a DC (8 + [[Wisdom]] + [[Proficiency]]) Constitution saving throw or be **blinded** until the end of their next turn. Allies who avert their gaze are unaffected.
     
 - **Glimmerjump:** 
 - [[Reaction]]:
@@ -54,12 +57,11 @@
 
 ---
 
-### **Attacks:**
+[[Special Attacks]]:
 
-- **Sparkbite:** Melee Weapon Attack, [[Dex]]+[[Proficiency]] to hit, 1d4 radiant damage. If attacking from stealth, deals an extra 1d4 psychic damage.
+- **Sparkbite:** Melee Weapon Attack, [[Physical Attack Roll]] to hit, 1d6 piercing and 1d4 radiant damage. If attacking from stealth, deals an extra 1d4 radiant damage.
     
-- **Lightshard Dart:** Ranged Attack, [[Dex]]+[[Proficiency]] to hit, 1d6 radiant damage. On hit, target must make a DC (8 + [[Dex]] + [[Proficiency]]) Wisdom saving throw or have disadvantage on Perception checks for 1 minute.
-    
+- **Lightshard Dart:** Ranged Attack, [[Attack Roll]](Fire) to hit, 1d6 radiant damage. On hit, target has disadvantage on Perception checks for 1 minute.
 
 ---
 
@@ -67,6 +69,3 @@ _Luma’tik is a playful, capricious entity—often found dancing between fractu
 
 ---
 
-Bending Slots:
-	Fire Lvl1: 2
-	Earth Lvl1: 1

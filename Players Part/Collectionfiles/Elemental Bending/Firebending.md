@@ -20,23 +20,23 @@
                           ├── [[Cantrips.md]]
                           └── [[Fire Blast.md]]
                       ├── Level_1
-                          ├── [[Burning Fists.md]]
-                          └── [[Flame Jet.md]]
+                          ├── [[Burning Fists]]
+                          └── [[Flame Jet]]
                       ├── Level_2
-                          ├── [[Fireburst.md]]
-                          ├── [[Flame Barrage.md]]
-                          └── [[Inferno Wave.md]]
+                          ├── [[Fireburst]]
+                          ├── [[Flame Barrage]]
+                          └── [[Inferno Wave]]
                       ├── Level_3
-                          ├── [[Rage Fuel.md]]
-                          └── [[Scorching_Aura.md]]
+                          ├── [[Rage Fuel]]
+                          └── [[Scorching_Aura]]
                       ├── Level_4
-                          ├── [[Firestorm.md]]
-                          └── [[Lightning_Strike.md]]
+                          ├── [[Firestorm]]
+                          └── [[Lightning Strike]]
                       ├── Level_5
-                          ├── [[Blazing Phoenix.md]]
-                          ├── [[Infernal_Form.md]]
-                          ├── [[Meteor_Shower.md]]
-                          └── [[Volcanic_Eruption.md]]
+                          ├── [[Blazing Phoenix]]
+                          ├── [[Infernal_Form]]
+                          ├── [[Meteor_Shower]]
+                          └── [[Volcanic_Eruption]]
                       └── Miscellaneous
                           └── [[Core_Attributes.md]]
                   ├── [[Firebending Slot.md]]

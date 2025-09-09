@@ -261,7 +261,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Players Part/Rules/Bending Rules/Air/Mechanics/Airbending Slot.md",
+                "file": "Players Part/Rules/Bending Rules/Air/Airbending Moves/Level 1/Airdash.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -276,7 +276,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Airbending Slot"
+              "title": "Airdash"
             }
           },
           {
@@ -302,9 +302,321 @@
               "icon": "lucide-file",
               "title": "Level 9"
             }
+          },
+          {
+            "id": "591921a2fd5b2ae9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 3/Rage Fuel.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Rage Fuel"
+            }
+          },
+          {
+            "id": "1fc8a8df6bed86da",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 2/Emberlash.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Emberlash"
+            }
+          },
+          {
+            "id": "781a277e511ea2f1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 4/Seething Inferno.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Seething Inferno"
+            }
+          },
+          {
+            "id": "515653b05d0c1b71",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Burning Fists.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Burning Fists"
+            }
+          },
+          {
+            "id": "c153d68aa0cff0e1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/PCs/Mahogany/Shapeshifting Forms/Luma’tik.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Luma’tik"
+            }
+          },
+          {
+            "id": "caebd66f3161f4e8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Special Attacks.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Special Attacks"
+            }
+          },
+          {
+            "id": "23507299bebc71e5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Special Attacks.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Special Attacks"
+            }
+          },
+          {
+            "id": "ca483a1633a4843e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/core rules/Stat Shorts/CL.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "CL"
+            }
+          },
+          {
+            "id": "43f401d4b286e211",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Physical Attack Roll.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Physical Attack Roll"
+            }
+          },
+          {
+            "id": "b9f6f747b1da4086",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Element Level.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Element Level"
+            }
+          },
+          {
+            "id": "39fc90c0ce147c82",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Element Level.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Element Level"
+            }
+          },
+          {
+            "id": "5459ccd6d2065f54",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Fire/Stress Level.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Stress Level"
+            }
+          },
+          {
+            "id": "011993b3cc0d5a3f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Fire/Firebending DC.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Firebending DC"
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 17
       }
     ],
     "direction": "vertical"
@@ -337,7 +649,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "slot",
+                "query": "proficiency",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -405,7 +717,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Wikigraphs_MANUAL.md",
+                "file": "Players Part/Rules/Special Attacks.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -415,7 +727,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Wikigraphs_MANUAL"
+              "title": "Backlinks for Special Attacks"
             }
           },
           {
@@ -482,44 +794,44 @@
       "runjs:RunJS": false
     }
   },
-  "active": "5331686191fc5f9d",
+  "active": "bf97f7a300bd33a1",
   "lastOpenFiles": [
+    "Players Part/PCs/Mahogany/Shapeshifting Forms/Luma’tik.md",
+    "Players Part/Rules/Special Attacks.md",
+    "DMs Part/PCs/Mahogany/Luma’tik.md",
+    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 2/Flame Barrage.md",
+    "Players Part/Rules/core rules/Stat Shorts/CL.md",
+    "Players Part/PCs/Mahogany/Transformation Points.md",
+    "Physical Attack Roll.md",
+    "Players Part/Rules/Bending Rules/Water/Waterbending Moves/Level 2/Ice Daggers.md",
+    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 4/Lightning Strike.md",
+    "Players Part/Rules/Bending Rules/Earth/Earthbending Moves/Level 2 Moves/Ground Unlock.md",
+    "Players Part/PCs/Mahogany/Shapeshifting Forms/Flying Lemur Form.md",
+    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Flame Jet.md",
+    "Players Part/Rules/core rules/Attack Roll.md",
+    "Players Part/Rules/Bending Rules/Fire/Firebending DC.md",
+    "Players Part/Rules/core rules/Stat Shorts/ExpandedCollections/ExpandedCL.md",
+    "Players Part/Rules/Bending Rules/Earth/Earthbending DC.md",
+    "Players Part/Rules/Non Bending Rules/Chi Blocking/Chi Blocking Moves/Level 3 Moves/Chi Surge.md",
+    "Melee.md",
+    "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Burning Fists.md",
+    "DMs Part/NPCs/Night Bloom/Dark Spirits/Bobakik.md",
+    "Players Part/Rules/Non Bending Rules/Chi Blocking/Chi Blocking Moves/Level 3 Moves/Bedning Redirect.md",
+    "Players Part/Rules/Non Bending Rules/Chi Blocking/Chi Blocking Mechanics/EP.md",
+    "Players Part/Rules/Non Bending Rules/Chi Blocking/Chi Blocking Mechanics/Defensive Techniques.md",
+    "Players Part/PCs/Mahogany/Shapeshifting Forms/Bearturtle.md",
+    "Players Part/Rules/Bending Rules/Air/Mechanics/Airbending DC.md",
+    "Element Level.md",
     "graphs/wikigraph_file_size_histogram.html",
     "graphs/wikigraph_top_20_dirs.html",
     "graphs/wikigraph_top_20_files.html",
-    "Wiki_File_System_Manager – MANUAL.md",
-    "color_recolors.md",
-    "Wikigraphs_MANUAL.md",
-    "Players Part/Collectionfiles/Actiontypes/Level 3.md",
-    "Players Part/Collectionfiles/Actiontypes/Level 1.md",
-    "Players Part/Collectionfiles/Actiontypes/Level 2.md",
-    "Players Part/Rules/Bending Rules/Water/ExpandedCollections/ExpandedWater Charges.md",
-    "Players Part/Rules/Bending Rules/Water/Waterbending Moves/Level 3/Ice Wall.md",
-    "Players Part/Rules/Bending Rules/Water/Waterbending Moves/Level 3/Healing Mist.md",
-    "Players Part/Rules/Bending Rules/Water/Water Charges.md",
-    "Players Part/Rules/Bending Rules/Water/Waterbottle Water Charges.md",
-    "Players Part/Rules/Bending Rules/Water/Waterbending rules.md",
-    "Players Part/Rules/Bending Rules/Water/Waterbending Level.md",
-    "Players Part/Rules/Bending Rules/Water/Waterbending DC.md",
-    "Players Part/Rules/Bending Rules/Water/Cyclic Flow.md",
     "Players Part/Rules/Bending Rules/Water/Waterbending Moves/Level 1/Untitled.base",
-    "Players Part/Rules/Bending Rules/Fire/Firebending Slot.md",
-    "Players Part/Rules/Bending Rules/Earth/Earthbending Slot.md",
-    "Players Part/Rules/Bending Rules/Air/Mechanics/Airbending Slot.md",
-    "Players Part/Rules/Bending Rules/Earth/_Earth.md",
-    "Players Part/Collectionfiles/Elemental Bending/Airbending.md",
-    "Players Part/Collectionfiles/Actiontypes/Level 9.md",
-    "Players Part/Collectionfiles/Actiontypes/ExpandedCollections/ExpandedLevel 9.md",
-    "Players Part/Collectionfiles/Actiontypes/Level 8.md",
-    "Players Part/Collectionfiles/Actiontypes/ExpandedCollections/ExpandedLevel 5.md",
-    "Players Part/Collectionfiles/Actiontypes/Level 5.md",
     "Players Part/Rules/Bending Rules/Air/Airbending Moves/Level 4",
     "__pycache__/Wikigraphs.cpython-312.pyc",
     "Players Part/Rules/ExpandedCollections",
     "Players Part/PCs/Anju",
     "graphs/wikigraph_treemap.html",
     "graphs/wikigraph_sunburst.html",
-    "__pycache__/Wiki_File_System_Manager.cpython-312.pyc",
     "DMs Part/Story/Airbender Nomands/3atljldbkbk41.jpg",
     "DMs Part/Story/Airbender Nomands/1664411181325.jpg",
     "DMs Part/Locations/Visual References/Pasted image 20250104171805.png",

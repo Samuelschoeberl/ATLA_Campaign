@@ -19,9 +19,9 @@
               ├── Fire
                   ├── Firebending Moves
                       ├── Level_4
-                          └── [[Firestorm.md]]
+                          └── [[Firestorm]]
                       └── Level_5
-                          └── [[Blazing Phoenix.md]]
+                          └── [[Blazing Phoenix]]
                   └── [[Firebending Slot.md]]
               └── Water
                   ├── [[Water Charges.md]]

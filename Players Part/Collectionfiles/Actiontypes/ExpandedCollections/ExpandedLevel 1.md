@@ -34,13 +34,13 @@
 ---
 ---
 
-![[Burning Fists.md]]
+![[Burning Fists]]
 
 ---
 ---
 ---
 
-![[Flame Jet.md]]
+![[Flame Jet]]
 
 ---
 ---

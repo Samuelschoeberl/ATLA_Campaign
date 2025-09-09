@@ -8,7 +8,6 @@ Revert Immobilisation through Ground Lock
 
 **Links**:
 - [[Earthbending Slot]]
-- [[Proficiency]]
 - [[Ground Lock]]
 - [[Strength]]
 - [[Earthbending Moves]]

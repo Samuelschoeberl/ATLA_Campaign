@@ -33,12 +33,12 @@
                       ├── General Moves
                           └── [[Cantrips.md]]
                       ├── Level_2
-                          └── [[Inferno Wave.md]]
+                          └── [[Inferno Wave]]
                       ├── Level_3
-                          ├── [[Rage Fuel.md]]
-                          └── [[Scorching_Aura.md]]
+                          ├── [[Rage Fuel]]
+                          └── [[Scorching_Aura]]
                       └── Level_5
-                          └── [[Infernal_Form.md]]
+                          └── [[Infernal_Form]]
                   └── [[Stress_Management_Moves.md]]
               └── Water
                   └── Waterbending Moves

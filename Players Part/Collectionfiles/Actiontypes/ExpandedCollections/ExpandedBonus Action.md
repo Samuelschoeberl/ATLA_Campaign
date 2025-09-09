@@ -52,25 +52,25 @@
 ---
 ---
 
-![[Inferno Wave.md]]
+![[Inferno Wave]]
 
 ---
 ---
 ---
 
-![[Rage Fuel.md]]
+![[Rage Fuel]]
 
 ---
 ---
 ---
 
-![[Scorching_Aura.md]]
+![[Scorching_Aura]]
 
 ---
 ---
 ---
 
-![[Infernal_Form.md]]
+![[Infernal_Form]]
 
 ---
 ---

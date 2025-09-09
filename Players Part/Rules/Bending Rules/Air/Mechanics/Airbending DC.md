@@ -1,2 +1,4 @@
-10 + [[Dex]] + [[Proficiency]]
+10 + [[Element Level]]
+
+![[Element Level]]
 [[Airbending]]

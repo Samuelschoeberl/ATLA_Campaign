@@ -22,13 +22,13 @@
 ---
 ---
 
-![[Firestorm.md]]
+![[Firestorm]]
 
 ---
 ---
 ---
 
-![[Blazing Phoenix.md]]
+![[Blazing Phoenix]]
 
 ---
 ---

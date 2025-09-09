@@ -1,3 +1,14 @@
+[[Bonus Action]]
+[[Level 3]]
+[[Stress Level]]
+
+- Range: [[Self]].
+- **Duration:** until the beginning of your next turn
+
+**Effects:**
+- Increase your [[Stress Level]] by 2* [[Firebending Slot]]
+
+[[Element]]
 
 #firebending #level3
 

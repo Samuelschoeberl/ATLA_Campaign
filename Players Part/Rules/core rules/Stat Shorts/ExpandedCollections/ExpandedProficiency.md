@@ -82,25 +82,25 @@
 ---
 ---
 
-![[Burning Fists.md]]
+![[Burning Fists]]
 
 ---
 ---
 ---
 
-![[Flame Jet.md]]
+![[Flame Jet]]
 
 ---
 ---
 ---
 
-![[Flame Barrage.md]]
+![[Flame Barrage]]
 
 ---
 ---
 ---
 
-![[Lightning_Strike.md]]
+![[Lightning Strike]]
 
 ---
 ---

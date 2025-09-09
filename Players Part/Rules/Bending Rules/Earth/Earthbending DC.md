@@ -1,1 +1,1 @@
-10 + [[Strength]] + [[Proficiency]]
+10 + [[Element Level]]

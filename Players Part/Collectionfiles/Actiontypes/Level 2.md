@@ -20,7 +20,7 @@
               ├── Fire
                   ├── Firebending Moves
                       └── Level_2
-                          └── [[Inferno Wave.md]]
+                          └── [[Inferno Wave]]
                   └── [[Firebending Slot.md]]
               └── Water
                   ├── [[Water Charges.md]]

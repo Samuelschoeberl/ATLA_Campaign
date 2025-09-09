@@ -22,8 +22,8 @@
                       ├── General Moves
                           └── [[Fire Blast.md]]
                       └── Level_1
-                          ├── [[Burning Fists.md]]
-                          └── [[Flame Jet.md]]
+                          ├── [[Burning Fists]]
+                          └── [[Flame Jet]]
                   └── [[Firebending Slot.md]]
               └── Water
                   ├── [[Water Charges.md]]
