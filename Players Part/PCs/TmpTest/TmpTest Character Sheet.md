@@ -2,19 +2,17 @@
 
 | Stat             | Value | Auto |
 | ---------------- | ----- | ---- |
-| [[Strength]]     | 4     | N    |
-| [[Dexterity]]    | 4     | N    |
+| [[Strength]]     | 2     | N    |
+| [[Dexterity]]    | 2     | N    |
 | [[Constitution]] | 2     | N    |
-| [[Intelligence]] | 3     | N    |
-| [[Wisdom]]       | 3     | N    |
+| [[Intelligence]] | 2     | N    |
+| [[Wisdom]]       | 2     | N    |
 | [[Charisma]]     | 2     | N    |
 
 ## [[Bending Slots]]
 | Element               | Slot level | [[Max Slots]] | current | note | Auto |
 | --------------------- | ---------- | ------------- | ------- | ---- | ---- |
 | [[water charges]] | [[Waterbottle Charges]] | 2 | 2 |  | Y |
-| [[Earthbending Slot]] | 1 | 1 | 1 |      | Y    |
-| [[Spiritbending Slot]] | 1 | 1 | 1 |      | Y    |
 ---
 
 ## Vital Stats
@@ -23,8 +21,8 @@
 | ----------------- | ----- | ------------------------------- | ---- |
 | [[Max Hitpoints]] | 12     |                                 | Y    |
 | [[HP]]            | 0     |                                 | N    |
-| [[Evasion]]       |               14                  |                                 | Y    |
-| [[Armor]]         |               1                   |                                 | Y    |
+| [[Evasion]]       |                 12                    |                                 | Y    |
+| [[Armor]]         |                 0                     |                                 | Y    |
 | [[Stress Level]]  | 0     | default is 0 at start of combat | N    |
 |                   | 0     |                                 |      |
 
@@ -35,10 +33,10 @@
 | Element                 | Level | Notes                  | Auto |
 | ----------------------- | ----- | ---------------------- | ---- |
 | [[Airbending Level]]    | 0     |                        | N    |
-| [[Waterbending Level]]  | 3     |                        | N    |
-| [[Earthbending Level]]  | 1     |                        | N    |
+| [[Waterbending Level]]  | 1     |                        | N    |
+| [[Earthbending Level]]  | 0     |                        | N    |
 | [[Firebending Level]]   | 0     |                        | N    |
-| [[Spiritbending Level]] | 1     | (Avatar Spirit Bridge) | N    |
+| [[Spiritbending Level]] | 0     | (Avatar Spirit Bridge) | N    |
 
 ---
 
@@ -46,11 +44,11 @@
 
 | Stat                     | value | Notes                  | Auto |
 | ------------------------ | ----- | ---------------------- | ---- |
-| [[Attack Roll Modifier]] |                4                    |                        | Y    |
-| [[Waterbending DC]]      |                16                   |                        | Y    |
-| [[Earthbending DC]]      |                15                   |                        | Y    |
-| [[Firebending DC]]       |                13                   |                        | Y    |
-| [[Spiritbending DC]]     |                  14                                  | (Avatar Spirit Bridge) | Y    |
+| [[Attack Roll Modifier]] |                 1                     |                        | Y    |
+| [[Waterbending DC]]      |                 13                    |                        | Y    |
+| [[Earthbending DC]]      |                 12                    |                        | Y    |
+| [[Firebending DC]]       |                 12                    |                        | Y    |
+| [[Spiritbending DC]]     |                    12                                    | (Avatar Spirit Bridge) | Y    |
 
 ## [[Manually Rolled Hitpoints]]
 | Level | Element | Rolled | Auto |

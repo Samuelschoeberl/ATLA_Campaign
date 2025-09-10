@@ -182,6 +182,127 @@ def main(argv: list[str] | None = None) -> int:
         fpath.write_text(content, encoding='utf-8')
         print(f"Wrote character sheet: {fpath}")
 
+        # Add or update pcs_input.md so this character is tracked in the master table
+        def add_or_update_pcs_input(pc_name: str, core: dict, bending: dict, manual_hp: int, run_update: bool):
+            pcs_path = Path('pcs_input.md')
+            # target ordered columns
+            cols = ['Name','STR','DEX','CON','INT','WIS','CHA','Water','Earth','Air','Fire','Spirit','Manually Rolled HP','Run Update']
+
+            def format_row_values(name: str, core: dict, bending: dict, manual_hp: int, run_update: bool, col_widths: list[int]):
+                vals = [
+                    name,
+                    str(core.get('STR', 0)),
+                    str(core.get('DEX', 0)),
+                    str(core.get('CON', 0)),
+                    str(core.get('INT', 0)),
+                    str(core.get('WIS', 0)),
+                    str(core.get('CHA', 0)),
+                    str(bending.get('Water', 0)),
+                    str(bending.get('Earth', 0)),
+                    str(bending.get('Air', 0)),
+                    str(bending.get('Fire', 0)),
+                    str(bending.get('Spirit', 0)),
+                    str(manual_hp or 0),
+                    'yes' if run_update else 'no',
+                ]
+                out_cells = []
+                for i, v in enumerate(vals):
+                    w = int(col_widths[i])
+                    # numeric columns (everything except Name and Run Update) -> right align
+                    if cols[i] == 'Name':
+                        cell = v.ljust(w)
+                    else:
+                        cell = v.rjust(w)
+                    out_cells.append(cell)
+                return '| ' + ' | '.join(out_cells) + ' |'
+
+            # ensure file exists with proper header if missing
+            if not pcs_path.exists():
+                header = '| ' + ' | '.join(cols) + ' |'
+                # create reasonable separator with alignment markers similar to existing style
+                sep_parts = []
+                for c in cols:
+                    if c == 'Name':
+                        sep_parts.append('--------')
+                    elif c == 'Run Update':
+                        sep_parts.append('---------:')
+                    else:
+                        # numeric right-aligned
+                        sep_parts.append('--:')
+                sep = '| ' + ' | '.join(sep_parts) + ' |'
+                # compute widths from header pieces
+                col_widths = [len(c) for c in cols]
+                new_row = format_row_values(pc_name, core, bending, manual_hp, run_update, col_widths)
+                pcs_path.write_text(header + '\n' + sep + '\n' + new_row + '\n', encoding='utf-8')
+                print(f'Updated pcs_input.md with new PC: {pc_name} (created new pcs_input.md)')
+                return
+
+            text = pcs_path.read_text(encoding='utf-8')
+            lines = text.splitlines()
+            # find header line index (first line containing 'Name' and pipes)
+            header_idx = None
+            for i, ln in enumerate(lines):
+                if '|' in ln and 'name' in ln.lower():
+                    header_idx = i
+                    break
+            if header_idx is None:
+                # fallback to append at end with default header
+                header = '| ' + ' | '.join(cols) + ' |'
+                sep_parts = ['--------' if c == 'Name' else ('---------:' if c == 'Run Update' else '--:') for c in cols]
+                sep = '| ' + ' | '.join(sep_parts) + ' |'
+                col_widths = [len(c) for c in cols]
+                new_row = format_row_values(pc_name, core, bending, manual_hp, run_update, col_widths)
+                lines.extend(['', header, sep, new_row])
+                pcs_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+                print(f'Appended pcs_input.md with new PC: {pc_name}')
+                return
+
+            # parse header to determine column widths
+            header_line = lines[header_idx]
+            header_parts = [p for p in header_line.split('|')]
+            # compute widths from the header parts (strip surrounding spaces)
+            col_texts = [p.strip() for p in header_parts if p.strip()]
+            col_widths = [len(t) for t in col_texts]
+
+            # find the contiguous table block
+            tbl_start = header_idx
+            tbl_end = header_idx
+            for j in range(header_idx + 1, len(lines)):
+                if '|' in lines[j]:
+                    tbl_end = j
+                else:
+                    break
+
+            # search for existing row matching name
+            replaced = False
+            for i in range(tbl_start + 2, tbl_end + 1):
+                ln = lines[i]
+                if not ln.strip() or re.match(r"^\s*\|\s*-+", ln):
+                    continue
+                parts = [c.strip() for c in ln.split('|') if c.strip()]
+                if not parts:
+                    continue
+                if parts[0].strip().lower() == pc_name.strip().lower():
+                    # replace this line with formatted row
+                    lines[i] = format_row_values(pc_name, core, bending, manual_hp, run_update, col_widths)
+                    replaced = True
+                    break
+
+            if not replaced:
+                insert_at = tbl_end + 1
+                lines[insert_at:insert_at] = [format_row_values(pc_name, core, bending, manual_hp, run_update, col_widths)]
+
+            pcs_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+            print(f'pcs_input.md updated: {"replaced" if replaced else "appended"} {pc_name}')
+
+        # call to add/update pcs_input.md for single creation
+        try:
+            # determine run_update flag for pcs_input (preserve override if supplied)
+            do_update_flag = args.run_update if run_update_override is None else run_update_override
+            add_or_update_pcs_input(pc_name, core_vals, bending_vals, manual_total, bool(do_update_flag))
+        except Exception as exc:
+            print('Failed to update pcs_input.md:', exc)
+
         do_update = args.run_update if run_update_override is None else run_update_override
         if do_update:
             updater = Path('update_char.py')

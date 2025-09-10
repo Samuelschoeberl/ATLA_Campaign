@@ -1185,6 +1185,7 @@ def main():
     p.add_argument('--file', help='Path to Character Sheet.md')
     p.add_argument('--formulas', help='Path to JSON formulas file', default='char_formulas.json')
     p.add_argument('--extend-formulas', action='store_true', help='Allow adding missing default formulas to the formulas file')
+    p.add_argument('--all', action='store_true', help='Update all PCs listed in pcs_input.md and generate graphs for each')
     args = p.parse_args()
 
     # If --levelup provided, update pcs_input.md and then continue to update the sheet
@@ -1302,6 +1303,78 @@ def main():
             # set args.pc so the rest of main will locate and update the sheet
             args.pc = args.name
 
+    # Handle --all: iterate over pcs_input.md rows and run update for each PC,
+    # then generate graphs for each PC using Wikigraphs.py
+    if getattr(args, 'all', False):
+        pcs_path = Path('pcs_input.md')
+        if not pcs_path.exists():
+            print('pcs_input.md not found; cannot run --all')
+            sys.exit(2)
+        txt = pcs_path.read_text(encoding='utf-8')
+        lines = txt.splitlines()
+        header_idx = None
+        for i, ln in enumerate(lines):
+            if '|' in ln and 'name' in ln.lower():
+                header_idx = i
+                break
+        if header_idx is None:
+            print('Could not find table header with Name column in pcs_input.md')
+            sys.exit(2)
+        header_parts = [p.strip() for p in lines[header_idx].split('|')]
+        # find data start
+        data_start = header_idx + 1
+        if data_start < len(lines) and re.match(r"^\s*\|?\s*-+", lines[data_start]):
+            data_start += 1
+        names: list[str] = []
+        name_col = None
+        for idx, h in enumerate(header_parts):
+            if h and h.strip().lower() == 'name':
+                name_col = idx
+                break
+        if name_col is None:
+            # fallback to first non-empty header
+            for idx, h in enumerate(header_parts):
+                if h.strip():
+                    name_col = idx
+                    break
+        if name_col is None:
+            print('Could not determine Name column in pcs_input.md')
+            sys.exit(2)
+        for i in range(data_start, len(lines)):
+            ln = lines[i]
+            if '|' not in ln:
+                continue
+            parts = [p for p in ln.split('|')]
+            if name_col >= len(parts):
+                continue
+            nm = parts[name_col].strip()
+            if not nm:
+                continue
+            names.append(nm)
+
+        if not names:
+            print('No PC names found in pcs_input.md')
+            sys.exit(0)
+
+        script_path = Path(__file__).resolve()
+        for nm in names:
+            print(f"--- Updating PC: {nm}")
+            try:
+                # invoke this script for the single PC so we reuse all existing logic
+                subprocess.run([sys.executable, str(script_path), '--pc', nm], check=True)
+            except subprocess.CalledProcessError as e:
+                print(f'update_char.py failed for {nm}:', e)
+                continue
+            # generate graphs for the PC
+            try:
+                print(f"Generating graphs for {nm}...")
+                subprocess.run(['python3', 'Wikigraphs.py', '--pc', nm], check=False)
+            except Exception as e:
+                print('Failed to run Wikigraphs.py for', nm, ':', e)
+        print('Completed --all updates')
+        sys.exit(0)
+
+    # Normal single-file or single-pc flow: locate the character sheet file
     fpath = find_character_file(args.pc, args.file)
     if not fpath:
         print('Could not locate character sheet. Provide --file or --pc where file exists.')

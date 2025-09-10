@@ -1365,19 +1365,19 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
     except Exception:
         safe_root_name = 'root'
 
-    # Print the filetree that will be embedded into the HTML (ids/labels/parents/values)
-    # This helps debugging what the sunburst/treemap will display.
-    print("\nFiletree used for HTML (id | label | parent | value):")
-    for i, node_id in enumerate(ids):
-        try:
-            lab = labels[i]
-            par = parents[i]
-            val = values[i]
-        except Exception:
-            lab = ''
-            par = ''
-            val = ''
-        print(f"  {node_id} | {lab} | parent={par} | value={val}")
+    # Optionally print the filetree used for HTML when verbose is requested.
+    if verbose:
+        print("\nFiletree used for HTML (id | label | parent | value):")
+        for i, node_id in enumerate(ids):
+            try:
+                lab = labels[i]
+                par = parents[i]
+                val = values[i]
+            except Exception:
+                lab = ''
+                par = ''
+                val = ''
+            print(f"  {node_id} | {lab} | parent={par} | value={val}")
 
     sun = go.Sunburst(
         ids=ids,

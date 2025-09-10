@@ -8,5 +8,5 @@ _/Air/=#aeeef0
 _/Water/=#a3c7ff
 _/Fire/=#ffb3b3
 _/Spirit/=#fbfbfb
-\_/Earth/=#d6c89a
-\*/Team-up Moves/=#c9c9c9
+_/Earth/=#d6c89a
+_/Team-up Moves/=#c9c9c9

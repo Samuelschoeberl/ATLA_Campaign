@@ -39,8 +39,8 @@
 | ----------------- | ----- | ------------------------------- | ---- |
 | [[Max Hitpoints]] | 12     |                                 | Y    |
 | [[HP]]            | 0     |                                 | N    |
-| [[Evasion]]       |             25                |                                 | Y    |
-| [[Armor]]         |             0                 |                                 | Y    |
+| [[Evasion]]       |                   33                      |                                 | Y    |
+| [[Armor]]         |                   0                       |                                 | Y    |
 | [[Stress Level]]  | 0     | default is 0 at start of combat | N    |
 |                   | 0     |                                 |      |
 
@@ -62,11 +62,11 @@
 
 | Stat                     | value | Notes                  | Auto |
 | ------------------------ | ----- | ---------------------- | ---- |
-| [[Attack Roll Modifier]] |               15                   |                        | Y    |
-| [[Waterbending DC]]      |               10                  |                        | Y    |
-| [[Earthbending DC]]      |               10                  |                        | Y    |
-| [[Firebending DC]]       |               10                  |                        | Y    |
-| [[Spiritbending DC]]     |                13                                | (Avatar Spirit Bridge) | Y    |
+| [[Attack Roll Modifier]] |                  15                      |                        | Y    |
+| [[Waterbending DC]]      |                  15                     |                        | Y    |
+| [[Earthbending DC]]      |                  11                     |                        | Y    |
+| [[Firebending DC]]       |                  12                     |                        | Y    |
+| [[Spiritbending DC]]     |                      15                                      | (Avatar Spirit Bridge) | Y    |
 
 ## [[Manually Rolled Hitpoints]]
 | Level | Element | Rolled | Auto |
