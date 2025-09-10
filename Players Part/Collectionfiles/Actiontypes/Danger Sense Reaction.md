@@ -25,8 +25,10 @@ You have [[Danger Sense Reaction]]s per Turn scaling with your Airbending Level
               └── [[Airbendertest Character Sheet.md]]
           ├── Airwatterbendertest
               └── [[Airwatterbendertest Character Sheet.md]]
-          └── Anju
+          ├── Anju
               └── [[Anju Character Sheet.md]]
+          └── Tapioca
+              └── [[Character Sheet.md]]
       └── Rules
           └── Bending Rules
               └── Air
@@ -40,6 +42,7 @@ You have [[Danger Sense Reaction]]s per Turn scaling with your Airbending Level
       └── [[update_bending_slots.py]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 
