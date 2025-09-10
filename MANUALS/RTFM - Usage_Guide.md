@@ -6,13 +6,13 @@ use the linked manuals for details.
 - Create a PC and generate graphs:
 
   ```bash
-  python3 create_pc.py --name Anju --run-update --make-graphs
+  python3 create_pc.py --name Bob --run-update --make-graphs
   ```
 
 - Update a single Character Sheet:
 
   ```bash
-  python3 update_char.py --pc Anju
+  python3 update_char.py --pc Bob
   ```
 
 - Regenerate root + per-PC graphs (union of `pcs_input.md` and existing HTMLs):
