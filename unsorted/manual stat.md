@@ -8,3 +8,4 @@ Must be parsed from the charactersheet
       └── [[Dexterity.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
