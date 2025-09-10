@@ -157,7 +157,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MANUALS/Wiki_File_System_Manager – MANUAL.md",
+                "file": "pcs_input.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -172,7 +172,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Wiki_File_System_Manager – MANUAL"
+              "title": "pcs_input"
             }
           },
           {
@@ -373,7 +373,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MANUALS/Wiki_File_System_Manager – MANUAL.md",
+                "file": "pcs_input.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -383,7 +383,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Wiki_File_System_Manager – MANUAL"
+              "title": "Backlinks for pcs_input"
             }
           },
           {
@@ -452,6 +452,12 @@
   },
   "active": "0103c40bd4d484c4",
   "lastOpenFiles": [
+    "Players Part/PCs/Puy/Character Sheet.md.bak",
+    "Players Part/PCs/Puy/Character Sheet.md",
+    "Players Part/PCs/Puy",
+    "MANUALS/RTFM - Usage_Guide.md",
+    "pcs_input.md",
+    "MANUALS/Wiki_File_System_Manager – MANUAL.md",
     "unsorted/ExpandedCollections/ExpandedMelee.md",
     "unsorted/ExpandedCollections/Expandedmanual stat.md",
     "unsorted/ExpandedCollections/ExpandedElement Level.md",
@@ -469,15 +475,12 @@
     "graphs/TmpTest_wikigraph_treemap.html",
     "graphs/TmpTest_wikigraph_sunburst.html",
     "graphs/TestQuick_wikigraph_treemap.html",
-    "graphs/TestQuick_wikigraph_sunburst.html",
     "MANUALS/update_charManual.md",
     "color_recolors.md",
     "npc_input.md",
-    "MANUALS/RTFM - Usage_Guide.md",
     "Players Part/Rules/Bending Rules/Spirit/Mechanics/Spiritbending Slot.md",
     "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
     "DMs Part/NPCs/king_ah_mi_sho/king_ah_mi_sho Character Sheet.md",
-    "pcs_input.md",
     "Players Part/PCs/Anju/Character Sheet.md",
     "Players Part/PCs/Spirittest/Character Sheet.md",
     "DMs Part/NPCs/Master Baezu/Master Baezu Character Sheet.md",
@@ -485,9 +488,6 @@
     "DMs Part/NPCs/Waterbender/Waterbender Character Sheet.md",
     "Players Part/NPCs/The Night Bloom/Isay Trekal.md",
     "DMs Part/Master Baezu NPC Sheet.md",
-    "DMs Part/king_ah_mi_sho NPC Sheet.md",
-    "Players Part/PCs/Mahogany/Transformation Points.md",
-    "DMs Part/Firebender NPC Sheet.md",
     "Players Part/PCs/Mahogany/Shapeshifting Forms/Pics/Luma'tik.png",
     "DMs Part/Story/Airbender Nomands/3atljldbkbk41.jpg",
     "DMs Part/Story/Airbender Nomands/1664411181325.jpg",
