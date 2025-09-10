@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Bearturtle.md]]
 
 ---
@@ -28,7 +22,31 @@
 ---
 ---
 
-![[Glassfruit Seed Mechanics.md]]
+![[BlueBerry Glass Surge.md]]
+
+---
+---
+---
+
+![[FlashLemon Refractor Beam.md]]
+
+---
+---
+---
+
+![[Inferno Bloom (Red Flamegrape).md]]
+
+---
+---
+---
+
+![[Resonant Collapse (Blue Soundbanana).md]]
+
+---
+---
+---
+
+![[Soulseed Harmonic Seal.md]]
 
 ---
 ---

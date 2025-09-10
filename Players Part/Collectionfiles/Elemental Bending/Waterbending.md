@@ -4,8 +4,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
@@ -23,7 +21,7 @@
                       ├── [[Water Charges.md]]
                       ├── [[Waterbending DC.md]]
                       ├── [[Waterbending Level.md]]
-                      └── [[Waterbottle Water Charges.md]]
+                      └── [[Waterbottle Charges]]
                   └── Waterbending Moves
                       ├── Cantrips
                           ├── [[Backflow.md]]
@@ -50,6 +48,9 @@
                           └── [[Shockfreeze.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

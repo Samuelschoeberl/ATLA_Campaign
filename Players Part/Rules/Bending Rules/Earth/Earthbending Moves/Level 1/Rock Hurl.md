@@ -2,7 +2,7 @@
 [[Level 1]]
 
 - Range: 3* [[Earthbending Slot]] meters
-- **Attack Roll:** [[Strength]] + [[Proficiency]].
+- **[[Attack Roll]]:** [[Strength]] + [[Proficiency]].
 - Damage: 1d6  * [[Earthbending Slot]] bludgeoning.
 
 **Effect**:

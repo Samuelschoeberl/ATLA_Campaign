@@ -1,23 +1,25 @@
-
 **Level 4**
 [[Concentration]]
+
 - **[[Bonus Action]]** .
 - Range: Self
 - Duration: 3 round. [[Concentration]]
 - Surround yourself in a thick layer of Sand until the start of your next turn.
 
 **Effect**:
-Provides 2 * [[Earthbending Slot]]  [[General Armor]]
-Provides 5* [[Earthbending Slot]] [[Physical Armor]]
-Provides 10 * [[Earthbending Slot]]  [[Barrier Armor]]
- 
+Provides 2 _ [[Earthbending Slot]] [[General Armor]]
+Provides 5_ [[Earthbending Slot]] [[Physical Armor]]
+Provides 10 \* [[Earthbending Slot]] [[Barrier Armor]]
+
 **Links**:
+
 - [[Armor]]
 - [[Earthbending Slot]]
 
 Tags:
 #Earthbending
 [[Earthbending]]
+
 ## Purpose
 
 `Wikigraphs.py` scans an Obsidian-style vault (or any folder of markdown/text files) and writes Plotly Sunburst and Treemap HTML visualizations that show the directory/file hierarchy, sizes (or counts), and sanitized Markdown content inside nodes.
@@ -34,6 +36,25 @@ python3 Wikigraphs.py --root "$(pwd)" --out graphs
 
 ```bash
 python3 Wikigraphs.py --root "$(pwd)" --out graphs --child-spread 0.7
+```
+
+Quick copy-paste commands
+
+```bash
+# Generate graphs for the current vault and write into ./graphs (default)
+python3 Wikigraphs.py --root "$(pwd)" --out graphs
+
+# Generate graphs for a single PC folder (e.g. Players Part/PCs/Anju)
+python3 Wikigraphs.py --pc Anju --verbose --embed
+
+# Generate graphs for every PC folder under Players Part/PCs
+python3 Wikigraphs.py --all --verbose --embed
+
+# Apply a one-shot recolor directive and persist it to color_recolors.md
+python3 Wikigraphs.py --recolor "Rules/Bending Rules/Fire/=#ff0000"
+
+# Apply stored recolors only (do not modify color_recolors.md)
+python3 Wikigraphs.py --recolor
 ```
 
 - Recolor every matching `Bending Rules/Fire` subtree to red and persist:

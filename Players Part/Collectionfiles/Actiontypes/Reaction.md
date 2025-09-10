@@ -4,8 +4,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
@@ -23,7 +21,11 @@
               ├── Earth
                   └── Earthbending Moves
                       ├── glass fruit bending
-                          └── [[Glassfruit Seed Mechanics.md]]
+                          ├── [[BlueBerry Glass Surge.md]]
+                          ├── [[FlashLemon Refractor Beam.md]]
+                          ├── [[Inferno Bloom (Red Flamegrape).md]]
+                          ├── [[Resonant Collapse (Blue Soundbanana).md]]
+                          └── [[Soulseed Harmonic Seal.md]]
                       ├── Level 1
                           └── [[Earth Brace.md]]
                       └── Level 2 Moves
@@ -45,6 +47,9 @@
           └── [[Teamwork Moves.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

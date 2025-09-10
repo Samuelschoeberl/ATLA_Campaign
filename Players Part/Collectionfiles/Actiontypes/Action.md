@@ -4,9 +4,7 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
-  ├── Players Part
+  └── Players Part
       └── Rules
           ├── Bending Rules
               ├── Air
@@ -17,8 +15,6 @@
                           └── [[Hovering Hands.md]]
               ├── Earth
                   └── Earthbending Moves
-                      ├── glass fruit bending
-                          └── [[Glassfruit Seed Mechanics.md]]
                       ├── Level 1
                           └── [[Rock Hurl.md]]
                       └── Level 2 Moves
@@ -82,9 +78,11 @@
                       └── Level 3 Moves
                           └── [[Chi Surge.md]]
           └── [[Teamwork Moves.md]]
-  └── [[Wiki_File_System_Manager.py]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

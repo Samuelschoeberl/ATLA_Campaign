@@ -4,8 +4,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   ├── Players Part
       ├── PCs
           └── Mahogany
@@ -44,6 +42,10 @@
                   └── Waterbending Moves
                       ├── Cantrips
                           └── [[Backflow.md]]
+                      ├── Level 2
+                          └── [[Water Tentacles.md]]
+                      ├── Level 3
+                          └── [[Complete Cyclic Reflow.md]]
                       └── Level 4
                           └── [[Shockfreeze.md]]
           └── Non Bending Rules
@@ -56,6 +58,9 @@
   └── [[Wikigraphs_MANUAL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

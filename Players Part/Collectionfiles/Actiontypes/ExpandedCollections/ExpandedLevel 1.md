@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Luma’tik.md]]
 
 ---
@@ -17,6 +11,36 @@
 ---
 
 ![[Airbending Slot.md]]
+
+---
+---
+---
+
+![[BlueBerry Glass Surge.md]]
+
+---
+---
+---
+
+![[FlashLemon Refractor Beam.md]]
+
+---
+---
+---
+
+![[Inferno Bloom (Red Flamegrape).md]]
+
+---
+---
+---
+
+![[Resonant Collapse (Blue Soundbanana).md]]
+
+---
+---
+---
+
+![[Soulseed Harmonic Seal.md]]
 
 ---
 ---

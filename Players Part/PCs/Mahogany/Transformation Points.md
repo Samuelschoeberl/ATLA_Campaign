@@ -6,8 +6,6 @@ You have your [[CL]] * 2  amount of [[Transformation Points]]
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── PCs
           └── Mahogany
@@ -18,6 +16,9 @@ You have your [[CL]] * 2  amount of [[Transformation Points]]
                       └── [[Luma’tik.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

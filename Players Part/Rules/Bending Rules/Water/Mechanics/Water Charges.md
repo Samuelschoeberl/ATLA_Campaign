@@ -1,7 +1,7 @@
 #Collectionfile 
 Water Charges represent the amount of water available for a water-bender to manipulate.
 
-![[Waterbottle Water Charges]] 
+![[Waterbottle Charges]] 
 
 
 - **Environmental Influence:**  
@@ -18,7 +18,7 @@ Water Charges represent the amount of water available for a water-bender to mani
     - **Abilities:** Certain abilities allow Water Charges recovery or [[Cyclic Flow]].
     
 [[Waterbending]]
-[[Waterbottle Water Charges]]
+[[Waterbottle Charges]]
 [[Level 1]]
 [[Level 2]]
 [[Level 3]]
@@ -32,11 +32,12 @@ Water Charges represent the amount of water available for a water-bender to mani
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
+      ├── PCs
+          └── Anju
+              └── [[Anju Character Sheet.md]]
       └── Rules
-          └── Bending Rules
+          ├── Bending Rules
               └── Water
                   ├── ExpandedCollections
                       └── [[ExpandedCyclic Flow.md]]
@@ -51,8 +52,13 @@ Water Charges represent the amount of water available for a water-bender to mani
                           └── [[Ice Daggers.md]]
                       └── Level 3
                           └── [[Healing Mist.md]]
+          └── core rules
+              └── [[Bending Slots.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

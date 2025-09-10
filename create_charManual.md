@@ -1,0 +1,87 @@
+# create_charManual
+
+## Purpose
+
+This short manual explains how to quickly create a Character Sheet using `create_pc.py` and (optionally) generate the corresponding HTML graphs with `Wikigraphs.py` immediately after creation.
+
+## Prerequisites
+
+- Python 3 available on PATH (used as `python3` in examples).
+- The repository root is the current working directory when running the commands.
+- Optional tools used by the workflow:
+  - `update_char.py` — computes derived stats inside the sheet (recommended).
+  - `Wikigraphs.py` — creates sunburst/treemap HTML files for the PC (optional).
+
+## Quick single-character example
+
+Create a character named Anju, compute derived stats, and immediately generate embedded graphs:
+
+```bash
+python3 create_pc.py --name Anju \
+  --str 4 --dex 4 --con 2 --int 3 --wis 3 --cha 2 \
+  --water 3 --earth 1 --air 0 --fire 0 --spirit 1 \
+  --run-update --make-graphs --embed-graphs --graphs-verbose
+```
+
+What this does:
+
+- Writes `Players Part/PCs/Anju/Anju Character Sheet.md`.
+- If `--run-update` is given and `update_char.py` exists, it will run it to compute and write derived stats into the sheet.
+- If `--make-graphs` is given and `Wikigraphs.py` exists, it will run `Wikigraphs.py --pc Anju` (add `--embed` and `--verbose` depending on flags) and write two files:
+  - `graphs/Anju_wikigraph_sunburst.html`
+  - `graphs/Anju_wikigraph_treemap.html`
+
+## Create many characters from `pcs_input.md`
+
+If you have multiple rows in the table format in `pcs_input.md`, create them in bulk:
+
+```bash
+python3 create_pc.py --input-file pcs_input.md --run-update --make-graphs --embed-graphs
+```
+
+## Flags and brief description
+
+- `--name NAME` — required for single-character creation.
+- `--input-file PATH` — path to a markdown table describing multiple PCs.
+- `--str/--dex/--con/--int/--wis/--cha` — core stats (integers).
+- `--air/--water/--earth/--fire/--spirit` — bending levels (integers).
+- `--manual-rolled-hp` — summary total for manually rolled HP to insert on the sheet.
+- `--out-root` — folder root where `Players Part/PCs/<Name>/` will be created (default: `Players Part/PCs`).
+- `--run-update` — run `update_char.py --file <sheet>` after creating the sheet to compute derived stats.
+- `--make-graphs` — run `Wikigraphs.py --pc <name>` after creation to generate graphs.
+- `--embed-graphs` — pass `--embed` to `Wikigraphs.py` so Plotly JS is embedded into the HTML output.
+- `--graphs-verbose` — pass `--verbose` to `Wikigraphs.py` to print selected files during filtering.
+
+## Where outputs land
+
+- Character sheets: `Players Part/PCs/<Name>/<Name> Character Sheet.md`
+- Graph HTML: `graphs/<Name>_wikigraph_sunburst.html` and `graphs/<Name>_wikigraph_treemap.html`
+
+## Troubleshooting
+
+- "Could not locate character sheet" when using `update_char.py --name`: use `--pc` or `--file` with the explicit path, or run `create_pc.py`'s output file path directly.
+- If `update_char.py` prints warnings about unresolved formulas, check `char_formulas.json` in the repo root — add missing formula keys there if desired.
+- If `Wikigraphs.py` fails, run it manually with `--pc <Name>` to see verbose output:
+
+```bash
+python3 Wikigraphs.py --pc Anju --verbose --embed
+```
+
+- To find character files quickly:
+
+```bash
+ls -la "Players Part/PCs/Anju"
+find . -type f -iname "*Anju*Character*Sheet*.md" -print
+```
+
+## Notes and suggestions
+
+- `--run-update` is optional; `create_pc.py` will still create a usable sheet without it.
+- Graph generation is synchronous and will block until `Wikigraphs.py` completes; if you prefer non-blocking generation, consider running `Wikigraphs.py` in the background or via a separate script.
+- If you want automated tests for the create+graph flow, I can add a small test harness and a short README explaining CI steps.
+
+If you want any of the following added to this manual, tell me which and I'll update the file:
+
+- A sample `pcs_input.md` table snippet tailored to your vault.
+- A troubleshooting section for common Python environment and Plotly errors.
+- A short checklist for committing generated files (which files to track vs ignore).

@@ -2,10 +2,11 @@
 
 <!-- lines of the form: path=#rrggbb -->
 
-Rules/Bending Rules/=#2f2f2f
-Rules/Bending Rules/Air/=#aeeef0
-Rules/Bending Rules/Water/=#a3c7ff
-Rules/Bending Rules/Fire/=#ffb3b3
-Rules/Bending Rules/Avatar Spirit Bridge/=#fbfbfb
-Rules/Bending Rules/Earth/=#d6c89a
-Rules/Bending Rules/Team-up Moves/=#c9c9c9
+_/Bending Rules/=#2f2f2f
+_/Anju/=#77C0D1
+_/Air/=#aeeef0
+_/Water/=#a3c7ff
+_/Fire/=#ffb3b3
+_/Spirit/=#fbfbfb
+\_/Earth/=#d6c89a
+\*/Team-up Moves/=#c9c9c9

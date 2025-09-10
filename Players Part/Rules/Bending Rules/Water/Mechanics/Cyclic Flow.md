@@ -1,13 +1,11 @@
 #Collectionfile 
-If Concentration is not broken the [[Water Charges]] are refunded.
+If Concentration is not broken half the [[Water Charges]] are refunded.
 
 [[Waterbending]]
 <!-- BEGIN-AUTO-COLLECTION:Cyclic Flow -->
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       └── Rules
           └── Bending Rules
@@ -19,10 +17,16 @@ If Concentration is not broken the [[Water Charges]] are refunded.
                   └── Waterbending Moves
                       ├── Level 1
                           └── [[Healing Water.md]]
+                      ├── Level 2
+                          └── [[Water Tentacles.md]]
                       └── Level 3
+                          ├── [[Complete Cyclic Reflow.md]]
                           └── [[Healing Mist.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

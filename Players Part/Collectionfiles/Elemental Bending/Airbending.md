@@ -4,8 +4,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── Collectionfiles
           └── Actiontypes
@@ -36,12 +34,16 @@
               ├── Earth
                   └── Earthbending Moves
                       └── glass fruit bending
-                          └── [[Glassfruit Seed Mechanics.md]]
+                          ├── [[Glassfruit Seed Mechanics.md]]
+                          └── [[Resonant Collapse (Blue Soundbanana).md]]
               └── Team-up Moves
                   └── Air-Earth
                       └── [[Sandstream.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

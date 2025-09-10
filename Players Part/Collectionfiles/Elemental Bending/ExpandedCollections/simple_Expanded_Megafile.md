@@ -247,7 +247,7 @@ Backlinks
 ---
 
 
-10 + Int + Proficiency
+
 Waterbending
 
 
@@ -383,7 +383,7 @@ Level 1
 - Range: 3  Water Charges meter.
 - Effect:  
     The waterbender shoots a sharp, pressurized stream of water at a target.
-    - Attack Roll: Int + Proficiency.
+    - [[Attack Roll]]: Int + Proficiency.
     - Damage: Water Charges d8 piercing or Water Charges d6 bludgeoning damage per Charge.
     
 
@@ -473,7 +473,7 @@ Water Whip (Level 1 Ability)
 - Action: 1 Action.
 - Effect:  
     The waterbender lashes out with a tendril of water, striking a target within range.
-    - Attack Roll: Intelligence + Proficiency Bonus.
+    - [[Attack Roll]]: Intelligence + Proficiency Bonus.
     - Damage: 1d8 + Int modifier bludgeoning damage.
     - Special: The target must succeed on a Strength saving throw (DC 10 + Int modifier + Proficiency) or be knocked back 10 feet.
     
@@ -520,7 +520,7 @@ Ice Daggers (2nd Level Move)
 - Range: 20 ft.
 - Effect:  
     The waterbender creates sharp daggers of ice to hurl at targets.
-    - Attack Roll: Int + Proficiency
+    - [[Attack Roll]]: Int + Proficiency
 - Damage: 1d8 + Int modifier piercing damage per dagger (can create up to 2CL daggers).
 
 Links:
@@ -571,7 +571,7 @@ Water Tentacles (2nd Level Move)
 - Range: 15 ft.
 - Effect:  
     The waterbender summons two water tentacles to attack or grapple targets.
-    - Attack Roll: Int + Proficiency.
+    - [[Attack Roll]]: Int + Proficiency.
     - Damage: 1d10 bludgeoning damage per tentacle.
     - Grapple: A creature hit by the tentacle must succeed on a Strength saving throw or be restrained.
 

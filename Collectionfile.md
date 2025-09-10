@@ -6,11 +6,14 @@
   └── Players Part
       └── Rules
           └── Bending Rules
-              └── Avatar Spirit Bridge
+              └── Spirit
                   └── Spiritbending Moves
                       └── [[Spiritbending Moves.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

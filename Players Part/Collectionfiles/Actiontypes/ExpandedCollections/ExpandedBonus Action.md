@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Flying Lemur Form.md]]
 
 ---
@@ -77,6 +71,18 @@
 ---
 
 ![[Backflow.md]]
+
+---
+---
+---
+
+![[Water Tentacles.md]]
+
+---
+---
+---
+
+![[Complete Cyclic Reflow.md]]
 
 ---
 ---

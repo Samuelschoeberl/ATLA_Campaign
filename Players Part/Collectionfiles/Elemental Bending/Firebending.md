@@ -4,8 +4,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
@@ -17,7 +15,10 @@
               ├── Earth
                   └── Earthbending Moves
                       └── glass fruit bending
-                          └── [[Glassfruit Seed Mechanics.md]]
+                          ├── [[FlashLemon Refractor Beam.md]]
+                          ├── [[Glassfruit Seed Mechanics.md]]
+                          ├── [[Inferno Bloom (Red Flamegrape).md]]
+                          └── [[Soulseed Harmonic Seal.md]]
               ├── Fire
                   ├── Firebending Moves
                       ├── Level 1
@@ -49,6 +50,9 @@
                       └── [[Heat Mirage.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

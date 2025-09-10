@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Wind spiral.md]]
 
 ---
@@ -11,12 +5,6 @@
 ---
 
 ![[Hovering Hands.md]]
-
----
----
----
-
-![[Glassfruit Seed Mechanics.md]]
 
 ---
 ---
@@ -239,12 +227,6 @@
 ---
 
 ![[Teamwork Moves.md]]
-
----
----
----
-
-![[Wiki_File_System_Manager.py]]
 
 ---
 ---

@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Grandmaster Iroh Tanaka.md]]
 
 ---

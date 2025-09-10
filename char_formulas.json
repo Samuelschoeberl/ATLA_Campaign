@@ -1,0 +1,35 @@
+{
+  "max_hit_points": "10 + (CON + HP_PER_CL) * CL",
+  "evasion": "10 + DEX + Airbending_Level",
+  "armor": "0 + Earthbending_Level",
+
+  "CL": "CL",
+  "HP_PER_CL": "Manually_Rolled_Hitpoints",
+
+  "Stress Level": "0",
+  "Element Level": "Air Level + Water Level + Earth Level + Fire Level",
+  "Attack Roll Modifier": "Element Level - Stress Level",
+
+  "airbending_dc": "10 + Air Level + DEX",
+  "waterbending_dc": "10 + Water Level + INT",
+  "earthbending_dc": "10 + Earth Level + STR",
+  "firebending_dc": "10 + Fire Level + WIS",
+  "spiritbending_dc": "10 + Spirit Level + WIS",
+
+  "Waterbottle Charges": "Waterbottle Charges",
+  "Air Level": "Air",
+  "Airbending_Level": "Air",
+  "Water Level": "Water",
+  "Waterbending_Level": "Water",
+  "Earth Level": "Earth",
+  "Earthbending_Level": "Earth",
+  "Fire Level": "Fire",
+  "Firebending_Level": "Fire",
+  "Spirit Level": "Spirit",
+  "Manually_Rolled_Hitpoints": "Manually Rolled HP",
+  "CON": "CON",
+  "DEX": "DEX",
+  "INT": "INT",
+  "STR": "STR",
+  "WIS": "WIS"
+}

@@ -4,8 +4,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   ├── Players Part
       ├── PCs
           └── Mahogany
@@ -20,7 +18,11 @@
                           ├── [[Earth Shift.md]]
                           └── [[Stone Knuckles.md]]
                       ├── glass fruit bending
-                          └── [[Glassfruit Seed Mechanics.md]]
+                          ├── [[FlashLemon Refractor Beam.md]]
+                          ├── [[Glassfruit Seed Mechanics.md]]
+                          ├── [[Inferno Bloom (Red Flamegrape).md]]
+                          ├── [[Resonant Collapse (Blue Soundbanana).md]]
+                          └── [[Soulseed Harmonic Seal.md]]
                       ├── Level 1
                           ├── [[Earth Brace.md]]
                           └── [[Rock Hurl.md]]
@@ -43,10 +45,12 @@
               └── Team-up Moves
                   └── Air-Earth
                       └── [[Sandstream.md]]
-  ├── [[Wiki_File_System_Manager.py]]
   └── [[Wikigraphs_MANUAL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

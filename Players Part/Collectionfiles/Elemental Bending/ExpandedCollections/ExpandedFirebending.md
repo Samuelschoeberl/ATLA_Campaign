@@ -1,16 +1,28 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Luma’tik.md]]
 
 ---
 ---
 ---
 
+![[FlashLemon Refractor Beam.md]]
+
+---
+---
+---
+
 ![[Glassfruit Seed Mechanics.md]]
+
+---
+---
+---
+
+![[Inferno Bloom (Red Flamegrape).md]]
+
+---
+---
+---
+
+![[Soulseed Harmonic Seal.md]]
 
 ---
 ---

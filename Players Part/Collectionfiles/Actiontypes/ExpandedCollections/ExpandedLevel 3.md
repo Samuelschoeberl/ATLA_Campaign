@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Tail Wind.md]]
 
 ---
@@ -47,6 +41,18 @@
 ---
 
 ![[Water Charges.md]]
+
+---
+---
+---
+
+![[Water Tentacles.md]]
+
+---
+---
+---
+
+![[Complete Cyclic Reflow.md]]
 
 ---
 ---

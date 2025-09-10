@@ -1,3 +1,2 @@
-
-10 + [[Int]] + [[Proficiency]]
+10 + [[Element Level]]
 [[Waterbending]]

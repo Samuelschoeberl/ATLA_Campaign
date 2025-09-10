@@ -30,6 +30,132 @@ DEFAULT_EXCLUDES = {".git", "node_modules", ".obsidian", "__pycache__", "venv", 
 DEFAULT_EXTS = {".md", ".markdown", ".txt"}
 
 
+def unobsidify(text: str) -> str:
+    """Return a plain-text version of an Obsidian markdown string.
+
+    - Replaces wiki-links [[...]] and transclusions ![[...]] with readable text.
+    - Removes YAML frontmatter, heading markers, emphasis and code markers.
+    - Converts markdown tables into compact text (keeps header + first two rows).
+    - Collapses code fences to a short inline representation.
+    """
+    if not text:
+        return text
+
+    s = text
+    # remove YAML frontmatter
+    s = re.sub(r'^---\n.*?\n---\n', '', s, flags=re.S)
+    # remove Obsidian comments %% ... %%
+    s = re.sub(r'%%.*?%%', '', s, flags=re.S)
+
+    # replace transclusions and wikilinks: prefer alias when present
+    s = re.sub(r'!\[\[([^\]|]+)\|([^\]]+)\]\]', r'\2', s)
+    s = re.sub(r'!\[\[([^\]]+)\]\]', r'\1', s)
+    s = re.sub(r'\[\[([^\]|]+)\|([^\]]+)\]\]', r'\2', s)
+    s = re.sub(r'\[\[([^\]]+)\]\]', r'\1', s)
+
+    # collapse code fences (keep first non-empty line)
+    def _collapse_code(m: re.Match) -> str:
+        body = m.group(2) or ''
+        for ln in body.splitlines():
+            ln = ln.strip()
+            if ln:
+                return f'`{ln}`'
+        return '`code`'
+
+    s = re.sub(r'(```|~~~)(.*?)\1', _collapse_code, s, flags=re.S)
+
+    # markdown links [text](url) -> text
+    s = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', s)
+    # remove heading markers and emphasis/code markers
+    s = re.sub(r'(?m)^[ \t]*#{1,6}\s*', '', s)
+    s = re.sub(r'[\*_`~]+', '', s)
+
+    # convert simple markdown tables into compact text summary
+    def _summarize_table(block: str) -> str:
+        lines = [ln.strip() for ln in block.splitlines() if ln.strip()]
+        if not lines:
+            return ''
+
+        # header is first line, skip separator if present
+        header = lines[0]
+        if len(lines) > 1 and re.match(r'^\s*\|?\s*[:\-]+', lines[1]):
+            data = lines[2:]
+        else:
+            data = lines[1:]
+
+        def split_row(r: str) -> List[str]:
+            # split on pipes, strip leading/trailing empty cells caused by edge pipes
+            cells = [c.strip() for c in re.split(r'\s*\|\s*', r.strip().strip('|'))]
+            return cells
+
+        hdr_cells = split_row(header)
+        # remove any columns named 'Auto' (case-insensitive)
+        keep_indices = [i for i, h in enumerate(hdr_cells) if h and h.strip().lower() != 'auto']
+        if keep_indices:
+            # filter hdr_cells and all shown rows to only kept indices
+            hdr_cells = [hdr_cells[i] for i in keep_indices]
+
+            def filter_row_by_indices(row: List[str]) -> List[str]:
+                return [row[i] if i < len(row) else '' for i in keep_indices]
+        else:
+            # nothing to keep? fall back to original header (avoid empty table)
+            def filter_row_by_indices(row: List[str]) -> List[str]:
+                return row
+
+        # show all data rows for complete table output
+        shown = [split_row(r) for r in data]
+
+        # compute column count as max across header and all shown rows
+        col_count = max(len(hdr_cells), max((len(r) for r in shown), default=0))
+
+        # normalize row lengths by padding empty cells
+        def normalize_row(row: List[str]) -> List[str]:
+            if len(row) < col_count:
+                return row + [''] * (col_count - len(row))
+            return row[:col_count]
+
+        hdr = normalize_row(hdr_cells)
+        shown_norm = [normalize_row(filter_row_by_indices(r)) for r in shown]
+
+        # compute max width per column and add extra padding for short cells
+        EXTRA_PAD = 6  # moderate extra spacing for readability
+        widths = [0] * col_count
+        for ci in range(col_count):
+            w = len(hdr[ci])
+            for r in shown_norm:
+                w = max(w, len(r[ci]))
+            # add a generous extra padding so short cells appear widely spaced
+            widths[ci] = w + EXTRA_PAD
+
+        # format header and rows with padding
+        def format_row(row: List[str]) -> str:
+            parts = []
+            for i, cell in enumerate(row):
+                parts.append(cell.ljust(widths[i]))
+            return ' | '.join(parts)
+
+        out_lines: List[str] = []
+        out_lines.append('TABLE:')
+        out_lines.append(format_row(hdr))
+        for row in shown_norm:
+            out_lines.append(format_row(row))
+        return '\n'.join(out_lines)
+
+    # replace contiguous table blocks (lines beginning with |) conservatively
+    s = re.sub(r'(?m)(^\s*\|.*(?:\n^\s*\|.*)+)', lambda m: _summarize_table(m.group(0)), s)
+
+    # normalize whitespace
+    s = re.sub(r'\r\n|\r', '\n', s)
+    s = re.sub(r'\n{3,}', '\n\n', s)
+    s = s.strip()
+    return s
+
+
+def _html_escape(s: str) -> str:
+    # minimal HTML escaping for hover content
+    return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
 def hsv_to_hex(h: float, s: float, v: float) -> str:
     """Convert HSV (h in [0,1), s,v in [0,1]) to a hex color string like '#rrggbb'."""
     # normalize hue into [0,1)
@@ -194,11 +320,74 @@ def build_plotly_lists(sizes: Dict[str, int], root_label: str = "root") -> Tuple
     parents: List[str] = []
     values: List[int] = []
 
+    # Build a simple parent/child map so we can detect directories that
+    # only contain a single child directory (and no direct file children).
+    # We'll hide those intermediate directories to make the graph
+    # cleaner: attach their descendants to the nearest visible ancestor.
+    def parent_of(k: str) -> str:
+        if k == "/":
+            return ""
+        stripped = k.rstrip('/')
+        parts = stripped.split('/')
+        if len(parts) == 1:
+            return "/"
+        return "/".join(parts[:-1]) + "/"
+
+    children_map: Dict[str, List[str]] = {}
+    for k in sizes.keys():
+        if k == "/":
+            continue
+        p = parent_of(k)
+        children_map.setdefault(p, []).append(k)
+
+    # A directory is "visible" when it either:
+    # - is root, or
+    # - has more than one immediate child, or
+    # - has at least one immediate file child (not just a single directory child)
+    visible_dirs: set = set()
+    for k in sizes.keys():
+        if not k.endswith('/'):
+            continue
+        if k == "/":
+            visible_dirs.add(k)
+            continue
+        childs = children_map.get(k, [])
+        if len(childs) > 1:
+            visible_dirs.add(k)
+            continue
+        # if any child is a file, keep this dir visible
+        if any(not c.endswith('/') for c in childs):
+            visible_dirs.add(k)
+            continue
+
+    # Additionally, avoid adding multiple directory nodes that share the
+    # exact same basename (label). This removes duplicate folder names from
+    # the sunburst: when we've already encountered a directory with the
+    # same label, mark later ones as invisible so they're skipped below.
+    seen_dir_labels: set = set()
+    # iterate in deterministic order (shallow to deep) so the first
+    # occurrence is preserved and later ones are removed
+    dir_keys = sorted([k for k in sizes.keys() if k.endswith('/')], key=lambda x: (x.count('/'), x))
+    for k in dir_keys:
+        if k == '/':
+            continue
+        label = k.rstrip('/').split('/')[-1]
+        if label in seen_dir_labels:
+            # ensure it's not treated as visible (skip it later)
+            if k in visible_dirs:
+                visible_dirs.remove(k)
+        else:
+            seen_dir_labels.add(label)
+
     # Sort to get deterministic output (shorter keys first)
     items = sorted(sizes.items(), key=lambda kv: (kv[0].count('/'), kv[0]))
 
     for key, val in items:
-        # id is the canonical key
+        # skip directory nodes that are invisible (they only contain a
+        # single directory child and no files) to collapse chains
+        if key.endswith('/') and key != '/' and key not in visible_dirs:
+            continue
+
         node_id = key
         # label is basename (for directories show directory name)
         if key == "/":
@@ -209,10 +398,17 @@ def build_plotly_lists(sizes: Dict[str, int], root_label: str = "root") -> Tuple
             stripped = key.rstrip('/')
             parts = stripped.split('/')
             label = parts[-1]
-            if len(parts) == 1:
+            # compute immediate parent, then climb to the nearest visible ancestor
+            p = parent_of(key)
+            # climb while p is not root and p is an invisible directory
+            while p and p != '/' and p not in visible_dirs:
+                p = parent_of(p)
+            if p == '/':
                 parent = "/"
+            elif p == "":
+                parent = ""
             else:
-                parent = "/".join(parts[:-1]) + "/"
+                parent = p
 
         ids.append(node_id)
         labels.append(label)
@@ -222,9 +418,226 @@ def build_plotly_lists(sizes: Dict[str, int], root_label: str = "root") -> Tuple
     return ids, labels, parents, values
 
 
-def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EXCLUDES, mode: str = 'size', embed_js: bool = False, child_spread: float = 0.35, spread_growth: float = 1.0, recolor_list: List[str] | None = None) -> None:
+def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EXCLUDES, mode: str = 'size', embed_js: bool = False, child_spread: float = 0.35, spread_growth: float = 1.0, recolor_list: List[str] | None = None, allowed_elements_levels: dict | None = None, verbose: bool = False, pc_subtree: Path | None = None, pc_name: str | None = None) -> None:
     # mode: 'size' uses file byte sizes, 'count' counts each file as 1
     sizes, contents, raw_contents = gather_file_tree(root, exts=exts, excludes=excludes)
+
+    # If allowed_elements_levels provided, filter the file list to only
+    # include files under 'Rules/Bending Rules' that mention an allowed
+    # element+level in a wikilink. This is a heuristic: we look for
+    # wikilinks like [[Water 3]] or [[Water Level]] or a wikilink that
+    # contains the element name and either the numeric level or the word 'level'.
+    if allowed_elements_levels:
+        allowed_files = set()
+        # normalize element names to lowercase for matching
+        elem_map = {k.lower(): v for k, v in allowed_elements_levels.items()}
+
+        # If a pc_subtree was provided, avoid matching files that already
+        # live inside the PC's previously-created 'Allowed Moves' subtree.
+        # This prevents selecting symlinked/copied files under
+        # Players Part/PCs/<name>/Allowed Moves/... from earlier runs which
+        # would otherwise create nested duplicates.
+        pc_allowed_prefix_lower = None
+        if pc_subtree is not None:
+            try:
+                rel_pc = pc_subtree.relative_to(root)
+                pc_allowed_prefix_lower = str(rel_pc).replace(os.sep, '/').strip('/').lower() + '/allowed moves/'
+            except Exception:
+                pc_allowed_prefix_lower = str(pc_subtree).replace(os.sep, '/').strip('/').lower() + '/allowed moves/'
+
+        def file_matches_allowed(file_key: str) -> bool:
+            # Skip files that are already inside the PC's Allowed Moves subtree
+            # (prevents re-selecting the artifacts we create when mirroring).
+            if pc_allowed_prefix_lower and file_key.lower().startswith(pc_allowed_prefix_lower):
+                return False
+            # Only consider files under Rules/Bending Rules (anywhere in the path)
+            if 'rules/bending rules/' not in file_key.lower():
+                return False
+            txt = raw_contents.get(file_key, contents.get(file_key, ''))
+            lower_key = file_key.lower()
+            # Extract wikilink inner texts
+            inner_links = [m.group(1).lower() for m in re.finditer(r"\[\[([^\]]+)\]\]", (txt or ''))]
+            # Also allow matching element keywords anywhere in the file text
+            text_lower = (txt or '').lower()
+
+            # Find numeric level mentions in text (e.g. 'level 1' or 'Level 1')
+            text_levels = set()
+            for m in re.finditer(r'level\s*[:_\- ]*\(?([0-9]+)\)?', text_lower, flags=re.I):
+                try:
+                    text_levels.add(int(m.group(1)))
+                except Exception:
+                    continue
+
+            # Find level numbers in the path (folder names like 'level 1')
+            path_levels = set()
+            for part in lower_key.split('/'):
+                m = re.search(r'level\s*[-_ ]*(\d+)', part)
+                if m:
+                    try:
+                        path_levels.add(int(m.group(1)))
+                    except Exception:
+                        pass
+
+            for elem, lvl in elem_map.items():
+                # element keywords: match 'water', 'waterbending' etc.
+                elem_kw = elem
+                # match by path (file is inside element subtree)
+                in_path = elem_kw in lower_key
+                # match by wikilink inner texts
+                in_text_link = any(elem_kw in s for s in inner_links)
+                # match by raw text anywhere
+                in_text_any = elem_kw in text_lower
+
+                # Include mechanics pages only when the player actually has >0
+                # level in the element. Previously lvl>=0 meant mechanics were
+                # always included; that caused level-0 PCs to see mechanics.
+                if 'mechanic' in lower_key:
+                    if (in_path or in_text_link or in_text_any) and lvl > 0:
+                        return True
+
+                # If the file lives in a Level N folder under the element, include when N <= allowed level
+                if in_path and path_levels:
+                    for pl in path_levels:
+                        # strictly compare against the allowed level (level 0 allows nothing)
+                        allowed_level_for_compare = lvl
+                        if pl <= allowed_level_for_compare and pl > 0:
+                            return True
+
+                # If the file contains both an element mention (link or text) and a Level X mention where X <= allowed level
+                if (in_text_link or in_text_any or in_path) and text_levels:
+                    for tl in text_levels:
+                        allowed_level_for_compare = lvl
+                        if tl <= allowed_level_for_compare and tl > 0:
+                            return True
+
+                # fallback: if the file path mentions the element include only when player has >0 level
+                if in_path and lvl > 0:
+                    return True
+
+                # fallback broader: if text mentions the element include only when player has >0 level
+                if in_text_any and lvl > 0:
+                    return True
+
+            return False
+
+        for k in list(sizes.keys()):
+            if k.endswith('/'):
+                continue
+            if file_matches_allowed(k):
+                allowed_files.add(k)
+
+        # Rebuild sizes to include only allowed files and their ancestor dirs
+        new_sizes: Dict[str, int] = {}
+        for fk in allowed_files:
+            sz = sizes.get(fk, 1)
+            new_sizes[fk] = sz
+            parts = fk.split('/')
+            for i in range(1, len(parts)):
+                dir_key = '/'.join(parts[:i]) + '/'
+                new_sizes[dir_key] = new_sizes.get(dir_key, 0) + sz
+            new_sizes['/'] = new_sizes.get('/', 0) + sz
+
+        sizes = new_sizes
+        # If verbose, print the exact list of selected files for debugging
+        if verbose:
+            print("Selected files for allowed elements/levels:")
+            for p in sorted(allowed_files):
+                print(f"  {p}")
+        # If a pc_subtree path was provided, mirror the allowed files into
+        # a dedicated subtree inside the PC folder so the generated sunburst
+        # can be rooted at the character and show only allowed moves.
+        if pc_subtree is not None and allowed_files:
+            try:
+                # Build an in-memory representation of the Allowed Moves subtree
+                # without writing any files to disk. For each allowed file we
+                # read its size and contents and create keys under
+                # 'Rules/Bending Rules/...', so when merged into the PC tree
+                # the character node will have a child 'Rules/Bending Rules'.
+                sizes_allowed_scan: Dict[str, int] = {}
+                contents_allowed: Dict[str, str] = {}
+                raw_allowed: Dict[str, str] = {}
+                marker = 'rules/bending rules/'
+                for fk in sorted(allowed_files):
+                    src = root.joinpath(fk)
+                    if not src.exists() or not src.is_file():
+                        continue
+                    try:
+                        sz = src.stat().st_size or 1
+                    except Exception:
+                        sz = 1
+                    lower = fk.lower()
+                    if marker in lower:
+                        pos = lower.find(marker)
+                        suffix = fk[pos + len(marker):].lstrip('/')
+                        dest_rel = 'Rules/Bending Rules/' + suffix
+                    else:
+                        # Fallback: place file under Rules/Bending Rules using
+                        # its basename so it's visible to the player under the
+                        # rules node without reproducing the whole original path.
+                        dest_rel = 'Rules/Bending Rules/' + Path(fk).name
+
+                    # Normalize dest_rel to use forward slashes
+                    dest_rel = dest_rel.replace(os.sep, '/')
+
+                    # Add file entry
+                    sizes_allowed_scan[dest_rel] = sz
+                    try:
+                        txt = src.read_text(encoding='utf-8', errors='replace')
+                    except Exception:
+                        txt = ''
+                    contents_allowed[dest_rel] = re.sub(r'^---\n.*?\n---\n', '', txt, flags=re.S).strip()
+                    raw_allowed[dest_rel] = txt
+
+                    # Ensure directory aggregations exist (Rules/Bending Rules/.../)
+                    parts = dest_rel.split('/')
+                    for i in range(1, len(parts)):
+                        dir_key = '/'.join(parts[:i]) + '/'
+                        sizes_allowed_scan[dir_key] = sizes_allowed_scan.get(dir_key, 0) + sz
+
+                # Ensure root bucket for the allowed scan
+                sizes_allowed_scan['/'] = sizes_allowed_scan.get('/', sum(v for k, v in sizes_allowed_scan.items() if not k.endswith('/')) or 1)
+
+                # Merge PC and allowed in-memory scans below (no filesystem ops)
+                try:
+                    # Scan the PC subtree on-disk (character folder) to build its
+                    # in-memory index. We will merge the Allowed Moves entries
+                    # under this PC root without writing any files.
+                    sizes_pc, contents_pc, raw_pc = gather_file_tree(pc_subtree, exts=exts, excludes=excludes)
+
+                    # Remove any previously-created Allowed Moves entries from
+                    # the PC scan so we don't keep the 'Allowed Moves/...' keys.
+                    sizes_pc_clean: Dict[str, int] = {k: v for k, v in sizes_pc.items() if not k.lower().startswith('allowed moves/')}
+                    contents_pc_clean: Dict[str, str] = {k: v for k, v in contents_pc.items() if not k.lower().startswith('allowed moves/')}
+                    raw_pc_clean: Dict[str, str] = {k: v for k, v in raw_pc.items() if not k.lower().startswith('allowed moves/')}
+
+                    # Merge sizes: start with cleaned PC sizes and add allowed subtree entries
+                    merged_sizes: Dict[str, int] = dict(sizes_pc_clean)
+                    for ak, av in sizes_allowed_scan.items():
+                        # skip the allowed_scan's own '/' entry
+                        if ak == '/':
+                            continue
+                        merged_sizes[ak] = merged_sizes.get(ak, 0) + av
+                    # Recompute root total as sum of file entries (non-directory keys)
+                    merged_sizes['/'] = sum(v for k, v in merged_sizes.items() if not k.endswith('/')) or 1
+
+                    # Merge contents and raw_contents; prefer PC content when keys collide
+                    merged_contents: Dict[str, str] = dict(contents_pc_clean)
+                    for ck, cv in contents_allowed.items():
+                        if ck not in merged_contents:
+                            merged_contents[ck] = cv
+                    merged_raw: Dict[str, str] = dict(raw_pc_clean)
+                    for rk, rv in raw_allowed.items():
+                        if rk not in merged_raw:
+                            merged_raw[rk] = rv
+
+                    sizes, contents, raw_contents = merged_sizes, merged_contents, merged_raw
+                except Exception:
+                    # if scanning/merging fails, leave sizes as-is
+                    pass
+
+            except Exception:
+                # non-fatal; don't fail the whole graph build if allowed-scan merge fails
+                pass
 
     # Auto-create simple Expanded megafiles: for any source whose basename starts with 'Expanded',
     # write a file named 'simple_Expanded_Megafile.md' in the same directory containing the
@@ -303,7 +716,8 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
                 new_sizes['/'] = new_sizes.get('/', 0) + 1
         sizes = new_sizes
 
-    ids, labels, parents, values = build_plotly_lists(sizes, root_label=root.name)
+    root_label = pc_name if pc_name else root.name
+    ids, labels, parents, values = build_plotly_lists(sizes, root_label=root_label)
 
     # Helper to remove backlink collection blocks from files that declare #collectionfile
     def remove_backlink_collection(s: str) -> str:
@@ -386,11 +800,16 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         else:
             txt = contents.get(node_id, '')
             if txt:
-                # Remove backlink collections and collapse tables first, then convert newlines
-                cleaned = replace_tables(remove_backlink_collection(txt))
-                h = cleaned.replace('\n', '<br>')
-                if len(h) > 1000:
-                    h = h[:1000] + '...'
+                # Clean Obsidian-specific syntax for hover text
+                cleaned = unobsidify(txt)
+                # if multi-line (likely a summarized table), show in monospace <pre>
+                if '\n' in cleaned:
+                    # preserve multiple spaces using pre so padded columns remain aligned
+                    h = '<span style="font-family:monospace;white-space:pre;">' + _html_escape(cleaned).replace('\n', '<br>') + '</span>'
+                else:
+                    h = _html_escape(cleaned)
+                if len(h) > 2000:
+                    h = h[:2000] + '...'
                 hovertexts.append(h)
             else:
                 hovertexts.append('')
@@ -405,8 +824,8 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         if not raw:
             treemap_hovertexts.append('')
             continue
-        # Pre-process to remove backlink collections and collapse tables
-        pre = replace_tables(remove_backlink_collection(raw))
+        # Pre-process to remove Obsidian syntax and collapse tables
+        pre = unobsidify(raw)
         # take first 2 non-empty lines
         lines = pre.splitlines()
         first_lines: List[str] = []
@@ -419,9 +838,16 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
                 break
         if not first_lines and lines:
             first_lines = [lines[0].strip()]
-        h = '<br>'.join(first_lines)
-        if len(lines) > len(first_lines):
-            h = h + '...'
+        # format treemap hover: single-line or short multiline pre
+        if len(first_lines) == 1:
+            h = _html_escape(first_lines[0])
+            if len(lines) > 1:
+                h = h + '...'
+        else:
+            txt_block = '\n'.join(first_lines)
+            if len(lines) > len(first_lines):
+                txt_block += '\n...'
+            h = '<span style="font-family:monospace;white-space:pre;">' + _html_escape(txt_block).replace('\n', '<br>') + '</span>'
         treemap_hovertexts.append(h)
 
     # Hierarchical gradient: split the hue range for each parent among its
@@ -693,9 +1119,20 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
     # visualization (directories end with '/'). If a node_id matches multiple
     # candidates, the exact match is preferred. Apply recolor_subtree so the
     # override propagates to all descendants.
-    # Load persisted recolors from `color_recolors.md` in the vault root.
-    recolor_md_path = root.joinpath('color_recolors.md')
-    file_recolors = load_recolor_md(recolor_md_path) if recolor_md_path.exists() else HARDCODED_RECOLORS
+    # Prefer a recolor file located next to this script so recolors apply
+    # even when the script is run from a subdirectory. Fall back to a
+    # recolor file in the scanned root. If neither exists use the hardcoded list.
+    script_recolor = Path(__file__).resolve().parent.joinpath('color_recolors.md')
+    root_recolor = root.joinpath('color_recolors.md')
+    if script_recolor.exists():
+        recolor_md_path = script_recolor
+        file_recolors = load_recolor_md(script_recolor)
+    elif root_recolor.exists():
+        recolor_md_path = root_recolor
+        file_recolors = load_recolor_md(root_recolor)
+    else:
+        recolor_md_path = script_recolor
+        file_recolors = HARDCODED_RECOLORS
 
     # First apply file-based (protected) recolors. Match and apply to all
     # candidate ids (exact, suffix, etc.) so every folder with that name is
@@ -716,6 +1153,26 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         for cand in ids:
             if cand.strip('/').lower().endswith(npart) and cand not in targets:
                 targets.append(cand)
+        # substring match when the recolor key starts with an underscore: '_/Bending Rules/' -> match any id containing that substring
+        try:
+            raw_key = node_part.strip()
+            if raw_key.startswith('_'):
+                sub = raw_key.lstrip('_').strip('/').lower()
+                if sub:
+                    for cand in ids:
+                        if sub in cand.lower() and cand not in targets:
+                            targets.append(cand)
+        except Exception:
+            pass
+        # glob-style matching when '*' present in the recolor key (case-insensitive)
+        if '*' in node_part:
+            pat = node_part.strip('/').lower()
+            for cand in ids:
+                try:
+                    if fnmatch.fnmatch(cand.strip('/').lower(), pat) and cand not in targets:
+                        targets.append(cand)
+                except Exception:
+                    continue
         # apply to all found targets
         for target in targets:
             recolor_subtree(target, 0.5, 0.5, hex_override=hex_part.lower(), protect=True)
@@ -869,18 +1326,23 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
                     resolved = re.sub(r'!\[\[([^\]]+)\]\]', embed_repl, raw)
                     # Prefer resolved content if it produced additional material
                     if resolved and resolved != raw:
-                        resolved_clean = replace_tables(remove_backlink_collection(resolved))
-                        t = re.sub(r'\n+', '<br>', resolved_clean.strip())
+                        resolved_clean = unobsidify(resolved)
+                        if '\n' in resolved_clean:
+                            t = '<span style="font-family:monospace;white-space:pre;">' + _html_escape(resolved_clean.strip()).replace('\n', '<br>') + '</span>'
+                        else:
+                            t = _html_escape(resolved_clean.strip())
                     else:
                         # Fallback to sanitized content for display
-                        san_clean = replace_tables(remove_backlink_collection(sanitized))
-                        t = san_clean.replace('\n', '<br>')
+                        san_clean = unobsidify(sanitized)
+                        if '\n' in san_clean:
+                            t = '<span style="font-family:monospace;white-space:pre;">' + _html_escape(san_clean).replace('\n', '<br>') + '</span>'
+                        else:
+                            t = _html_escape(san_clean).replace('\n', '<br>')
                     txt = t
                 else:
-                    san_clean = replace_tables(remove_backlink_collection(sanitized))
-                    t = san_clean.replace('\n', '<br>')
-                    # Do not truncate treemap cell text — show full sanitized content
-                    txt = t
+                    san_clean = unobsidify(sanitized)
+                    # Wrap treemap text in a monospace span and preserve spaces/newlines
+                    txt = '<span style="font-family:monospace;white-space:pre;">' + _html_escape(san_clean).replace('\n', '<br>') + '</span>'
         cell_texts.append(txt)
 
     # Lazy import plotly
@@ -890,6 +1352,32 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         raise RuntimeError("plotly is required; install with: pip install plotly") from e
 
     outdir.mkdir(parents=True, exist_ok=True)
+    # Sanitize the root name for use in filenames (replace unsafe chars with '_')
+    try:
+        # Preserve spaces and readable characters but remove path separators and nulls.
+        raw_name = str(pc_name).strip() if pc_name else str(root.name).strip()
+        # Replace path separator characters (shouldn't normally appear in a single name)
+        safe_root_name = raw_name.replace(os.sep, '_').replace('\x00', '')
+        # Collapse multiple whitespace into a single space
+        safe_root_name = re.sub(r'\s+', ' ', safe_root_name)
+        if not safe_root_name:
+            safe_root_name = 'root'
+    except Exception:
+        safe_root_name = 'root'
+
+    # Print the filetree that will be embedded into the HTML (ids/labels/parents/values)
+    # This helps debugging what the sunburst/treemap will display.
+    print("\nFiletree used for HTML (id | label | parent | value):")
+    for i, node_id in enumerate(ids):
+        try:
+            lab = labels[i]
+            par = parents[i]
+            val = values[i]
+        except Exception:
+            lab = ''
+            par = ''
+            val = ''
+        print(f"  {node_id} | {lab} | parent={par} | value={val}")
 
     sun = go.Sunburst(
         ids=ids,
@@ -903,7 +1391,7 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
     )
     fig_sun = go.Figure(sun)
     fig_sun.update_layout(margin=dict(t=10, l=10, r=10, b=10))
-    sun_path = outdir / "wikigraph_sunburst.html"
+    sun_path = outdir / f"{safe_root_name}_wikigraph_sunburst.html"
     fig_sun.write_html(str(sun_path), include_plotlyjs='cdn' if not embed_js else True)
 
     tre = go.Treemap(
@@ -921,7 +1409,7 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
     )
     fig_treemap = go.Figure(tre)
     fig_treemap.update_layout(margin=dict(t=10, l=10, r=10, b=10))
-    tre_path = outdir / "wikigraph_treemap.html"
+    tre_path = outdir / f"{safe_root_name}_wikigraph_treemap.html"
     fig_treemap.write_html(str(tre_path), include_plotlyjs='cdn' if not embed_js else True)
 
     print(f"Wrote: {sun_path}\nWrote: {tre_path}")
@@ -1006,16 +1494,211 @@ def parse_args():
     # color_recolors.md. If provided with values, each should be
     # path=#rrggbb and will be applied and merged into the recolor file.
     p.add_argument("--recolor", action='append', nargs='?', const='__STORED__', help="Recolor a node subtree with a hex color: 'path=#rrggbb'. Provide no value (just --recolor) to apply stored recolors from color_recolors.md.")
+    p.add_argument("--pc", nargs='?', const='__ALL__', help="Generate graphs for a specific PC folder name (Players Part/PCs/<name>), or with no value generate for all names listed in pcs_input.md")
+    p.add_argument("--all", action='store_true', help="Generate graphs for every folder under Players Part/PCs")
+    p.add_argument("--verbose", "-v", action='store_true', help="Verbose output: print selected files when filtering per-PC")
     return p.parse_args()
+
+
+def parse_bending_levels_from_sheet(path: Path) -> dict:
+    """Parse a character sheet markdown file and return a dict of element->level.
+
+    Looks for the '## Bending Levels' table and extracts the Level column.
+    Returns keys like 'Air', 'Water', 'Earth', 'Fire', 'Spirit' with integer levels.
+    """
+    txt = path.read_text(encoding='utf-8')
+    lines = txt.splitlines()
+    # Patterns to match lines like:
+    # | [[Waterbending Level]] | 3 | ...
+    # or
+    # | Waterbending Level | 3 |
+    # or free text: Waterbending Level | 3
+    patterns = [
+        re.compile(r"\|\s*\[?\[?\s*(Airbending Level|Waterbending Level|Earthbending Level|Firebending Level|Spiritbending Level)\s*\]?\]?\s*\|\s*(\d+)", re.IGNORECASE),
+        re.compile(r"(Airbending Level|Waterbending Level|Earthbending Level|Firebending Level|Spiritbending Level)\s*\|\s*(\d+)", re.IGNORECASE),
+        # also match simpler labels like 'Air Level | 1' or 'Water Level | 3'
+        re.compile(r"(Air Level|Water Level|Earth Level|Fire Level|Spirit Level)\s*\|\s*(\d+)", re.IGNORECASE),
+    ]
+
+    found: dict = {}
+    for ln in lines:
+        for pat in patterns:
+            m = pat.search(ln)
+            if m:
+                key = m.group(1).strip()
+                val = int(m.group(2))
+                kln = key.lower()
+                if 'air' in kln:
+                    found['Air'] = val
+                elif 'water' in kln:
+                    found['Water'] = val
+                elif 'earth' in kln:
+                    found['Earth'] = val
+                elif 'fire' in kln:
+                    found['Fire'] = val
+                elif 'spirit' in kln:
+                    found['Spirit'] = val
+    return found
 
 
 def main():
     args = parse_args()
-    root = Path(args.root).expanduser().resolve()
-    outdir = Path(args.out).expanduser().resolve()
+    # Always use the directory the script is run from as the repository/vault root.
+    # This makes the file-tree generation independent of a --root argument.
+    root = Path.cwd().resolve()
+    # ALWAYS write outputs into the 'graphs' folder located next to this script.
+    # This overrides any --out passed on the CLI to ensure results are colocated
+    # with the script itself.
+    try:
+        script_dir = Path(__file__).resolve().parent
+        outdir = script_dir.joinpath('graphs')
+    except Exception:
+        outdir = Path(args.out).expanduser().resolve()
     exts = DEFAULT_EXTS if not args.ext else {e if e.startswith('.') else '.' + e for e in args.ext}
     excludes = DEFAULT_EXCLUDES.union(set(args.exclude or []))
     print(f"Scanning: {root}\nExtensions: {sorted(exts)}\nExcludes: {sorted(excludes)}\nMode: {args.mode}\nEmbed JS: {args.embed}\nWriting to: {outdir}")
+
+    # If --pc provided, generate per-PC graphs.
+    if args.pc is not None:
+        pc_arg = args.pc
+        # Resolve Players Part/PCs relative to script directory first, then cwd
+        script_dir = Path(__file__).resolve().parent
+        pcs_root = script_dir.joinpath('Players Part', 'PCs')
+        if not pcs_root.exists():
+            pcs_root = Path('Players Part') / 'PCs'
+
+        # Helper to read pcs_input.md and return a mapping of name -> element levels
+        def read_pcs_input(path: Path) -> dict:
+            try:
+                txt = path.read_text(encoding='utf-8')
+            except Exception:
+                return {}
+            out: dict = {}
+            lines = [ln for ln in txt.splitlines() if ln.strip()]
+            if not lines:
+                return out
+            # find first table header line
+            header_idx = None
+            for i, ln in enumerate(lines):
+                if ln.strip().startswith('|') and 'name' in ln.lower():
+                    header_idx = i
+                    break
+            if header_idx is None:
+                # fallback: try first line that starts with '|' as header
+                for i, ln in enumerate(lines):
+                    if ln.strip().startswith('|'):
+                        header_idx = i
+                        break
+            if header_idx is None:
+                return out
+            header = [c.strip() for c in lines[header_idx].split('|')]
+            # build column name -> index
+            col_index = {h.lower(): idx for idx, h in enumerate(header) if h}
+            # element column names we care about
+            elements = ['water', 'earth', 'air', 'fire', 'spirit']
+            # parse subsequent table rows until a non-table line encountered
+            for ln in lines[header_idx+1:]:
+                if not ln.strip().startswith('|'):
+                    break
+                parts = [c.strip() for c in ln.split('|')]
+                if len(parts) < 2:
+                    continue
+                name = parts[1]
+                if not name:
+                    continue
+                levels: dict = {}
+                for el in elements:
+                    val = 0
+                    # try to find header that matches element exactly or like 'water'
+                    for key, idx in col_index.items():
+                        if el in key:
+                            try:
+                                raw = parts[idx] if idx < len(parts) else ''
+                                raw = raw.strip()
+                                if raw == '':
+                                    val = 0
+                                else:
+                                    # try parse int, strip non-digits
+                                    m = re.search(r"(\d+)", raw)
+                                    if m:
+                                        val = int(m.group(1))
+                            except Exception:
+                                val = 0
+                            break
+                    levels[el.capitalize()] = val
+                out[name] = levels
+            return out
+
+        target_names: list[str] = []
+        pcs_levels = {}
+        if pc_arg == '__ALL__':
+            pcs_file = Path('pcs_input.md')
+            pcs_levels = read_pcs_input(pcs_file)
+            target_names = list(pcs_levels.keys())
+        else:
+            # still try to read pcs_input for a potential levels row for this PC
+            pcs_file = Path('pcs_input.md')
+            pcs_levels = read_pcs_input(pcs_file)
+            target_names = [pc_arg]
+
+        for name in target_names:
+            pc_folder = pcs_root / name
+            if not pc_folder.exists():
+                print(f"PC folder not found: {pc_folder}")
+                continue
+            # Use PC folder as root and write outputs into script-local graphs
+            print(f"Generating graphs for PC: {name} -> root {pc_folder}")
+            # Attempt to read the character sheet to extract allowed bending levels
+            char_sheet = pc_folder / f"{name} Character Sheet.md"
+            allowed = None
+            if char_sheet.exists():
+                try:
+                    allowed = parse_bending_levels_from_sheet(char_sheet)
+                    print(f"  Parsed bending levels: {allowed}")
+                except Exception as e:
+                    print(f"  Could not parse character sheet {char_sheet}: {e}")
+            else:
+                # If there is no character sheet, attempt to use pcs_input.md levels
+                if pcs_levels and name in pcs_levels:
+                    allowed = pcs_levels.get(name)
+                    if allowed:
+                        print(f"  Using levels from pcs_input.md: {allowed}")
+
+            # Pass the overall vault root so Rules/Bending Rules are scanned, but
+            # provide the pc_folder as pc_subtree so the allowed subtree can be
+            # created under the character folder.
+            make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=pc_folder, pc_name=name)
+        return
+
+    # If --all provided, iterate every folder under Players Part/PCs and generate graphs
+    if args.all:
+        script_dir = Path(__file__).resolve().parent
+        pcs_root = script_dir.joinpath('Players Part', 'PCs')
+        if not pcs_root.exists():
+            pcs_root = Path('Players Part') / 'PCs'
+
+        if not pcs_root.exists():
+            print(f"PCs root not found: {pcs_root}")
+        else:
+            for child in sorted(pcs_root.iterdir()):
+                if not child.is_dir():
+                    continue
+                name = child.name
+                pc_folder = child
+                print(f"Generating graphs for PC: {name} -> root {pc_folder}")
+                char_sheet = pc_folder / f"{name} Character Sheet.md"
+                allowed = None
+                if char_sheet.exists():
+                    try:
+                        allowed = parse_bending_levels_from_sheet(char_sheet)
+                        print(f"  Parsed bending levels: {allowed}")
+                    except Exception as e:
+                        print(f"  Could not parse character sheet {char_sheet}: {e}")
+
+                make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=pc_folder, pc_name=name)
+        return
+
+    # Default: generate graphs for the cwd root
     make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor)
 
 

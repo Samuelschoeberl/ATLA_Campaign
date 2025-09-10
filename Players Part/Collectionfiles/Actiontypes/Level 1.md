@@ -3,8 +3,6 @@
 ## Backlinks
 
   ./
-  ├── graphs
-      └── [[wikigraph_treemap.html]]
   └── Players Part
       ├── PCs
           └── Mahogany
@@ -21,6 +19,12 @@
                       └── [[Airbending Slot.md]]
               ├── Earth
                   ├── Earthbending Moves
+                      ├── glass fruit bending
+                          ├── [[BlueBerry Glass Surge.md]]
+                          ├── [[FlashLemon Refractor Beam.md]]
+                          ├── [[Inferno Bloom (Red Flamegrape).md]]
+                          ├── [[Resonant Collapse (Blue Soundbanana).md]]
+                          └── [[Soulseed Harmonic Seal.md]]
                       └── Level 1
                           ├── [[Earth Brace.md]]
                           └── [[Rock Hurl.md]]
@@ -46,6 +50,9 @@
                           └── [[Water Whip.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
+
+
 
 
 

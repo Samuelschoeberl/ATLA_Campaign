@@ -1,9 +1,3 @@
-![[wikigraph_treemap.html]]
-
----
----
----
-
 ![[Glassfruit Seed Mechanics.md]]
 
 ---
@@ -46,7 +40,7 @@
 ---
 ---
 
-![[Waterbottle Water Charges.md]]
+![[Waterbottle Charges]]
 
 ---
 ---
