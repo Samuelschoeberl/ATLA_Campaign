@@ -1,4 +1,4 @@
-**Name:** Puy
+**Name:** Rio
 
 ## Core Stats
 | Stat | Value |
@@ -14,8 +14,8 @@
 | Element                 | Level | Notes                  | Auto |
 | ----------------------- | ----- | ---------------------- | ---- |
 | [[Airbending Level]]    | 0     |                        | Y    |
-| [[Waterbending Level]]    | 0     |                        | Y    |
-| [[Earthbending Level]]    | 2     |                        | Y    |
+| [[Waterbending Level]]    | 2     |                        | Y    |
+| [[Earthbending Level]]    | 0     |                        | Y    |
 | [[Firebending Level]]    | 1     |                        | Y    |
 | [[Spiritbending Level]]    | 0     |                        | Y    |
 ## [[Manually Rolled Hitpoints]]
@@ -23,7 +23,6 @@
 ## [[Manually Rolled Hitpoints]]
 | Element               | Slot level | [[Max Slots]] | current | note | Auto |
 | --------------------- | ---------- | ------------- | ------- | ---- | ---- |
-| [[Earthbending Slot]] | 2 | 1 | 1 |      | Y    |
-| [[Earthbending Slot]] | 1 | 2 | 2 |      | Y    |
+| [[water charges]] | [[Waterbottle Charges]] | 2 | 2 |      | Y    |
 | [[Firebending Slot]] | 1 | 1 | 1 |      | Y    |
 ---

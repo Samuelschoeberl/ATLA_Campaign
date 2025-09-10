@@ -157,7 +157,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "pcs_input.md",
+                "file": "Players Part/PCs/Ash/Character Sheet.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -172,7 +172,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "pcs_input"
+              "title": "Character Sheet"
             }
           },
           {
@@ -373,7 +373,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "pcs_input.md",
+                "file": "Players Part/PCs/Ash/Character Sheet.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -383,7 +383,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for pcs_input"
+              "title": "Backlinks for Character Sheet"
             }
           },
           {
@@ -452,42 +452,41 @@
   },
   "active": "0103c40bd4d484c4",
   "lastOpenFiles": [
-    "Players Part/PCs/Puy/Character Sheet.md.bak",
-    "Players Part/PCs/Puy/Character Sheet.md",
-    "Players Part/PCs/Puy",
-    "MANUALS/RTFM - Usage_Guide.md",
+    "MANUALS/update_charManual.md",
+    "graphs/Sora_wikigraph_treemap.html",
+    "graphs/Sora_wikigraph_sunburst.html",
+    "graphs/Ash_wikigraph_treemap.html",
+    "graphs/Ash_wikigraph_sunburst.html",
+    "graphs/Tapioca_wikigraph_treemap.html",
+    "graphs/Tapioca_wikigraph_sunburst.html",
+    "graphs/Rio_wikigraph_treemap.html",
+    "graphs/Rio_wikigraph_sunburst.html",
+    "graphs/Puy_wikigraph_treemap.html",
+    "graphs/Puy_wikigraph_sunburst.html",
     "pcs_input.md",
+    "npc_input.md",
+    "Players Part/PCs/Sora/Character Sheet.md",
+    "Players Part/PCs/Ash/Character Sheet.md",
+    "Players Part/PCs/Tapioca/Character Sheet.md",
+    "Players Part/PCs/Rio/Character Sheet.md",
+    "Players Part/PCs/Puy/Character Sheet.md",
+    "MANUALS/RTFM - Usage_Guide.md",
     "MANUALS/Wiki_File_System_Manager – MANUAL.md",
     "unsorted/ExpandedCollections/ExpandedMelee.md",
     "unsorted/ExpandedCollections/Expandedmanual stat.md",
     "unsorted/ExpandedCollections/ExpandedElement Level.md",
     "unsorted/ExpandedCollections/ExpandedDamaging Move.md",
-    "unsorted/ExpandedCollections",
     "Players Part/Rules/Bending Rules/Utility/ExpandedCollections/ExpandedUtility.md",
-    "Players Part/Rules/Bending Rules/Utility/ExpandedCollections",
     "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Utility/ExpandedCollections/ExpandedUtility.md",
-    "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Utility/ExpandedCollections",
     "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/ExpandedCollections/ExpandedShapeshifting.md",
-    "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/ExpandedCollections",
     "MANUALS/Wikigraphs_MANUAL.md",
-    "graphs/ATLA_Campaign_wikigraph_treemap.html",
-    "graphs/ATLA_Campaign_wikigraph_sunburst.html",
-    "graphs/TmpTest_wikigraph_treemap.html",
-    "graphs/TmpTest_wikigraph_sunburst.html",
-    "graphs/TestQuick_wikigraph_treemap.html",
-    "MANUALS/update_charManual.md",
     "color_recolors.md",
-    "npc_input.md",
     "Players Part/Rules/Bending Rules/Spirit/Mechanics/Spiritbending Slot.md",
     "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
     "DMs Part/NPCs/king_ah_mi_sho/king_ah_mi_sho Character Sheet.md",
     "Players Part/PCs/Anju/Character Sheet.md",
     "Players Part/PCs/Spirittest/Character Sheet.md",
     "DMs Part/NPCs/Master Baezu/Master Baezu Character Sheet.md",
-    "DMs Part/NPCs/Firebender/Firebender Character Sheet.md",
-    "DMs Part/NPCs/Waterbender/Waterbender Character Sheet.md",
-    "Players Part/NPCs/The Night Bloom/Isay Trekal.md",
-    "DMs Part/Master Baezu NPC Sheet.md",
     "Players Part/PCs/Mahogany/Shapeshifting Forms/Pics/Luma'tik.png",
     "DMs Part/Story/Airbender Nomands/3atljldbkbk41.jpg",
     "DMs Part/Story/Airbender Nomands/1664411181325.jpg",

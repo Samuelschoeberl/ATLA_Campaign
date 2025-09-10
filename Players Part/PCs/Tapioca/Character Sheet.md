@@ -1,4 +1,4 @@
-**Name:** Puy
+**Name:** Tapioca
 
 ## Core Stats
 | Stat | Value |
@@ -13,17 +13,18 @@
 ## Bending Levels
 | Element                 | Level | Notes                  | Auto |
 | ----------------------- | ----- | ---------------------- | ---- |
-| [[Airbending Level]]    | 0     |                        | Y    |
+| [[Airbending Level]]    | 2     |                        | Y    |
 | [[Waterbending Level]]    | 0     |                        | Y    |
-| [[Earthbending Level]]    | 2     |                        | Y    |
-| [[Firebending Level]]    | 1     |                        | Y    |
+| [[Earthbending Level]]    | 1     |                        | Y    |
+| [[Firebending Level]]    | 0     |                        | Y    |
 | [[Spiritbending Level]]    | 0     |                        | Y    |
 ## [[Manually Rolled Hitpoints]]
 ## [[Bending Slots]]
 ## [[Manually Rolled Hitpoints]]
 | Element               | Slot level | [[Max Slots]] | current | note | Auto |
 | --------------------- | ---------- | ------------- | ------- | ---- | ---- |
-| [[Earthbending Slot]] | 2 | 1 | 1 |      | Y    |
-| [[Earthbending Slot]] | 1 | 2 | 2 |      | Y    |
-| [[Firebending Slot]] | 1 | 1 | 1 |      | Y    |
+| [[Danger Sense Reaction]] | 4 | 1 | 1 | 4 | Y    |
+| [[Earthbending Slot]] | 1 | 1 | 1 |      | Y    |
+| [[Airbending Slot]] | 2 | 1 | 1 |      | Y    |
+| [[Airbending Slot]] | 1 | 2 | 2 |      | Y    |
 ---
