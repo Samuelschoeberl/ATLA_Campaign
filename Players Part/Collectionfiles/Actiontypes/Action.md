@@ -47,9 +47,9 @@
               └── Water
                   └── Waterbending Moves
                       ├── Cantrips
-                          ├── [[Icecubes.md]]
-                          ├── [[Mistbending.md]]
-                          └── [[Shape Water.md]]
+                          ├── [[Icecubes]]
+                          ├── [[Mistbending]]
+                          └── [[Shape Water]]
                       ├── Level 1
                           ├── [[Healing Water.md]]
                           ├── [[Piercing Water.md]]

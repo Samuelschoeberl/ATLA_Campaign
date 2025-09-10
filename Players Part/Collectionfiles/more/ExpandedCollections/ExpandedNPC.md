@@ -34,7 +34,7 @@
 ---
 ---
 
-![[Rin Kotak.md]]
+![[Rin Kotak]]
 
 ---
 ---

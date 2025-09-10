@@ -1,4 +1,4 @@
-[[Utility]]
+[[Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Utility/Utility]]
 [[Level 1]]
 
 - Range: [[Firebending DC]] meter
@@ -6,3 +6,4 @@
 
 [[Firebending]]
 ![[Firebending DC]]
+[[Firebending Move]]

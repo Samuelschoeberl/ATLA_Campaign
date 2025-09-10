@@ -13,7 +13,7 @@
 
 **Links:**
 
-- [[Utility]]
+- [[Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Utility/Utility]]
 
 [[Airbending]]
 

@@ -1,3 +1,5 @@
+<!-- See MANUALS/Usage_Guide.md for a short summary of all manuals -->
+
 ## Purpose
 
 `Wikigraphs.py` scans an Obsidian-style vault (or any folder of markdown/text files) and writes Plotly Sunburst and Treemap HTML visualizations that show the directory/file hierarchy, sizes (or counts), and sanitized Markdown content inside nodes.
@@ -106,6 +108,8 @@ Run `python3 Wikigraphs.py --help` to see the same list; here are the important 
 - `--child-spread` (float, 0..1, default `0.35`) — initial hue spread allocated among root children; larger values make sibling hues farther apart
 - `--spread-growth` (float, default `1.0`) — multiplier applied to spread each level
 - `--recolor` (repeatable, optional-argument) — recolor a subtree; usage explained below
+- `--include-gitignored` — include files matched by the repository `.gitignore` when scanning (disabled by default)
+- `--dms-tree` — convenience: generate a graph rooted at `DMs Part/`, include gitignored files, and write outputs named with `DMs` in the filename
 
 ## Recoloring (manual overrides and persistence)
 

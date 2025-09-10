@@ -75,6 +75,27 @@ def compute_slots_for_level(n):
     return out
 
 
+def compute_spirit_slots_for_level(n):
+    """Spiritbending slot progression.
+
+    Based on the provided Spiritbending Slot table, the per-slot counts
+    follow the pattern: count(slot_level k) = max(0, n - 2*(k-1)).
+    Accessible slot levels are those with a positive count. Return pairs
+    in descending slot_level order (so highest slot level first), same
+    shape as compute_slots_for_level.
+    """
+    if n <= 0:
+        return []
+    pairs = []
+    # number of possible slot levels = ceil((n)/2) -> (n+1)//2
+    max_level = (n + 1) // 2
+    for k in range(max_level, 0, -1):
+        count = n - 2 * (k - 1)
+        if count > 0:
+            pairs.append((k, count))
+    return pairs
+
+
 def element_name_from_level_header(header):
     # try to match e.g. '[[Waterbending Level]]' or 'Waterbending Level'
     h = re.sub(r'\[|\]', '', header).strip()
@@ -158,9 +179,13 @@ def main():
 
     # find Bending Slots section to replace the whole section (up to next '---')
     bs_idx = find_section(lines, HEADER)
+    header_present = True
     if bs_idx == -1:
-        print('Could not find "' + HEADER + '" in', p)
-        sys.exit(1)
+        # Header missing: we'll insert the generated table after the Bending Levels table
+        # end_idx is the line after the parsed Bending Levels table (defined earlier)
+        bs_idx = end_idx
+        header_present = False
+
     # find the marker that ends this section (a line with just '---')
     section_end = None
     for i in range(bs_idx + 1, len(lines)):
@@ -170,6 +195,7 @@ def main():
     if section_end is None:
         # fallback: use the end of file
         section_end = len(lines)
+
     # parse the old table rows between the first '|' after the header and section_end
     tstart = bs_idx + 1
     while tstart < section_end and not lines[tstart].strip().startswith('|'):
@@ -178,6 +204,8 @@ def main():
 
     # detect existing water charges row if present, and extract existing 'current' values
     water_row = None
+    danger_row = None
+    danger_existing = None  # tuple(max, current, slot_level_display)
     existing_current = {}  # key: (element_name, slot_level) -> current int
     for r in old_table_rows:
         if len(r) >= 1 and 'water charges' in r[0].lower():
@@ -198,6 +226,25 @@ def main():
             current_val = int(m2.group(1)) if m2 else None
             if slot_level is not None and current_val is not None:
                 existing_current[(elem, slot_level)] = current_val
+        # detect danger sense reaction row
+        if len(r) >= 1 and 'danger' in r[0].lower():
+            danger_row = r
+            # try to extract numeric fields if present
+            try:
+                # expected forms: Element | Slot level | Max | current | note
+                if len(r) >= 4:
+                    slot_level_raw = r[1]
+                    max_raw = r[2]
+                    cur_raw = r[3]
+                    msl = re.search(r"(\d+)", slot_level_raw)
+                    mmax = re.search(r"(\d+)", max_raw)
+                    mcur = re.search(r"(\d+)", cur_raw)
+                    slot_lv = int(msl.group(1)) if msl else None
+                    mmaxv = int(mmax.group(1)) if mmax else None
+                    mcurv = int(mcur.group(1)) if mcur else None
+                    danger_existing = (mmaxv, mcurv, slot_lv)
+            except Exception:
+                danger_existing = None
 
     # generate new table lines but preserve current values when available
     new_table_lines = []
@@ -210,6 +257,33 @@ def main():
     elif computed_water_charges is not None:
         # create a default water charges row with max=current=computed value
         new_table_lines.append(f'| [[water charges]] | [[Waterbottle Charges]] | {computed_water_charges} | {computed_water_charges} |      | Y    |')
+    # Build Danger Sense Reaction row for Airbenders: regenerate numerically when Air level >0
+    air_lvl = levels.get('Airbending Level', 0)
+    try:
+        air_lvl_int = int(air_lvl)
+    except Exception:
+        air_lvl_int = 0
+    if air_lvl_int > 0:
+        # compute danger slot count (same mapping as update_char.py)
+        if air_lvl_int <= 0:
+            danger_count = 0
+        else:
+            danger_count = min(5, ((max(0, air_lvl_int - 1)) // 4) + 1)
+        # slot level display: air level * 2 (keeps consistency with current templates)
+        slot_level_display = air_lvl_int * 2
+        # preserve existing current/max if available
+        if danger_existing and danger_existing[1] is not None:
+            cur_val = danger_existing[1]
+        else:
+            cur_val = danger_count
+        if danger_existing and danger_existing[0] is not None:
+            max_val = danger_existing[0]
+        else:
+            max_val = danger_count
+        new_table_lines.append(f'| [[Danger Sense Reaction]] | {slot_level_display} | {max_val} | {cur_val} | {slot_level_display} | Y    |')
+    else:
+        # air level 0: do not include Danger Sense Reaction row (drop existing)
+        pass
     for element, pairs in slots_map.items():
         for slot_level, count in pairs:
             elem_key = (element, slot_level)
@@ -218,8 +292,13 @@ def main():
             new_table_lines.append(f'| [[{element}]] | {slot_level} | {count} | {current_val} |      | Y    |')
 
     # assemble new document: replace everything between the header and section_end
-    # with the regenerated table and keep the section divider intact.
-    new_lines = lines[:tstart] + new_table_lines + lines[section_end:]
+    # with the regenerated table. If the header was missing, insert the header and
+    # a section divider '---'.
+    if header_present:
+        new_lines = lines[:tstart] + new_table_lines + lines[section_end:]
+    else:
+        # insert header, table, and section divider at tstart
+        new_lines = lines[:tstart] + [HEADER] + new_table_lines + ['---'] + lines[section_end:]
     new_text = '\n'.join(new_lines) + '\n'
     p.write_text(new_text, encoding='utf-8')
     print('Updated bending slots in', p)

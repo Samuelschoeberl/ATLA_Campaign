@@ -1,9 +1,10 @@
-DMs Part/
+*DMs Part*
 *.bak
 *.zip
-*.DS_Store
+*.DS_Store*
 *__pycache__/
 *.obsidian/workspace.json 
 #All paths that contain the word "Collectionfiles" or "ExpandedCollections"
 *Collectionfiles*
 *ExpandedCollections*
+*npc.html

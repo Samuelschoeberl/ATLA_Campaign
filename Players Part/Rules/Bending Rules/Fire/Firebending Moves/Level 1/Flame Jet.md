@@ -8,3 +8,4 @@
 
 [[Firebending]]
 [[Damaging Move]]
+[[Firebending Move]]

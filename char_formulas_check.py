@@ -11,32 +11,112 @@ import re
 import sys
 from collections import defaultdict
 
-FORM_RE = re.compile(r'[A-Za-z][A-Za-z0-9_ ]*')
+# Match a word token optionally followed by space-separated word pieces (allows multi-word identifiers like
+# 'Manually Rolled HP', but avoids greedy capture across multiple distinct tokens when punctuation/extra spaces present)
+FORM_RE = re.compile(r'[A-Za-z][A-Za-z0-9_]*(?:\s+[A-Za-z0-9_]+)*')
 
 def normalize_variants(name):
     """Return a set of plausible name variants for matching keys."""
-    s = name.strip()
+    # remove common surrounding punctuation and normalize whitespace
+    s = re.sub(r'[\[\]\(\)\{\}\|:,]', ' ', name)
+    s = s.replace('-', ' ')
+    s = re.sub(r'[_\s]+', ' ', s).strip()
     variants = set()
+    if not s:
+        return variants
+    # basic variants
     variants.add(s)
     variants.add(s.replace(' ', '_'))
-    variants.add(s.replace('_', ' '))
-    # different casing
     variants.add(s.lower())
     variants.add(s.upper())
-    # remove 'bending' (Airbending_Level <-> Air Level)
-    variants.add(s.replace('bending', '').replace('__','_').strip())
-    # add or remove suffix '_Level' / ' Level'
-    if 'Level' in s:
-        variants.add(s.replace('Level', 'Level').strip())
-    if s.endswith('_Level'):
-        variants.add(s.replace('_Level', ' Level'))
+    # remove the word 'bending' when present (e.g. 'Airbending' -> 'Air')
+    no_bending = re.sub(r"\bbending\b", '', s, flags=re.IGNORECASE).strip()
+    if no_bending and no_bending != s:
+        variants.add(no_bending)
+        variants.add(no_bending.replace(' ', '_'))
+        variants.add(no_bending.lower())
+    # common abbreviation expansions
+    low = s.lower()
+    if 'hitpoint' in low or 'hp' in low:
+        variants.add(re.sub(r'hitpoints?', 'HP', s, flags=re.IGNORECASE))
+        variants.add(re.sub(r'\bHP\b', 'Hitpoints', s, flags=re.IGNORECASE))
+    if 'charge' in low:
+        variants.add(s.replace('charges', 'Charges'))
+    # handle Level/_Level suffix variants
     if s.endswith(' Level'):
-        variants.add(s.replace(' Level', '_Level'))
+        base = s[:-6].strip()
+        variants.add(base)
+        variants.add(base.replace(' ', '_'))
+    if s.endswith('_Level'):
+        base = s[:-6].strip()
+        variants.add(base)
+        variants.add(base.replace(' ', '_'))
+    # also provide swapped variants
+    variants.add(s.replace(' Level', '_Level'))
+    variants.add(s.replace('_Level', ' Level'))
     return {v for v in variants if v}
 
 def extract_tokens(expr):
     """Extract candidate identifier tokens from a formula expression string."""
-    raw = FORM_RE.findall(expr)
+    # simple fallback tokenization (words and wiki-links); main matching
+    # will be performed by a greedy matcher in main() using known variants.
+    tokens = []
+    for m in re.findall(r"\[\[([^\]]+)\]\]", expr):
+        s = m.strip()
+        if s:
+            tokens.append(s)
+    # also include remaining word tokens
+    cleaned = re.sub(r'[\[\]\(\)\{\}\|:,]', ' ', expr)
+    cleaned = re.sub(r'[^A-Za-z0-9_ ]', ' ', cleaned)
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    for w in cleaned.split(' '):
+        if w:
+            tokens.append(w)
+    raw = [t.strip() for t in tokens if t]
+    return raw
+
+
+def extract_tokens_with_known_variants(expr, known_norms):
+    """Greedy longest-match extraction using known normalized variants.
+    Returns a list of candidate tokens (original substrings).
+    """
+    # pull out wiki-links first
+    candidates = []
+    links = re.findall(r"\[\[([^\]]+)\]\]", expr)
+    for l in links:
+        candidates.append(l.strip())
+    # clean punctuation and split into words
+    cleaned = re.sub(r'[\[\]\(\)\{\}\|:,]', ' ', expr)
+    cleaned = re.sub(r'[^A-Za-z0-9_ ]', ' ', cleaned)
+    words = [w for w in re.sub(r'\s+', ' ', cleaned).strip().split(' ') if w]
+    i = 0
+    n = len(words)
+    while i < n:
+        matched = False
+        # try longest span
+        for j in range(n, i, -1):
+            span = ' '.join(words[i:j])
+            norm = re.sub(r'[_\s]+', ' ', re.sub(r'[\[\]\(\)\{\}\|:,]', ' ', span)).strip().lower()
+            # normalize bending removal
+            norm = re.sub(r'\bbending\b', '', norm).strip()
+            if norm in known_norms:
+                candidates.append(span)
+                i = j
+                matched = True
+                break
+        if not matched:
+            # fallback: take single word
+            candidates.append(words[i])
+            i += 1
+    # dedupe while preserving order
+    seen = set()
+    out = []
+    for t in candidates:
+        tt = t.strip()
+        if tt and tt not in seen:
+            out.append(tt)
+            seen.add(tt)
+    return out
     # Filter out purely-numeric and common words
     tokens = []
     for t in raw:
@@ -63,19 +143,23 @@ def main(path):
 
     missing = defaultdict(set)  # token -> set(of formulas that reference it)
 
+    # prepare mapping of normalized -> original keys for greedy matching
+    known_norms = {v for v in defined_variants}
     for key, expr in formulas.items():
-        tokens = extract_tokens(expr)
+        # greedy extraction using known normalized keys reduces fragmentation
+        tokens = extract_tokens_with_known_variants(expr, known_norms)
         for t in tokens:
-            # skip self references and tokens that are same as the key or literal names like CL that are also keys
             if t == key:
                 continue
-            # try matching against defined variants
             found = False
             for v in normalize_variants(t):
                 if v in defined_variants:
                     found = True
                     break
             if not found:
+                # ignore pure numeric tokens
+                if re.fullmatch(r"[-+]?\d+(?:\.\d+)?", t):
+                    continue
                 missing[t].add(key)
 
     if not missing:

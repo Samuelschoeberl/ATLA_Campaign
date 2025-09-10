@@ -10,3 +10,4 @@
 ![[Lingering Effect]]
 
 [[Firebending]]
+[[Firebending Move]]

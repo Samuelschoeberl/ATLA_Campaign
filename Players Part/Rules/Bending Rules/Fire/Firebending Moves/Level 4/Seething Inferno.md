@@ -17,3 +17,4 @@
 [[Firebending]]
 [[Stress Level]]
 [[Damaging Move]]
+[[Firebending Move]]

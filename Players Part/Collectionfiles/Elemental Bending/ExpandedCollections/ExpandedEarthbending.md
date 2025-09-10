@@ -136,7 +136,7 @@
 ---
 ---
 
-![[Wikigraphs_MANUAL.md]]
+![[Wikigraphs_MANUAL]]
 
 ---
 ---

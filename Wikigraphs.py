@@ -117,28 +117,37 @@ def unobsidify(text: str) -> str:
         hdr = normalize_row(hdr_cells)
         shown_norm = [normalize_row(filter_row_by_indices(r)) for r in shown]
 
-        # compute max width per column and add extra padding for short cells
-        EXTRA_PAD = 6  # moderate extra spacing for readability
+        # compute max width per column (no huge extra padding; keep compact)
+        EXTRA_PAD = 2
         widths = [0] * col_count
         for ci in range(col_count):
             w = len(hdr[ci])
             for r in shown_norm:
                 w = max(w, len(r[ci]))
-            # add a generous extra padding so short cells appear widely spaced
             widths[ci] = w + EXTRA_PAD
 
-        # format header and rows with padding
-        def format_row(row: List[str]) -> str:
+        # helpers to build boxed ASCII table using monospace-friendly chars
+        def _border_line() -> str:
+            parts = []
+            for w in widths:
+                parts.append('-' * (w + 2))
+            return '+' + '+'.join(parts) + '+'
+
+        def format_row_box(row: List[str]) -> str:
             parts = []
             for i, cell in enumerate(row):
-                parts.append(cell.ljust(widths[i]))
-            return ' | '.join(parts)
+                # provide a single space padding on each side
+                parts.append(' ' + cell.ljust(widths[i]) + ' ')
+            return '|' + '|'.join(parts) + '|'
 
         out_lines: List[str] = []
         out_lines.append('TABLE:')
-        out_lines.append(format_row(hdr))
+        out_lines.append(_border_line())
+        out_lines.append(format_row_box(hdr))
+        out_lines.append(_border_line())
         for row in shown_norm:
-            out_lines.append(format_row(row))
+            out_lines.append(format_row_box(row))
+        out_lines.append(_border_line())
         return '\n'.join(out_lines)
 
     # replace contiguous table blocks (lines beginning with |) conservatively
@@ -177,7 +186,7 @@ HARDCODED_RECOLORS: List[Tuple[str, str]] = []
 protected_ids: set = set()
 
 
-def gather_file_tree(root: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EXCLUDES) -> Tuple[Dict[str, int], Dict[str, str], Dict[str, str]]:
+def gather_file_tree(root: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EXCLUDES, include_gitignored: bool = False) -> Tuple[Dict[str, int], Dict[str, str], Dict[str, str]]:
     """Return a mapping of path parts joined by '/' to aggregated size in bytes.
 
     Keys include directories and files. Directory keys end with '/'.
@@ -248,8 +257,9 @@ def gather_file_tree(root: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EXCLUDES) -
         # Skip ExpandedCollections and simple/expanded megafiles
         if any('expandedcollections' in lp or 'simple_expanded_megafile' in lp or 'expanded' == lp for lp in low_parts):
             continue
-        # Skip files/dirs matched by .gitignore patterns (when present)
-        if git_patterns and matches_gitignore(rel_str, parts):
+        # Skip files/dirs matched by .gitignore patterns (when present), unless
+        # the caller explicitly requested to include gitignored files.
+        if git_patterns and not include_gitignored and matches_gitignore(rel_str, parts):
             continue
         if p.is_file() and (not exts or p.suffix.lower() in exts):
             try:
@@ -418,9 +428,9 @@ def build_plotly_lists(sizes: Dict[str, int], root_label: str = "root") -> Tuple
     return ids, labels, parents, values
 
 
-def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EXCLUDES, mode: str = 'size', embed_js: bool = False, child_spread: float = 0.35, spread_growth: float = 1.0, recolor_list: List[str] | None = None, allowed_elements_levels: dict | None = None, verbose: bool = False, pc_subtree: Path | None = None, pc_name: str | None = None) -> None:
+def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EXCLUDES, mode: str = 'size', embed_js: bool = False, child_spread: float = 0.35, spread_growth: float = 1.0, recolor_list: List[str] | None = None, allowed_elements_levels: dict | None = None, verbose: bool = False, pc_subtree: Path | None = None, pc_name: str | None = None, include_gitignored: bool = False) -> None:
     # mode: 'size' uses file byte sizes, 'count' counts each file as 1
-    sizes, contents, raw_contents = gather_file_tree(root, exts=exts, excludes=excludes)
+    sizes, contents, raw_contents = gather_file_tree(root, exts=exts, excludes=excludes, include_gitignored=include_gitignored)
 
     # If allowed_elements_levels provided, filter the file list to only
     # include files under 'Rules/Bending Rules' that mention an allowed
@@ -483,16 +493,13 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
                 elem_kw = elem
                 # match by path (file is inside element subtree)
                 in_path = elem_kw in lower_key
-                # match by wikilink inner texts
+                # match by wikilink inner texts (preferred)
                 in_text_link = any(elem_kw in s for s in inner_links)
-                # match by raw text anywhere
-                in_text_any = elem_kw in text_lower
 
                 # Include mechanics pages only when the player actually has >0
-                # level in the element. Previously lvl>=0 meant mechanics were
-                # always included; that caused level-0 PCs to see mechanics.
+                # level in the element and the element is referenced via a wikilink.
                 if 'mechanic' in lower_key:
-                    if (in_path or in_text_link or in_text_any) and lvl > 0:
+                    if in_text_link and lvl > 0:
                         return True
 
                 # If the file lives in a Level N folder under the element, include when N <= allowed level
@@ -503,20 +510,18 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
                         if pl <= allowed_level_for_compare and pl > 0:
                             return True
 
-                # If the file contains both an element mention (link or text) and a Level X mention where X <= allowed level
-                if (in_text_link or in_text_any or in_path) and text_levels:
+                # If the file contains an element wikilink and a Level X mention where X <= allowed level
+                if in_text_link and text_levels:
                     for tl in text_levels:
                         allowed_level_for_compare = lvl
                         if tl <= allowed_level_for_compare and tl > 0:
                             return True
 
-                # fallback: if the file path mentions the element include only when player has >0 level
-                if in_path and lvl > 0:
-                    return True
-
-                # fallback broader: if text mentions the element include only when player has >0 level
-                if in_text_any and lvl > 0:
-                    return True
+                # NOTE: permissive fallbacks that matched plain text mentions (in_text_any)
+                # or path-only element presence without level were intentionally removed
+                # to require an explicit Level N together with a wikilink or a path-level
+                # directory match. This tightens selection so only files that explicitly
+                # indicate both element and level will be included.
 
             return False
 
@@ -1496,6 +1501,8 @@ def parse_args():
     p.add_argument("--recolor", action='append', nargs='?', const='__STORED__', help="Recolor a node subtree with a hex color: 'path=#rrggbb'. Provide no value (just --recolor) to apply stored recolors from color_recolors.md.")
     p.add_argument("--pc", nargs='?', const='__ALL__', help="Generate graphs for a specific PC folder name (Players Part/PCs/<name>), or with no value generate for all names listed in pcs_input.md")
     p.add_argument("--all", action='store_true', help="Generate graphs for every folder under Players Part/PCs")
+    p.add_argument("--include-gitignored", action='store_true', help="Include files matched by .gitignore when scanning the vault (by default gitignored files are skipped)")
+    p.add_argument("--dms-tree", action='store_true', help="Generate a DMs graph rooted at 'DMs Part', include gitignored files, and name outputs with 'DMs' in the filename")
     p.add_argument("--verbose", "-v", action='store_true', help="Verbose output: print selected files when filtering per-PC")
     return p.parse_args()
 
@@ -1667,7 +1674,26 @@ def main():
             # Pass the overall vault root so Rules/Bending Rules are scanned, but
             # provide the pc_folder as pc_subtree so the allowed subtree can be
             # created under the character folder.
-            make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=pc_folder, pc_name=name)
+            make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=pc_folder, pc_name=name, include_gitignored=args.include_gitignored)
+        return
+
+    # If --dms-tree provided, produce a DMs-rooted graph that includes files
+    # matched by .gitignore and write outputs named with 'DMs'. This is a
+    # convenience wrapper that roots the visualization at the DMs Part folder.
+    if args.dms_tree:
+        script_dir = Path(__file__).resolve().parent
+        dms_folder = script_dir.joinpath('DMs Part')
+        if not dms_folder.exists():
+            dms_folder = Path('DMs Part')
+        if not dms_folder.exists():
+            print(f"DMs Part folder not found: {dms_folder}")
+        else:
+            print(f"Generating DMs graph rooted at: {dms_folder} (including .gitignore entries)")
+            # Use the overall repo root for scanning so Rules/ and other
+            # top-level folders remain discoverable, but set pc_subtree so
+            # outputs are named 'DMs' and the allowed-merge behavior (if any)
+            # will place mirrored nodes under the DMs subtree.
+            make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, verbose=args.verbose, pc_subtree=dms_folder, pc_name='DMs', include_gitignored=True)
         return
 
     # If --all provided, iterate every folder under Players Part/PCs and generate graphs
@@ -1695,11 +1721,11 @@ def main():
                     except Exception as e:
                         print(f"  Could not parse character sheet {char_sheet}: {e}")
 
-                make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=pc_folder, pc_name=name)
+                make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=pc_folder, pc_name=name, include_gitignored=args.include_gitignored)
         return
 
     # Default: generate graphs for the cwd root
-    make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor)
+    make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, include_gitignored=args.include_gitignored)
 
 
 if __name__ == '__main__':

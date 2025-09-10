@@ -13,3 +13,4 @@
 - On a miss (6 or less): The attack fizzles; no damage and the GM may impose a minor complication.
 
 [[Fire]]
+[[Firebending Move]]

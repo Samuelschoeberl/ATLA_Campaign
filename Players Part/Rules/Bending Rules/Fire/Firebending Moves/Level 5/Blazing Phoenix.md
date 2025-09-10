@@ -10,3 +10,4 @@
 [[Firebending]]
 [[Firebending Slot]]
 [[Firebending DC]]
+[[Firebending Move]]

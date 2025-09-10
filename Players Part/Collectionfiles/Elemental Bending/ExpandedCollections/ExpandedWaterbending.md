@@ -46,25 +46,25 @@
 ---
 ---
 
-![[Backflow.md]]
+![[Backflow]]
 
 ---
 ---
 ---
 
-![[Icecubes.md]]
+![[Icecubes]]
 
 ---
 ---
 ---
 
-![[Mistbending.md]]
+![[Mistbending]]
 
 ---
 ---
 ---
 
-![[Shape Water.md]]
+![[Shape Water]]
 
 ---
 ---

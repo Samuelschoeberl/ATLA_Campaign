@@ -1,7 +1,7 @@
 *Character Summary*
 
 *Race*:  
-Spirit-turned-human
+Spirit-with-human Shapeshifting Form
 
 *Class*:  
 Air Spirit
@@ -31,6 +31,7 @@ Confused and fascinated, I wander this unfamiliar world, trying to understand wh
 **Links**:
 - [[Armor]]
 - [[Strength]]
+- [[Transformation Points]]
 
 Tags:
 #Airbending #transformation

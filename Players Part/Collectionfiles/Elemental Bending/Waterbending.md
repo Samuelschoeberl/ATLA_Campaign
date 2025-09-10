@@ -24,10 +24,10 @@
                       └── [[Waterbottle Charges]]
                   └── Waterbending Moves
                       ├── Cantrips
-                          ├── [[Backflow.md]]
-                          ├── [[Icecubes.md]]
-                          ├── [[Mistbending.md]]
-                          └── [[Shape Water.md]]
+                          ├── [[Backflow]]
+                          ├── [[Icecubes]]
+                          ├── [[Mistbending]]
+                          └── [[Shape Water]]
                       ├── Level 1
                           ├── [[Healing Water.md]]
                           ├── [[Piercing Water.md]]

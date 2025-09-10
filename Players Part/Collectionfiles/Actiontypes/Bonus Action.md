@@ -41,7 +41,7 @@
               └── Water
                   └── Waterbending Moves
                       ├── Cantrips
-                          └── [[Backflow.md]]
+                          └── [[Backflow]]
                       ├── Level 2
                           └── [[Water Tentacles.md]]
                       ├── Level 3
@@ -55,7 +55,7 @@
                           └── [[Quick Jab.md]]
                       └── Level 2 Moves
                           └── [[Enhanced Reflexes.md]]
-  └── [[Wikigraphs_MANUAL.md]]
+  └── [[Wikigraphs_MANUAL]]
 
 <!-- END-AUTO-COLLECTION -->
 

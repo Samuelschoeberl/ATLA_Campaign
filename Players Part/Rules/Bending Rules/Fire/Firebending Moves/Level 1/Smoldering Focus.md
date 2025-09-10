@@ -16,3 +16,4 @@ Smoldering Focus
 - On a miss (6 or less): Gain +1 Stress and the GM introduces a small complication.
 
 [[Fire]]
+[[Firebending Move]]

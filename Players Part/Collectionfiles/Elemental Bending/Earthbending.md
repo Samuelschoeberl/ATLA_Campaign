@@ -45,7 +45,7 @@
               └── Team-up Moves
                   └── Air-Earth
                       └── [[Sandstream.md]]
-  └── [[Wikigraphs_MANUAL.md]]
+  └── [[Wikigraphs_MANUAL]]
 
 <!-- END-AUTO-COLLECTION -->
 

@@ -8,3 +8,4 @@
   - Damage: 1d6 + [[Strength]] Bludgeoning + 1d12 fire
 
 [[Firebending]]
+[[Firebending Move]]

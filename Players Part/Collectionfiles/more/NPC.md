@@ -17,7 +17,7 @@
               ├── Jin Koga
                   └── [[Hanal Koga.md]]
               └── Rin Kotak
-                  └── [[Rin Kotak.md]]
+                  └── [[Rin Kotak]]
 
 <!-- END-AUTO-COLLECTION -->
 

@@ -1,3 +1,5 @@
+# See MANUALS/Usage_Guide.md for a short summary of all manuals
+
 # update_charManual
 
 ## Purpose
@@ -16,12 +18,6 @@ Update a specific Character Sheet file path:
 
 ```bash
 python3 update_char.py --file "Players Part/PCs/Anju/Anju Character Sheet.md"
-```
-
-Run with a custom formulas file, optionally extending defaults:
-
-```bash
-python3 update_char.py --file "..." --formulas my_formulas.json --extend-formulas
 ```
 
 The script edits the sheet in-place and writes a backup `<file>.bak` before overwriting.

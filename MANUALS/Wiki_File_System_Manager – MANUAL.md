@@ -1,3 +1,5 @@
+<!-- See MANUALS/Usage_Guide.md for a short summary of all manuals -->
+
 ## 🔄 How to Sync Your Vault (Git + Collectionfiles)
 
 To sync your local vault with the remote repository **and** automatically update all collectionfiles (backlink blocks):

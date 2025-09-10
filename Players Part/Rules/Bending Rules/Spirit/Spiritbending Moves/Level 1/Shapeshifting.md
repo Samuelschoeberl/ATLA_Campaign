@@ -1,9 +1,11 @@
-[[Actiontype]]
-[[Level]]
-[[Additional attributes]]
-
+[[Special Attacks]]
+#Collectionfile 
+[[Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Utility/Utility]]
+[[stat-changing]]
+[[Mahogany]]
+You gain [[Spiritbending Slot]]  amount of [[Transformation Points]]
 - Range: e.g. [[Self]].
-- **Duration:** e.g. 1 Turn.
+- **Duration:** varies
 - Description for example: Propelling yourself with gusts of air.
 
 **Effects:**

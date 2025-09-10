@@ -8,3 +8,4 @@
 - [[Attack Roll]]
   - After charging for a round, unleash a bolt of lightning at a single target.
 [[Firebending]]
+[[Firebending Move]]

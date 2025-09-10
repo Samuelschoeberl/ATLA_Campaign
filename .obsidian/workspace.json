@@ -4,16 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "3156ba73c6cdf70e",
+        "id": "cb56bb39150ada5a",
         "type": "tabs",
         "children": [
           {
-            "id": "0ebb1f240cb3ad66",
+            "id": "8acf86be8a1feee2",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Players Part/Rules/core rules/Stat Shorts/Armor.md",
+                "file": "Players Part/PCs/Anju/Anju Character Sheet.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -28,16 +28,16 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Armor"
+              "title": "Anju Character Sheet"
             }
           },
           {
-            "id": "791d5b915b7d611c",
+            "id": "9854e0e45e49f66d",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Players Part/Rules/Bending Rules/Water/Mechanics/Cyclic Flow.md",
+                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Control Flame.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -52,16 +52,16 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Cyclic Flow"
+              "title": "Control Flame"
             }
           },
           {
-            "id": "dc48048a866eddc5",
+            "id": "50005b09c3fbd9d7",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Players Part/PCs/Character Sheet Template.md",
+                "file": "Players Part/Rules/Bending Rules/Fire/Firebending Moves/Level 3/Rage Fuel.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -76,11 +76,203 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Character Sheet Template"
+              "title": "Rage Fuel"
+            }
+          },
+          {
+            "id": "627037278ebd8317",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Air/Airbending Moves/Level 1/Gentle Push.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Gentle Push"
+            }
+          },
+          {
+            "id": "76c4ee22a71486ba",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Shapeshifting"
+            }
+          },
+          {
+            "id": "822e74cd22ce4f4a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Shapeshifting"
+            }
+          },
+          {
+            "id": "0103c40bd4d484c4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "MANUALS/Wiki_File_System_Manager – MANUAL.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Wiki_File_System_Manager – MANUAL"
+            }
+          },
+          {
+            "id": "2bf608b3c327bf95",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "DMs Part/NPCs/king_ah_mi_sho/king_ah_mi_sho Character Sheet.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "king_ah_mi_sho Character Sheet"
+            }
+          },
+          {
+            "id": "1779824b4eb3c20b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/PCs/Mahogany/Mahogany.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Mahogany"
+            }
+          },
+          {
+            "id": "4f27c21ebb4d6ba3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/PCs/Mahogany/Transformation Points.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Transformation Points"
+            }
+          },
+          {
+            "id": "3220ba8609f1d319",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Players Part/Rules/core rules/Bending Slots.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Bending Slots"
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 6
       }
     ],
     "direction": "vertical"
@@ -113,7 +305,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "armor",
+                "query": "tag:#transformation",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -181,7 +373,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Players Part/PCs/Character Sheet Template.md",
+                "file": "MANUALS/Wiki_File_System_Manager – MANUAL.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -191,7 +383,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Character Sheet Template"
+              "title": "Backlinks for Wiki_File_System_Manager – MANUAL"
             }
           },
           {
@@ -258,44 +450,43 @@
       "runjs:RunJS": false
     }
   },
-  "active": "dc48048a866eddc5",
+  "active": "0103c40bd4d484c4",
   "lastOpenFiles": [
-    "Players Part/Rules/Bending Rules/Fire/Mechanics/ExpandedCollections/ExpandedStress Level.md",
-    "Players Part/Rules/Bending Rules/Fire/Mechanics/ExpandedCollections",
-    "Players Part/Rules/Bending Rules/Water/Mechanics/ExpandedCollections/ExpandedWater Charges.md",
-    "Players Part/Rules/Bending Rules/Water/Mechanics/ExpandedCollections/ExpandedCyclic Flow.md",
-    "Players Part/Rules/Bending Rules/Water/Mechanics/ExpandedCollections",
-    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Spiritbending Moves/ExpandedCollections/ExpandedSpiritbending Moves.md",
-    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Spiritbending Moves/ExpandedCollections",
-    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics/ExpandedCollections/ExpandedSpiritbending.md",
-    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics/ExpandedCollections/ExpandedAvatar Spirit Bridge Level.md",
-    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics/ExpandedCollections",
-    "Players Part/PCs/Anju/Anyu Character Sheet Template.md",
-    "Players Part/PCs/Character Sheet Template.md",
-    "Players Part/PCs/Anju/Anju.md",
-    "Players Part/PCs/character-sheet.pdf",
-    "Players Part/Rules/Bending Rules/Water/Mechanics/Waterbottle Water Charges.md",
-    "Players Part/Rules/Bending Rules/Water/Waterbending rules.md",
-    "Players Part/Rules/Bending Rules/Water/Mechanics/Water Charges.md",
-    "Players Part/Rules/Bending Rules/Water/Mechanics/Cyclic Flow.md",
-    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics/Spiritbending.md",
-    "Players Part/Rules/Bending Rules/Water/Mechanics",
-    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Spiritbending Moves",
-    "Players Part/Rules/Bending Rules/Fire/Mechanics/Firebending DC.md",
-    "Players Part/Rules/Bending Rules/Avatar Spirit Bridge/Mechanics",
-    "Players Part/Rules/Bending Rules/Fire/ExpandedCollections/ExpandedStress Level.md",
-    "Players Part/Rules/Bending Rules/Fire/Mechanics",
-    "Players Part/Rules/Bending Rules/Fire/Core Attributes.md",
-    "Players Part/Rules/Bending Rules/Fire/Advanced Techniques/Advanced_Techniques.md",
-    "Players Part/Rules/Bending Rules/Earth/mechanics/Earthbending DC.md",
-    "Players Part/Rules/Bending Rules/Earth/mechanics/Earthbending Level.md",
-    "Players Part/Rules/Bending Rules/Earth/mechanics",
-    "Players Part/Rules/core rules/Stat Shorts/Armor.md",
-    "Players Part/Rules/Bending Rules/Fire/Mechanics/Stress Level.md",
-    "Element Level.md",
-    "Physical Attack Roll.md",
-    "Players Part/Rules/core rules/Stat Shorts/CL.md",
-    "Players Part/Rules/Special Attacks.md",
+    "MANUALS/Wikigraphs_MANUAL.md",
+    "graphs/ATLA_Campaign_wikigraph_treemap.html",
+    "graphs/ATLA_Campaign_wikigraph_sunburst.html",
+    "graphs/TmpTest_wikigraph_treemap.html",
+    "graphs/TmpTest_wikigraph_sunburst.html",
+    "graphs/TestQuick_wikigraph_treemap.html",
+    "graphs/TestQuick_wikigraph_sunburst.html",
+    "graphs/TestChar_wikigraph_treemap.html",
+    "graphs/TestChar_wikigraph_sunburst.html",
+    "graphs/Spirittest_wikigraph_treemap.html",
+    "graphs/Spirittest_wikigraph_sunburst.html",
+    "MANUALS/update_charManual.md",
+    "color_recolors.md",
+    "npc_input.md",
+    "MANUALS/RTFM - Usage_Guide.md",
+    "Players Part/Rules/Bending Rules/Spirit/Mechanics/Spiritbending Slot.md",
+    "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
+    "DMs Part/NPCs/king_ah_mi_sho/king_ah_mi_sho Character Sheet.md",
+    "pcs_input.md",
+    "Players Part/PCs/Anju/Character Sheet.md",
+    "Players Part/PCs/Spirittest/Character Sheet.md",
+    "DMs Part/NPCs/Master Baezu/Master Baezu Character Sheet.md",
+    "DMs Part/NPCs/Firebender/Firebender Character Sheet.md",
+    "DMs Part/NPCs/Waterbender/Waterbender Character Sheet.md",
+    "Players Part/NPCs/The Night Bloom/Isay Trekal.md",
+    "DMs Part/Master Baezu NPC Sheet.md",
+    "DMs Part/king_ah_mi_sho NPC Sheet.md",
+    "Players Part/PCs/Mahogany/Transformation Points.md",
+    "DMs Part/Firebender NPC Sheet.md",
+    "DMs Part/npcs_input.md",
+    "DMs Part/Waterbender NPC Sheet.md",
+    "Players Part/Rules/Bending Rules/Utility/Utility.md",
+    "Players Part/Rules/Bending Rules/Spirit/Spiritbending Moves/Utility/Utility.md",
+    "Players Part/PCs/Mahogany/Mahogany.md",
+    "Players Part/Rules/Bending Rules/Water/Waterbending Moves/Cantrips/Shape Water.md",
     "Players Part/PCs/Mahogany/Shapeshifting Forms/Pics/Luma'tik.png",
     "DMs Part/Story/Airbender Nomands/3atljldbkbk41.jpg",
     "DMs Part/Story/Airbender Nomands/1664411181325.jpg",

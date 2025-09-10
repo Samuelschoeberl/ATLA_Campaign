@@ -8,3 +8,4 @@
   - **Damage:** 6d10 fire.
   - Create a massive eruption of molten rock and fire at a target point, affecting all creatures in a 30-foot radius.
 [[Firebending]]
+[[Firebending Move]]
