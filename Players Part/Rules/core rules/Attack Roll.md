@@ -43,9 +43,9 @@ d20 + [[Element Level]]
           └── Elemental Bending
               └── ExpandedCollections
                   └── [[simple_Expanded_Megafile.md]]
+      ├── graphs
+          └── [[Players Part_wikigraph_treemap.html]]
       ├── PCs
-          ├── Anju
-              └── [[Anju Character Sheet.md]]
           └── Mahogany
               └── Shapeshifting Forms
                   └── Level 2
@@ -85,10 +85,6 @@ d20 + [[Element Level]]
                       └── Level 2
                           ├── [[Ice Daggers.md]]
                           └── [[Water Tentacles.md]]
-          ├── core rules
-              └── Stat Shorts
-                  └── ExpandedCollections
-                      └── [[simple_Expanded_Megafile.md]]
           └── Non Bending Rules
               └── Chi Blocking
                   └── Chi Blocking Moves
@@ -96,3 +92,4 @@ d20 + [[Element Level]]
                           └── [[Quick Jab.md]]
 
 <!-- END-AUTO-COLLECTION -->
+

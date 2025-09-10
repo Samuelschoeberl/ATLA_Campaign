@@ -17,7 +17,16 @@ You have [[Danger Sense Reaction]]s per Turn scaling with your Airbending Level
 ## Backlinks
 
   ./
-  └── Players Part
+  ├── Players Part
+      ├── graphs
+          └── [[Players Part_wikigraph_treemap.html]]
+      ├── PCs
+          ├── Airbendertest
+              └── [[Airbendertest Character Sheet.md]]
+          ├── Airwatterbendertest
+              └── [[Airwatterbendertest Character Sheet.md]]
+          └── Anju
+              └── [[Anju Character Sheet.md]]
       └── Rules
           └── Bending Rules
               └── Air
@@ -27,8 +36,11 @@ You have [[Danger Sense Reaction]]s per Turn scaling with your Airbending Level
                           └── [[Tail Wind.md]]
                       └── Level 2
                           └── [[Air Vortex.md]]
+  └── scripts
+      └── [[update_bending_slots.py]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

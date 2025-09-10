@@ -32,10 +32,24 @@ Water Charges represent the amount of water available for a water-bender to mani
 ## Backlinks
 
   ./
-  └── Players Part
+  ├── [[create_npc.py]]
+  ├── [[create_pc.py]]
+  ├── Players Part
+      ├── graphs
+          └── [[Players Part_wikigraph_treemap.html]]
       ├── PCs
-          └── Anju
-              └── [[Anju Character Sheet.md]]
+          ├── Airwatterbendertest
+              └── [[Airwatterbendertest Character Sheet.md]]
+          ├── Anju
+              ├── [[Anju Character Sheet.md]]
+              └── [[Character Sheet.md]]
+          ├── [[Character Sheet Template.md]]
+          ├── TestChar
+              └── [[TestChar Character Sheet.md]]
+          ├── TestQuick
+              └── [[TestQuick Character Sheet.md]]
+          └── TmpTest
+              └── [[TmpTest Character Sheet.md]]
       └── Rules
           ├── Bending Rules
               └── Water
@@ -54,8 +68,12 @@ Water Charges represent the amount of water available for a water-bender to mani
                           └── [[Healing Mist.md]]
           └── core rules
               └── [[Bending Slots.md]]
+  ├── scripts
+      └── [[update_bending_slots.py]]
+  └── [[update_char.py]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

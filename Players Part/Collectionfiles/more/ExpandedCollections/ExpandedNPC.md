@@ -1,3 +1,9 @@
+![[Players Part_wikigraph_treemap.html]]
+
+---
+---
+---
+
 ![[Grandmaster Iroh Tanaka.md]]
 
 ---
@@ -22,6 +28,12 @@
 ---
 ---
 
+![[Rin Kotak.md]]
+
+---
+---
+---
+
 ![[Isay Trekal.md]]
 
 ---
@@ -29,12 +41,6 @@
 ---
 
 ![[Hanal Koga.md]]
-
----
----
----
-
-![[Rin Kotak]]
 
 ---
 ---

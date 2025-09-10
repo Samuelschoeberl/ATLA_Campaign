@@ -30,22 +30,17 @@ Quick references:
   └── Players Part
       └── Rules
           └── Bending Rules
-              ├── Spirit
+              └── Spirit
                   ├── ExpandedCollections
                       ├── [[ExpandedAvatar Spirit Bridge Level.md]]
                       └── [[ExpandedSpiritbending Moves.md]]
                   ├── Mechanics
                       └── [[Avatar Spirit Check.md]]
                   └── Spiritbending Moves
-                      ├── ExpandedCollections
-                          └── [[ExpandedSpiritbending Moves.md]]
                       └── [[Spiritbending Moves.md]]
-              └── Team-up Moves
-                  ├── ExpandedCollections
-                      └── [[ExpandedTeam-up Moves.md]]
-                  └── [[Team-up Moves.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

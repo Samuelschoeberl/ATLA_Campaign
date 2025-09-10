@@ -4,7 +4,9 @@
 ## Backlinks
 
   ./
-  └── Players Part
+  ├── Players Part
+      ├── graphs
+          └── [[Players Part_wikigraph_treemap.html]]
       └── Rules
           ├── Bending Rules
               ├── Air
@@ -47,9 +49,9 @@
               └── Water
                   └── Waterbending Moves
                       ├── Cantrips
-                          ├── [[Icecubes]]
-                          ├── [[Mistbending]]
-                          └── [[Shape Water]]
+                          ├── [[Icecubes.md]]
+                          ├── [[Mistbending.md]]
+                          └── [[Shape Water.md]]
                       ├── Level 1
                           ├── [[Healing Water.md]]
                           ├── [[Piercing Water.md]]
@@ -62,8 +64,12 @@
                       ├── Level 3
                           ├── [[Ice Wall.md]]
                           └── [[Icicle Ammunition.md]]
-                      └── Level 4
+                      ├── Level 4
                           └── [[Shockfreeze.md]]
+                      └── Utility
+                          ├── [[Icecubes.md]]
+                          ├── [[Mistbending.md]]
+                          └── [[Shape Water.md]]
           ├── core rules
               └── Conditions
                   ├── [[Immobilised.md]]
@@ -78,8 +84,10 @@
                       └── Level 3 Moves
                           └── [[Chi Surge.md]]
           └── [[Teamwork Moves.md]]
+  └── [[Wiki_File_System_Manager.py]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

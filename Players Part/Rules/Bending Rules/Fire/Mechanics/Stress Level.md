@@ -15,9 +15,24 @@ When you loose [[Stress Level]]:
 ## Backlinks
 
   ./
+  ├── [[create_npc.py]]
+  ├── [[create_pc.py]]
   └── Players Part
+      ├── PCs
+          ├── Airwatterbendertest
+              └── [[Airwatterbendertest Character Sheet.md]]
+          ├── Anju
+              └── [[Anju Character Sheet.md]]
+          ├── Spirittest
+              └── [[Spirittest Character Sheet.md]]
+          ├── TestChar
+              └── [[TestChar Character Sheet.md]]
+          ├── TestQuick
+              └── [[TestQuick Character Sheet.md]]
+          └── TmpTest
+              └── [[TmpTest Character Sheet.md]]
       └── Rules
-          └── Bending Rules
+          ├── Bending Rules
               └── Fire
                   ├── Firebending Moves
                       ├── Level 1
@@ -31,8 +46,12 @@ When you loose [[Stress Level]]:
                           └── [[Seething Inferno.md]]
                   └── Mechanics
                       └── [[Firebending DC.md]]
+          └── core rules
+              └── Stat Shorts
+                  └── [[Attack Roll Modifier.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

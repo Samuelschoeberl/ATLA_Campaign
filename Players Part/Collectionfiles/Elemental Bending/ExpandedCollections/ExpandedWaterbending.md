@@ -1,3 +1,9 @@
+![[Players Part_wikigraph_treemap.html]]
+
+---
+---
+---
+
 ![[Glassfruit Seed Mechanics.md]]
 
 ---
@@ -40,31 +46,31 @@
 ---
 ---
 
-![[Waterbottle Charges]]
+![[Waterbottle Charges.md]]
 
 ---
 ---
 ---
 
-![[Backflow]]
+![[Backflow.md]]
 
 ---
 ---
 ---
 
-![[Icecubes]]
+![[Icecubes.md]]
 
 ---
 ---
 ---
 
-![[Mistbending]]
+![[Mistbending.md]]
 
 ---
 ---
 ---
 
-![[Shape Water]]
+![[Shape Water.md]]
 
 ---
 ---
@@ -149,6 +155,30 @@
 ---
 
 ![[Shockfreeze.md]]
+
+---
+---
+---
+
+![[Backflow.md]]
+
+---
+---
+---
+
+![[Icecubes.md]]
+
+---
+---
+---
+
+![[Mistbending.md]]
+
+---
+---
+---
+
+![[Shape Water.md]]
 
 ---
 ---

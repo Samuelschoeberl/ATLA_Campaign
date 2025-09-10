@@ -6,18 +6,11 @@ These Moves can be used without expending slots and are meant for out of combat 
 
   ./
   └── Players Part
-      └── Rules
-          └── Bending Rules
-              ├── Air
-                  └── Airbending Moves
-                      └── Level 3
-                          └── [[Hovering Hands.md]]
-              └── Fire
-                  └── Firebending Moves
-                      └── Level 1
-                          └── [[Control Flame.md]]
+      └── graphs
+          └── [[Players Part_wikigraph_treemap.html]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

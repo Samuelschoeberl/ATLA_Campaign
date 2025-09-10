@@ -9,5 +9,22 @@ If you have 3 Failures you die.
 ## Backlinks
 
   ./
+  ├── [[create_npc.py]]
+  ├── [[create_pc.py]]
+  └── Players Part
+      └── PCs
+          ├── Airwatterbendertest
+              └── [[Airwatterbendertest Character Sheet.md]]
+          ├── Anju
+              └── [[Anju Character Sheet.md]]
+          ├── Spirittest
+              └── [[Spirittest Character Sheet.md]]
+          ├── TestChar
+              └── [[TestChar Character Sheet.md]]
+          ├── TestQuick
+              └── [[TestQuick Character Sheet.md]]
+          └── TmpTest
+              └── [[TmpTest Character Sheet.md]]
 
 <!-- END-AUTO-COLLECTION -->
+

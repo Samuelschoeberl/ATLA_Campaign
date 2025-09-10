@@ -12,3 +12,9 @@ You gain [[Spiritbending Slot]]  amount of [[Transformation Points]]
 - the effect(s) of the move e.g. Spend 1 [[Airbending Slot]] to add 5 * [[Airbending Slot]] meters to your movement for this turn.
 
 [[Element]]
+<!-- BEGIN-AUTO-COLLECTION:Shapeshifting -->
+## Backlinks
+
+  ./
+
+<!-- END-AUTO-COLLECTION -->

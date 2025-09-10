@@ -5,6 +5,8 @@
 
   ./
   └── Players Part
+      ├── graphs
+          └── [[Players Part_wikigraph_treemap.html]]
       └── Rules
           └── Bending Rules
               ├── Earth
@@ -21,13 +23,13 @@
                       ├── [[Water Charges.md]]
                       ├── [[Waterbending DC.md]]
                       ├── [[Waterbending Level.md]]
-                      └── [[Waterbottle Charges]]
+                      └── [[Waterbottle Charges.md]]
                   └── Waterbending Moves
                       ├── Cantrips
-                          ├── [[Backflow]]
-                          ├── [[Icecubes]]
-                          ├── [[Mistbending]]
-                          └── [[Shape Water]]
+                          ├── [[Backflow.md]]
+                          ├── [[Icecubes.md]]
+                          ├── [[Mistbending.md]]
+                          └── [[Shape Water.md]]
                       ├── Level 1
                           ├── [[Healing Water.md]]
                           ├── [[Piercing Water.md]]
@@ -44,10 +46,16 @@
                           ├── [[Ice Wall.md]]
                           ├── [[Icicle Ammunition.md]]
                           └── [[Surfing.md]]
-                      └── Level 4
+                      ├── Level 4
                           └── [[Shockfreeze.md]]
+                      └── Utility
+                          ├── [[Backflow.md]]
+                          ├── [[Icecubes.md]]
+                          ├── [[Mistbending.md]]
+                          └── [[Shape Water.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

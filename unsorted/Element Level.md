@@ -6,6 +6,8 @@ so
 
   ./
   └── Players Part
+      ├── graphs
+          └── [[Players Part_wikigraph_treemap.html]]
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
@@ -22,15 +24,20 @@ so
               ├── Fire
                   └── Mechanics
                       └── [[Firebending DC.md]]
+              ├── Spirit
+                  └── Mechanics
+                      └── [[Spiritbending DC.md]]
               └── Water
                   └── Mechanics
                       └── [[Waterbending DC.md]]
           └── core rules
               ├── [[Attack Roll.md]]
               └── Stat Shorts
+                  ├── [[Attack Roll Modifier.md]]
                   └── [[CL.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 

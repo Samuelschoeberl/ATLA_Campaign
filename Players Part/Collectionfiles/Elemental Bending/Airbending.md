@@ -8,6 +8,8 @@
       ├── Collectionfiles
           └── Actiontypes
               └── [[Danger Sense Reaction.md]]
+      ├── graphs
+          └── [[Players Part_wikigraph_treemap.html]]
       └── Rules
           └── Bending Rules
               ├── Air
@@ -41,6 +43,7 @@
                       └── [[Sandstream.md]]
 
 <!-- END-AUTO-COLLECTION -->
+
 
 
 
