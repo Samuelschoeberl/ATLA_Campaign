@@ -1638,43 +1638,146 @@ def main():
 
         target_names: list[str] = []
         pcs_levels = {}
-        if pc_arg == '__ALL__':
-            pcs_file = Path('pcs_input.md')
-            pcs_levels = read_pcs_input(pcs_file)
-            target_names = list(pcs_levels.keys())
-        else:
-            # still try to read pcs_input for a potential levels row for this PC
-            pcs_file = Path('pcs_input.md')
-            pcs_levels = read_pcs_input(pcs_file)
-            target_names = [pc_arg]
 
+        # Helper: collect HTML-inferred root names from existing *_wikigraph_*.html files
+        def infer_names_from_existing_htmls(base: Path) -> set:
+            out_set = set()
+            try:
+                for p in base.rglob('*_wikigraph_*.html'):
+                    nm = p.name
+                    if '_wikigraph_' in nm:
+                        root_part = nm.split('_wikigraph_', 1)[0].strip()
+                        if root_part:
+                            out_set.add(root_part)
+            except Exception:
+                pass
+            return out_set
+
+        if pc_arg == '__ALL__' and args.all:
+            # When both --pc (no value) and --all are provided we build the
+            # union of names from pcs_input.md and any existing wikigraph HTMLs
+            # found in the repository. This ensures we recreate every per-PC
+            # graph that exists or that is declared in pcs_input.md, and then
+            # allows us to remove stale HTML files.
+            pcs_file = Path('pcs_input.md')
+            pcs_levels = read_pcs_input(pcs_file)
+            names_from_pcs = set(pcs_levels.keys())
+            # infer from script-local graphs directory and also the repo tree
+            script_dir = Path(__file__).resolve().parent
+            names_from_html = infer_names_from_existing_htmls(script_dir)
+            # Also check top-level 'graphs' and 'Players Part/graphs' folders if present
+            names_from_html.update(infer_names_from_existing_htmls(script_dir.joinpath('graphs')) if script_dir.joinpath('graphs').exists() else set())
+            names_from_html.update(infer_names_from_existing_htmls(script_dir.joinpath('Players Part').joinpath('graphs')) if script_dir.joinpath('Players Part').joinpath('graphs').exists() else set())
+            combined = sorted(names_from_pcs.union(names_from_html))
+            target_names = list(combined)
+        else:
+            # existing behavior: either specific PC provided or --pc without --all
+            pcs_file = Path('pcs_input.md')
+            pcs_levels = read_pcs_input(pcs_file)
+            if pc_arg == '__ALL__':
+                target_names = list(pcs_levels.keys())
+            else:
+                target_names = [pc_arg]
+
+        # Generate graphs for each target name. Attempt to locate the PC folder
+        # under Players Part/PCs; if not found try a broader search. If no
+        # folder exists we still generate an HTML named after the PC (pc_name)
+        # so files inferred from existing HTMLs are recreated.
+        generated_names = []
         for name in target_names:
             pc_folder = pcs_root / name
             if not pc_folder.exists():
-                print(f"PC folder not found: {pc_folder}")
-                continue
-            # Use PC folder as root and write outputs into script-local graphs
-            print(f"Generating graphs for PC: {name} -> root {pc_folder}")
-            # Attempt to read the character sheet to extract allowed bending levels
-            char_sheet = pc_folder / f"{name} Character Sheet.md"
-            allowed = None
-            if char_sheet.exists():
+                # try to find a directory anywhere under the script dir with this basename
+                found = None
                 try:
-                    allowed = parse_bending_levels_from_sheet(char_sheet)
-                    print(f"  Parsed bending levels: {allowed}")
-                except Exception as e:
-                    print(f"  Could not parse character sheet {char_sheet}: {e}")
-            else:
-                # If there is no character sheet, attempt to use pcs_input.md levels
-                if pcs_levels and name in pcs_levels:
-                    allowed = pcs_levels.get(name)
-                    if allowed:
-                        print(f"  Using levels from pcs_input.md: {allowed}")
+                    for d in Path(__file__).resolve().parent.rglob('*'):
+                        if d.is_dir() and d.name == name:
+                            found = d
+                            break
+                except Exception:
+                    found = None
+                if found:
+                    pc_folder = found
+                else:
+                    # not found; warn but continue to generate a named graph without pc_subtree
+                    print(f"PC folder not found (will still generate named graph): {pcs_root / name}")
 
-            # Pass the overall vault root so Rules/Bending Rules are scanned, but
-            # provide the pc_folder as pc_subtree so the allowed subtree can be
-            # created under the character folder.
-            make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=pc_folder, pc_name=name, include_gitignored=args.include_gitignored)
+            print(f"Generating graphs for PC: {name} -> root {pc_folder if pc_folder.exists() else '(no folder)'}")
+            char_sheet = None
+            allowed = None
+            if pc_folder.exists():
+                char_sheet = pc_folder / f"{name} Character Sheet.md"
+                if char_sheet.exists():
+                    try:
+                        allowed = parse_bending_levels_from_sheet(char_sheet)
+                        print(f"  Parsed bending levels: {allowed}")
+                    except Exception as e:
+                        print(f"  Could not parse character sheet {char_sheet}: {e}")
+                else:
+                    if pcs_levels and name in pcs_levels:
+                        allowed = pcs_levels.get(name)
+                        if allowed:
+                            print(f"  Using levels from pcs_input.md: {allowed}")
+
+            # If pc_folder exists pass it as pc_subtree so allowed-files mirroring works;
+            # otherwise call make_graphs with pc_name only to recreate the HTML files.
+            if pc_folder.exists():
+                make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=pc_folder, pc_name=name, include_gitignored=args.include_gitignored)
+            else:
+                make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, allowed_elements_levels=allowed, verbose=args.verbose, pc_subtree=None, pc_name=name, include_gitignored=args.include_gitignored)
+            generated_names.append(name)
+
+        # Always generate the root graphs as well so the top-level sunburst/treemap
+        # exists alongside per-PC outputs.
+        try:
+            print("Generating root graphs for workspace")
+            make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, verbose=args.verbose, include_gitignored=args.include_gitignored)
+        except Exception as e:
+            print(f"Could not generate root graphs: {e}")
+
+        # If we built the combined list (pc + html inferred), remove stale HTML files
+        # that no longer correspond to any name in generated_names. We look for
+        # files matching '*_wikigraph_*.html' under the script dir and its graphs
+        # subfolders.
+        if args.pc == '__ALL__' and args.all:
+            to_check_dirs = [Path(__file__).resolve().parent]
+            gdir = Path(__file__).resolve().parent.joinpath('graphs')
+            if gdir.exists():
+                to_check_dirs.append(gdir)
+            pp_gdir = Path(__file__).resolve().parent.joinpath('Players Part').joinpath('graphs')
+            if pp_gdir.exists():
+                to_check_dirs.append(pp_gdir)
+
+            existing_htmls = []
+            for base in to_check_dirs:
+                try:
+                    for p in base.rglob('*_wikigraph_*.html'):
+                        existing_htmls.append(p)
+                except Exception:
+                    continue
+
+            # Determine roots that are considered current (exact match).
+            # Also protect the repository root's safe name so we don't delete
+            # the top-level graphs we just wrote.
+            current_roots = set(generated_names)
+            try:
+                raw_name = str(root.name).strip()
+                safe_root_name = raw_name.replace(os.sep, '_').replace('\x00', '')
+                safe_root_name = re.sub(r'\s+', ' ', safe_root_name)
+                current_roots.add(safe_root_name)
+                current_roots.add(raw_name)
+            except Exception:
+                pass
+            for p in existing_htmls:
+                nm = p.name
+                if '_wikigraph_' in nm:
+                    root_part = nm.split('_wikigraph_', 1)[0].strip()
+                    if root_part not in current_roots:
+                        try:
+                            p.unlink()
+                            print(f"Deleted stale graph: {p}")
+                        except Exception:
+                            print(f"Could not delete stale graph: {p}")
         return
 
     # If --dms-tree provided, produce a DMs-rooted graph that includes files

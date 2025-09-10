@@ -1,3 +1,37 @@
+Character Formulas (README)
+
+## Summary
+
+Formulas used by `update_char.py` live in `char_formulas.json`. The default
+formulas provide common derived stats such as Max Hit Points, Evasion and
+Armor. The updater will add missing defaults if it detects candidate keys in
+the workspace.
+
+If you edit `char_formulas.json`, keep expressions simple and safe. The
+updater supports a limited, safe expression evaluator (no arbitrary code
+execution).
+
+## Workflows
+
+1. Validate formulas file quickly
+
+```bash
+python3 char_formulas_check.py char_formulas.json
+```
+
+2. Add a default for a missing key and test on one sheet
+
+```bash
+# edit char_formulas.json
+python3 update_char.py --file "Players Part/PCs/Anju/Anju Character Sheet.md" --formulas char_formulas.json --extend-formulas
+```
+
+3. Run across all PCs as a batch
+
+```bash
+python3 update_char.py --sync --input pcs_input.md
+```
+
 # See MANUALS/Usage_Guide.md for a short summary of all manuals
 
 # char_formulas conventions (short)

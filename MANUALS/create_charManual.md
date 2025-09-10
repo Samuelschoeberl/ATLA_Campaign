@@ -130,3 +130,25 @@ If you want any of the following added to this manual, tell me which and I'll up
 - A sample `pcs_input.md` table snippet tailored to your vault.
 - A troubleshooting section for common Python environment and Plotly errors.
 - A short checklist for committing generated files (which files to track vs ignore).
+
+## Full workflows
+
+1. Create a new PC, compute derived stats, and generate graphs (single command):
+
+```bash
+python3 create_pc.py --name Anju --str 4 --dex 4 --con 2 --int 3 --wis 3 --cha 2 --water 3 --run-update --make-graphs --embed-graphs
+```
+
+2. Bulk create from `pcs_input.md` and generate graphs for all created PCs:
+
+```bash
+python3 create_pc.py --input-file pcs_input.md --run-update --make-graphs
+```
+
+3. Create a PC but skip immediate graph generation (manual step later):
+
+```bash
+python3 create_pc.py --name NewPlayer --run-update
+# later
+python3 Wikigraphs.py --pc NewPlayer
+```

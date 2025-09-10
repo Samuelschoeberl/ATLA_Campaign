@@ -127,3 +127,29 @@ python Wiki_File_System_Manager.py --ext .md \
 ---
 
 That’s it. Keep `--dry-run` until output looks right; then drop it and keep `--backup .bak` for safety.
+
+## Full workflows
+
+1. Full sync + collectionfile rebuild (safe dry-run first)
+
+```bash
+# preview
+python Wiki_File_System_Manager.py --dry-run --ext .md --recreate-collectionfiles
+
+# run for real and create backups
+python Wiki_File_System_Manager.py --ext .md --backup .bak --recreate-collectionfiles
+```
+
+2. Bulk find+replace across session notes with careful scoping
+
+```bash
+python Wiki_File_System_Manager.py Sessions --ext .md --include "**/Session*.md" --find "Appa" --replace "Appa the Sky Bison" --backup .bak --dry-run
+```
+
+3. Generate an index of NPCs (collectionfiles) and commit changes
+
+```bash
+python Wiki_File_System_Manager.py --ext .md --collectionfile "DMs Part/NPCs/Indexes/NPCs.md" --compact
+git add DMs\ Part/NPCs/Indexes/NPCs.md
+git commit -m "Update NPC index"
+```

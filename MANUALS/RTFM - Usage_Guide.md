@@ -1,98 +1,42 @@
-# ATLA_Campaign — Quick Usage Guide
+One-page cheat sheet linking to the full manuals. Keep this file short —
+use the linked manuals for details.
 
-This single-page usage guide summarizes the repository manuals and provides the common commands and workflows you will use every day.
+## Key quick commands
 
-## Contents
+- Create a PC and generate graphs:
 
-- Quick commands
-- Typical workflows
-- Integration map (which scripts call which)
-- Where outputs land
-- Quick troubleshooting pointers
-
-## Quick commands
-
-- Create a PC (single):
   ```bash
-  python3 create_pc.py --name Anju --str 4 --dex 4 --con 2 --int 3 --wis 3 --cha 2 --water 3 --run-update --make-graphs
+  python3 create_pc.py --name Anju --run-update --make-graphs
   ```
-- Update a single sheet (compute derived stats):
+
+- Update a single Character Sheet:
+
   ```bash
   python3 update_char.py --pc Anju
   ```
-- Sync all PCs/NPCs from input tables and regenerate graphs:
+
+- Regenerate root + per-PC graphs (union of `pcs_input.md` and existing HTMLs):
+
   ```bash
-  python3 update_char.py --sync
+  python3 Wikigraphs.py --pc --all -v
   ```
-- Regenerate graphs for everything or a specific PC (exact command you requested):
 
-  ````bash
-  # ATLA_Campaign — Quick Usage Guide
+## Where to look
 
-  This single-page usage guide summarizes the repository manuals and provides the common commands and workflows you will use every day.
+- Graphs: `graphs/<Name>_wikigraph_sunburst.html` and
+  `graphs/<Name>_wikigraph_treemap.html`
+- Character sheets: `Players Part/PCs/<Name>/<Name> Character Sheet.md`
 
-  ## Contents
+## Short workflows (links)
 
-  - Quick commands
-  - Typical workflows
-  - Integration map (which scripts call which)
-  - Where outputs land
-  - Quick troubleshooting pointers
+- Manual refresh colors + graphs: [[MANUALS/update_recolouring.py|update_recolouring]] + [[MANUALS/Wikigraphs_MANUAL.md]]
+- Create + initialize PC: [[MANUALS/create_charManual.md]]
+- Update sheets and autogen report: [[MANUALS/update_charManual.md]]
+- Vault sync & collectionfiles: [[MANUALS/Wiki_File_System_Manager – MANUAL.md]]
+- Formula guidance: [[MANUALS/char_formulas_README.md]]
 
-  ## Quick commands
+## Troubleshooting pointer
 
-  - Create a PC (single):
-    ```bash
-    python3 create_pc.py --name Anju --str 4 --dex 4 --con 2 --int 3 --wis 3 --cha 2 --water 3 --run-update --make-graphs
-  ````
+- If scripts fail, run them with `-v` to see verbose diagnostics and check `graphs/` for outputs.
 
-  - Update a single sheet (compute derived stats):
-    ```bash
-    python3 update_char.py --pc Anju
-    ```
-  - Sync all PCs/NPCs from input tables and regenerate graphs:
-    ```bash
-    python3 update_char.py --sync
-    ```
-  - Regenerate graphs for everything or a specific PC (exact command you requested):
-    ```bash
-    python3 Wikigraphs.py --root "$(pwd)" --out graphs
-    ```
-    (or for a single PC with embedded plotly JS):
-    ```bash
-    python3 Wikigraphs.py --pc Anju --embed --verbose
-    ```
-
-  ## Typical workflows
-
-  - New PC: run `create_pc.py` with `--run-update --make-graphs` to create the folder, compute derived stats, and generate graphs.
-  - Bulk update: maintain `pcs_input.md` / `npcs_input.md` and run `python3 update_char.py --sync` to push values into sheets, regenerate bending slots, and recreate graphs.
-  - Inspect autogen results: after `update_char.py` runs it prints an Autogen Report and writes a `.bak` backup before overwriting.
-
-  ## Integration map
-
-  - `create_pc.py` and `create_npc.py` -> optionally call `update_char.py` -> `update_char.py` calls `scripts/update_bending_slots.py` -> `update_char.py` or `--sync` calls `Wikigraphs.py` to regenerate graphs.
-
-  ## Where outputs land
-
-  - Character sheets: `Players Part/PCs/<Name>/<Name> Character Sheet.md` (NPCs under `DMs Part/NPCs/`)
-  - Graphs: `graphs/<Name>_wikigraph_sunburst.html` and `graphs/<Name>_wikigraph_treemap.html`
-  - Backups: modified files get `<file>.md.bak` before overwriting
-
-  ## Troubleshooting (quick)
-
-  - "Could not locate character sheet": use `--file <path>` or ensure `--pc <Name>` matches folder name exactly.
-  - No graphs shown as "new": the sync script treats overwritten files as existing; use the mtime-reporting option (can be enabled) to list regenerated files.
-  - Unresolved formulas: run `python3 char_formulas_check.py char_formulas.json` and add missing keys to `char_formulas.json` or to your sheet/pcs_input.
-
-  ## See also
-
-  Full manuals live in `MANUALS/`:
-
-  - `MANUALS/create_charManual.md` — create_pc/create_npc
-  - `MANUALS/update_charManual.md` — update_char usage and internals
-  - `MANUALS/Wikigraphs_MANUAL.md` — graph generation and recolors
-  - `MANUALS/Wiki_File_System_Manager – MANUAL.md` — bulk wiki maintenance
-  - `MANUALS/char_formulas_README.md` — formula naming and checker
-
-  If you want a printable one-page cheat-sheet or embedded examples per script, tell me which form you prefer and I'll add it.
+If you want this as a printable one-page PDF or a single combined manual, I can generate it.

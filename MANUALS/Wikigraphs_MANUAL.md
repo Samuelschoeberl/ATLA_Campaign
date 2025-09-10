@@ -1,3 +1,185 @@
+## Wikigraphs — Manual
+
+## Purpose
+
+Wikigraphs.py scans an Obsidian-style vault and produces interactive Plotly
+Sunburst and Treemap HTML visualizations of the file/directory structure.
+It produces two main HTML outputs per root: `<root>_wikigraph_sunburst.html`
+and `<root>_wikigraph_treemap.html`.
+
+## Prerequisites
+
+- Python 3.8+
+- plotly (install with `pip install plotly`)
+
+## Quick usage
+
+Generate graphs for the current workspace root:
+
+```bash
+python3 Wikigraphs.py
+```
+
+Generate graphs for a specific PC folder (Players Part/PCs/<name>):
+
+```bash
+python3 Wikigraphs.py --pc Anju
+```
+
+Generate graphs for all PCs defined in `pcs_input.md`:
+
+```bash
+python3 Wikigraphs.py --pc __ALL__
+```
+
+Recreate graphs for every PC and any existing graph roots inferred from
+already-present HTML files, and also remove stale HTMLs:
+
+```bash
+python3 Wikigraphs.py --pc --all -v
+```
+
+## Notes on `--pc` and `--all`
+
+- `--pc NAME` generates per-PC graphs for the named PC. The script will try
+  to locate `Players Part/PCs/NAME` and will parse a Character Sheet
+  (<NAME> Character Sheet.md) to optionally restrict which Rules pages are
+  merged under the character node.
+- `--pc` without a value (i.e. `--pc` alone) combined with `--all` triggers
+  the union-mode: the script will gather names from `pcs_input.md` and also
+  infer root names from existing `*_wikigraph_*.html` files (it extracts the
+  prefix before `_wikigraph_`), and regenerate graphs for that union.
+- When `--pc --all` is used the script always writes the top-level (root)
+  graphs as well as per-root sunbursts/treemaps, and then deletes any
+  `*_wikigraph_*.html` files that are not present in the regenerated set.
+
+## Deletion safety
+
+- Deletion is limited to files matching `*_wikigraph_*.html` under the
+  script directory and the common `graphs/` folders. The repository root
+  graph filenames are protected by default. Consider running with `-v` to
+  inspect which graphs will be produced.
+
+## Flags and options
+
+- `--root PATH` : Path to vault root (default: current working dir)
+- `--out DIR` : Output directory for HTML files (default: `graphs` next to
+  the script)
+- `--ext .md` : Add file extensions to include (can be repeated)
+- `--exclude NAME` : Exclude directories by name (can be repeated)
+- `--embed` : Embed Plotly JS into output HTML (offline usage)
+- `--mode` : `size` (default) or `count` — use file sizes or counts for
+  node values
+- `--recolor path=#rrggbb` : Apply recolor directive; provide multiple
+  times to apply multiple recolors. Provide `--recolor` without a value to
+  apply stored recolors from `color_recolors.md`.
+- `--pc [NAME]` : See notes above. Use no value + `--all` to infer names.
+- `--all` : Iterate every folder under `Players Part/PCs` (when used
+  without `--pc`) or combined with `--pc` enables the union inference mode.
+- `--include-gitignored` : Include files matched by .gitignore when scanning
+- `-v` / `--verbose` : Verbose output and diagnostic prints
+
+## Examples and workflows
+
+- Rebuild everything (root + every PC found under Players Part/PCs):
+  `python3 Wikigraphs.py --all`
+- Rebuild root plus any PC-graphs inferred from existing HTMLs and the
+  `pcs_input.md` canonical list:
+  `python3 Wikigraphs.py --pc --all -v`
+
+## Troubleshooting
+
+- If Plotly is missing: `pip install plotly`.
+- If output HTML files don't appear where expected, check the printed
+  "Writing to" folder at script start; the script prefers the `graphs`
+  folder located next to the script itself.
+
+## Recommended safety enhancement
+
+If you would like an explicit preview step before deleting stale HTML files
+I can add a `--dry-delete` or `--confirm-deletes` flag which lists candidate
+deletions and waits for confirmation.
+
+## Full workflow examples
+
+1. Daily root + per-PC refresh (recommended)
+
+Purpose: keep top-level graphs and each player's sunburst up-to-date.
+
+Steps:
+
+- From the repo root, update recolors if needed (optional):
+
+  ```bash
+  python3 update_recolouring.py --file color_recolors.md --sort
+  ```
+
+- Regenerate root + all PC graphs inferred from `pcs_input.md` and existing
+  graph files (safe default):
+
+  ```bash
+  python3 Wikigraphs.py --pc --all -v
+  ```
+
+  What this does:
+
+  - Writes `ATLA_Campaign_wikigraph_sunburst.html` and
+    `ATLA_Campaign_wikigraph_treemap.html` into `graphs/`.
+  - Reads `pcs_input.md` and any existing files like `Anju_wikigraph_sunburst.html`
+    to build a union of per-PC roots to (re)generate.
+  - Deletes stale `*_wikigraph_*.html` files not present in the regenerated
+    set (limited to known graphs folders).
+
+2. Rebuild a single PC's graphs after changing a Character Sheet
+
+Purpose: when a single player's allowed-moves or sheet changes.
+
+Steps:
+
+```bash
+python3 Wikigraphs.py --pc Anju -v
+```
+
+Notes:
+
+- The script will try to locate `Players Part/PCs/Anju` and parse
+  `Anju Character Sheet.md` to determine allowed bending levels and mirror
+  the selected Rules files under the PC subtree so the sunburst is rooted at
+  the character and shows only allowed moves.
+
+3. Generate offline/self-contained HTML (embed plotly.js)
+
+```bash
+python3 Wikigraphs.py --embed --pc --all
+```
+
+Use this when you need portable HTML files to share without internet access.
+
+4. Quick development loop (iterate while adjusting recolors)
+
+```bash
+# preview recolors without writing
+python3 Wikigraphs.py --pc --all -v
+
+# make targeted recolor changes and write recolor file
+python3 Wikigraphs.py --recolor 'Players Part/Rules/Bending Rules/Fire/=#ff6666'
+```
+
+## Edge cases and tips
+
+- If multiple folders share the same basename (e.g. `TestChar` in several
+  places) the scripts prefer the first match found when resolving `--pc NAME`.
+- When `pcs_input.md` is malformed (no header table found) the script will
+  still attempt to infer PC names from existing HTMLs.
+- If you need more conservative deletion behavior, request the `--dry-delete`
+  flag to preview deletions before they happen.
+
+## Contact & contribution
+
+If you want the manual expanded with screenshots or a CI pipeline (e.g.
+GitHub Actions to regenerate graphs on push), say which CI provider and I
+will produce a sample workflow file.
+
 <!-- See MANUALS/Usage_Guide.md for a short summary of all manuals -->
 
 ## Purpose

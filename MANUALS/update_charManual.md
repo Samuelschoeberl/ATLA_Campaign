@@ -94,3 +94,27 @@ python3 scripts/update_bending_slots.py "Players Part/PCs/Anju/Anju Character Sh
 
 - If you want a `--dry-run` mode (compute and print replacements without writing), I can add it quickly.
 - If you prefer a different behavior for water charges (the separate slot logic used by `update_bending_slots.py`), tell me the formula you want and I will update `scripts/update_bending_slots.py` to match and optionally re-run it across all PC sheets.
+
+## Full workflows
+
+1. Update a single player's sheet and regenerate graphs
+
+```bash
+python3 update_char.py --pc Anju
+python3 Wikigraphs.py --pc Anju -v
+```
+
+2. Batch update all PCs listed in `pcs_input.md` and recreate graphs
+
+```bash
+python3 update_char.py --sync --input pcs_input.md
+python3 Wikigraphs.py --pc --all -v
+```
+
+3. Development loop: tweak formulas and test on one sheet
+
+```bash
+# edit char_formulas.json
+python3 update_char.py --file "Players Part/PCs/Anju/Anju Character Sheet.md" --formulas char_formulas.json --extend-formulas
+# inspect the autogen report inside the sheet
+```
