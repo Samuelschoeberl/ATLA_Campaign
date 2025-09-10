@@ -34,3 +34,5 @@ jobs:
         branch: gh-pages
         # Use force push to fully overwrite the destination branch
         force: true
+      run: |
+        ls -l
