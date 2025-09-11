@@ -1,1 +1,0 @@
-= [[Element Level]] - [[Stress Level]]

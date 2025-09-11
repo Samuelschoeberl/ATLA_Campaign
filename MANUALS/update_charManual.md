@@ -24,7 +24,8 @@ The script edits the sheet in-place and writes a backup `<file>.bak` before over
 
 ## Flags and behavior
 
-- `--pc <NAME>` — locate `Players Part/PCs/<NAME>/<NAME> Character Sheet.md` and update it.
+-- `--pc <NAME>` — locate a character sheet for `<NAME>` and update it. The script will prefer a repository-level `PC Character Sheets` folder when present; otherwise it falls back to `Players Part/PCs/<NAME>/<NAME> Character Sheet.md`.
+
 - `--file <PATH>` — update the specified file.
 - `--formulas <PATH>` — load formulas from the given JSON file (defaults to `char_formulas.json`).
 - `--extend-formulas` — when provided, missing formula keys are filled from built-in defaults and the combined set is used.
@@ -37,6 +38,11 @@ The script edits the sheet in-place and writes a backup `<file>.bak` before over
 - Reads `## Bending Levels` to gather element levels.
 - Evaluates formulas from `char_formulas.json` (or your provided file) to compute values like Max Hitpoints, Evasion, Armor, and Element DCs.
 - Inserts an "Autogen Report" section into the sheet that lists inferred values, applied overrides, and any unresolved formula identifiers.
+
+Template integration note:
+
+- The character-sheet templater (`create_pc.py`) now loads `char_formulas.json` and attempts to compute secondary stats at sheet creation time so the newly-created Character Sheet contains accurate derived values from the start. The templater still writes conservative fallbacks if formulas are missing or evaluation fails.
+- `update_char.py` continues to be the canonical updater for in-place edits; its evaluation order and autogen report are unchanged, but both tools use `char_formulas.json` as the base lookup sheet when computing secondary stats.
 
 Formulas are simple expressions that reference other named values (e.g. `10 + CON * 2`). The script uses a restricted safe-eval to avoid executing arbitrary code; only arithmetic and identifiers are allowed.
 
@@ -55,7 +61,7 @@ You can copy values from this report into the sheet or into `char_formulas.json`
 - create_pc.py: when `--run-update` is passed, `create_pc.py` will call `update_char.py` to compute derived stats immediately after creating a new sheet.
 - Bending slots updater: after `update_char.py` writes a sheet the repo's `scripts/update_bending_slots.py` is invoked (when present) to regenerate the `## [[Bending Slots]]` section from the `## Bending Levels` table. This keeps slot rows in sync with levels and preserves any user-edited "current" values where possible.
 
-If you rely on custom workflows, be aware these hooks may run automatically; you can always run `update_char.py` directly if you want a single targeted pass.
+If you rely on custom workflows, be aware these hooks may run automatically; you can always run `update_char.py` directly with `--file` if you want a single targeted pass. Note that `--all` (when present) will override `--pc` in orchestration scripts like `Wikigraphs.py`.
 
 ## Formulas file (`char_formulas.json`)
 

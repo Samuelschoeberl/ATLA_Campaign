@@ -8,13 +8,17 @@ This short manual explains how to quickly create a Character Sheet using `create
 
 ## Prerequisites
 
-- Python 3 available on PATH (used as `python3` in examples).
-- The repository root is the current working directory when running the commands.
-- Optional tools used by the workflow:
-  - `update_char.py` — computes derived stats inside the sheet (recommended).
-  - `Wikigraphs.py` — creates sunburst/treemap HTML files for the PC (optional).
+- `update_char.py` — computes derived stats inside the sheet (recommended).
+- `Wikigraphs.py` — creates sunburst/treemap HTML files for the PC (optional).
 
-## Quick single-character example
+Character sheets: `Players Part/PCs/<Name>/<Name> Character Sheet.md`
+
+Note: when present, scripts in this repository now prefer the first discovered
+`PC Character Sheets` folder found anywhere under the repository subtree and
+will create/read PC folders there instead of the legacy `Players Part/PCs`
+path. If you want to force a different location, pass `--out-root` to
+`create_pc.py` or use explicit `--file`/`--pc` arguments when running
+`update_char.py`/`Wikigraphs.py`.
 
 Create a character named Anju, compute derived stats, and immediately generate embedded graphs:
 

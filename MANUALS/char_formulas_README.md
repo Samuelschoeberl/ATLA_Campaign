@@ -32,6 +32,14 @@ python3 update_char.py --file "Players Part/PCs/Anju/Anju Character Sheet.md" --
 python3 update_char.py --sync --input pcs_input.md
 ```
 
+Note: `update_char.py`, `Wikigraphs.py`, and related orchestration scripts now
+prefer the first discovered `PC Character Sheets` folder anywhere under the
+repository subtree when locating or creating per-PC Character Sheets. If you
+need to target a specific location use `--file <path>` or `--out-root` where
+available. Also note that when running orchestration, `--all` will override
+`--pc` (i.e. `Wikigraphs.py --all` will run across all PCs even if `--pc` is
+provided).
+
 # See MANUALS/Usage_Guide.md for a short summary of all manuals
 
 # char_formulas conventions (short)

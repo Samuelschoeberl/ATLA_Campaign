@@ -7,34 +7,34 @@ so
   ./
   └── Players Part
       ├── graphs
-          └── [[Players Part_wikigraph_treemap.html]]
+          └── [[graphs/Players Part_wikigraph_treemap.html]]
       ├── PCs
           └── Mahogany
               └── Shapeshifting Forms
                   └── Level 2
-                      └── [[Luma’tik.md]]
+                      └── [[DMs Root/PCs/Mahogany/Luma’tik]]
       └── Rules
           ├── Bending Rules
               ├── Air
                   └── Mechanics
-                      └── [[Airbending DC.md]]
+                      └── [[Airbending DC]]
               ├── Earth
                   └── mechanics
-                      └── [[Earthbending DC.md]]
+                      └── [[Earthbending DC]]
               ├── Fire
                   └── Mechanics
-                      └── [[Firebending DC.md]]
+                      └── [[Firebending DC]]
               ├── Spirit
                   └── Mechanics
-                      └── [[Spiritbending DC.md]]
+                      └── [[Spiritbending DC]]
               └── Water
                   └── Mechanics
-                      └── [[Waterbending DC.md]]
+                      └── [[Waterbending DC]]
           └── core rules
-              ├── [[Attack Roll.md]]
+              ├── [[Attack Roll]]
               └── Stat Shorts
-                  ├── [[Attack Roll Modifier.md]]
-                  └── [[CL.md]]
+                  ├── [[Attack Roll Modifier]]
+                  └── [[CL]]
 
 <!-- END-AUTO-COLLECTION -->
 

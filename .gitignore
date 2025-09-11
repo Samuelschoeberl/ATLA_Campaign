@@ -1,4 +1,4 @@
-*DMs Part*
+*DMs Root*
 *.bak
 *.zip
 *.DS_Store*
@@ -8,3 +8,4 @@
 *Collectionfiles*
 *ExpandedCollections*
 *npc.html
+*backups/

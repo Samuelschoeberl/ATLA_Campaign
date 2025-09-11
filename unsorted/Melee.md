@@ -9,7 +9,7 @@
               └── Fire
                   └── Firebending Moves
                       └── Level 1
-                          └── [[Burning Fists.md]]
+                          └── [[Burning Fists]]
 
 <!-- END-AUTO-COLLECTION -->
 

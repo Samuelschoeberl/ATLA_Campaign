@@ -112,7 +112,7 @@ python Wiki_File_System_Manager.py --ext .md --collectionfile "Indexes/Action.md
 Append a footer if missing:
 
 ```bash
-python Wiki_File_System_Manager.py --ext .md --append "[[Index:NPCs]]" --backup .bak
+python Wiki_File_System_Manager.py --ext .md --append "[[<filename>]]" --backup .bak
 ```
 
 Combine append + replace in one pass:

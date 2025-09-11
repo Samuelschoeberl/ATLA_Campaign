@@ -16,7 +16,20 @@ This is intentionally small and dependency-free.
 """
 import sys
 import re
+import math
 from pathlib import Path
+
+# allow importing sibling modules when script is run as `python3 scripts/...`
+root = Path(__file__).resolve().parent.parent
+if str(root) not in sys.path:
+    sys.path.insert(0, str(root))
+
+from generate_secondary_stats import load_formulas, safe_eval_expr
+try:
+    from config_loader import get_config
+except Exception:
+    def get_config(key, default):
+        return default
 
 HEADER = "## [[Bending Slots]]"
 
@@ -161,16 +174,36 @@ def main():
     # single 'water charges' row. We therefore skip generating 'Waterbending Slot'
     # entries here and compute a water_charges value separately.
     computed_water_charges = None
+    # try to load formulas (optional)
+    formulas = {}
+    try:
+        formulas = load_formulas(Path(get_config('char_formulas', 'char_formulas.json')))
+    except Exception:
+        formulas = {}
+
     for level_header, slot_name in LEVEL_TO_SLOT_NAME.items():
         if level_header not in levels:
             continue
         n = levels[level_header]
         if 'Waterbending' in level_header:
-            # compute a default water charges value if needed. Rule chosen:
-            # charges = WaterLevel * (1 + floor(WaterLevel / 4)).
-            # If WaterLevel == 0, computed_water_charges remains None.
+            # Prefer a formula from char_formulas.json (key 'Waterbottle Charges').
+            # Fallback to the default rule: charges = WaterLevel * (1 + floor(WaterLevel / 4)).
             if n > 0:
-                computed_water_charges = n * (1 + (n // 4))
+                try:
+                    if 'Waterbottle Charges' in formulas:
+                        expr, src = formulas['Waterbottle Charges']
+                        env = {'Water Level': n, 'Water': n, 'math': math}
+                        val = safe_eval_expr(expr, env)
+                        computed_water_charges = int(val)
+                    elif 'Waterbottle_Charges' in formulas:
+                        expr, src = formulas['Waterbottle_Charges']
+                        env = {'Water Level': n, 'Water': n, 'math': math}
+                        val = safe_eval_expr(expr, env)
+                        computed_water_charges = int(val)
+                    else:
+                        computed_water_charges = n * (1 + (n // 4))
+                except Exception:
+                    computed_water_charges = n * (1 + (n // 4))
             continue
         # non-water elements keep the per-level slot rows
         pairs = compute_slots_for_level(n)
@@ -248,15 +281,22 @@ def main():
 
     # generate new table lines but preserve current values when available
     new_table_lines = []
-    new_table_lines.append('| Element               | Slot level | [[Max Slots]] | current | note | Auto |')
-    new_table_lines.append('| --------------------- | ---------- | ------------- | ------- | ---- | ---- |')
+    new_table_lines.append('| Element | Slot level | [[Max Slots]] | current | note | Auto |')
+    new_table_lines.append('| ------- | ----------: | -------------: | ------: | ---- | ---- |')
     # Build water charges row first: preserve existing if present, otherwise use computed
     if water_row:
-        # reconstruct raw row string
-        new_table_lines.append('| ' + ' | '.join(water_row) + ' |')
+        # parse existing water_row cells defensively
+        wcols = [c.strip() for c in water_row]
+        w_label = wcols[0] if len(wcols) > 0 else '[[water charges]]'
+        w_key = wcols[1] if len(wcols) > 1 else '[[Waterbottle Charges]]'
+        w_max = wcols[2] if len(wcols) > 2 and wcols[2] != '' else (str(computed_water_charges) if computed_water_charges is not None else '')
+        w_cur = wcols[3] if len(wcols) > 3 and wcols[3] != '' else w_max
+        w_note = wcols[4] if len(wcols) > 4 else ''
+        new_table_lines.append(f'| {w_label} | {w_key} | {w_max} | {w_cur} | {w_note} | Y |')
     elif computed_water_charges is not None:
         # create a default water charges row with max=current=computed value
-        new_table_lines.append(f'| [[water charges]] | [[Waterbottle Charges]] | {computed_water_charges} | {computed_water_charges} |      | Y    |')
+        new_table_lines.append(f'| [[water charges]] | [[Waterbottle Charges]] | {computed_water_charges} | {computed_water_charges} |  | Y |')
+
     # Build Danger Sense Reaction row for Airbenders: regenerate numerically when Air level >0
     air_lvl = levels.get('Airbending Level', 0)
     try:
@@ -280,16 +320,14 @@ def main():
             max_val = danger_existing[0]
         else:
             max_val = danger_count
-        new_table_lines.append(f'| [[Danger Sense Reaction]] | {slot_level_display} | {max_val} | {cur_val} | {slot_level_display} | Y    |')
-    else:
-        # air level 0: do not include Danger Sense Reaction row (drop existing)
-        pass
+        new_table_lines.append(f'| [[Danger Sense Reaction]] | {slot_level_display} | {max_val} | {cur_val} | {slot_level_display} | Y |')
+
     for element, pairs in slots_map.items():
         for slot_level, count in pairs:
             elem_key = (element, slot_level)
             # existing_current keys are like ('Earthbending Slot', 1)
             current_val = existing_current.get(elem_key, count)
-            new_table_lines.append(f'| [[{element}]] | {slot_level} | {count} | {current_val} |      | Y    |')
+            new_table_lines.append(f'| [[{element}]] | {slot_level} | {count} | {current_val} |  | Y |')
 
     # assemble new document: replace everything between the header and section_end
     # with the regenerated table. If the header was missing, insert the header and

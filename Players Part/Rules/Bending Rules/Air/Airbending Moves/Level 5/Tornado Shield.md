@@ -1,3 +1,0 @@
-
-[[Airbending]]
-[[Level 5]]

@@ -9,12 +9,12 @@
               └── Fire
                   ├── Firebending Moves
                       ├── Level 1
-                          ├── [[Burning Fists.md]]
-                          └── [[Flame Jet.md]]
+                          ├── [[Burning Fists]]
+                          └── [[Flame Jet]]
                       └── Level 4
-                          └── [[Seething Inferno.md]]
+                          └── [[Seething Inferno]]
                   └── Mechanics
-                      └── [[Stress Level.md]]
+                      └── [[Stress Level]]
 
 <!-- END-AUTO-COLLECTION -->
 

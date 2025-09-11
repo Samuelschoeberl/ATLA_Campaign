@@ -25,7 +25,7 @@ use the linked manuals for details.
 
 - Graphs: `graphs/<Name>_wikigraph_sunburst.html` and
   `graphs/<Name>_wikigraph_treemap.html`
-- Character sheets: `Players Part/PCs/<Name>/<Name> Character Sheet.md`
+- Character sheets: `Players Part/PCs/<Name>/<Name> Character Sheet.md` (scripts now prefer a repo-level `PC Character Sheets` folder when present)
 
 ## Short workflows (links)
 
