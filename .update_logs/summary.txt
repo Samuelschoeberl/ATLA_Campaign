@@ -1,9 +1,0 @@
-=== PC: Anju ===
-    Warning: could not resolve formula 'spiritbending_dc' (expr: 10 + Spirit Level + WIS) -> defaulting to 0
-    Warning: could not resolve formula 'Waterbottle Water Charges' (expr: Waterbottle Water Charges) -> defaulting to 0
-    Updated /Users/samuelschoberl/Library/Mobile Documents/iCloud~md~obsidian/Documents/ATLA Wiki/ATLA_Campaign/Players Part/PCs/Anju/Anju Character Sheet.md (backup at /Users/samuelschoberl/Library/Mobile Documents/iCloud~md~obsidian/Documents/ATLA Wiki/ATLA_Campaign/Players Part/PCs/Anju/Anju Character Sheet.md.bak)
-=== PC: Mahogany ===
-    Could not locate character sheet. Provide --file or --pc where file exists.
-=== File: Players Part/PCs/Character Sheet Template.md ===
-    Warning: could not resolve formula 'Waterbottle Water Charges' (expr: Waterbottle Water Charges) -> defaulting to 0
-    Updated /Users/samuelschoberl/Library/Mobile Documents/iCloud~md~obsidian/Documents/ATLA Wiki/ATLA_Campaign/Players Part/PCs/Character Sheet Template.md (backup at /Users/samuelschoberl/Library/Mobile Documents/iCloud~md~obsidian/Documents/ATLA Wiki/ATLA_Campaign/Players Part/PCs/Character Sheet Template.md.bak)

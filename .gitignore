@@ -1,11 +1,27 @@
+# Ignore common generated and backup files
 *DMs Root*
 *.bak
 *.zip
 *.DS_Store*
 *__pycache__/
-*.obsidian/workspace.json 
-#All paths that contain the word "Collectionfiles" or "ExpandedCollections"
-*Collectionfiles*
-*ExpandedCollections*
-*npc.html
-*backups/
+*.obsidian/workspace.json
+# All paths that contain the word "Collectionfiles" or "ExpandedCollections"
+
+# Ignore backups and vault/workspace folders
+backups/
+*.bak
+
+# ---- Mycelium vault handling ----
+# We want to completely ignore any working Mycelium vault content so that
+# local/generated files in the Mycelium folder are never committed.
+#
+# - Ignore the canonical vault directory and any sibling folders that start
+#   with "Mycelium_" (these are working or intermediate folders).
+Mycelium/*
+Mycelium_*
+
+
+
+# Note: If Mycelium files were already committed, remove them from the index
+# with: `git rm -r --cached Mycelium` and commit the change. That will ensure
+# the ignore rules take effect for future commits.
