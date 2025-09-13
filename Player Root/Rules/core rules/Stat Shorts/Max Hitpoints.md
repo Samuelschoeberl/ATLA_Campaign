@@ -6,3 +6,5 @@ Air: 1d6 per [[CL]] + [[Con]]
 Spirit: 1d4 per [[CL]] + [[Con]]
 [[Player Root]]
 #variable
+
+#player_root

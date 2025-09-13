@@ -25,3 +25,6 @@ These are **powerful, multi-element, terrain-altering** moves that consume Glass
 [[Firebending]]
 [[Team-up Moves]]
 [[Player Root]]
+
+#player_root
+#earth

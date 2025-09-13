@@ -5,7 +5,7 @@
 - **Range:** 20 ft.
 - **Effect:**  
     The waterbender creates sharp daggers of ice to hurl at targets.
-- [[Attack Roll]]
+- [[Water Attack Rolll]]
 - **Damage:** 1d8 + [[Int]] modifier piercing damage per dagger (can create up to 2*[[CL]] daggers).
 
 **Links**:
@@ -14,7 +14,6 @@
 - [[Int]]
 
 Tags:
-#Waterbending
-[[Waterbending]]
-[[Level 2]]
-[[Player Root]]
+#water 
+#player_root
+#Level2

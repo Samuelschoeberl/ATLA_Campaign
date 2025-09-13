@@ -74,3 +74,6 @@ Quick references:
 
 
 [[Player Root]]
+
+#player_root
+#spirit

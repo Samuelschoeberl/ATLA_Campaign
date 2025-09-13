@@ -34,3 +34,5 @@ If you have 3 Failures you die.
 
 [[Player Root]]
 #variable
+
+#player_root

@@ -14,3 +14,6 @@ A soundblast builds from multiple frequencies and shatters the ground.
 [[Earthbending]]
 [[Airbending]]
 [[Player Root]]
+
+#player_root
+#earth

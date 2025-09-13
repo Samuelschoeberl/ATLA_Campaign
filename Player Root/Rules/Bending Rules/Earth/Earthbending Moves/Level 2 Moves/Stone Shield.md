@@ -10,7 +10,7 @@
 Provides 10 * [[Earthbending Slot]] temporary  [[Physical Armor]] until the start of your next turn. 
 
 **Links**:
-- [[Armor]]
+- [[Armor definition]]
 - [[Stone Shield]]
 - [[Earthbending Slot]]
 
@@ -18,3 +18,5 @@ Tags:
 #Earthbending
 [[Earthbending]]
 [[Player Root]]
+
+#player_root

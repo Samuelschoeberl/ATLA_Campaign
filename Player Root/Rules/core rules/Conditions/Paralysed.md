@@ -6,3 +6,5 @@ Certain Chi Blocking moves cause paralysis, preventing the target from taking ac
 - Pressure Point Strike
 - Nerve Strike
 [[Player Root]]
+
+#player_root

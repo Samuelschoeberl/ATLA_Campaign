@@ -9,6 +9,10 @@
 
 [[Firebending]]
 [[Firebending Slot]]
-[[Firebending DC]]
+[[Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC]]
 [[Firebending Move]]
 [[Player Root]]
+
+#player_root
+#fire
+#Level5

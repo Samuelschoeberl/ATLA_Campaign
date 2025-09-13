@@ -16,3 +16,6 @@ Focused light is amplified by mirrored shards into a blinding beam.
 [[Earthbending]]
 [[Firebending]]
 [[Player Root]]
+
+#player_root
+#earth

@@ -6,5 +6,7 @@
 
 
 **Links**:
-- [[Armor]]
+- [[Armor definition]]
 [[Player Root]]
+
+#player_root

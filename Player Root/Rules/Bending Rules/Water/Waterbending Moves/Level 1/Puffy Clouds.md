@@ -9,7 +9,7 @@ The bender draws a small amount of water and vaporizes it into a dense mist that
     
 - _Area:_ 1* [[Water Charges]] Meter radius 
     
-- Concentration: [[Water Charges]] Turns. Every Creature in the area has 10 * [[Water Charges]] Fire [[Armor]].
+- Concentration: [[Water Charges]] Turns. Every Creature in the area has 10 * [[Water Charges]] Fire [[Armor definition]].
     
 - _Effect:_ Gradual healing, mental clarity, emotional soothing
     
@@ -27,3 +27,7 @@ The bender draws a small amount of water and vaporizes it into a dense mist that
 [[Waterbending]]
 [[Level 1]]
 [[Player Root]]
+
+#player_root
+#water
+#Level1

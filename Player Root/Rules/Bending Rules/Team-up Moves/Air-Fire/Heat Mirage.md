@@ -6,3 +6,6 @@
   - Create a mirage of heat, imposing disadvantage on attack rolls against creatures within a 10-foot radius of a point you choose.
 [[Firebending]]
 [[Player Root]]
+
+#player_root
+#teamup

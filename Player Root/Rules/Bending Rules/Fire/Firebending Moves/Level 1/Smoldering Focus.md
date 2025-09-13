@@ -18,3 +18,7 @@ Smoldering Focus
 [[Fire]]
 [[Firebending Move]]
 [[Player Root]]
+
+#player_root
+#fire
+#Level1

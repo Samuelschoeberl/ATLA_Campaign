@@ -13,3 +13,6 @@
 [[Earthbending]]
 [[Firebending]]
 [[Player Root]]
+
+#player_root
+#earth

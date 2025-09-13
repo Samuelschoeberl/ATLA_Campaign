@@ -1,3 +1,0 @@
-Charisma
-[[Player Root]]
-#variable

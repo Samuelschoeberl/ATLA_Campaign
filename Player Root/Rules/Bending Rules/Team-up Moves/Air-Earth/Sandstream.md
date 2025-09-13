@@ -7,7 +7,6 @@ Each Bender-decides to which pool to add their Bending slots:
  
 - One Earthbender shoots Y Sand Projectiles (rolls the Damage roll) and the Airbender controlls them to home to the X Targets)
 
-[[Earthbending]] 
-[[Airbending]]
-[[Team-up Moves]]
-[[Player Root]]
+
+#player_root #air #earth #Level3 
+#teamup

@@ -11,3 +11,6 @@ Stick and grow trapping enemies and reshaping the terrain.
 	- If X ≥ 8, brambles regenerate once if destroyed
 
 [[Player Root]]
+
+#player_root
+#earth

@@ -86,3 +86,6 @@ Design notes:
 
 
 [[Player Root]]
+
+#player_root
+#spirit

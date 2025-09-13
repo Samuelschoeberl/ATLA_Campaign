@@ -14,6 +14,6 @@
 
 Tags:
 #Waterbendingx 
-[[Waterbending]]
-[[Level 2]]
-[[Player Root]]
+#water 
+#player_root
+#Level2

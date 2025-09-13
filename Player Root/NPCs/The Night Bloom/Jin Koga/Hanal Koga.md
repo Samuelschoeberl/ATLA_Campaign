@@ -7,10 +7,12 @@ she her
         Oversees the Night Bloom’s military operations, crafting strategies for their attacks.
 
 **Links**:
-- [[Armor]]
+- [[Armor definition]]
 - [[Night Bloom]]
 
 Tags:
 #Earthbending
 [[NPC]]
 [[Player Root]]
+
+#player_root

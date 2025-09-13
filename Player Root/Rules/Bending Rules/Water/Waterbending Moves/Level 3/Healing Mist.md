@@ -12,7 +12,8 @@ Effect:
     - Can be _dispersed_ or _destroyed_ by strong firebending or extreme heat breaking [[Cyclic Flow]]
         
 
-[[Waterbending]]
-![[Cyclic Flow]]
-[[Level 3]]
-[[Player Root]]
+#Cyclic_Flow
+
+#player_root
+#water
+#Level3

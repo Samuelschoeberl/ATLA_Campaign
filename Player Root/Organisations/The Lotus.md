@@ -22,7 +22,7 @@ The Lotus is a venerable organization dedicated to the balance of the world, act
 
 **Links**:
 - [[Mistress Akira Meiyu]]
-- [[Armor]]
+- [[Armor definition]]
 - [[Strength]]
 - [[Stonewarden Garon]]
 - [[Wisdom]]
@@ -34,3 +34,5 @@ Tags:
 #Firebending
 #Waterbending
 [[Player Root]]
+
+#player_root

@@ -9,3 +9,7 @@
 
 [[Earthbending]]
 [[Player Root]]
+
+#player_root
+#earth
+#Level1

@@ -7,9 +7,9 @@
 - Description The waterbender summons two water tentacles to attack or grapple targets.
 
 **Effects:**
-    - [[Attack Roll]]
+    - [[Water Attack Rolll]]
     - **Damage:** 1d10 bludgeoning damage per tentacle.
-    - **Grapple:** A creature hit by the tentacle must succeed on a Strength saving throw against your [[Waterbending DC]] or be restrained.
+    - **Grapple:** A creature hit by the tentacle must succeed on a Strength saving throw against your [[Player Root/Rules/Bending Rules/Water/Mechanics/Waterbending DC]] or be restrained.
 
 [[Element]]
 #### **Water Tentacles (2nd Level Move)**
@@ -19,20 +19,12 @@
 - **Range:** 15 ft.
 - **Effect:**  
     The waterbender summons two water tentacles to attack or grapple targets.
-    - **[[Attack Roll]]:** [[Int]] + [[Proficiency]].
+    - **[[Water Attack Rolll]]:** [[Int]] + [[Proficiency]].
     - **Damage:** 1d10 bludgeoning damage per tentacle.
     - **Grapple:** A creature hit by the tentacle must succeed on a Strength saving throw or be restrained.
 
-**Links**:
-- [[Strength]]
-- [[_Rules]]
-- [[Waterbending Moves]]
-- [[Proficiency]]
-- [[Water Tentacles]]
-- [[Int]]
 
 Tags:
-#Waterbending
-[[Waterbending]]
-[[Level 2]]
-[[Player Root]]
+#player_root
+#Level2
+#water 

@@ -16,3 +16,5 @@ Tags:
 #Earthbending #Mobility #Immobilisation
 [[Earthbending]]
 [[Player Root]]
+
+#player_root

@@ -15,3 +15,7 @@
 [[Fire]]
 [[Firebending Move]]
 [[Player Root]]
+
+#player_root #Rules
+#fire
+#Level2

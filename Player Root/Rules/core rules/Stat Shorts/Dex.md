@@ -1,3 +1,0 @@
-
-[[Player Root]]
-#variable

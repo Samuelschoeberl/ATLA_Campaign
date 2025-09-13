@@ -1,10 +1,14 @@
 [[Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Utility/Utility]]
 [[Level 1]]
 
-- Range: [[Firebending DC]] meter
+- Range: [[Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC]] meter
 - You manipulate a flame within range
 
 [[Firebending]]
-![[Firebending DC]]
+![[Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC]]
 [[Firebending Move]]
 [[Player Root]]
+
+#player_root
+#fire
+#Level1

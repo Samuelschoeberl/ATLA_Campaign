@@ -8,7 +8,7 @@
 - **Duration:** Lasts until stopped concentrating or for 1 hour.
 
 - **Effect:** 
-	- As the air vibrates with a cleansing energy as creatures of your choice within radius gain 10 * X [[General Armor]]
+	- As the air vibrates with a cleansing energy as creatures of your choice within radius gain 10 * X [[General Armor Definition]]
 	- If X ≥ 15, the seal also protects against being [[Immobilised]]  
     
 
@@ -16,3 +16,6 @@
 [[Earthbending]]
 [[Firebending]]
 [[Player Root]]
+
+#player_root
+#earth

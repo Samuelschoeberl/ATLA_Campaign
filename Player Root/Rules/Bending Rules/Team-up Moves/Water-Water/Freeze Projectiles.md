@@ -9,3 +9,6 @@ Each Bender-decides to which pool to add their Bending slots:
 [[Waterbending]]
 [[Team-up Moves]]
 [[Player Root]]
+
+#player_root
+#teamup

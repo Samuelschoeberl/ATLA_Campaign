@@ -23,3 +23,6 @@ You gain [[Spiritbending Slot]]  amount of [[Transformation Points]]
 
 
 [[Player Root]]
+
+#player_root
+#spirit

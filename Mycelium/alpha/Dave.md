@@ -1,3 +1,0 @@
-# Dave
-
-Dave primary content.

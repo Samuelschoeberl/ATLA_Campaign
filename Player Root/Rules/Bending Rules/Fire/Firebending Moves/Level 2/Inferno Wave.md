@@ -1,18 +1,22 @@
 [[Bonus Action]]
 [[Level 2]]
 [[Lingering Effect]]
-[[Firebending DC]]
+[[Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC]]
 
   - **Range:** 2* [[Firebending Slot]] meter Cone.
   - **Damage:** 4 * [[Firebending Slot]] d6 fire.
 - Effect: 
-	- Dexterity saving thow against your [[Firebending DC]] or take Damage
+	- Dexterity saving thow against your [[Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC]] or take Damage
 
   - Unleash a wide wave of flames
   
 ![[Lingering Effect]]
 
-![[Firebending DC]]
+![[Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC]]
 [[Firebending]]
 [[Firebending Move]]
 [[Player Root]]
+
+#player_root
+#fire
+#Level2

@@ -1,3 +1,0 @@
-# Eve
-
-Eve primary content.

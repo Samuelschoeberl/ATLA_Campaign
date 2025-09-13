@@ -2,7 +2,7 @@
 [[Action]]
   - **Range:** 5 * [[Firebending Slot]] meters. Sphere with a radius of [[Firebending Slot]] * 1 meters.
   - **Damage:** 2d6 fire per [[Firebending Slot]].
-  - **Save:** Dex DC against your  [[Firebending DC]] 
+  - **Save:** Dex DC against your  [[Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC]] 
   - Create a fiery explosion at a target point, affecting all creatures within a 10-foot radius.
 
 
@@ -12,3 +12,7 @@
 [[Firebending]]
 [[Firebending Move]]
 [[Player Root]]
+
+#player_root
+#fire
+#Level2

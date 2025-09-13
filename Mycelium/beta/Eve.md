@@ -1,3 +1,0 @@
-# Eve
-
-Eve alternate content.

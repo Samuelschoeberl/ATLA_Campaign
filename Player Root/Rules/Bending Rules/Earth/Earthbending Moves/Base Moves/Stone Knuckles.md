@@ -1,16 +1,17 @@
-
 - Range: Meele
-- **[[Attack Roll]]:** [[Strength]] + [[Proficiency]].
-- Damage: (1+1* [[Earthbending Slot]])d6  bludgeoning.
+- **[[Earth Earth Attack Rolll]]:** [[Strength]] + [[Proficiency]].
+- Damage: (1+1\* [[Earthbending Slot]])d6 bludgeoning.
 
 **Usage**: Simple meelee attack.
 
 **Links**:
+
 - [[Proficiency]]
 - [[Strength]]
-
 
 Tags:
 #Earthbending
 [[Earthbending]]
 [[Player Root]]
+
+#player_root

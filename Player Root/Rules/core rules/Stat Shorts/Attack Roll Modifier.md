@@ -1,3 +1,5 @@
-= [[Element Level]] - [[Stress Level]]
-[[Player Root]]
+= [[Element]] Level - [[Stress Level]]
+
 #variable
+
+#player_root

@@ -1,5 +1,5 @@
 [[Level 3]]
-- **Cost:** 4 Water Charges.
+- **Cost:** 4 [[Water Charge]]s.
 - **Type:** [[Action]].
 - **Range:** 60 ft.
 - **Effect:**  
@@ -12,7 +12,6 @@
 - [[Ice Wall]]
 
 Tags:
-#Waterbending
-[[Waterbending]]
-[[Level 3]]
-[[Player Root]]
+#water 
+#player_root
+#Level3
