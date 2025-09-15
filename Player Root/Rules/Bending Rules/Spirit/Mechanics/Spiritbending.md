@@ -1,4 +1,4 @@
-#Collectionfile
+
 
 Spiritbending represents techniques and rituals that draw on the Avatar Spirit or local spirit presences. These moves often focus on communication, protection, travel between worlds, and subtle influence rather than raw damage.
 
@@ -21,59 +21,8 @@ Quick references:
 - Moves and examples: [[Spiritbending Moves]]
 - Mechanics for gaining slots: [[Avatar Spirit Check]]
 - Progression and Bridge mechanics: [[Avatar Spirit Bridge Level]]
+- #spirit 
 
-[[Team-up Moves]]
-<!-- BEGIN-AUTO-COLLECTION:Spiritbending -->
-## Backlinks
-
-  ./
-  └── Players Part
-      └── Rules
-          └── Bending Rules
-              └── Spirit
-                  ├── ExpandedCollections
-                      ├── [[Player Root/Rules/Bending Rules/Spirit/Mechanics/ExpandedCollections/ExpandedAvatar Spirit Bridge Level]]
-                      └── [[Player Root/Rules/Bending Rules/Spirit/ExpandedCollections/ExpandedSpiritbending Moves]]
-                  ├── Mechanics
-                      └── [[Avatar Spirit Check]]
-                  └── Spiritbending Moves
-                      └── [[Spiritbending Moves]]
-
-<!-- END-AUTO-COLLECTION -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[[Player Root]]
-
+#teamup 
 #player_root
 #spirit

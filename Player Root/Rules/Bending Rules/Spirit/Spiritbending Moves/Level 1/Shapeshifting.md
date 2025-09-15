@@ -1,28 +1,11 @@
-[[Special Attacks]]
-#Collectionfile 
-[[Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Utility/Utility]]
-[[stat-changing]]
-[[Mahogany]]
-You gain [[Spiritbending Slot]]  amount of [[Transformation Points]]
+
+#transformation 
+
+You transform into a creature using [[Spiritbending Slot]]. The Level of creature corresponds with the Bending Slot used.
 - Range: e.g. [[Self]].
 - **Duration:** varies
-- Description for example: Propelling yourself with gusts of air.
 
-**Effects:**
-- the effect(s) of the move e.g. Spend 1 [[Airbending Slot]] to add 5 * [[Airbending Slot]] meters to your movement for this turn.
-
-[[Element]]
-<!-- BEGIN-AUTO-COLLECTION:Shapeshifting -->
-## Backlinks
-
-  ./
-
-<!-- END-AUTO-COLLECTION -->
-
-
-
-
-[[Player Root]]
 
 #player_root
 #spirit
+#level1

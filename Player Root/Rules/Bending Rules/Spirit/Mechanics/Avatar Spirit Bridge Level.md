@@ -106,7 +106,7 @@ Track stones and their effects in your [[Spirit Stone Log]].
 ---
 
 Tags:  
-#mechanics #spiritbridge #bending #characterprogression #Avatar #spiritstones #advancement
+#mechanics #spiritbridge #bending #characterprogression #Avatar #spiritstones #advancement #spirit 
 <!-- BEGIN-AUTO-COLLECTION:Avatar Spirit Bridge Level -->
 ## Backlinks
 

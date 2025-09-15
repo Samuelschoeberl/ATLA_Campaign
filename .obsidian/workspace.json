@@ -39,7 +39,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/PCs/Tapioca/Bending Rules - rendered.md",
+                "file": "Dms Root/PCs/Mahogany/Spiritual Echo - Mountain Summit Encounter.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -54,11 +54,83 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Bending Rules - rendered"
+              "title": "Spiritual Echo - Mountain Summit Encounter"
+            }
+          },
+          {
+            "id": "8054c4c4fb240770",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/variable/PC_variables/Ash/Ash_Earthbending DC.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Ash_Earthbending DC"
+            }
+          },
+          {
+            "id": "3a91c7262e91e9ff",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Dms Root/Locations/Omashu/The Stone Beneath Still Breathes.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "The Stone Beneath Still Breathes"
+            }
+          },
+          {
+            "id": "8a6d2fa0e0b678d7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/PCs/Anju/Anju character sheet.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Anju character sheet"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -159,7 +231,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Player Root/PCs/Tapioca/Bending Rules - rendered.md",
+                "file": "Dms Root/Locations/Omashu/The Stone Beneath Still Breathes.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -169,7 +241,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Bending Rules - rendered"
+              "title": "Backlinks for The Stone Beneath Still Breathes"
             }
           },
           {
@@ -237,53 +309,53 @@
       "random-note:Open random note": false
     }
   },
-  "active": "87de955a7427ea4a",
+  "active": "bf97f7a300bd33a1",
   "lastOpenFiles": [
-    "Player Root/Rules/Bending Rules/Water/Waterbending Moves/Utility/Shape Water.md",
-    "Player Root/Rules/Bending Rules/Water/Waterbending Moves/Utility/Mistbending.md",
-    "Player Root/Rules/Bending Rules/Water/Waterbending Moves/Utility/Icecubes.md",
-    "Player Root/PCs/Tapioca/Bending Rules - rendered.md",
-    "Player Root/PCs/Tapioca/Tapioca character sheet.md",
-    "Player Root/PCs/Tapioca/Tapioca_variables.md",
-    "Mycelium/data/template/template_Character_Sheet.md",
-    "Player Root/PCs/Puy/Puy character sheet.md",
-    "Player Root/variable/secondary_stat/General Armor.md",
-    "Player Root/variable/PC_variables/Sora/Sora_Evasion.md",
-    "Player Root/variable/PC_variables/Ash/Ash_Evasion.md",
-    "Player Root/variable/PC_variables/Tapioca/Tapioca_General Armor.md",
-    "Player Root/variable/PC_variables/Tapioca/Tapioca_Evasion.md",
-    "Player Root/variable/PC_variables/Rio/Rio_Evasion.md",
-    "Player Root/variable/PC_variables/Puy/Puy_General Armor.md",
-    "Player Root/variable/PC_variables/Puy/Puy_Evasion.md",
-    "Player Root/variable/PC_variables/Anju/Anju_General Armor.md",
-    "Player Root/variable/PC_variables/Anju/Anju_Evasion.md",
-    "Player Root/variable/secondary_stat/Evasion.md",
-    "Player Root/variable/secondary_stat/Danger Sense Reaction.md",
-    "Player Root/Rules/core rules/Stat Shorts/Barrier Armor definintion.md",
-    "Element.md",
-    "Player Root/Rules/core rules/Stat Shorts/Attack Roll Modifier.md",
-    "Player Root/Rules/core rules/Stat Shorts/Armor definition.md",
-    "Player Root/Rules/core rules/Stat Shorts/General Armor Definition.md",
-    "Player Root/Rules/core rules/Stat Shorts/Cha.md",
-    "Player Root/PCs/Sora",
-    "Player Root/PCs/Ash",
-    "Player Root/PCs/Tapioca",
-    "Player Root/PCs/Rio",
-    "Player Root/PCs/Puy",
-    "Player Root/PCs/Anju",
-    "Mycelium/scripts/Python/tests/test_common.py",
-    "Mycelium/scripts/Python/__pycache__/common.cpython-312.pyc",
-    "Mycelium/scripts/Python/common.py",
-    "Players Part/PCs/Anju/Unresolved Links",
-    "Player Root/PCs/Mahogany/Shapeshifting Forms/Pics/Luma'tik.png",
-    "Player Root/PCs/Mahogany/Shapeshifting Forms/Pics/Bearturtle.webp",
-    "Player Root/NPCs/Rin Kotak/meditating dark.png",
-    "Player Root/NPCs/Rin Kotak/meditating cartoon.png",
-    "Player Root/NPCs/Rin Kotak/Rin Kotak.png",
+    "unsorted/Rules/Element.md",
+    "unsorted/Rules/Airbending.md",
+    "unsorted/Rules",
+    "unsorted",
+    "tmp/tmp_post_content.md",
+    "tmp",
+    "CI/pytest.ini",
+    "CI",
+    "Tools/mycelium_ctl.py",
+    "Tools",
+    "Docs/Rules/Element.md",
+    "Docs/Rules/Airbending.md",
+    "Docs/Rules",
+    "Docs",
+    "Player Root/Player Root_wikigraph_treemap.html",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Luma’tik.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit - Mahogany/Luma’tik - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit - Mahogany/Bearturtle - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit - Mahogany/Human Form - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit - Mahogany/Flying Lemur Form - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air - Mahogany/Airdash - Mahogany.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Bearturtle.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Human Form.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Flying Lemur Form.md",
+    "Player Root/Rules/Bending Rules/Air/Airbending Moves/Level 1/Air Blade.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Spiritbending Moves.md",
+    "Player Root/variable/PC_variables/Ash/Ash_Earthbending DC.md",
+    "Player Root/Rules/Bending Rules/Spirit/Mechanics/Spiritbending.md",
+    "Player Root/Rules/Bending Rules/Spirit/Mechanics/Avatar Spirit Check.md",
+    "Player Root/Rules/Bending Rules/Spirit/Mechanics/Avatar Spirit Bridge Level.md",
+    "Player Root/PCs/Mahogany/Mahogany character sheet.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_wis.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_water.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_str.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_spiritbending slot.md",
     "Player Root/Maps/Avatar World.jpg",
-    "Mycelium_1/archive/cleanup/20250911T201705Z/DMs Root/Story/Airbender Nomands/3atljldbkbk41.jpg",
-    "Mycelium_1/archive/cleanup/20250911T201705Z/DMs Root/Story/Airbender Nomands/1664411181325.jpg",
-    "Mycelium_1/archive/cleanup/20250911T201705Z/DMs Root/NPCs/Spirits/assets_task_01jqk4rq81fnsrfydwnb0gnxr1_img_1.webp",
-    "Mycelium_1/archive/cleanup/20250911T201705Z/DMs Root/NPCs/Spirits/assets_task_01jqk424c7ea58gb9jdd0zmvqj_img_0.webp"
+    "Dms Root/Story/Airbender Nomands/3atljldbkbk41.jpg",
+    "Dms Root/Story/Airbender Nomands/1664411181325.jpg",
+    "Dms Root/NPCs/DMPCs/Kaedo.png",
+    "Dms Root/NPCs/Spirits/assets_task_01jqk4rq81fnsrfydwnb0gnxr1_img_1.webp",
+    "Dms Root/NPCs/Spirits/assets_task_01jqk424c7ea58gb9jdd0zmvqj_img_0.webp",
+    "Dms Root/NPCs/Spirits/Jellytee.webp",
+    "Dms Root/NPCs/Night Bloom/Dark Spirits/kiki.png",
+    "Dms Root/NPCs/Night Bloom/Dark Spirits/boba.png",
+    "Dms Root/NPCs/Night Bloom/Dark Spirits/Holiday Spirit.png"
   ]
 }

@@ -37,17 +37,18 @@ Total Bending Level: 3
 
 
 ## Bending Slots
+You can always only use maximum half of you current Bending slots (rounded up so if you have 3 left you can either spend 2 and then 1 or only 1 but 3 times)
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Waterbottle charge     |    4 |
 | Earthbending slot      |     2 |
 
-## environmental_variables
+## Water charges
 
-| Environmental Variable     |                          value | notes                                                                                            |
-| -------------------------- | -----------------------------: | ------------------------------------------------------------------------------------------------ |
-| Environmental water charge | 20 | total water charges:  24 = 4 + 20 |
-|                            |                                |                                                                                                  |
+| Environmental Variable     |                          value |
+| -------------------------- | -----------------------------: |
+| Environmental water charge | 20 |
+| Waterbottle charge         |         4 |
+
 
 #Anju #Character_Sheet

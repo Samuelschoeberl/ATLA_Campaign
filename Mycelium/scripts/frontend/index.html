@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mycelium — Repo Browser</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        font-family: system-ui, Arial, sans-serif;
+        color: #111;
+        min-height: 100%;
+        padding: 24px;
+        position: relative;
+        /* darker base underneath the pastel swirl */
+        background: #0b0f13;
+        overflow-x: hidden;
+      }
+      /* animated conic (swirl) background */
+      body::before {
+        content: "";
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        /* put the swirl above the page background but behind the UI */
+        z-index: 0;
+        /* wider, gentler color range for a slow, lush swirl */
+        /* desaturated pastel palette, static (no animation) */
+        background: conic-gradient(
+          from 90deg at 50% 50%,
+          #f2dfe7 0deg,
+          #f7e5d0 60deg,
+          #fff6c8 120deg,
+          #d8eedd 180deg,
+          #d9ecf8 240deg,
+          #e6ddf6 300deg,
+          #f3dbe3 360deg
+        );
+        filter: blur(64px) saturate(110%);
+        opacity: 0.6;
+        transform-origin: 50% 50%;
+        /* static: no animation so the swirl does not move */
+        animation: none;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        /* subtle radial highlight above the swirl */
+        z-index: 1;
+        pointer-events: none;
+        /* much more subtle highlight so overall look stays darker */
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(255, 255, 255, 0.06) 0%,
+          rgba(255, 255, 255, 0) 45%
+        );
+      }
+      /* static background: keyframes and pulse animation removed */
+
+      .app {
+        max-width: 1200px;
+        margin: 0 auto;
+        /* slightly more transparent so the subtle pastel shows through */
+        background: rgba(171, 171, 171, 0.92);
+        border-radius: 8px;
+        padding: 18px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+        /* ensure UI sits above the swirl layers */
+        position: relative;
+        z-index: 2;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.4rem;
+      }
+      .muted {
+        color: #666;
+        font-size: 0.9rem;
+      }
+      nav {
+        margin-top: 12px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      ul.entries {
+        list-style: none;
+        padding: 0;
+        margin: 12px 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      ul.entries li {
+        background: #eeeded;
+        border: 1px solid #000000;
+        padding: 8px 10px;
+        border-radius: 6px;
+      }
+      .md-container {
+        margin-top: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .markdown-file {
+        border: 1px solid #e6e6e6;
+        background: #c3c3c3;
+        padding: 12px;
+        border-radius: 6px;
+      }
+      .file-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .file-meta {
+        color: #777;
+        font-size: 0.85rem;
+      }
+      #notif-area {
+        position: fixed;
+        right: 18px;
+        top: 18px;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      /* Mobile-friendly edits */
+      @media (max-width: 640px) {
+        .markdown-file textarea {
+          font-size: 18px;
+          line-height: 1.5;
+          padding: 12px;
+        }
+        .markdown-file .file-title button {
+          font-size: 15px;
+          padding: 8px 10px;
+        }
+        .app {
+          padding: 12px;
+        }
+      }
+
+      /* Fullscreen editor state */
+      .markdown-file.is-fullscreen {
+        position: fixed;
+        inset: 0;
+        z-index: 99990;
+        margin: 0;
+        border-radius: 0;
+        padding: 12px;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+      }
+      .markdown-file.is-fullscreen #file-title-name {
+        font-size: 1.1rem;
+      }
+      .markdown-file.is-fullscreen textarea {
+        position: absolute;
+        top: 56px;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        width: auto;
+        height: auto;
+        border-radius: 6px;
+        font-size: 18px;
+      }
+      .markdown-file.is-fullscreen #preview {
+        display: none;
+      }
+      .fullscreen-close {
+        display: inline-block;
+        margin-left: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header>
+        <h1>Mycelium — Repo Browser</h1>
+        <div class="muted">&nbsp;&middot;&nbsp; Player Root</div>
+      </header>
+
+      <nav>
+        <div class="back"><button id="up-btn" disabled>Up</button></div>
+        <div class="muted">Current: /<span id="curpath"></span></div>
+      </nav>
+
+      <!-- debug panel removed -->
+
+      <section id="entries-wrap">
+        <!-- entries list will be injected here -->
+      </section>
+
+      <div class="md-container" id="md-container">
+        <!-- md previews / editors injected here -->
+      </div>
+    </div>
+
+    <div id="notif-area"></div>
+    <!-- error overlay (hidden until a runtime error occurs) -->
+    <div
+      id="error-overlay"
+      style="
+        display: none;
+        position: fixed;
+        inset: 12px;
+        z-index: 100000;
+        background: rgba(0, 0, 0, 0.75);
+        color: #fff;
+        padding: 18px;
+        border-radius: 8px;
+        overflow: auto;
+        max-height: 80%;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+      "
+    >
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 8px;
+        "
+      >
+        <strong>Client error</strong>
+        <button
+          id="error-overlay-close"
+          style="
+            background: #fff;
+            color: #000;
+            border: 0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+          "
+        >
+          Close
+        </button>
+      </div>
+      <pre
+        id="error-overlay-text"
+        style="white-space: pre-wrap; color: #fff; margin: 0; font-size: 13px"
+      ></pre>
+    </div>
+
+    <script>
+      // If the page was loaded from the local server, use the same host:port for backend
+      const defaultHost = location.hostname || "127.0.0.1";
+      const BASE = (
+        window.MYCELIUM_BACKEND_BASE || `http://${defaultHost}:9001`
+      ).replace(/\/$/, "");
+      function encodeSegments(p) {
+        if (!p) return "";
+        return p
+          .split("/")
+          .map((s) => encodeURIComponent(s))
+          .join("/");
+      }
+      // Ensure a path is repo-root-relative by prefixing with "Player Root/"
+      // when the server exposes files under that top-level directory.
+      function ensurePlayerRoot(p) {
+        if (!p) return p;
+        if (/^Player Root\//i.test(p)) return p;
+        return "Player Root/" + p;
+      }
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const create = (t, props = {}) => {
+        const el = document.createElement(t);
+        Object.assign(el, props);
+        return el;
+      };
+
+      // small utilities
+      async function hashText(text) {
+        text = text || "";
+        // Prefer WebCrypto when available
+        if (
+          window.crypto &&
+          window.crypto.subtle &&
+          typeof crypto.subtle.digest === "function"
+        ) {
+          try {
+            const enc = new TextEncoder().encode(text);
+            const buf = await crypto.subtle.digest("SHA-256", enc);
+            return Array.from(new Uint8Array(buf))
+              .map((b) => b.toString(16).padStart(2, "0"))
+              .join("");
+          } catch (e) {
+            /* fallthrough to JS fallback */
+          }
+        }
+        // Fallback: compact pure-JS SHA-256 implementation
+        function rightRotate(n, x) {
+          return (x >>> n) | (x << (32 - n));
+        }
+        const K = [
+          1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993,
+          2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987,
+          1925078388, 2162078206, 2614888103, 3248222580, 3835390401,
+          4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692,
+          1996064986, 2554220882, 2821834349, 2952996808, 3210313671,
+          3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912,
+          1294757372, 1396182291, 1695183700, 1986661051, 2177026350,
+          2456956037, 2730485921, 2820302411, 3259730800, 3345764771,
+          3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616,
+          659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779,
+          1955562222, 2024104815, 2227730452, 2361852424, 2428436474,
+          2756734187, 3204031479, 3329325298,
+        ];
+        // convert to bytes (ASCII only safe); use UTF-8 encoding by converting code points
+        const msg = unescape(encodeURIComponent(text));
+        const ml = msg.length * 8;
+        const words = [];
+        for (let i = 0; i < msg.length; i++) {
+          const c = msg.charCodeAt(i);
+          const wordIndex = i >> 2;
+          words[wordIndex] =
+            (words[wordIndex] || 0) | (c << ((3 - (i % 4)) * 8));
+        }
+        // append padding
+        const bitLenHi = Math.floor(ml / 0x100000000);
+        const bitLenLo = ml >>> 0;
+        // append 0x80 byte
+        const idx = msg.length;
+        const wi = idx >> 2;
+        words[wi] = (words[wi] || 0) | (0x80 << ((3 - (idx % 4)) * 8));
+        // pad with zeros until length ≡ 56 mod 64
+        const totalWords = (((idx + 8) >> 6) + 1) * 16;
+        words.length = totalWords;
+        words[totalWords - 2] = bitLenHi;
+        words[totalWords - 1] = bitLenLo;
+
+        let H = [
+          1779033703, 3144134277, 1013904242, 2773480762, 1359893119,
+          2600822924, 528734635, 1541459225,
+        ];
+
+        for (let j = 0; j < words.length; j += 16) {
+          const W = new Array(64);
+          for (let t = 0; t < 16; t++) W[t] = words[j + t] >>> 0;
+          for (let t = 16; t < 64; t++) {
+            const s0 =
+              (rightRotate(7, W[t - 15]) ^
+                rightRotate(18, W[t - 15]) ^
+                (W[t - 15] >>> 3)) >>>
+              0;
+            const s1 =
+              (rightRotate(17, W[t - 2]) ^
+                rightRotate(19, W[t - 2]) ^
+                (W[t - 2] >>> 10)) >>>
+              0;
+            W[t] = (W[t - 16] + s0 + W[t - 7] + s1) >>> 0;
+          }
+          let a = H[0],
+            b = H[1],
+            c = H[2],
+            d = H[3],
+            e = H[4],
+            f = H[5],
+            g = H[6],
+            h = H[7];
+          for (let t = 0; t < 64; t++) {
+            const S1 =
+              (rightRotate(6, e) ^ rightRotate(11, e) ^ rightRotate(25, e)) >>>
+              0;
+            const ch = ((e & f) ^ (~e & g)) >>> 0;
+            const temp1 = (h + S1 + ch + K[t] + W[t]) >>> 0;
+            const S0 =
+              (rightRotate(2, a) ^ rightRotate(13, a) ^ rightRotate(22, a)) >>>
+              0;
+            const maj = ((a & b) ^ (a & c) ^ (b & c)) >>> 0;
+            const temp2 = (S0 + maj) >>> 0;
+            h = g;
+            g = f;
+            f = e;
+            e = (d + temp1) >>> 0;
+            d = c;
+            c = b;
+            b = a;
+            a = (temp1 + temp2) >>> 0;
+          }
+          H[0] = (H[0] + a) >>> 0;
+          H[1] = (H[1] + b) >>> 0;
+          H[2] = (H[2] + c) >>> 0;
+          H[3] = (H[3] + d) >>> 0;
+          H[4] = (H[4] + e) >>> 0;
+          H[5] = (H[5] + f) >>> 0;
+          H[6] = (H[6] + g) >>> 0;
+          H[7] = (H[7] + h) >>> 0;
+        }
+        return H.map((x) =>
+          ("00000000" + (x >>> 0).toString(16)).slice(-8)
+        ).join("");
+      }
+
+      // Global error overlay wiring
+      function showErrorOverlay(msg) {
+        const overlay = document.getElementById("error-overlay");
+        const text = document.getElementById("error-overlay-text");
+        if (!overlay || !text) return;
+        text.textContent = msg;
+        overlay.style.display = "block";
+      }
+
+      window.addEventListener("error", (e) => {
+        try {
+          showErrorOverlay(
+            e.message + "\n" + (e.error && e.error.stack ? e.error.stack : "")
+          );
+        } catch (err) {
+          console.error(err);
+        }
+      });
+      window.addEventListener("unhandledrejection", (e) => {
+        try {
+          showErrorOverlay(
+            "Unhandled promise rejection:\n" +
+              (e.reason && e.reason.stack
+                ? e.reason.stack
+                : JSON.stringify(e.reason))
+          );
+        } catch (err) {
+          console.error(err);
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const closeBtn = document.getElementById("error-overlay-close");
+        if (closeBtn)
+          closeBtn.addEventListener("click", () => {
+            const overlay = document.getElementById("error-overlay");
+            if (overlay) overlay.style.display = "none";
+          });
+      });
+      function debugLog(msg) {
+        try {
+          const el = document.getElementById("debug-log");
+          if (!el) return;
+          const ts = new Date()
+            .toISOString()
+            .replace(/.*T/, "")
+            .replace(/Z$/, "");
+          el.textContent = ts + " " + msg + "\n" + el.textContent;
+        } catch (e) {}
+      }
+      function showNotif(title, text, ttl = 4000) {
+        try {
+          const area = document.getElementById("notif-area");
+          const n = document.createElement("div");
+          n.style.pointerEvents = "auto";
+          n.style.background = "rgba(0,0,0,0.75)";
+          n.style.color = "white";
+          n.style.padding = "8px 12px";
+          n.style.borderRadius = "8px";
+          n.style.boxShadow = "0 6px 18px rgba(0,0,0,0.2)";
+          n.style.marginTop = "8px";
+          n.style.fontSize = "13px";
+          n.innerHTML = `<strong>${title}</strong><div style="margin-top:6px">${text}</div>`;
+          area.appendChild(n);
+          setTimeout(() => {
+            n.style.transition = "opacity 0.25s";
+            n.style.opacity = "0";
+            setTimeout(() => area.removeChild(n), 300);
+          }, ttl);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+      function pulseOnce() {
+        document.body.classList.add("pulse");
+        setTimeout(() => document.body.classList.remove("pulse"), 900);
+      }
+
+      // app state
+      const entriesWrap = document.getElementById("entries-wrap");
+      const mdContainer = document.getElementById("md-container");
+      const curpathEl = document.getElementById("curpath");
+      const upBtn = document.getElementById("up-btn");
+      let stack = [""];
+      let openPath = null,
+        openFileName = null;
+      let ws = null;
+      const cachedHash = Object.create(null);
+      const locks = Object.create(null);
+      const clientId = Math.random().toString(36).slice(2, 9);
+
+      async function fetchPath(p) {
+        const seg = encodeSegments(p);
+        const res = await fetch(
+          BASE + "/player_root" + (seg ? "/" + seg : ""),
+          { cache: "no-store" }
+        );
+        if (!res.ok) return null;
+        return res.json();
+      }
+      async function fetchPathWithHash(p) {
+        const seg = encodeSegments(p);
+        const res = await fetch(
+          BASE + "/player_root" + (seg ? "/" + seg : ""),
+          { cache: "no-store" }
+        );
+        if (!res.ok) return null;
+        const j = await res.json();
+        let h = null;
+        // Prefer server-provided hash (ETag/hash field). Fall back to client-side hashing when missing.
+        if (j && j.hash) {
+          h = j.hash;
+          cachedHash[p] = h;
+        } else {
+          try {
+            h = await hashText(j.content || "");
+            cachedHash[p] = h;
+          } catch (err) {
+            // hashText may fail on older browsers; continue without hash
+            console.warn("hashText failed, skipping hash:", err);
+            h = null;
+          }
+        }
+        return { json: j, hash: h };
+      }
+
+      async function renderDir(p = "") {
+        debugLog("renderDir(" + p + ") called");
+        const j = await fetchPath(p);
+        debugLog(
+          "fetchPath returned " +
+            (j
+              ? Array.isArray(j.entries)
+                ? j.entries.length
+                : "has_entries?"
+              : "null")
+        );
+        entriesWrap.innerHTML = "";
+        mdContainer.innerHTML = "";
+        curpathEl.textContent = p;
+        upBtn.disabled = stack.length <= 1;
+        if (!j) return;
+        const ul = create("ul", { className: "entries" });
+        const entries = j.entries || [];
+        for (const e of entries) {
+          const li = create("li");
+          // For HTML file entries, set the anchor href to the static server's
+          // /vault URL and target _blank so left-click opens a new tab. For
+          // non-HTML files keep a hash href and handle opening in-app.
+          let href = "#";
+          const isHtmlFile =
+            e.type === "file" && e.name.toLowerCase().endsWith(".html");
+          if (isHtmlFile) {
+            const full = ensurePlayerRoot(e.path);
+            href = `${location.origin}/vault/${encodeSegments(full)}`;
+          }
+          const a = create("a", {
+            href,
+            textContent: e.name,
+            ...(isHtmlFile ? { target: "_blank", rel: "noopener" } : {}),
+          });
+          a.addEventListener("click", (ev) => {
+            // allow modified clicks (ctrl/cmd/shift/alt) and middle-click to open
+            // the href in a new tab/window via the browser default behavior
+            const isModified =
+              ev.metaKey ||
+              ev.ctrlKey ||
+              ev.shiftKey ||
+              ev.altKey ||
+              ev.button === 1 ||
+              ev.which === 2;
+            if (e.type === "dir") {
+              ev.preventDefault();
+              stack.push(e.path);
+              renderDir(e.path);
+            } else {
+              // HTML files: let the browser open the /vault href in a new tab
+              // when clicked (target=_blank). Non-HTML files should open in-app.
+              if (isHtmlFile) {
+                // allow default navigation (will open in new tab due to target)
+                return;
+              }
+              if (isModified) {
+                // modified clicks on non-html files should still let the browser
+                // handle (though href is '#', so fall back to opening in-app)
+                return;
+              }
+              ev.preventDefault();
+              openFile(e.path, e.name);
+            }
+          });
+          li.appendChild(a);
+          li.appendChild(
+            create("div", { className: "muted", textContent: e.type })
+          );
+          ul.appendChild(li);
+        }
+        entriesWrap.appendChild(ul);
+        // show md previews
+        const mds = entries.filter(
+          (e) => e.type === "file" && e.name.toLowerCase().endsWith(".md")
+        );
+        for (const f of mds) {
+          const box = create("div", { className: "markdown-file" });
+          const title = create("div", { className: "file-title" });
+          title.innerHTML = `<div><strong>${
+            f.name
+          }</strong><div class="file-meta">/${f.path.replace(
+            /^Player Root\//i,
+            ""
+          )}</div></div>`;
+          const openBtn = create("button", { textContent: "Open" });
+          openBtn.addEventListener("click", () => openFile(f.path, f.name));
+          title.appendChild(openBtn);
+          box.appendChild(title);
+          const preview = create("div");
+          preview.textContent = "Loading...";
+          box.appendChild(preview);
+          mdContainer.appendChild(box);
+          (async () => {
+            const seg = encodeSegments(f.path.replace(/^Player Root\//i, ""));
+            const res = await fetch(BASE + "/player_root/" + seg);
+            if (!res.ok) {
+              preview.textContent = "error";
+              return;
+            }
+            const j = await res.json();
+            preview.innerHTML = DOMPurify.sanitize(
+              marked.parse(j.content || "")
+            );
+          })();
+        }
+      }
+
+      async function openFile(path, name) {
+        openPath = path;
+        openFileName = name;
+        // If this is an HTML file, open it directly in a new tab (vault URL) and return.
+        if (name.toLowerCase().endsWith(".html")) {
+          try {
+            // Build vault URL using ensurePlayerRoot so files under folders are
+            // addressed correctly by the static server's /vault symlink.
+            const seg = encodeSegments(ensurePlayerRoot(path));
+            const url = `${location.origin}/vault/${seg}`;
+            try {
+              window.open(url, "_blank");
+            } catch (e) {
+              // fallback to same-tab navigation
+              location.href = url;
+            }
+          } catch (e) {
+            console.warn("failed to open html file in new tab", e);
+          }
+          return;
+        }
+        mdContainer.innerHTML = "";
+        const contentPane = create("div", { className: "markdown-file" });
+        // For non-HTML files we show the editor/preview
+        // Previously HTML files were embedded; now HTML files are opened in a new tab instead.
+
+        contentPane.innerHTML = `<div class="file-title"><div><strong id="file-title-name">${name}</strong><div id="file-lock" class="file-meta"></div><div class="file-meta">/${path.replace(
+          /^Player Root\//i,
+          ""
+        )}</div></div><div><button id="fullscreen-btn">Full screen</button> <button id="refresh-btn" style="margin-left:8px">Refresh</button></div></div><div style="margin-top:8px"><textarea id="file-ta" style="width:100%;min-height:320px" placeholder="Loading..."></textarea></div><div style="margin-top:8px"><button id="save-btn">Save</button> <button id="retry-btn" style="margin-left:8px;display:none">Retry</button> <button id="open-raw" style="margin-left:8px;display:none">Open raw</button> <span id="status" class="muted"></span></div><h3>Preview</h3><div id="preview" style="background:#fff;padding:8px;border-radius:6px;min-height:120px"></div>`;
+        mdContainer.appendChild(contentPane);
+
+        const ta = $("#file-ta");
+        const statusEl = $("#status");
+        const retryBtn = $("#retry-btn");
+        const openRawBtn = $("#open-raw");
+
+        async function loadContent() {
+          if (statusEl) statusEl.textContent = "loading...";
+          try {
+            // For HTML files we don't fetch content via the backend; instead
+            // set iframe src to the static server 'vault' path and return early.
+            if (name.toLowerCase().endsWith(".html")) {
+              const iframe = $("#file-iframe");
+              // Build vault URL using full path so files under "Player Root/" resolve.
+              const encoded = encodeSegments(ensurePlayerRoot(path));
+              // The frontend static server exposes the project root at /vault/
+              const src = `${location.origin}/vault/${encoded}`;
+              if (iframe) iframe.src = src;
+              // Show the Open Raw button so the client can open the page in a new tab
+              if (openRawBtn) openRawBtn.style.display = "";
+              if (retryBtn) retryBtn.style.display = "none";
+              if (statusEl) statusEl.textContent = "";
+              updateLockUI(path);
+              return { json: { content: null }, hash: null };
+            }
+            const resObj = await fetchPathWithHash(path);
+            if (!resObj) {
+              // show a helpful placeholder rather than an empty box
+              if (ta)
+                ta.value =
+                  "// Failed to load content from backend.\n// Tap Retry to attempt again, or Open raw to view via backend URL.";
+              const prevEl = $("#preview");
+              if (prevEl) prevEl.textContent = "";
+              if (statusEl) statusEl.textContent = "failed to load";
+              if (retryBtn) retryBtn.style.display = "";
+              if (openRawBtn) openRawBtn.style.display = "";
+              return null;
+            }
+            const j = resObj.json;
+            ta.value = j.content || "";
+            $("#preview").innerHTML = DOMPurify.sanitize(
+              marked.parse(j.content || "")
+            );
+            statusEl.textContent = "";
+            retryBtn.style.display = "none";
+            openRawBtn.style.display = "none";
+            updateLockUI(path);
+            return resObj;
+          } catch (e) {
+            if (ta)
+              ta.value =
+                "// Error loading content: " + String(e) + "\n// Tap Retry";
+            const prevEl = $("#preview");
+            if (prevEl) prevEl.textContent = "";
+            if (statusEl) statusEl.textContent = "error";
+            if (retryBtn) retryBtn.style.display = "";
+            if (openRawBtn) openRawBtn.style.display = "";
+            return null;
+          }
+        }
+
+        // initial load
+        await loadContent();
+
+        // Refresh button - manually reload current file from server
+        const refreshBtn = $("#refresh-btn");
+        if (refreshBtn) {
+          refreshBtn.addEventListener("click", async () => {
+            if (statusEl) statusEl.textContent = "refreshing...";
+            await loadContent();
+            if (statusEl) statusEl.textContent = "";
+            showNotif("Refreshed", path.replace(/^Player Root\//i, ""));
+          });
+        }
+
+        if (ta) {
+          ta.addEventListener("input", () => {
+            const prev = $("#preview");
+            if (prev)
+              prev.innerHTML = DOMPurify.sanitize(marked.parse(ta.value || ""));
+            if (statusEl) statusEl.textContent = "";
+            sendLock(path);
+          });
+        }
+
+        if (retryBtn) {
+          retryBtn.addEventListener("click", async () => {
+            if (statusEl) statusEl.textContent = "retrying...";
+            await loadContent();
+          });
+        }
+
+        if (openRawBtn) {
+          openRawBtn.addEventListener("click", () => {
+            const seg = encodeSegments(ensurePlayerRoot(path));
+            if (name.toLowerCase().endsWith(".html")) {
+              const url = `${location.origin}/vault/${seg}`;
+              try {
+                window.open(url, "_blank");
+              } catch (e) {
+                location.href = url;
+              }
+            } else {
+              const url = BASE + "/player_root/" + seg;
+              try {
+                window.open(url, "_blank");
+              } catch (e) {
+                location.href = url;
+              }
+            }
+          });
+        }
+
+        // Fullscreen toggle
+        const fsBtn = $("#fullscreen-btn");
+        let isFs = false;
+        function enterFs() {
+          contentPane.classList.add("is-fullscreen");
+          fsBtn.textContent = "Close";
+          isFs = true;
+        }
+        function exitFs() {
+          contentPane.classList.remove("is-fullscreen");
+          fsBtn.textContent = "Full screen";
+          isFs = false;
+        }
+        fsBtn.addEventListener("click", () => {
+          if (!isFs) enterFs();
+          else exitFs();
+        });
+
+        const saveBtn = $("#save-btn");
+        if (saveBtn) {
+          saveBtn.addEventListener("click", async () => {
+            const content = ta.value;
+            const remote = await fetchPathWithHash(path);
+            const remoteHash = remote ? remote.hash : null;
+            const baseHash = cachedHash[path];
+            if (remoteHash && baseHash && remoteHash !== baseHash) {
+              showConflictModal(
+                path,
+                ta.value,
+                remote.json.content,
+                async (action) => {
+                  if (action === "overwrite") {
+                    await doSave(path, content, true);
+                  } else if (action === "accept_remote") {
+                    ta.value = remote.json.content || "";
+                    $("#preview").innerHTML = DOMPurify.sanitize(
+                      marked.parse(ta.value || "")
+                    );
+                    cachedHash[path] = await hashText(ta.value || "");
+                  } else if (action === "merge") {
+                    showNotif("Conflict", "Edit merged content and press Save");
+                  }
+                }
+              );
+              return;
+            }
+            await doSave(path, content, false);
+          });
+        }
+      }
+
+      async function doSave(path, content, forceOverwrite) {
+        let saveUrl = null;
+        try {
+          let decoded = path.replace(/^Player Root\//i, "");
+          const parts = decoded.split("/").filter(Boolean);
+          if (parts.length >= 2 && parts[0].toLowerCase() === "pcs")
+            saveUrl = BASE + "/update_sheet/" + encodeURIComponent(parts[1]);
+        } catch (e) {}
+        try {
+          const url = saveUrl
+            ? saveUrl
+            : BASE +
+              "/player_root/" +
+              encodeSegments(path.replace(/^Player Root\//i, ""));
+          const body = saveUrl ? { content, propagate: true } : { content };
+          if (forceOverwrite) body.force = true;
+          const r = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          if (!r.ok) {
+            $("#status").textContent = "save failed";
+            showNotif("Save", "Failed to save");
+            return;
+          }
+          $("#status").textContent = "saved";
+          const newHash = await hashText(content || "");
+          cachedHash[path] = newHash;
+          try {
+            if (ws && ws.readyState === WebSocket.OPEN)
+              ws.send(JSON.stringify({ event: "saved", path, clientId }));
+          } catch (e) {}
+          showNotif("Saved", path.replace(/^Player Root\//i, ""));
+        } catch (err) {
+          $("#status").textContent = "error";
+          showNotif("Save error", String(err));
+        }
+        releaseLock(path);
+      }
+
+      function showConflictModal(path, local, remote, cb) {
+        const modal = create("div");
+        modal.style.position = "fixed";
+        modal.style.left = "50%";
+        modal.style.top = "50%";
+        modal.style.transform = "translate(-50%,-50%)";
+        modal.style.background = "#fff";
+        modal.style.padding = "18px";
+        modal.style.zIndex = 99999;
+        modal.style.boxShadow = "0 8px 32px rgba(0,0,0,0.25)";
+        modal.innerHTML = `<h3>Conflict</h3><p>Remote version changed since you opened the file.</p>`;
+        const remoteBtn = create("button", { textContent: "Accept remote" });
+        const overwriteBtn = create("button", {
+          textContent: "Overwrite remote",
+          style: "margin-left:8px",
+        });
+        const mergeBtn = create("button", {
+          textContent: "Open merge editor",
+          style: "margin-left:8px",
+        });
+        modal.appendChild(remoteBtn);
+        modal.appendChild(overwriteBtn);
+        modal.appendChild(mergeBtn);
+        document.body.appendChild(modal);
+        remoteBtn.addEventListener("click", () => {
+          document.body.removeChild(modal);
+          cb("accept_remote");
+        });
+        overwriteBtn.addEventListener("click", () => {
+          document.body.removeChild(modal);
+          cb("overwrite");
+        });
+        mergeBtn.addEventListener("click", () => {
+          document.body.removeChild(modal);
+          cb("merge");
+        });
+      }
+
+      function sendLock(path) {
+        try {
+          if (ws && ws.readyState === WebSocket.OPEN)
+            ws.send(JSON.stringify({ cmd: "lock", path, clientId }));
+        } catch (e) {}
+      }
+      function releaseLock(path) {
+        try {
+          if (ws && ws.readyState === WebSocket.OPEN)
+            ws.send(JSON.stringify({ cmd: "unlock", path, clientId }));
+        } catch (e) {}
+      }
+      function updateLockUI(path) {
+        const el = document.getElementById("file-lock");
+        if (!el) return;
+        const locker = locks[path];
+        if (locker && locker !== clientId)
+          el.textContent = `Editing by ${locker}`;
+        else el.textContent = "";
+      }
+
+      // SSE
+      try {
+        const es = new EventSource(BASE + "/events");
+        es.addEventListener("propagated", (ev) => {
+          try {
+            const payload = JSON.parse(ev.data);
+            const updated = payload.updated || [];
+            if (
+              openPath &&
+              updated.some(
+                (u) =>
+                  u.replace(/^Player Root\//i, "") ===
+                  openPath.replace(/^Player Root\//i, "")
+              )
+            ) {
+              openFile(openPath, openFileName);
+              const s = $("#status");
+              if (s) s.textContent = "Updated by server";
+            }
+            pulseOnce();
+            showNotif(
+              "Propagated",
+              (payload.pc || "") + " updated " + updated.join(", ")
+            );
+          } catch (e) {
+            console.warn("bad sse", e);
+          }
+        });
+        es.onerror = (e) => {
+          console.warn("SSE error", e);
+        };
+      } catch (e) {
+        console.warn("SSE not available", e);
+      }
+
+      // WebSocket
+      try {
+        const wsUrl = BASE.replace(/^http/, "ws") + "/ws";
+        ws = new WebSocket(wsUrl);
+        ws.addEventListener("open", () => {
+          console.log("ws open");
+          try {
+            ws.send(JSON.stringify({ cmd: "hello", clientId }));
+          } catch (e) {}
+        });
+        ws.addEventListener("message", (ev) => {
+          try {
+            const obj = JSON.parse(ev.data);
+            if (obj.cmd === "lock" || obj.event === "lock") {
+              locks[obj.path] = obj.clientId || obj.by || "unknown";
+              updateLockUI(obj.path);
+            } else if (obj.cmd === "unlock" || obj.event === "unlock") {
+              delete locks[obj.path];
+              updateLockUI(obj.path);
+            } else if (obj.event === "saved" || obj.cmd === "saved") {
+              if (obj.path && openPath && obj.path === openPath) {
+                openFile(openPath, openFileName);
+                showNotif("Saved by peer", obj.clientId || "peer");
+              }
+            } else if (obj.event === "propagated") {
+              pulseOnce();
+              showNotif(
+                "Propagated",
+                JSON.stringify(obj.updated || obj.files || "")
+              );
+            }
+          } catch (e) {
+            console.warn("ws parse", e);
+          }
+        });
+        ws.addEventListener("error", () => console.warn("ws err"));
+        window.addEventListener("beforeunload", () => {
+          if (openPath) releaseLock(openPath);
+        });
+      } catch (e) {
+        console.warn("ws not available", e);
+      }
+
+      upBtn.addEventListener("click", () => {
+        if (stack.length <= 1) return;
+        stack.pop();
+        renderDir(stack[stack.length - 1]);
+      });
+      renderDir("");
+    </script>
+  </body>
+</html>
