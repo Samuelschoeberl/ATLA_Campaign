@@ -1,7 +1,7 @@
 ```markdown
 Water
 Earth
-Fire 
+Fire
 Air
 Spirit
 ```
