@@ -1721,6 +1721,20 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
     # Use a light grey background for the plot and page
     fig_sun.update_layout(margin=dict(t=10, l=10, r=10, b=10), paper_bgcolor='#f0f0f0', plot_bgcolor='#f0f0f0')
     sun_path = effective_outdir / f"{safe_root_name}_wikigraph_sunburst.html"
+    # Remove any existing variants of this graph to avoid editors or sync
+    # tools creating numbered copies (e.g. '... 2.html'). This ensures the
+    # newly generated graph overwrites previous outputs instead of leaving
+    # multiple versions behind.
+    try:
+        for p in effective_outdir.glob(f"{safe_root_name}_wikigraph_sunburst*.html"):
+            try:
+                if p.exists():
+                    p.unlink()
+            except Exception:
+                # non-fatal: continue cleaning other matches
+                continue
+    except Exception:
+        pass
     fig_sun.write_html(str(sun_path), include_plotlyjs='cdn' if not embed_js else True)
 
     tre = go.Treemap(
@@ -1740,6 +1754,18 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
     # Use a light grey background for the plot and page
     fig_treemap.update_layout(margin=dict(t=10, l=10, r=10, b=10), paper_bgcolor='#f0f0f0', plot_bgcolor='#f0f0f0')
     tre_path = effective_outdir / f"{safe_root_name}_wikigraph_treemap.html"
+    # Clean up existing treemap HTML variants so the new file replaces any
+    # previous copies and avoids versioned filenames introduced by external
+    # tools or editors.
+    try:
+        for p in effective_outdir.glob(f"{safe_root_name}_wikigraph_treemap*.html"):
+            try:
+                if p.exists():
+                    p.unlink()
+            except Exception:
+                continue
+    except Exception:
+        pass
     fig_treemap.write_html(str(tre_path), include_plotlyjs='cdn' if not embed_js else True)
 
     print(f"Wrote: {sun_path}\nWrote: {tre_path}")

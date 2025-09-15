@@ -1,4 +1,7 @@
-127.0.0.1 - - [15/Sep/2025 06:28:48] code 404, message File not found
-127.0.0.1 - - [15/Sep/2025 06:28:48] "GET /vault/Player%20Root/Player%20Root_wikigraph_sunburst.html HTTP/1.1" 404 -
-127.0.0.1 - - [15/Sep/2025 06:29:00] "GET /index.html HTTP/1.1" 304 -
-127.0.0.1 - - [15/Sep/2025 06:29:03] "GET /vault/Player%20Root/Player%20Root_wikigraph_sunburst.html HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2025 18:50:42] "GET / HTTP/1.1" 200 -
+192.168.178.121 - - [15/Sep/2025 19:21:08] code 404, message File not found
+192.168.178.121 - - [15/Sep/2025 19:21:08] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.178.121 - - [15/Sep/2025 19:21:13] "GET /vault/Player%20Root/PCs/PCs_wikigraph_treemap.html HTTP/1.1" 200 -
+192.168.178.121 - - [15/Sep/2025 19:21:53] "GET /vault/Player%20Root/PCs/PCs_wikigraph_treemap.html HTTP/1.1" 200 -
+192.168.178.121 - - [15/Sep/2025 19:21:56] "GET / HTTP/1.1" 200 -
+192.168.178.121 - - [15/Sep/2025 19:22:17] "GET /vault/Player%20Root/PCs/Tapioca/Tapioca_wikigraph_sunburst.html HTTP/1.1" 200 -

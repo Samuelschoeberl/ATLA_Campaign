@@ -664,14 +664,16 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                 if mod is not None and hasattr(mod, 'render_template'):
                     try:
                         rendered = mod.render_template(tpl_path, {'PC': name})
-                        m = re.search(r"(```|~~~)(.*?)\1", rendered, flags=re.S)
+                        # match fenced code blocks and allow an info string after the opening fence
+                        m = re.search(r'(?s)(```|~~~)[^\n]*\n(.*?)\n\1', rendered)
                         tpl_raw_inner = m.group(2) if m else rendered
                     except Exception:
                         tpl_raw_inner = None
         except Exception:
             tpl_raw_inner = None
         if tpl_raw_inner is None:
-            m = re.search(r"(```|~~~)(.*?)\1", tpl_raw, flags=re.S)
+            # allow fences like ```markdown by accepting optional info after the opening fence
+            m = re.search(r'(?s)(```|~~~)[^\n]*\n(.*?)\n\1', tpl_raw)
             tpl_raw_inner = m.group(2) if m else tpl_raw
 
         # helper: normalize keys in kv_all for lookup
@@ -876,20 +878,16 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                     rendered = token_re.sub(sub_token, txt)
 
                     # build target path inside per-PC bending rules folder
-                    # Flatten: place all level moves under a single element folder
-                    # (use first path part as the element folder). Files at the
-                    # repository root of the rules folder go into a 'Misc' folder.
-                    target_dir = br_root
-                    target_dir.mkdir(parents=True, exist_ok=True)
-                    if len(rel.parts) > 1:
-                        element = rel.parts[0]
+                    # Preserve the original folder structure under the rules root
+                    # instead of flattening. Mirror subdirectories and append the
+                    # PC-safe suffix to the filename so files remain unique per-PC.
+                    if rel.parent and str(rel.parent) != '.':
+                        target_dir = br_root.joinpath(rel.parent)
                     else:
-                        element = 'Misc'
-                    element_dir_name = f"{element} - {safe}"
-                    target_dir = target_dir.joinpath(element_dir_name)
+                        target_dir = br_root
                     target_dir.mkdir(parents=True, exist_ok=True)
                     # create file name with suffix before extension
-                    orig_fname = rel.parts[-1]
+                    orig_fname = rel.name
                     stem = Path(orig_fname).stem
                     ext = Path(orig_fname).suffix
                     new_fname = f"{stem} - {safe}{ext}"
@@ -903,9 +901,59 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
             # non-fatal; don't stop sheet generation if rules rendering fails
             pass
 
+        # force-show rules: parse tags of the form #show_if_<var>_<op>_<n>
+        # and evaluate them. We record the conditional in show_if_map and
+        # add the stat to `force_show` only when the condition evaluates true.
+        force_show: set = set()
+        show_if_map: Dict[str, Tuple[str, str, int]] = {}
+        show_if_re = re.compile(r'^#show_if_([a-z0-9]+)_(gt|ge|lt|le|eq)_([0-9]+)$')
+        if secondary_tags:
+            for stem, tags in secondary_tags.items():
+                for t in tags:
+                    m = show_if_re.match(t)
+                    if not m:
+                        continue
+                    var, op, num = m.group(1), m.group(2), int(m.group(3))
+                    norm_stem = normalize_name(stem)
+                    show_if_map[norm_stem] = (var, op, num)
+                    # lookup value in norm_kv using normalized forms
+                    val = norm_kv.get(var) if var in norm_kv else norm_kv.get(var.replace('.', '_')) or norm_kv.get(var.replace('_', '.'))
+                    try:
+                        vnum = float(val)
+                    except Exception:
+                        try:
+                            vnum = float(to_number(val))
+                        except Exception:
+                            vnum = 0.0
+                    ok = False
+                    if op == 'gt':
+                        ok = vnum > num
+                    elif op == 'ge':
+                        ok = vnum >= num
+                    elif op == 'lt':
+                        ok = vnum < num
+                    elif op == 'le':
+                        ok = vnum <= num
+                    elif op == 'eq':
+                        ok = vnum == num
+                    if ok:
+                        force_show.add(norm_stem)
+
+        suppressed_placeholders: set = set()
+
         def repl_placeholder(m):
             key = m.group(1).strip()
             nk = normalize_name(key)
+            # If this placeholder is controlled by a #show_if and the
+            # condition did not evaluate true, mark it suppressed and
+            # return an empty string so the row can be removed later.
+            try:
+                if show_if_map and nk in show_if_map and nk not in force_show:
+                    suppressed_placeholders.add(nk)
+                    return ''
+            except NameError:
+                # show_if_map/force_show not defined yet; nothing to suppress
+                pass
             val = norm_kv.get(nk)
             if val is None:
                 val = norm_kv.get(nk.replace('_', '.'))
@@ -1012,7 +1060,11 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
 
         # force-show rules: parse tags of the form #show_if_<var>_<op>_<n>
         # and add the stat to force_show when the condition evaluates true.
+        # force-show rules: parse tags of the form #show_if_<var>_<op>_<n>
+        # and evaluate them. We record the conditional in show_if_map and
+        # add the stat to `force_show` only when the condition evaluates true.
         force_show: set = set()
+        show_if_map: Dict[str, Tuple[str, str, int]] = {}
         show_if_re = re.compile(r'^#show_if_([a-z0-9]+)_(gt|ge|lt|le|eq)_([0-9]+)$')
         if secondary_tags:
             for stem, tags in secondary_tags.items():
@@ -1021,6 +1073,8 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                     if not m:
                         continue
                     var, op, num = m.group(1), m.group(2), int(m.group(3))
+                    norm_stem = normalize_name(stem)
+                    show_if_map[norm_stem] = (var, op, num)
                     # lookup value in norm_kv using normalized forms
                     val = norm_kv.get(var) if var in norm_kv else norm_kv.get(var.replace('.', '_')) or norm_kv.get(var.replace('_', '.'))
                     try:
@@ -1042,13 +1096,27 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                     elif op == 'eq':
                         ok = vnum == num
                     if ok:
-                        force_show.add(normalize_name(stem))
+                        force_show.add(norm_stem)
+        if verbose:
+            try:
+                print(f"DEBUG: show_if_map keys={list(show_if_map.keys())}")
+                print(f"DEBUG: force_show={sorted(list(force_show))}")
+            except Exception:
+                pass
 
         for nk, v in sorted(norm_kv.items()):
             # omit empty/None values; omit zeros unless the stat is in
             # vitality_set or explicitly force_shown (e.g., stress level when fire>=1)
             if v is None or v == '':
                 continue
+            # If this stat/template has a #show_if condition and it did not
+            # evaluate true, skip showing it entirely (even when non-zero).
+            try:
+                if 'show_if_map' in locals() and nk in show_if_map and nk not in force_show:
+                    # not eligible to be shown for this PC
+                    continue
+            except Exception:
+                pass
             if v == 0 and nk not in vitality_set and nk not in force_show:
                 continue
             if nk in orig_placeholders:
@@ -1183,8 +1251,45 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                         out_text, rem = pat_ph_row.subn('', out_text)
                         if rem and verbose:
                             print(f"Removed {rem} table row(s) containing placeholder '{{{{{ph}}}}}' from sheet for {name}")
+                    # Also remove rows for placeholders suppressed by #show_if
+                    if nk in suppressed_placeholders:
+                        raw_ph = '{{' + ph + '}}'
+                        pat_ph_row = re.compile(r"(?im)^\|[^\n]*" + re.escape(raw_ph) + r"[^\n]*\n")
+                        out_text, rem2 = pat_ph_row.subn('', out_text)
+                        if rem2 and verbose:
+                            print(f"Removed {rem2} table row(s) containing suppressed placeholder '{{{{{ph}}}}}' from sheet for {name}")
             except Exception:
                 pass
+        except Exception:
+            pass
+        # Also remove any table rows for placeholders that were explicitly
+        # suppressed by #show_if (these may have been removed from the
+        # template earlier, so they won't appear in the placeholder-based
+        # cleanup pass). Ensure rows named by the display name or raw key
+        # are removed so suppressed variables don't show even when non-zero.
+        try:
+            for nk in suppressed_placeholders:
+                dname = display_name(nk)
+                raw_key = nk.replace('_', ' ').replace('.', ' ')
+                # remove rows matching the nicely formatted display name
+                pat_row = re.compile(r"(?im)^\|\s*" + re.escape(dname) + r"\s*\|[^\n]*\n")
+                out_text, removed = pat_row.subn('', out_text)
+                if removed and verbose:
+                    print(f"Removed {removed} table row(s) for suppressed '{dname}' from sheet for {name}")
+                # fallback: remove rows that use the raw key as the label
+                pat_row2 = re.compile(r"(?im)^\|\s*" + re.escape(raw_key) + r"\s*\|[^\n]*\n")
+                out_text, removed2 = pat_row2.subn('', out_text)
+                if removed2 and verbose:
+                    print(f"Removed {removed2} fallback row(s) for suppressed '{raw_key}' from sheet for {name}")
+                # also remove any row that contains the raw key text (covers
+                # placeholders or other variants that include the key)
+                try:
+                    pat_contains = re.compile(r"(?im)^\|[^\n]*" + re.escape(raw_key) + r"[^\n]*\n")
+                    out_text, rem3 = pat_contains.subn('', out_text)
+                    if rem3 and verbose:
+                        print(f"Removed {rem3} table row(s) containing suppressed key '{raw_key}' from sheet for {name}")
+                except Exception:
+                    pass
         except Exception:
             pass
         out_text = out_text.replace('{{PC}}', name)

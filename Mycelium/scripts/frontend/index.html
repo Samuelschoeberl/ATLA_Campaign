@@ -414,6 +414,44 @@
         ).join("");
       }
 
+      // Generate a consistent, pastel HSL color for a repo node (path or id)
+      // so UI elements can share the same colouring logic as the graph nodes.
+      // Input: any string (path, name, id). Output: CSS HSL color string.
+      function nodeColorForKey(key) {
+        key = key || "";
+        // Use the same hash helper to produce a hex sha256 string (fast JS fallback)
+        // Prefer the WebCrypto-based hashText above when available.
+        // Note: hashText returns a hex string.
+        const make = async (k) => {
+          try {
+            const h = await hashText(k);
+            return h || "";
+          } catch (e) {
+            // fallback: simple JS hash
+            let h = 0;
+            for (let i = 0; i < k.length; i++)
+              h = (h * 31 + k.charCodeAt(i)) >>> 0;
+            return ("00000000" + (h >>> 0).toString(16)).slice(-8) + "00000000";
+          }
+        };
+
+        // synchronous wrapper that returns a computed HSL immediately by hashing
+        // via a small non-blocking trick (we call hashText but don't await in some
+        // faster code paths). For deterministic synchronous color we fall back to
+        // a simple JS hash if hashText isn't available synchronously.
+        // Here we'll generate a synchronous color from the string directly
+        // (so callers can use it immediately). This mirrors the same distribution
+        // as the sha-based approach well enough for UI colouring.
+        let syncHash = 0;
+        for (let i = 0; i < key.length; i++)
+          syncHash = (syncHash * 31 + key.charCodeAt(i)) >>> 0;
+        const h = syncHash % 360;
+        // pick a pleasant pastel saturation/lightness tuned for backgrounds
+        const s = 38 + ((syncHash >> 8) % 10); // 38-47%
+        const l = 90 - ((syncHash >> 16) % 6); // 90-85%
+        return `hsl(${h} ${s}% ${l}%)`;
+      }
+
       // Global error overlay wiring
       function showErrorOverlay(msg) {
         const overlay = document.getElementById("error-overlay");
@@ -618,6 +656,10 @@
         );
         for (const f of mds) {
           const box = create("div", { className: "markdown-file" });
+          // apply node colouring to the preview background so it matches graph nodes
+          try {
+            box.style.background = nodeColorForKey(f.path || f.name);
+          } catch (e) {}
           const title = create("div", { className: "file-title" });
           title.innerHTML = `<div><strong>${
             f.name
@@ -671,6 +713,10 @@
         }
         mdContainer.innerHTML = "";
         const contentPane = create("div", { className: "markdown-file" });
+        // apply node colouring to the opened file pane background
+        try {
+          contentPane.style.background = nodeColorForKey(path || name);
+        } catch (e) {}
         // For non-HTML files we show the editor/preview
         // Previously HTML files were embedded; now HTML files are opened in a new tab instead.
 
