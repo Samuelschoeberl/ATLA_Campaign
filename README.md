@@ -1,6 +1,6 @@
 # Mycelium scripts — quick manual
 
-This README explains the `Mycelium/scripts` utilities in this repository, how they interact with the `Player Root` folder, and quick workflows for a DM or a Player.
+![[Mycelium Logo.png]]This README explains the `Mycelium/scripts` utilities in this repository, how they interact with the `Player Root` folder, and quick workflows for a DM or a Player.
 
 ## What these scripts do
 
