@@ -1,6 +1,7 @@
 # Mycelium scripts — quick manual
 
-![[Mycelium Logo.png]]This README explains the `Mycelium/scripts` utilities in this repository, how they interact with the `Player Root` folder, and quick workflows for a DM or a Player.
+![alttext](https://github.com/Samuelschoeberl/ATLA_Campaign/blob/main/Mycelium/Mycelium%20Logo.png)
+This README explains the `Mycelium/scripts` utilities in this repository, how they interact with the `Player Root` folder, and quick workflows for a DM or a Player.
 
 ## What these scripts do
 
