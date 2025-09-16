@@ -1,4 +1,13 @@
 Name: Sora
+## Vitals
+
+
+
+| key          |            value |
+| ------------ | ---------------: |
+| max_hp       |       80 |
+| current hp   |   80 |
+| Stress Level | 0 |
 
 ## Core Stats
 
@@ -14,20 +23,12 @@ Name: Sora
 ## Bending Levels
 
 Total Bending Level: 3
+Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
 | Fire    |   3 | 1d20 + 3 + 6   | 19   |
-
-## Vitals
-
-
-
-| key          |            value |
-| ------------ | ---------------: |
-| [[max_hp]]   |       80 |
-| current hp   |   80 |
-| Stress Level | 0 |
+|         |            |                        |                      |
 ## Defensive
 
 | key           |              Base | Bonus |

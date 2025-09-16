@@ -1,4 +1,12 @@
 Name: Tapioca
+## Vitals
+
+
+
+| key          |            value |
+| ------------ | ---------------: |
+| max_hp       |       90 |
+| current hp   |   90 |
 
 ## Core Stats
 
@@ -14,20 +22,13 @@ Name: Tapioca
 ## Bending Levels
 
 Total Bending Level: 3
+Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
 | Air     |    2 | 1d20 + 2 + 7    | 19    |
 | Earth   |  1 | 1d20 + 1 + 1  | 12  |
-
-## Vitals
-
-
-
-| key          |            value |
-| ------------ | ---------------: |
-| [[max_hp]]   |       90 |
-| current hp   |   90 |
+|         |            |                        |                      |
 ## Defensive
 
 | key           |              Base | Bonus |
@@ -43,7 +44,6 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | ---------------------- | ------------------------: |
 | Airbending slot        |       4 |
 | Danger Sense Reactions | 2 |
-| Firebending slot       |      0 |
 | Earthbending slot      |     2 |
 
 ## Water charges

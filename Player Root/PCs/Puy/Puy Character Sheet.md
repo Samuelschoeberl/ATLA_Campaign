@@ -1,4 +1,13 @@
 Name: Puy
+## Vitals
+
+
+
+| key          |            value |
+| ------------ | ---------------: |
+| max_hp       |       120 |
+| current hp   |   120 |
+| Stress Level | 0 |
 
 ## Core Stats
 
@@ -14,21 +23,13 @@ Name: Puy
 ## Bending Levels
 
 Total Bending Level: 3
+Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
 | Earth   |  2 | 1d20 + 2 + 5  | 17  |
 | Fire    |   1 | 1d20 + 1 + 3   | 14   |
-
-## Vitals
-
-
-
-| key          |            value |
-| ------------ | ---------------: |
-| [[max_hp]]   |       120 |
-| current hp   |   120 |
-| Stress Level | 0 |
+|         |            |                        |                      |
 ## Defensive
 
 | key           |              Base | Bonus |

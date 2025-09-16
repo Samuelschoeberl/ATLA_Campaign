@@ -1,4 +1,13 @@
 Name: Rio
+## Vitals
+
+
+
+| key          |            value |
+| ------------ | ---------------: |
+| max_hp       |       90 |
+| current hp   |   90 |
+| Stress Level | 0 |
 
 ## Core Stats
 
@@ -14,21 +23,13 @@ Name: Rio
 ## Bending Levels
 
 Total Bending Level: 3
+Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
 | Water   |  2 | 1d20 + 2 + 8  | 20  |
 | Fire    |   1 | 1d20 + 1 + 2   | 13   |
-
-## Vitals
-
-
-
-| key          |            value |
-| ------------ | ---------------: |
-| [[max_hp]]   |       90 |
-| current hp   |   90 |
-| Stress Level | 0 |
+|         |            |                        |                      |
 ## Defensive
 
 | key           |              Base | Bonus |
@@ -52,3 +53,6 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 
 #Rio #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Water charge | 24 |

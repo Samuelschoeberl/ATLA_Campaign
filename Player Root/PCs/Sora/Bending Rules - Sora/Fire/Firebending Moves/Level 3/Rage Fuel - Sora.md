@@ -1,0 +1,25 @@
+Bonus Action (0)
+Level 3 (0)
+Stress Level (0)
+
+- Range: Self (0).
+- **Duration:** until the beginning of your next turn
+
+**Effects:**
+- Increase your Stress Level (0) by 2* Firebending Slot (6)
+
+Element (0)
+
+#firebending #level3
+
+- **Rage Fuel**
+  - **Action (0):** Bonus Action (0).
+  - **Range:** Self.
+  - **Duration:** 3 rounds. Concentration (0).
+  - Transform your stress penalty into a bonus. Gain +1 to accuracy and damage rolls for every stress point. At the end, stress resets to 0.
+Firebending (0)
+Firebending Move (0)
+Player Root (0)
+
+#player_root
+

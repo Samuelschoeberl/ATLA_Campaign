@@ -12,25 +12,11 @@
             "type": "leaf",
             "pinned": true,
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Mycelium/data/template/template_Character_Sheet.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
+              "type": "empty",
+              "state": {},
               "pinned": true,
               "icon": "lucide-file",
-              "title": "template_Character_Sheet"
+              "title": "New tab"
             }
           },
           {
@@ -111,7 +97,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/PCs/Anju/Anju character sheet.md",
+                "file": "Player Root/PCs/Anju/Anju Character Sheet.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -126,11 +112,35 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Anju character sheet"
+              "title": "Anju Character Sheet"
+            }
+          },
+          {
+            "id": "4c07e11727d38235",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Mycelium/data/template/template_Character_Sheet.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "template_Character_Sheet"
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -231,7 +241,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Dms Root/Locations/Omashu/The Stone Beneath Still Breathes.md",
+                "file": "Player Root/PCs/Anju/Anju Character Sheet.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -241,7 +251,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for The Stone Beneath Still Breathes"
+              "title": "Backlinks for Anju Character Sheet"
             }
           },
           {
@@ -303,50 +313,50 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
+      "random-note:Open random note": false,
       "obsidian-git:Open Git source control": false,
       "templater-obsidian:Templater": false,
-      "runjs:RunJS": false,
-      "random-note:Open random note": false
+      "runjs:RunJS": false
     }
   },
-  "active": "bf97f7a300bd33a1",
+  "active": "8a6d2fa0e0b678d7",
   "lastOpenFiles": [
-    "unsorted/tmp_post_content.md",
-    "unsorted/supress_warning_character_sheet_generator.md",
-    "unsorted/sitecustomize.py",
-    "unsorted/server.pid",
-    "unsorted/pytest.ini",
-    "unsorted/mycelium_ctl.py",
-    "unsorted/Element.md",
-    "unsorted/Airbending.md",
-    "Docs/Rules/Element.md",
-    "Docs/Rules",
-    "Docs",
-    "unsorted/Rules/Element.md",
-    "unsorted/Rules/Airbending.md",
-    "unsorted/Rules",
-    "unsorted",
-    "tmp/tmp_post_content.md",
-    "tmp",
-    "CI/pytest.ini",
-    "Docs/Rules/Airbending.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Luma’tik.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit - Mahogany/Luma’tik - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit - Mahogany/Bearturtle - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit - Mahogany/Human Form - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit - Mahogany/Flying Lemur Form - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air - Mahogany/Airdash - Mahogany.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Bearturtle.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Human Form.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Flying Lemur Form.md",
-    "Player Root/Rules/Bending Rules/Air/Airbending Moves/Level 1/Air Blade.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Spiritbending Moves.md",
-    "Player Root/variable/PC_variables/Ash/Ash_Earthbending DC.md",
-    "Player Root/Rules/Bending Rules/Spirit/Mechanics/Spiritbending.md",
-    "Player Root/Rules/Bending Rules/Spirit/Mechanics/Avatar Spirit Check.md",
-    "Player Root/Rules/Bending Rules/Spirit/Mechanics/Avatar Spirit Bridge Level.md",
-    "Player Root/PCs/Mahogany/Mahogany character sheet.md",
+    "Player Root/PCs/Tapioca/Tapi Inventory.md",
+    "Player Root/PCs/Anju/Anju_variables.md",
+    "Player Root/PCs/Anju/Anju Inventory.md",
+    "Mycelium/Player Root/PCs/Anju/Anju Character Sheet.md",
+    "Mycelium/Player Root/PCs/Anju",
+    "Mycelium/Player Root/PCs",
+    "Mycelium/Player Root",
+    "Player Root/PCs/Anju/Anju Notes.md",
+    "Player Root/graphs/test-created-by-agent.md",
+    "Mycelium/scripts/Python/__pycache__/frontend_api.cpython-312.pyc",
+    "Mycelium/scripts/Python/run_frontend_api.py",
+    "Mycelium/scripts/Python/frontend_api.py",
+    "Mycelium/data/template/template_Character_Sheet.md",
+    "Player Root/Player Root_wikigraph_treemap.html",
+    "Player Root/Player Root_wikigraph_sunburst.html",
+    "Player Root/Rules/Bending Rules/Bending Rules_wikigraph_treemap.html",
+    "Player Root/Rules/Bending Rules/Bending Rules_wikigraph_sunburst.html",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 2/Spirit Ward - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 2/Luma’tik - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 2/Bearturtle - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 1/Untitled - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 1/Shapeshifting - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 1/Human Form - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 1/Flying Lemur Form - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air/Airbending Moves/Level 1/Tail Wind - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air/Airbending Moves/Level 1/Gentle Push - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air/Airbending Moves/Level 1/Airdash - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air/Airbending Moves/Level 1/Air Blade - Mahogany.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 3/Scorching_Aura - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 3/Rage Fuel - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Inferno Wave - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Flame Barrage - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Fireburst - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Emberlash - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Breath Control - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 1/Smoldering Focus - Sora.md",
     "Player Root/Maps/Avatar World.jpg",
     "Dms Root/Story/Airbender Nomands/3atljldbkbk41.jpg",
     "Dms Root/Story/Airbender Nomands/1664411181325.jpg",

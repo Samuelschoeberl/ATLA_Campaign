@@ -1,4 +1,12 @@
 Name: Mahogany
+## Vitals
+
+
+
+| key          |            value |
+| ------------ | ---------------: |
+| max_hp       |       50 |
+| current hp   |   50 |
 
 ## Core Stats
 
@@ -8,20 +16,13 @@ Name: Mahogany
 ## Bending Levels
 
 Total Bending Level: 3
+Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
 | Air     |    1 | 1d20 + 1 + 0    | 11    |
 | Spirit  | 2 | 1d20 + 2 + 0 | 12 |
-
-## Vitals
-
-
-
-| key          |            value |
-| ------------ | ---------------: |
-| [[max_hp]]   |       50 |
-| current hp   |   50 |
+|         |            |                        |                      |
 ## Defensive
 
 | key           |              Base | Bonus |
@@ -36,7 +37,6 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | ---------------------- | ------------------------: |
 | Airbending slot        |       2 |
 | Danger Sense Reactions | 1 |
-| Firebending slot       |      0 |
 | Spiritbending slot     |    2 |
 
 ## Water charges

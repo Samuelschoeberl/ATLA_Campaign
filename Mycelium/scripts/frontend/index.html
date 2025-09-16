@@ -266,10 +266,11 @@
 
     <script>
       // If the page was loaded from the local server, use the same host:port for backend
-      const defaultHost = location.hostname || "127.0.0.1";
+      // prefer an explicit override, otherwise use the same origin that served the frontend
       const BASE = (
-        window.MYCELIUM_BACKEND_BASE || `http://${defaultHost}:9001`
+        window.MYCELIUM_BACKEND_BASE || `${location.protocol}//${location.host}`
       ).replace(/\/$/, "");
+
       function encodeSegments(p) {
         if (!p) return "";
         return p
@@ -290,6 +291,91 @@
         Object.assign(el, props);
         return el;
       };
+
+      // Create a new .md file on the server. folderPath may be a display path
+      // (e.g. "Player Root/some/dir") or a repo-relative path. The backend
+      // accepts either; normalize here to include the Player Root prefix
+      async function createMdFile(folderPath, filename) {
+        if (!filename || !filename.toLowerCase().endsWith(".md")) {
+          showNotif("Error", "Filename must end with .md");
+          return false;
+        }
+        // basic filename validation (no slashes/traversal)
+        if (/[\/\\]/.test(filename) || filename.includes("..")) {
+          showNotif("Error", "Invalid filename");
+          return false;
+        }
+
+        const PLAYER_ROOT_PREFIX = "Player Root/";
+        let folder = (folderPath || "").trim();
+        if (folder && !folder.startsWith(PLAYER_ROOT_PREFIX)) {
+          // if frontend uses repo-relative, prefix to match backend expectations
+          folder = PLAYER_ROOT_PREFIX + folder.replace(/^\/+/, "");
+        }
+
+        try {
+          const res = await fetch(`${BASE}/api/create-md-file`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ folderPath: folder, filename }),
+          });
+          const j = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            showNotif("Error", j.error || "Failed to create file");
+            return false;
+          }
+          showNotif("Created", filename);
+          // Refresh the current directory view. If folderPath was provided it
+          // may include the "Player Root/" prefix; strip that before calling
+          // renderDir which expects a repo-relative path.
+          try {
+            let p = "";
+            if (folderPath) {
+              p = String(folderPath)
+                .replace(/^Player Root\//i, "")
+                .replace(/^\/+/, "");
+            } else if (typeof stack !== "undefined" && stack.length) {
+              p = stack[stack.length - 1] || "";
+            }
+            if (typeof renderDir === "function") renderDir(p || "");
+          } catch (e) {
+            console.warn("refresh after create failed", e);
+          }
+          return true;
+        } catch (err) {
+          showNotif("Error", err.message || "Network error");
+          return false;
+        }
+      }
+
+      // Delegate clicks on "new .md file" UI elements. Any button that should
+      // trigger creation can have data-create-md and optional data-folder.
+      document.addEventListener("click", async (ev) => {
+        const btn = ev.target.closest && ev.target.closest("[data-create-md]");
+        if (!btn) return;
+        ev.preventDefault();
+        // prefer explicit data-folder, fallback to current stack path if available
+        const folder =
+          btn.getAttribute("data-folder") ||
+          (typeof curpathEl !== "undefined" &&
+            curpathEl &&
+            curpathEl.textContent) ||
+          "";
+        const name = prompt("New filename (include .md):", "new-file.md");
+        if (!name) return;
+        const ok = await createMdFile(folder, name.trim());
+        if (ok) {
+          // refresh current directory view if renderDir is available
+          if (typeof renderDir === "function") {
+            // use current stack top or folder text
+            const p = stack && stack.length ? stack[stack.length - 1] : folder;
+            renderDir(p || "");
+          } else {
+            // fallback: reload the page
+            location.reload();
+          }
+        }
+      });
 
       // small utilities
       async function hashText(text) {
@@ -649,6 +735,19 @@
           );
           ul.appendChild(li);
         }
+        // Add "New .md file" button when viewing a directory
+        try {
+          const newMdDiv = create("div", { style: "margin:12px 0;" });
+          const newMdBtn = create("button", { textContent: "New .md file" });
+          // mark for the delegated click handler and include current folder
+          newMdBtn.dataset.createMd = "1";
+          newMdBtn.dataset.folder = j.path || p || "";
+          newMdDiv.appendChild(newMdBtn);
+          entriesWrap.appendChild(newMdDiv);
+        } catch (e) {
+          console.warn("failed to render new file button", e);
+        }
+
         entriesWrap.appendChild(ul);
         // show md previews
         const mds = entries.filter(
@@ -890,12 +989,31 @@
       }
 
       async function doSave(path, content, forceOverwrite) {
+        // Determine whether to route this save through the special
+        // `/update_sheet/<Name>` wrapper. Only do that for files that are
+        // clearly a character sheet. Previously we routed any file under
+        // `Player Root/PCs/<Name>/...` which caused unrelated files like
+        // `<Name>_variables.md` to be written into the character sheet.
         let saveUrl = null;
         try {
-          let decoded = path.replace(/^Player Root\//i, "");
+          const decoded = path.replace(/^Player Root\//i, "");
           const parts = decoded.split("/").filter(Boolean);
-          if (parts.length >= 2 && parts[0].toLowerCase() === "pcs")
-            saveUrl = BASE + "/update_sheet/" + encodeURIComponent(parts[1]);
+          if (parts.length >= 2 && parts[0].toLowerCase() === "pcs") {
+            const fileName = parts.slice(2).join("/") || ""; // path inside the PC folder
+            const baseFile = parts.slice(-1)[0] || "";
+            const pcName = parts[1];
+            // Normalize and detect common character-sheet patterns.
+            const n = baseFile.toLowerCase();
+            const isCharacterSheet =
+              n.includes("character sheet") || // explicit pattern
+              n === (pcName + " character sheet.md").toLowerCase() ||
+              n === (pcName + "_character_sheet.md").toLowerCase() ||
+              // some files use just '<Name>.md' as the canonical sheet
+              n === (pcName + ".md").toLowerCase();
+            if (isCharacterSheet) {
+              saveUrl = BASE + "/update_sheet/" + encodeURIComponent(pcName);
+            }
+          }
         } catch (e) {}
         try {
           const url = saveUrl
@@ -923,6 +1041,14 @@
               ws.send(JSON.stringify({ event: "saved", path, clientId }));
           } catch (e) {}
           showNotif("Saved", path.replace(/^Player Root\//i, ""));
+          // Reload the file from server to ensure the editor shows the
+          // canonical saved content (avoids stale or empty previews).
+          try {
+            if (typeof openFile === "function")
+              openFile(path, openFileName || path.split("/").pop());
+          } catch (e) {
+            console.warn("failed to re-open file after save", e);
+          }
         } catch (err) {
           $("#status").textContent = "error";
           showNotif("Save error", String(err));

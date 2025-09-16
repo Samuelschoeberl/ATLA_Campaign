@@ -1,4 +1,12 @@
 Name: Anju
+## Vitals
+
+
+
+| key          |            value |
+| ------------ | ---------------: |
+| max_hp       |       95 |
+| current hp   |   95 |
 
 ## Core Stats
 
@@ -14,20 +22,13 @@ Name: Anju
 ## Bending Levels
 
 Total Bending Level: 3
+Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
 | Water   |  2 | 1d20 + 2 + 5  | 17  |
 | Earth   |  1 | 1d20 + 1 + 3  | 14  |
-
-## Vitals
-
-
-
-| key          |            value |
-| ------------ | ---------------: |
-| [[max_hp]]   |       95 |
-| current hp   |   95 |
+|         |            |                        |                      |
 ## Defensive
 
 | key           |              Base | Bonus |
@@ -52,3 +53,6 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 
 #Anju #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Water charge | 24 |

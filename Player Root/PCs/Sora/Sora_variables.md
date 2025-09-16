@@ -7,11 +7,14 @@
 | airbending.dc | 12 |
 | airbending.slot | 0 |
 | airbending_slot | 0 |
+| barrier | 0 |
 | cha | 8 |
 | cl | 3 |
 | con | 2 |
 | current.hp | 80 |
 | current_hp | 80 |
+| damage dice bonus | 0 |
+| damage.dice.bonus | 0 |
 | danger sense reaction | 0 |
 | danger.sense.reaction | 0 |
 | dex | 2 |

@@ -1,4 +1,13 @@
 Name: Ash
+## Vitals
+
+
+
+| key          |            value |
+| ------------ | ---------------: |
+| max_hp       |       65 |
+| current hp   |   65 |
+| Stress Level | 0 |
 
 ## Core Stats
 
@@ -14,21 +23,13 @@ Name: Ash
 ## Bending Levels
 
 Total Bending Level: 3
+Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
 | Fire    |   2 | 1d20 + 2 + 8   | 20   |
 | Spirit  | 1 | 1d20 + 1 + 1 | 19 |
-
-## Vitals
-
-
-
-| key          |            value |
-| ------------ | ---------------: |
-| [[max_hp]]   |       65 |
-| current hp   |   65 |
-| Stress Level | 0 |
+|         |            |                        |                      |
 ## Defensive
 
 | key           |              Base | Bonus |
