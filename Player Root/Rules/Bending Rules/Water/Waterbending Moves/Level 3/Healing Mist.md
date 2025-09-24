@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Cyclic Flow]]
 [[Concentration]]
 [[Level 3]]
@@ -14,6 +17,8 @@ Effect:
 
 #Cyclic_Flow
 
+#Cyclic_Flow
+#Level3
 #player_root
 #water
-#Level3
+```

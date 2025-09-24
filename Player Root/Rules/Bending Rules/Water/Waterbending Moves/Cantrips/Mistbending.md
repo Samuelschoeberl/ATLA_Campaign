@@ -1,3 +1,5 @@
+```markdown
+#Action
 
 - **Creating Mist:**
 - **Cost:** 1 Water Charge per 10 ft radius .
@@ -12,4 +14,6 @@ Tags:
 [[Waterbending]]
 [[Player Root]]
 
+#Waterbending
 #player_root
+```

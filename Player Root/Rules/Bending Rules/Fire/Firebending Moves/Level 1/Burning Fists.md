@@ -1,16 +1,15 @@
-[[Action]]
-[[Level 1]]
+
+#Action
 [[Stress Level]]
 [[Damaging Move]]
 
 - Range: [[Melee]]
 - [[Fire Fire Attack Roll]]: Attacks [[Firebending Slot]] times
-- Damage: 1d6 + [[Strength]] Bludgeoning + 1d12 fire
+- Damage: 1d6 + [[Strength]] Bludgeoning and 1d4 Fire Damage
 
-[[Firebending]]
-[[Firebending Move]]
-[[Player Root]]
 
-#player_root
-#fire
+
 #Level1
+#fire
+#player_root
+#stress_level

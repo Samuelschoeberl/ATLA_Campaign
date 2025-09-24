@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 **Boulder Throw**
 
 **Level 3 Slot**
@@ -15,4 +18,6 @@ Tags:
 [[Earthbending]]
 [[Player Root]]
 
+#Earthbending
 #player_root
+```

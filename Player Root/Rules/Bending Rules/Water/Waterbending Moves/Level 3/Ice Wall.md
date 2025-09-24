@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Level 3]]
 - **Cost:** 4 [[Water Charge]]s.
 - **Type:** [[Action]].
@@ -12,6 +15,9 @@
 - [[Ice Wall]]
 
 Tags:
-#water 
-#player_root
+#water
+
 #Level3
+#player_root
+#water
+```

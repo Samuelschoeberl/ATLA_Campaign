@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Reaction]]
 
 - **Range:** 5 * [[Waterbending Level]]meter.
@@ -11,6 +14,7 @@
 [[Level 2]]
 [[Player Root]]
 
+#Level2
 #player_root
 #water
-#Level2
+```

@@ -6,18 +6,18 @@ Name: Rio
 | key          |            value |
 | ------------ | ---------------: |
 | max_hp       |       90 |
-| current hp   |   90 |
+| current hp   |   76 |
 | Stress Level | 0 |
 
 ## Core Stats
 
-| Stat         |            Value |
-| ------------ | ---------------: |
+| Stat         | Value |
+| ------------ | ----: |
 | Strength     |     1 |
-| Dexterity    |    6 |
-| Constitution | 2 |
-| Intelligence | 8 |
-| Wisdom       |       2 |
+| Dexterity    |     6 |
+| Constitution |     2 |
+| Intelligence |     8 |
+| Wisdom       |     2 |
 | Charisma     |     4 |
 
 ## Bending Levels
@@ -48,7 +48,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Environmental Variable     |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 20 |
+| environmental water charge | 55 |
 | Waterbottle charge         |         4 |
 
 

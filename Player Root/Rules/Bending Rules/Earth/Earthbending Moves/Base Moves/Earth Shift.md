@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Bonus Action]]
 Cantrip
 - **Range:** self and every creature within 1+ 1 * [[Earthbending Slot]] meters of you
@@ -8,5 +11,6 @@ Tripping opponents with minor terrain manipulation. The target must succeed on a
 [[Earthbending]]
 [[Player Root]]
 
-#player_root
 #earth
+#player_root
+```

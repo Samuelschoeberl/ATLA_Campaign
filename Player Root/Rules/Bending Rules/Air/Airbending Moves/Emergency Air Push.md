@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Reaction]]
 Range: 3 * [[Airbending Slot]] meters
 Effect:
@@ -5,5 +8,6 @@ Area control technique that lets you push 2 * [[Airbending Slot]] Creatures with
 [[Airbending]]
 [[Player Root]]
 
-#player_root
 #air
+#player_root
+```

@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 **Level 2**
 [[Action]]
 - Range: 2 * [[Earthbending Slot]] Meters
@@ -8,5 +11,6 @@
 [[Earthbending]]
 [[Player Root]]
 
-#player_root
 #earth
+#player_root
+```

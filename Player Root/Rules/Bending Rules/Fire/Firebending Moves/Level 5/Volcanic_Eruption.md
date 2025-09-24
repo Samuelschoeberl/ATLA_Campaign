@@ -1,4 +1,5 @@
-# Volcanic Eruption
+```markdown
+#Volcanic_Eruption
 #firebending #level5
 
 - **Volcanic Eruption**
@@ -11,4 +12,7 @@
 [[Firebending Move]]
 [[Player Root]]
 
+#firebending
+#level5
 #player_root
+```

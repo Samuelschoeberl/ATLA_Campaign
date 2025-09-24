@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 **Earthen Fortress**
 
 **Level 4 Slot**
@@ -15,4 +18,6 @@ Tags:
 [[Earthbending]]
 [[Player Root]]
 
+#Earthbending
 #player_root
+```

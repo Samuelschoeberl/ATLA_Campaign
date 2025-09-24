@@ -1,4 +1,5 @@
-#Collectionfile 
+```markdown
+#Collectionfile
 
 These Moves can be used without expending slots and are meant for out of combat usage
 <!-- BEGIN-AUTO-COLLECTION:Utility -->
@@ -22,5 +23,7 @@ These Moves can be used without expending slots and are meant for out of combat 
 
 [[Player Root]]
 
+#Collectionfile
 #player_root
 #spirit
+```

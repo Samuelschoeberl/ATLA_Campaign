@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 Glassfruit Varieties
 
 Short catalogue of common glassfruit types and their flavour/affinities:
@@ -13,3 +16,9 @@ Tags: #glassfruit #varieties #catalogue #mechanics
 Quick storytelling prompt (skillcheck):
 
 - A caravan needs a Watermelon Bastion prepared in a hurry. Team has time for one quick anneal: combined Press & Heat check (DC = 8 + X). Success yields a tempered bastion for defence; failure yields fragmented shards that must be cleared before travel.
+
+#catalogue
+#glassfruit
+#mechanics
+#varieties
+```

@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Bonus Action]]
 [[Level 2]]
 [[Lingering Effect]]
@@ -17,6 +20,7 @@
 [[Firebending Move]]
 [[Player Root]]
 
-#player_root
-#fire
 #Level2
+#fire
+#player_root
+```

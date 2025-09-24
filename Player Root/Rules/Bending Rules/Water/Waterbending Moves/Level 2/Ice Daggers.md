@@ -1,4 +1,5 @@
-#### **Ice Daggers (2nd Level Move)**
+```markdown
+#**Ice_Daggers_(2nd_Level_Move)**
 
 - **Cost:** 1-2*[[CL]] [[Water Charges]].
 - **Type:** [[Action]].
@@ -14,6 +15,9 @@
 - [[Int]]
 
 Tags:
-#water 
-#player_root
+#water
+
 #Level2
+#player_root
+#water
+```

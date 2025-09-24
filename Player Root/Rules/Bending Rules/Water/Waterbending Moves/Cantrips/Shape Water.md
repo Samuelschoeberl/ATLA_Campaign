@@ -1,4 +1,5 @@
-#### **Shape Water (Cantrip)**
+```markdown
+#**Shape_Water_(Cantrip)**
 
 - **Cost:** None.
 - **Range:** 30 ft.
@@ -19,4 +20,6 @@ Tags:
 [[Waterbending]]
 [[Player Root]]
 
+#Waterbending
 #player_root
+```

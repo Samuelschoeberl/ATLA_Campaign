@@ -114,6 +114,24 @@
         padding: 8px 10px;
         border-radius: 6px;
       }
+      /* special styling for links that point to .html pages (static exports) */
+      ul.entries li a.html-link {
+        background: linear-gradient(180deg, #fff7e6, #fff0d1);
+        color: #7a3b00;
+        padding: 6px 8px;
+        border-radius: 4px;
+        text-decoration: underline;
+      }
+      /* small external icon after html links and tooltip support */
+      ul.entries li a.html-link::after {
+        content: " \2197"; /* north east arrow ↗ */
+        font-size: 0.85em;
+        margin-left: 6px;
+        opacity: 0.9;
+      }
+      ul.entries li a.html-link[title] {
+        cursor: pointer;
+      }
       .md-container {
         margin-top: 18px;
         display: flex;
@@ -125,6 +143,32 @@
         background: #c3c3c3;
         padding: 12px;
         border-radius: 6px;
+      }
+      /* Make markdown-rendered tables show clear cell borders in previews */
+      .markdown-file table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        background: white;
+      }
+      .markdown-file table,
+      .markdown-file table th,
+      .markdown-file table td {
+        border: 1px solid #999;
+      }
+      .markdown-file table th,
+      .markdown-file table td {
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .markdown-file table th {
+        background: #ececec;
+        font-weight: 600;
+      }
+      /* cells slightly darker than the markdown card background */
+      .markdown-file table td {
+        background: #bfbfbf;
       }
       .file-title {
         display: flex;
@@ -353,8 +397,12 @@
       document.addEventListener("click", async (ev) => {
         const btn = ev.target.closest && ev.target.closest("[data-create-md]");
         if (!btn) return;
+        // If the UI already rendered an inline input nearby, let that handle creation
+        const nearbyInput =
+          btn.parentElement && btn.parentElement.querySelector("input");
+        if (nearbyInput) return; // inline UI handles the action
         ev.preventDefault();
-        // prefer explicit data-folder, fallback to current stack path if available
+        // legacy fallback: prefer explicit data-folder, fallback to current stack path if available
         const folder =
           btn.getAttribute("data-folder") ||
           (typeof curpathEl !== "undefined" &&
@@ -365,13 +413,10 @@
         if (!name) return;
         const ok = await createMdFile(folder, name.trim());
         if (ok) {
-          // refresh current directory view if renderDir is available
           if (typeof renderDir === "function") {
-            // use current stack top or folder text
             const p = stack && stack.length ? stack[stack.length - 1] : folder;
             renderDir(p || "");
           } else {
-            // fallback: reload the page
             location.reload();
           }
         }
@@ -538,6 +583,46 @@
         return `hsl(${h} ${s}% ${l}%)`;
       }
 
+      // Adjust HSL lightness in strings like 'hsl(H S% L%)'. delta is in percent points.
+      function adjustHslLightness(hslStr, delta) {
+        if (!hslStr || typeof hslStr !== "string") return hslStr;
+        const m = hslStr.match(
+          /hsl\s*\(\s*([0-9.]+)\s+([0-9.]+)%\s+([0-9.]+)%\s*\)/i
+        );
+        if (!m) return hslStr;
+        const h = m[1];
+        const s = m[2];
+        let l = parseFloat(m[3]);
+        l = Math.max(0, Math.min(100, l + delta));
+        return `hsl(${h} ${s}% ${l}%)`;
+      }
+
+      // Style table cells inside a rendered preview element so their background
+      // is a slightly darker variant of the surrounding node background.
+      function stylePreviewTables(previewEl, nodeBg) {
+        try {
+          if (!previewEl) return;
+          // compute a slightly darker cell bg and slightly lighter header bg
+          const cellBg = adjustHslLightness(nodeBg, -6);
+          const headerBg = adjustHslLightness(nodeBg, 6);
+          const tables = previewEl.querySelectorAll("table");
+          tables.forEach((tbl) => {
+            // fallback: keep table background white unless nodeBg is parseable
+            if (tbl.style) tbl.style.background = "transparent";
+            const ths = tbl.querySelectorAll("th");
+            ths.forEach((th) => {
+              th.style.background = headerBg;
+            });
+            const tds = tbl.querySelectorAll("td");
+            tds.forEach((td) => {
+              td.style.background = cellBg;
+            });
+          });
+        } catch (e) {
+          console.warn("stylePreviewTables failed", e);
+        }
+      }
+
       // Global error overlay wiring
       function showErrorOverlay(msg) {
         const overlay = document.getElementById("error-overlay");
@@ -699,6 +784,12 @@
             textContent: e.name,
             ...(isHtmlFile ? { target: "_blank", rel: "noopener" } : {}),
           });
+          // mark links that point to .html files so they can be styled differently
+          if (isHtmlFile) {
+            a.classList.add("html-link");
+            // give a clear tooltip so users know this opens externally
+            a.title = "Opens in new tab (external)";
+          }
           a.addEventListener("click", (ev) => {
             // allow modified clicks (ctrl/cmd/shift/alt) and middle-click to open
             // the href in a new tab/window via the browser default behavior
@@ -735,17 +826,44 @@
           );
           ul.appendChild(li);
         }
-        // Add "New .md file" button when viewing a directory
+        // Add an inline "New .md file" input when viewing a directory
         try {
-          const newMdDiv = create("div", { style: "margin:12px 0;" });
-          const newMdBtn = create("button", { textContent: "New .md file" });
-          // mark for the delegated click handler and include current folder
-          newMdBtn.dataset.createMd = "1";
+          const newMdDiv = create("div", {
+            style: "margin:12px 0;display:flex;gap:8px;align-items:center",
+          });
+          const input = create("input", {
+            placeholder: "new-file.md",
+            style: "flex:1;padding:6px;border-radius:4px;border:1px solid #ddd",
+          });
+          const newMdBtn = create("button", { textContent: "Create" });
+          // supply the current folder via dataset so handlers can access it
           newMdBtn.dataset.folder = j.path || p || "";
+          // wire create action directly (lightweight, no modal)
+          newMdBtn.addEventListener("click", async (ev) => {
+            ev.preventDefault();
+            const name =
+              (input.value || "").trim() || input.placeholder || "new-file.md";
+            if (!name) return;
+            const ok = await createMdFile(newMdBtn.dataset.folder, name);
+            if (ok) {
+              // clear input and refresh current directory view
+              input.value = "";
+              if (typeof renderDir === "function") {
+                const ptop =
+                  stack && stack.length
+                    ? stack[stack.length - 1]
+                    : j.path || p || "";
+                renderDir(ptop || "");
+              } else {
+                location.reload();
+              }
+            }
+          });
+          newMdDiv.appendChild(input);
           newMdDiv.appendChild(newMdBtn);
           entriesWrap.appendChild(newMdDiv);
         } catch (e) {
-          console.warn("failed to render new file button", e);
+          console.warn("failed to render new file input", e);
         }
 
         entriesWrap.appendChild(ul);
@@ -785,6 +903,12 @@
             preview.innerHTML = DOMPurify.sanitize(
               marked.parse(j.content || "")
             );
+            try {
+              // style tables to use a variant of the node background
+              const nodeBg =
+                box.style.background || nodeColorForKey(f.path || f.name);
+              stylePreviewTables(preview, nodeBg);
+            } catch (e) {}
           })();
         }
       }
@@ -867,6 +991,11 @@
             $("#preview").innerHTML = DOMPurify.sanitize(
               marked.parse(j.content || "")
             );
+            try {
+              const nodeBg =
+                contentPane.style.background || nodeColorForKey(path || name);
+              stylePreviewTables($("#preview"), nodeBg);
+            } catch (e) {}
             statusEl.textContent = "";
             retryBtn.style.display = "none";
             openRawBtn.style.display = "none";

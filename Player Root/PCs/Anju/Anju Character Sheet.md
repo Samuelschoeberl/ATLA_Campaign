@@ -1,12 +1,13 @@
+
 Name: Anju
 ## Vitals
 
 
 
-| key          |            value |
-| ------------ | ---------------: |
-| max_hp       |       95 |
-| current hp   |   95 |
+| key        | value |
+| ---------- | ----: |
+| max_hp     |    95 |
+| current hp |    66 |
 
 ## Core Stats
 
@@ -46,13 +47,14 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 ## Water charges
 
-| Environmental Variable     |                          value |
-| -------------------------- | -----------------------------: |
-| Environmental water charge | 20 |
-| Waterbottle charge         |         4 |
+| Environmental Variable     | value |
+| -------------------------- | ----: |
+| environmental water charge |    55 |
+| Waterbottle charge         |     4 |
 
 
 #Anju #Character_Sheet
 
 > WARNING: The following character stats could not be placed by context and were appended:
-| Water charge | 24 |
+| Water charge | 14 |
+

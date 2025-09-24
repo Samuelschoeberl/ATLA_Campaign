@@ -1,4 +1,5 @@
-#Collectionfile 
+```markdown
+#Collectionfile
 <!-- BEGIN-AUTO-COLLECTION:Team-up Moves -->
 ## Backlinks
 
@@ -34,5 +35,7 @@
 
 [[Player Root]]
 
+#Collectionfile
 #player_root
 #teamup
+```

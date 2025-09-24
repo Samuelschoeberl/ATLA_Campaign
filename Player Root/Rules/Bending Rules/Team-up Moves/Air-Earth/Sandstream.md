@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 You may use Levels from **Air and Earth **.
 Each Bender-decides to which pool to add their Bending slots:
 -  **Y**(Earth): Yd12 Damage per projectile
@@ -8,5 +11,11 @@ Each Bender-decides to which pool to add their Bending slots:
 - One Earthbender shoots Y Sand Projectiles (rolls the Damage roll) and the Airbender controlls them to home to the X Targets)
 
 
-#player_root #air #earth #Level3 
+#player_root #air #earth #Level3
+
+#Level3
+#air
+#earth
+#player_root
 #teamup
+```

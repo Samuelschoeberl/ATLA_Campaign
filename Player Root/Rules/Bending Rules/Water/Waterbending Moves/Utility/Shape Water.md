@@ -1,4 +1,5 @@
-#### **Shape Water (Cantrip)**
+```markdown
+#**Shape_Water_(Cantrip)**
 #Action 
 #Concentration 
 
@@ -14,5 +15,12 @@
 Tags:
 #Waterbending
 #water 
-#Level1 
+#Level1
+
+#Action
+#Concentration
+#Level1
+#Waterbending
 #player_root
+#water
+```

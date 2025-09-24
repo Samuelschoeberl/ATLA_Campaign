@@ -1,4 +1,5 @@
-#shapeshifting_form 
+```markdown
+#shapeshifting_form
 **Name:** Luma’tik — Glimmerkin of Cracked Mirrors  
 **Type:** Lesser Spirit  
 **Domain:** Light, Trickery  
@@ -73,3 +74,9 @@ _Luma’tik is a playful, capricious entity—often found dancing between fractu
 
 
 #Level2 #spirit #player_root
+
+#Level2
+#player_root
+#shapeshifting_form
+#spirit
+```

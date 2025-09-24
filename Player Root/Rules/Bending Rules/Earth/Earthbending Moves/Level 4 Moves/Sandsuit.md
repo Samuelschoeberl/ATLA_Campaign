@@ -1,3 +1,5 @@
+```markdown
+#Action
 
 **Level 4**
 [[Concentration]]
@@ -20,4 +22,6 @@ Tags:
 [[Earthbending]]
 [[Player Root]]
 
+#Earthbending
 #player_root
+```

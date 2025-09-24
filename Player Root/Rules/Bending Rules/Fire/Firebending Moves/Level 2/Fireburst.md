@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Lingering Effect]]
 [[Action]]
   - **Range:** 5 * [[Firebending Slot]] meters. Sphere with a radius of [[Firebending Slot]] * 1 meters.
@@ -13,6 +16,7 @@
 [[Firebending Move]]
 [[Player Root]]
 
-#player_root
-#fire
 #Level2
+#fire
+#player_root
+```

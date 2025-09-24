@@ -1,1 +1,1 @@
-Your stuff
+$PATH

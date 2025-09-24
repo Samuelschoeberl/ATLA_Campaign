@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Reaction]]: Must be initiated by a Airbender in line of sight 
 [[Special Attacks]]
 [[Level 1]]
@@ -15,5 +18,6 @@ A soundblast builds from multiple frequencies and shatters the ground.
 [[Airbending]]
 [[Player Root]]
 
-#player_root
 #earth
+#player_root
+```

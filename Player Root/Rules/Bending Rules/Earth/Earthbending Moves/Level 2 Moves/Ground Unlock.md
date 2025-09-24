@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Bonus Action]]
 - Range: 3* [[Earthbending Slot]] Meters
 - Target: 1 * [[Earthbending Slot]]  Enemies within range
@@ -17,4 +20,8 @@ Tags:
 [[Earthbending]]
 [[Player Root]]
 
+#Earthbending
+#Immobilisation
+#Mobility
 #player_root
+```

@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Special Attacks]]
 [[Reaction]]: Must be initiated by a Firebender in line of sight 
 [[Level 1]]
@@ -17,5 +20,6 @@ Focused light is amplified by mirrored shards into a blinding beam.
 [[Firebending]]
 [[Player Root]]
 
-#player_root
 #earth
+#player_root
+```

@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 **Stone Shield**
 
 **Level 2**
@@ -19,4 +22,6 @@ Tags:
 [[Earthbending]]
 [[Player Root]]
 
+#Earthbending
 #player_root
+```

@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Bonus Action]]
 [[Level 3]]
 [[Stress Level]]
@@ -21,4 +24,7 @@
 [[Firebending Move]]
 [[Player Root]]
 
+#firebending
+#level3
 #player_root
+```

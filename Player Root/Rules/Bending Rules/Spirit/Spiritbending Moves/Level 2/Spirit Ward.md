@@ -1,4 +1,5 @@
-#Level2 
+```markdown
+#Level2
 #spirit 
 #Reaction 
 
@@ -10,6 +11,10 @@ Provides 4 * [[spiritbending slot]] [[General Armor]], [[Evasion]],  [[Barrier]]
 
 
 Tags:
-#spirit 
+#spirit
 
+#Level2
+#Reaction
 #player_root
+#spirit
+```

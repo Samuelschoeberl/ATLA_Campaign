@@ -1,4 +1,5 @@
-#### Shockfreeze (Cantrip)**
+```markdown
+#Shockfreeze_(Cantrip)**
 
 - **Cost:** None.
 - **Type:** [[Bonus Action]].
@@ -14,6 +15,12 @@ Tags:
 #Waterbending
 #freezing
 #Immobilisation 
-#water 
-#player_root
+#water
+
+#Immobilisation
 #Level4
+#Waterbending
+#freezing
+#player_root
+#water
+```

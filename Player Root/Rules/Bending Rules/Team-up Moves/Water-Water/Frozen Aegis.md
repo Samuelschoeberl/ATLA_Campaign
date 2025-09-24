@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 _Must be initiated by at least two Waterbenders._  
 You may use Levels from **Water only**.
 Each Bender-decides to which pool to add their Bending slots:
@@ -19,3 +22,4 @@ Each Bender-decides to which pool to add their Bending slots:
 
 #player_root
 #teamup
+```

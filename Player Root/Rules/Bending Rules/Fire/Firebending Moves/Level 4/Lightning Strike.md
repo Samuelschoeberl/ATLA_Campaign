@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Level 4]]
 
 - **Lightning Strike**
@@ -11,6 +14,7 @@
 [[Firebending Move]]
 [[Player Root]]
 
-#player_root
-#fire
 #Level4
+#fire
+#player_root
+```

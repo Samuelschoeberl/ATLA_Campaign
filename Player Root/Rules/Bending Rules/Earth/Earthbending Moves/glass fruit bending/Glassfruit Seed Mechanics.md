@@ -1,4 +1,5 @@
-## Glassfruit Team-Up Techniques 
+```markdown
+#Glassfruit_Team-Up_Techniques
 
 ### X = y*z
 
@@ -26,5 +27,6 @@ These are **powerful, multi-element, terrain-altering** moves that consume Glass
 [[Team-up Moves]]
 [[Player Root]]
 
-#player_root
 #earth
+#player_root
+```

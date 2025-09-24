@@ -73,7 +73,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Dms Root/Locations/Omashu/The Stone Beneath Still Breathes.md",
+                "file": "Player Root/Story/Session Transcript Summaries/Session 5.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -88,11 +88,35 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "The Stone Beneath Still Breathes"
+              "title": "Session 5"
             }
           },
           {
             "id": "8a6d2fa0e0b678d7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/PCs/Anju/Anju Character Sheet.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Anju Character Sheet"
+            }
+          },
+          {
+            "id": "bcc4b6b2b0323468",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -121,7 +145,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Mycelium/data/template/template_Character_Sheet.md",
+                "file": "Player Root/PCs/Anju/Anju_variables.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -136,11 +160,11 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "template_Character_Sheet"
+              "title": "Anju_variables"
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -173,7 +197,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "environmental_water_charges",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -319,44 +343,44 @@
       "runjs:RunJS": false
     }
   },
-  "active": "8a6d2fa0e0b678d7",
+  "active": "bcc4b6b2b0323468",
   "lastOpenFiles": [
-    "Player Root/PCs/Tapioca/Tapi Inventory.md",
+    "Mycelium/scripts/Python/run_frontend_api.md",
     "Player Root/PCs/Anju/Anju_variables.md",
-    "Player Root/PCs/Anju/Anju Inventory.md",
-    "Mycelium/Player Root/PCs/Anju/Anju Character Sheet.md",
-    "Mycelium/Player Root/PCs/Anju",
-    "Mycelium/Player Root/PCs",
-    "Mycelium/Player Root",
-    "Player Root/PCs/Anju/Anju Notes.md",
-    "Player Root/graphs/test-created-by-agent.md",
-    "Mycelium/scripts/Python/__pycache__/frontend_api.cpython-312.pyc",
-    "Mycelium/scripts/Python/run_frontend_api.py",
-    "Mycelium/scripts/Python/frontend_api.py",
+    "Player Root/PCs/stat_overview.md",
+    "Player Root/PCs/Anju/Anju Character Sheet.md",
+    "Player Root/variable/PC_variables/Anju/Anju_general_armor.md",
+    "unsorted/supress_warning_character_sheet_generator.md",
+    "Player Root/variable/environmental/environmental_water_charge.md",
+    "Player Root/variable/environmental/environmental_water_charges.md",
+    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 2/Emberlash.md",
+    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Smoldering Focus.md",
+    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 2/Breath Control.md",
+    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Control Flame.md",
+    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Burning Fists.md",
+    "Player Root/Rules/Bending Rules/Fire/Mechanics/Stress Level.md",
+    "Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending Level.md",
+    "Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending Slot.md",
+    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 2 Moves/Gravel Vortex.md",
+    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 2 Moves/Ground Lock.md",
+    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Earth Brace.md",
+    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Rock Hurl.md",
+    "scripts/normalize_moves.py",
+    "scripts",
     "Mycelium/data/template/template_Character_Sheet.md",
-    "Player Root/Player Root_wikigraph_treemap.html",
-    "Player Root/Player Root_wikigraph_sunburst.html",
-    "Player Root/Rules/Bending Rules/Bending Rules_wikigraph_treemap.html",
-    "Player Root/Rules/Bending Rules/Bending Rules_wikigraph_sunburst.html",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 2/Spirit Ward - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 2/Luma’tik - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 2/Bearturtle - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 1/Untitled - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 1/Shapeshifting - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 1/Human Form - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Level 1/Flying Lemur Form - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air/Airbending Moves/Level 1/Tail Wind - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air/Airbending Moves/Level 1/Gentle Push - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air/Airbending Moves/Level 1/Airdash - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Air/Airbending Moves/Level 1/Air Blade - Mahogany.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 3/Scorching_Aura - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 3/Rage Fuel - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Inferno Wave - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Flame Barrage - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Fireburst - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Emberlash - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 2/Breath Control - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/Fire/Firebending Moves/Level 1/Smoldering Focus - Sora.md",
+    "Player Root/variable/PC_variables/Tapioca/Tapioca_environmental_water_charges.md",
+    "Mycelium/scripts/manuals/recreate_pcs.md",
+    "Player Root/variable/PC_variables/Sora/Sora_environmental_water_charges.md",
+    "Player Root/variable/PC_variables/Rio/Rio_environmental_water_charges.md",
+    "Player Root/variable/PC_variables/Ash/Ash_environmental_water_charges.md",
+    "Mycelium/scripts/Python/generate_stat_overview.py",
+    "Player Root/variable/environmental/secondary_stat",
+    "Mycelium/scripts/Python/__pycache__/run_frontend_api.cpython-313.pyc",
+    "Player Root/PCs/Puy/Puy character sheet.md.bak",
+    "Player Root/PCs/Tapioca/Tapioca character sheet.md.bak",
+    "Player Root/PCs/Ash/Ash character sheet.md.bak",
+    "Player Root/PCs/Rio/Rio character sheet.md.bak",
+    "Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md.bak",
     "Player Root/Maps/Avatar World.jpg",
     "Dms Root/Story/Airbender Nomands/3atljldbkbk41.jpg",
     "Dms Root/Story/Airbender Nomands/1664411181325.jpg",

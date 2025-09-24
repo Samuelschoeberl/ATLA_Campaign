@@ -1,5 +1,8 @@
-#Collectionfile 
+```markdown
+#Collectionfile
 [[Firebending]]
 
-#player_root
+#Collectionfile
 #fire
+#player_root
+```

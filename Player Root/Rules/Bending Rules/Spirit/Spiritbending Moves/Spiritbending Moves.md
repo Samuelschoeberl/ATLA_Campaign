@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Collectionfile]]
 #Collectionfile 
 # Spiritbending Moves
@@ -87,5 +90,7 @@ Design notes:
 
 [[Player Root]]
 
+#Collectionfile
 #player_root
 #spirit
+```

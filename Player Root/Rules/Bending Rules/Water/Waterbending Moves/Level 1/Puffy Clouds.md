@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 **Type:** Waterbending spiritbending sub-skill  
 
 **Effect:**  
@@ -28,6 +31,7 @@ The bender draws a small amount of water and vaporizes it into a dense mist that
 [[Level 1]]
 [[Player Root]]
 
+#Level1
 #player_root
 #water
-#Level1
+```

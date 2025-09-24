@@ -1,4 +1,5 @@
-#Bonus_Action 
+```markdown
+#Bonus_Action
 #Concentration
 - **Range:** 2 * [[Airbending Slot]] Meter radius centered on yourself that moves with you.
 - **Duration:** Until the start of your next Turn.
@@ -10,7 +11,10 @@
 
 Lingering Effect:  All Ranged Attacks that enter or exit the are made with Disadvantage.
 
-#Lingering_Effect
-#player_root
-#air
+#Bonus_Action
+#Concentration
 #Level4
+#Lingering_Effect
+#air
+#player_root
+```

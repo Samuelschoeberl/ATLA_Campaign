@@ -50,7 +50,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Environmental Variable     |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 20 |
+| environmental water charge | 55 |
 
 
 #Puy #Character_Sheet

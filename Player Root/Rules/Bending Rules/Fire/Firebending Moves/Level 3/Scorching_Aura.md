@@ -1,4 +1,5 @@
-# Scorching Aura
+```markdown
+#Scorching_Aura
 #firebending #level3
 
 - **Scorching Aura**
@@ -10,4 +11,7 @@
 [[Firebending Move]]
 [[Player Root]]
 
+#firebending
+#level3
 #player_root
+```

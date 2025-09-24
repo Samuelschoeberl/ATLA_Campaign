@@ -1,4 +1,5 @@
-#### **Water Whip (Level 1 Ability)**
+```markdown
+#**Water_Whip_(Level_1_Ability)**
 
 - **Cost:** 1 [[Water Charge]].
 - **Range:** 20 ft.
@@ -18,6 +19,8 @@
 - [[Int]]
 
 Tags:
-#water
-#player_root
+
 #Level1
+#player_root
+#water
+```

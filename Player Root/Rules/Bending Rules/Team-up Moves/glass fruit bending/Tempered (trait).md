@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 Tempered (trait)
 
 A quality granted by successful annealing under controlled pressure.
@@ -14,3 +17,9 @@ Storytelling / short use-case (skillcheck):
 
 - Situation: Players must decide whether to risk a quick anneal to produce a tempered shard before an approaching bandit raid.
 - Skillcheck: Single combined Press & Heat check (DC = 8 + X). Success: fruit gains Tempered; failure: fruit is fragile or explodes, forcing an improvised defence or retreat.
+
+#glassfruit
+#mechanics
+#tempered
+#trait
+```

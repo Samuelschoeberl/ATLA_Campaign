@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 Press & Anneal
 
 The controlled heating and pressurised annealing stage used to strengthen Glassfruit and activate elemental traits.
@@ -18,3 +21,10 @@ Tags: #press #anneal #mechanics #glassfruit #omashu
 Storytelling hook (skillcheck):
 
 - A rival House sabotaged a pressure valve; the team must reroute steam while holding the anneal. Firebender Press Roll (DC 12 + X/2) to keep temp steady; Waterbender Pressure Check (DC 10) to vent safely. Failure escalates into an environmental hazard encounter.
+
+#anneal
+#glassfruit
+#mechanics
+#omashu
+#press
+```

@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Special Attacks]]
 [[Reaction]]: Must be initiated by a Earthbender in line of sight 
 [[Level 1]]
@@ -17,5 +20,6 @@
 [[Firebending]]
 [[Player Root]]
 
-#player_root
 #earth
+#player_root
+```

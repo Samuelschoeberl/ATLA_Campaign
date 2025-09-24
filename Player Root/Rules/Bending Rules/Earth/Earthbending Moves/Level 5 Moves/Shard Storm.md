@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 **Shard Storm**
 
 **Level 5 Slot**
@@ -15,4 +18,6 @@ Tags:
 [[Earthbending]]
 [[Player Root]]
 
+#Earthbending
 #player_root
+```

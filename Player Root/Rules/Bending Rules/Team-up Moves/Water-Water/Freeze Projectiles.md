@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 You may use Levels from **Water only**.
 Each Bender-decides to which pool to add their Bending slots:
 -  **X**: X number of projectiles 
@@ -12,3 +15,4 @@ Each Bender-decides to which pool to add their Bending slots:
 
 #player_root
 #teamup
+```

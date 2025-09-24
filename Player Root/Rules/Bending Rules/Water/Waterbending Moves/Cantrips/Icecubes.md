@@ -1,4 +1,5 @@
-#### **Icecubes (Cantrip)**
+```markdown
+#**Icecubes_(Cantrip)**
 
 - **Cost:** None.
 - **Type:** [[Action]].
@@ -18,4 +19,7 @@ Tags:
 [[Waterbending]]
 [[Player Root]]
 
+#Waterbending
+#freezing
 #player_root
+```

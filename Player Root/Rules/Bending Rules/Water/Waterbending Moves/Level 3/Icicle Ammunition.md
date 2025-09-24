@@ -1,3 +1,5 @@
+```markdown
+#Action
 
 - **Cost:** 3- 2 * CL Water Charges.
 - **Type:** [[Action]].
@@ -15,7 +17,8 @@
 Tags:
 #Waterbending
 
-
-#player_root
 #Level3
-#water 
+#Waterbending
+#player_root
+#water
+```

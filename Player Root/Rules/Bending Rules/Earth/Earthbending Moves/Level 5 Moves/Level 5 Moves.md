@@ -1,4 +1,5 @@
-
+```markdown
+#Action
 
 **Links**:
 - [[Catapult Step]]
@@ -9,4 +10,6 @@ Tags:
 [[Earthbending]]
 [[Player Root]]
 
+#Earthbending
 #player_root
+```

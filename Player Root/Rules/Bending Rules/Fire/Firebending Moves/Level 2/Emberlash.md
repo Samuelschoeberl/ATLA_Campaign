@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Stress Level]]
 [[Level 2]]
 
@@ -17,5 +20,9 @@
 [[Player Root]]
 
 #player_root #Rules
-#fire
+
 #Level2
+#Rules
+#fire
+#player_root
+```

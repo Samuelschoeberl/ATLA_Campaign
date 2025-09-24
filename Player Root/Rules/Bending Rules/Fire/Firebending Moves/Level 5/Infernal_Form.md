@@ -1,4 +1,5 @@
-# Infernal Form
+```markdown
+#Infernal_Form
 #firebending #level5
 
 - **Infernal Form**
@@ -10,4 +11,7 @@
 [[Firebending Move]]
 [[Player Root]]
 
+#firebending
+#level5
 #player_root
+```

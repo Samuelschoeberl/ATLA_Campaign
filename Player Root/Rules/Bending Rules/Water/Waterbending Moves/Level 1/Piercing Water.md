@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Action]]
 [[Level 1]]
 
@@ -14,3 +17,9 @@ Tags:
 
 #player_root
 #Level1 #water
+
+#Level1
+#Waterbending
+#player_root
+#water
+```

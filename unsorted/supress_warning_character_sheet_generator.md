@@ -6,7 +6,6 @@ by the sheets or propagated from sheets and can legitimately appear unused in
 some contexts.
 
 - environmental_water_charge
-- environmental_water_charges
 - Environmental water charge
 - max_hp
 - Airbending DC
@@ -15,5 +14,7 @@ some contexts.
 - Water Attack Roll
 - Earth Attack Roll
 - Water Charges
+- Water_Charge
+- Water Charge
 
 If you want to add more names, append one per line in the same format.

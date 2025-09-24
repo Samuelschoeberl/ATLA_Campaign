@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Action]]
 [[Level 1]]
 
@@ -11,6 +14,7 @@
 [[Firebending Move]]
 [[Player Root]]
 
-#player_root
-#fire
 #Level1
+#fire
+#player_root
+```

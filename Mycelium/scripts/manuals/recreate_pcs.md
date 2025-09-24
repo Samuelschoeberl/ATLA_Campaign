@@ -56,7 +56,7 @@ Usage
 
 - Update an existing variable or create it if missing:
 
-  python3 Mycelium/scripts/python/change_var.py --name "environmental_water_charges" --value 7 --tags "#variable #custom"
+  python3 Mycelium/scripts/python/change_var.py --name "environmental_water_charge" --value 7 --tags "#variable #custom"
 
 Options
 
@@ -80,7 +80,7 @@ Examples
 
 - Update an existing variable:
 
-  python3 Mycelium/scripts/python/change_var.py -n Environmental_Water_Charges -v 5
+  python3 Mycelium/scripts/python/change_var.py -n Environmental_Water_Charge -v 5
 
 - Create a new variable with custom tags and a string value:
 

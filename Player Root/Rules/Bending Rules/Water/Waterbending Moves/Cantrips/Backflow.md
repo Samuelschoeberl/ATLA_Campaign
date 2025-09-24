@@ -1,3 +1,5 @@
+```markdown
+#Action
 
 - **Cost:** None.
 - **Type:** [[Bonus Action]].
@@ -16,4 +18,6 @@ Tags:
 [[Waterbending]]
 [[Player Root]]
 
+#Waterbending
 #player_root
+```

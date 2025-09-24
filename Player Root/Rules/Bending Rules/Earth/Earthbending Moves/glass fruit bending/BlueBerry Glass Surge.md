@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 [[Special Attacks]]
 [[Reaction]]: Must be initiated by a Waterbender in line of sight 
 [[Level 1]]
@@ -12,5 +15,6 @@ Stick and grow trapping enemies and reshaping the terrain.
 
 [[Player Root]]
 
-#player_root
 #earth
+#player_root
+```
