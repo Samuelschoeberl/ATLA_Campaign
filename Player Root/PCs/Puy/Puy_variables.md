@@ -26,8 +26,8 @@
 | earthbending.dc | 17 |
 | earthbending.slot | 4 |
 | earthbending_slot | 4 |
-| environmental.water.charge | 20 |
-| environmental_water_charge | 20 |
+| environmental.water.charge | 3 |
+| environmental_water_charge | 3 |
 | evasion | 13 |
 | fire | 1 |
 | fire attack roll | 1d20 + 1 + 3 |
@@ -55,8 +55,8 @@
 | water | 0 |
 | water attack roll | 1d20 + 0 + 1 |
 | water.attack.roll | 1d20 + 0 + 1 |
-| water.charge | 20 |
-| water_charge | 20 |
+| water.charge | 3 |
+| water_charge | 3 |
 | waterbending dc | 11 |
 | waterbending.dc | 11 |
 | waterbottle charge | 0 |

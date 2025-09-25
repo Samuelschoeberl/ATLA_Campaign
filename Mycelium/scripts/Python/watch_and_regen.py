@@ -121,10 +121,13 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
         for cand in candidates:
             if cand not in env_templates:
                 continue
-            global_var = vars_root.joinpath(cand + '.md')
+            # Prefer the actual template's canonical stem when writing files
+            tpl = env_templates.get(cand)
+            canonical_stem = tpl.stem if (tpl is not None) else cand
+            global_var = vars_root.joinpath(canonical_stem + '.md')
             sec_dir = vars_root.joinpath('secondary_stat')
             sec_dir.mkdir(parents=True, exist_ok=True)
-            sec_var = sec_dir.joinpath(cand + '.md')
+            sec_var = sec_dir.joinpath(canonical_stem + '.md')
             new_content = f"{val}\n\n#variable #secondary_stat #template #environmental_variables\n"
             # read canonical existing numeric value
             def _read_canonical(p: Path) -> Optional[str]:
@@ -553,10 +556,12 @@ def main() -> None:
                             if cand not in env_templates:
                                 continue
                             # canonical path(s)
-                            global_var = vars_root.joinpath(cand + '.md')
+                            tpl = env_templates.get(cand)
+                            canonical_stem = tpl.stem if (tpl is not None) else cand
+                            global_var = vars_root.joinpath(canonical_stem + '.md')
                             sec_dir = vars_root.joinpath('secondary_stat')
                             sec_dir.mkdir(parents=True, exist_ok=True)
-                            sec_var = sec_dir.joinpath(cand + '.md')
+                            sec_var = sec_dir.joinpath(canonical_stem + '.md')
                             # build canonical content we would write
                             new_content = f"{val}\n\n#variable #secondary_stat #template #environmental_variables\n"
                             # read canonical existing numeric value (if any)

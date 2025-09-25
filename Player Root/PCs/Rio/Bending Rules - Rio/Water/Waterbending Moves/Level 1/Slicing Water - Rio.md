@@ -1,4 +1,5 @@
-#### **Slicing Water (1st Level Move)**
+```markdown
+#**Slicing_Water_(1st_Level_Move)**
 
 - **Cost:** 2 Water Charges.
 - **Type:** Action (0).
@@ -21,6 +22,8 @@ Waterbending (0)
 Level 1 (0)
 Player Root (0)
 
-#player_root
 #Level1
+#Waterbending
+#player_root
+```
 

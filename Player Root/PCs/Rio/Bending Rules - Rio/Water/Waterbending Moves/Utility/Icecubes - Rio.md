@@ -1,4 +1,5 @@
-#### **Icecubes (Cantrip)**
+```markdown
+#**Icecubes_(Cantrip)**
 
 - **Cost:** None.
 - **Type:** Action (0).
@@ -13,8 +14,10 @@
 - Player Root/Rules/Bending Rules/Water/Waterbending Moves/Utility/Icecubes (0)
 
 Tags:
+
+#Level1
 #Waterbending
 #freezing
 #player_root
-#Level1 
+```
 

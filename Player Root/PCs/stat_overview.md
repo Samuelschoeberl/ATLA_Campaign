@@ -3,10 +3,9 @@
 ## Global environmental variables
 
 
-| Name                            | Value | Tags                                                         | File                                                             |
-| ------------------------------- | ----: | ------------------------------------------------------------ | ---------------------------------------------------------------- |
-| [[environmental_water_charge]]  |    55 | #variable #secondary_stat #template #environmental_variables | Player Root/variable/environmental/environmental_water_charge.md |
-
+| Name                           | Value | Tags                                                         | File                                                 |
+| ------------------------------ | ----: | ------------------------------------------------------------ | ---------------------------------------------------- |
+| [[environmental_water_charge]] | 11 | #variable #secondary_stat #template #environmental_variables | Player Root/variable/environmental/environmental_water_charge.md |
 
 
 ## Per-PC extracted stats
@@ -18,7 +17,7 @@
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
 | max_hp | 95    | Player Root/PCs/Anju/Anju_variables.md |
-| current_hp | 66    | Player Root/PCs/Anju/Anju_variables.md |
+| current_hp | 95    | Player Root/PCs/Anju/Anju_variables.md |
 | evasion | 11    | Player Root/PCs/Anju/Anju_variables.md |
 | general armor | 0    | Player Root/PCs/Anju/Anju Character Sheet.md |
 

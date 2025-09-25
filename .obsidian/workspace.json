@@ -73,7 +73,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/Story/Session Transcript Summaries/Session 5.md",
+                "file": "Player Root/pc_primary_stats.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -88,7 +88,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Session 5"
+              "title": "pc_primary_stats"
             }
           },
           {
@@ -121,7 +121,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/PCs/Anju/Anju Character Sheet.md",
+                "file": "Player Root/Rules/Bending Rules/Air/Airbending Moves/Level 3/Tail Wind.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -136,7 +136,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Anju Character Sheet"
+              "title": "Tail Wind"
             }
           },
           {
@@ -164,7 +164,7 @@
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -265,7 +265,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Player Root/PCs/Anju/Anju Character Sheet.md",
+                "file": "Player Root/pc_primary_stats.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -275,7 +275,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Anju Character Sheet"
+              "title": "Backlinks for pc_primary_stats"
             }
           },
           {
@@ -343,44 +343,43 @@
       "runjs:RunJS": false
     }
   },
-  "active": "bcc4b6b2b0323468",
+  "active": "3a91c7262e91e9ff",
   "lastOpenFiles": [
-    "Mycelium/scripts/Python/run_frontend_api.md",
-    "Player Root/PCs/Anju/Anju_variables.md",
     "Player Root/PCs/stat_overview.md",
-    "Player Root/PCs/Anju/Anju Character Sheet.md",
-    "Player Root/variable/PC_variables/Anju/Anju_general_armor.md",
-    "unsorted/supress_warning_character_sheet_generator.md",
+    "Player Root/deleted/deleted_Anju character sheet.md.bak",
+    "Mycelium/__pycache__/__init__.cpython-312.pyc",
+    "Player Root/deleted/deleted_test.json",
+    "Player Root/deleted/deleted_.DS_Store",
+    "Player Root/PCs/Anju/Anju Inventory.md",
+    "Player Root/deleted/deleted_Anju Inventory.md",
+    "Player Root/deleted/deleted_$(whoami).json",
+    "Player Root/deleted",
     "Player Root/variable/environmental/environmental_water_charge.md",
-    "Player Root/variable/environmental/environmental_water_charges.md",
-    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 2/Emberlash.md",
-    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Smoldering Focus.md",
-    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 2/Breath Control.md",
-    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Control Flame.md",
-    "Player Root/Rules/Bending Rules/Fire/Firebending Moves/Level 1/Burning Fists.md",
-    "Player Root/Rules/Bending Rules/Fire/Mechanics/Stress Level.md",
-    "Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending Level.md",
-    "Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending Slot.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 2 Moves/Gravel Vortex.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 2 Moves/Ground Lock.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Earth Brace.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Rock Hurl.md",
-    "scripts/normalize_moves.py",
-    "scripts",
-    "Mycelium/data/template/template_Character_Sheet.md",
-    "Player Root/variable/PC_variables/Tapioca/Tapioca_environmental_water_charges.md",
-    "Mycelium/scripts/manuals/recreate_pcs.md",
-    "Player Root/variable/PC_variables/Sora/Sora_environmental_water_charges.md",
-    "Player Root/variable/PC_variables/Rio/Rio_environmental_water_charges.md",
-    "Player Root/variable/PC_variables/Ash/Ash_environmental_water_charges.md",
-    "Mycelium/scripts/Python/generate_stat_overview.py",
+    "Player Root/variable/environmental/secondary_stat/environmental_water_charge.md",
     "Player Root/variable/environmental/secondary_stat",
-    "Mycelium/scripts/Python/__pycache__/run_frontend_api.cpython-313.pyc",
-    "Player Root/PCs/Puy/Puy character sheet.md.bak",
-    "Player Root/PCs/Tapioca/Tapioca character sheet.md.bak",
-    "Player Root/PCs/Ash/Ash character sheet.md.bak",
-    "Player Root/PCs/Rio/Rio character sheet.md.bak",
-    "Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md.bak",
+    "Mycelium/scripts/Python/__pycache__/run_propagate_dry.cpython-313.pyc",
+    "Mycelium/__pycache__/__init__.cpython-313.pyc",
+    "Mycelium/__pycache__",
+    "Player Root/variable/environmental/environmental_water_charges.md",
+    "Player Root/variable/PC_variables/Tiebeediy/Tiebeediy_general_armor.md",
+    "Player Root/variable/PC_variables/Tapioca/Tapioca_general_armor.md",
+    "Player Root/variable/PC_variables/Sora/Sora_general_armor.md",
+    "Player Root/variable/PC_variables/Rio/Rio_general_armor.md",
+    "Player Root/variable/PC_variables/Puy/Puy_general_armor.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_general_armor.md",
+    "Player Root/variable/PC_variables/Ash/Ash_general_armor.md",
+    "Player Root/Story/Session Transcript Summaries/Session 5.md",
+    "Player Root/Rules/Bending Rules/Air/Airbending Moves/Level 3/Tail Wind.md",
+    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/Air/Airbending Moves/Level 1/Tail Wind - Tapioca.md",
+    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/Air/Airbending Moves/Level 1/Gentle Push - Tapioca.md",
+    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/Air/Airbending Moves/Level 1/Airdash - Tapioca.md",
+    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/Air/Airbending Moves/Level 1/Air Blade - Tapioca.md",
+    "Player Root/PCs/Tapioca/Tapioca_variables.md",
+    "Player Root/PCs/Tapioca/Tapi Inventory.md",
+    "Player Root/PCs/Anju/Anju Character Sheet.md",
+    "Player Root/variable/PC_variables/Tiebeediy/Tiebeediy_environmental_water_charges.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_environmental_water_charges.md",
+    "Player Root/variable/PC_variables/Sora/Sora_environmental_water_charges.md",
     "Player Root/Maps/Avatar World.jpg",
     "Dms Root/Story/Airbender Nomands/3atljldbkbk41.jpg",
     "Dms Root/Story/Airbender Nomands/1664411181325.jpg",

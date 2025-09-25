@@ -1,17 +1,16 @@
-Action (0)
-Level 1 (0)
+
+#Action
 Stress Level (0)
 Damaging Move (0)
 
 - Range: Melee (0)
 - Fire Fire Attack Roll (0): Attacks Firebending Slot (4) times
-- Damage: 1d6 + Strength (0) Bludgeoning + 1d12 fire
+- Damage: 1d6 + Strength (0) Bludgeoning and 1d4 Fire Damage
 
-Firebending (0)
-Firebending Move (0)
-Player Root (0)
 
-#player_root
-#fire
+
 #Level1
+#fire
+#player_root
+#stress_level
 

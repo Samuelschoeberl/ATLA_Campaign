@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify, send_from_directory, abort
 from pathlib import Path
 import hashlib
 import re
+import os
+import shutil
 
 bp = Blueprint("frontend_api", __name__)
 
@@ -215,6 +217,71 @@ def read_pc_variable_files(pcname: str):
                         out[key] = val
     return out
 
+
+def update_character_sheet(pcname: str, stats: dict):
+    """Try to find the character sheet file for pcname and update canonical stats.
+
+    Returns (True, None) on success (file modified), or (False, reason) on no-op/error.
+    """
+    try:
+        pc_dir = REPO_ROOT.joinpath('Player Root', 'PCs', pcname)
+        if not pc_dir.exists() or not pc_dir.is_dir():
+            return False, 'pc folder not found'
+
+        # find candidate sheet file (similar heuristics to update_sheet endpoint)
+        candidate = None
+        for p in pc_dir.iterdir():
+            if not p.is_file() or not p.name.lower().endswith('.md'):
+                continue
+            name = p.name.lower()
+            if pcname.lower() in name and ('character' in name or 'sheet' in name):
+                candidate = p
+                break
+        if candidate is None:
+            for p in pc_dir.iterdir():
+                if p.is_file() and p.name.lower().endswith('.md') and p.name.lower().startswith(pcname.lower()):
+                    candidate = p
+                    break
+
+        if candidate is None:
+            return False, 'no character sheet file found'
+
+        try:
+            text = candidate.read_text(encoding='utf-8')
+        except Exception as e:
+            return False, f'read error: {e}'
+
+        orig = text
+        # For each canonical stat, try to replace table rows like '| key | value |' or 'key: value'
+        for k, v in stats.items():
+            # consider variants: underscore and space
+            variants = [k, k.replace('_', ' ')]
+            replaced = False
+            for key in variants:
+                # table row pattern
+                pat_table = re.compile(r'(^\|\s*' + re.escape(key) + r"\s*\|\s*)([^|\n]*)(\|)", re.I | re.M)
+                if pat_table.search(text):
+                    text = pat_table.sub(lambda m: m.group(1) + ' ' + str(v) + ' ' + m.group(3), text)
+                    replaced = True
+                    break
+                # key: value pattern
+                pat_kv = re.compile(r'(^\s*' + re.escape(key) + r"\s*:\s*).*$", re.I | re.M)
+                if pat_kv.search(text):
+                    text = pat_kv.sub(lambda m: m.group(1) + str(v), text)
+                    replaced = True
+                    break
+            # continue to next stat
+
+        if text != orig:
+            try:
+                candidate.write_text(text, encoding='utf-8')
+                return True, None
+            except Exception as e:
+                return False, f'write error: {e}'
+        return False, 'no changes'
+    except Exception as e:
+        return False, str(e)
+
 @bp.route("/api/create-md-file", methods=["POST"])
 def create_md_file():
     data = request.get_json() or {}
@@ -270,7 +337,7 @@ def create_md_file():
 
 
 @bp.route("/player_root", defaults={"subpath": ""})
-@bp.route("/player_root/<path:subpath>", methods=["GET", "POST"])
+@bp.route("/player_root/<path:subpath>", methods=["GET", "POST", "DELETE"])
 def player_root(subpath):
     # Accept requests for repo root or subpaths. Frontend sends paths without
     # the leading "Player Root/" prefix in most calls; normalize both forms.
@@ -298,12 +365,31 @@ def player_root(subpath):
     if not target.exists():
         # For POST, allow creating a new file if parent exists
         if request.method == "POST":
+            # allow creating the parent directories if missing so clients
+            # can create files in newly created folders such as 'deleted'
             parent = target.parent
-            if not parent.exists() or not parent.is_dir():
-                return jsonify(error="Folder does not exist"), 400
+            try:
+                if not parent.exists():
+                    parent.mkdir(parents=True, exist_ok=True)
+                if not parent.is_dir():
+                    return jsonify(error="Folder does not exist"), 400
+            except Exception:
+                return jsonify(error="Could not create parent folder"), 500
             # proceed to create file below
         else:
             return jsonify(error="Not found"), 404
+
+    # DELETE: remove a file
+    if request.method == "DELETE":
+        if not target.exists():
+            return jsonify(error="Not found"), 404
+        if target.is_dir():
+            return jsonify(error="Target is a directory"), 400
+        try:
+            target.unlink()
+            return jsonify(success=True)
+        except Exception as e:
+            return jsonify(error=str(e)), 500
 
     if request.method == "GET":
         if target.is_dir():
@@ -339,79 +425,96 @@ def player_root(subpath):
 
         # If file exists and not force, allow overwrite (frontend handles conflicts),
         # but we still write here. Optionally future: check hashes.
-            try:
-                # ensure parent dir exists
-                parent = target.parent
-                if not parent.exists() or not parent.is_dir():
-                    return jsonify(error="Folder does not exist"), 400
-                target.write_text(content or "", encoding="utf-8")
-            except Exception as e:
-                return jsonify(error=str(e)), 500
+        try:
+            # ensure parent dir exists
+            parent = target.parent
+            if not parent.exists() or not parent.is_dir():
+                return jsonify(error="Folder does not exist"), 400
+            target.write_text(content or "", encoding="utf-8")
+        except Exception as e:
+            return jsonify(error=str(e)), 500
 
-            # If the saved file is the shared stat_overview, parse it and write per-PC variable files
-            try:
-                rel = str(target.relative_to(REPO_ROOT).as_posix())
-                if rel == 'Player Root/PCs/stat_overview.md':
-                    # parse the overview and write back per-PC variable files
-                    def parse_overview_and_write(text):
-                        pcs = {}
-                        cur = None
-                        for line in text.splitlines():
-                            m = re.match(r"^###\s+(\S.*)$", line)
-                            if m:
-                                cur = m.group(1).strip()
-                                pcs[cur] = {}
-                                continue
-                            if cur is None:
-                                continue
-                            # parse table rows like | key | value | src |
-                            if line.strip().startswith("|"):
-                                cols = [c.strip() for c in line.split("|") if c.strip()]
-                                if len(cols) >= 2:
-                                    key = cols[0]
-                                    val = cols[1]
-                                    # normalize keys to canonical
-                                    key_norm = key.replace(' ', '_')
-                                    if key_norm in ('max_hp', 'current_hp', 'evasion', 'general_armor'):
-                                        # map general_armor back to 'general armor'
-                                        if key_norm == 'general_armor':
-                                            key_norm2 = 'general armor'
-                                        else:
-                                            key_norm2 = key_norm
-                                        pcs[cur][key_norm2] = val
-                        # write per-pc files
-                        warnings = []
-                        for pcname, stats in pcs.items():
+        # If the saved file is the shared stat_overview, parse it and write per-PC variable files
+        try:
+            rel = str(target.relative_to(REPO_ROOT).as_posix())
+            if rel == 'Player Root/PCs/stat_overview.md':
+                # parse the overview and write back per-PC variable files
+                pcs = {}
+                cur = None
+                for line in content.splitlines():
+                    m = re.match(r"^###\s+(\S.*)$", line)
+                    if m:
+                        cur = m.group(1).strip()
+                        pcs[cur] = {}
+                        continue
+                    if cur is None:
+                        continue
+                    # parse table rows like | key | value | src |
+                    if line.strip().startswith("|"):
+                        cols = [c.strip() for c in line.split("|") if c.strip()]
+                        if len(cols) >= 2:
+                            key = cols[0]
+                            val = cols[1]
+                            # normalize keys to canonical
+                            key_norm = key.replace(' ', '_')
+                            if key_norm in ('max_hp', 'current_hp', 'evasion', 'general_armor'):
+                                # map general_armor back to 'general armor'
+                                if key_norm == 'general_armor':
+                                    key_norm2 = 'general armor'
+                                else:
+                                    key_norm2 = key_norm
+                                pcs[cur][key_norm2] = val
+                # write per-pc files and update character sheets
+                warnings = []
+                for pcname, stats in pcs.items():
+                    ok, err = write_pc_variable_files(pcname, stats)
+                    if not ok:
+                        warnings.append(f'{pcname}: variable write: {err}')
+                    # Attempt to update the character sheet as well
+                    try:
+                        ok2, err2 = update_character_sheet(pcname, stats)
+                        if not ok2:
+                            # only record real errors (not 'no changes')
+                            if err2 and 'no changes' not in err2:
+                                warnings.append(f'{pcname}: sheet update: {err2}')
+                    except Exception as e:
+                        warnings.append(f'{pcname}: sheet update exception: {e}')
+                # include parsed pcs in response so frontend can display what was parsed
+                data['_stat_overview_parsed'] = pcs
+                if warnings:
+                    # include warnings in the response payload later
+                    data['_stat_overview_write_warnings'] = warnings
+            # Additionally, if any PC sheet file was saved via this generic
+            # endpoint (e.g., Player Root/PCs/Anju/Anju Character Sheet.md),
+            # extract canonical stats and write per-PC variable files so the
+            # combined source files get updated.
+            rel = str(target.relative_to(REPO_ROOT).as_posix())
+            if rel.startswith('Player Root/PCs/') and rel != 'Player Root/PCs/stat_overview.md':
+                parts = rel.split('/')
+                if len(parts) >= 3:
+                    pcname = parts[2]
+                    try:
+                        stats = parse_canonical_stats_from_text(content or "")
+                        if stats:
                             ok, err = write_pc_variable_files(pcname, stats)
                             if not ok:
-                                warnings.append(f'{pcname}: {err}')
-                        return warnings
-
-                    warnings = parse_overview_and_write(content)
-                    if warnings:
-                        # include warnings in the response payload later
-                        data['_stat_overview_write_warnings'] = warnings
-                        # Additionally, if any PC sheet file was saved via this generic
-                        # endpoint (e.g., Player Root/PCs/Anju/Anju Character Sheet.md),
-                        # extract canonical stats and write per-PC variable files so the
-                        # combined source files get updated.
-                        rel = str(target.relative_to(REPO_ROOT).as_posix())
-                        if rel.startswith('Player Root/PCs/') and rel != 'Player Root/PCs/stat_overview.md':
-                            parts = rel.split('/')
-                            if len(parts) >= 3:
-                                pcname = parts[2]
-                                try:
-                                    stats = parse_canonical_stats_from_text(content or "")
-                                    if stats:
-                                        ok, err = write_pc_variable_files(pcname, stats)
-                                        if not ok:
-                                            data.setdefault('_pc_write_warnings', []).append(f'{pcname}: {err}')
-                                except Exception as e:
-                                    data.setdefault('_pc_write_warnings', []).append(str(e))
-            except Exception:
-                pass
+                                data.setdefault('_pc_write_warnings', []).append(f'{pcname}: {err}')
+                    except Exception as e:
+                        data.setdefault('_pc_write_warnings', []).append(str(e))
+        except Exception:
+            pass
         h = hashlib.sha256((content or "").encode("utf-8")).hexdigest()
-        return jsonify(success=True, hash=h)
+        resp = {"success": True, "hash": h}
+        # propagate any warnings produced by stat_overview or per-pc writes
+        try:
+            if isinstance(data, dict):
+                if '_stat_overview_write_warnings' in data:
+                    resp['stat_overview_warnings'] = data.get('_stat_overview_write_warnings')
+                if '_pc_write_warnings' in data:
+                    resp['pc_write_warnings'] = data.get('_pc_write_warnings')
+        except Exception:
+            pass
+        return jsonify(resp)
 
 
 @bp.route("/vault/<path:seg>")
@@ -432,6 +535,102 @@ def vault(seg):
     # send the file relative to REPO_ROOT
     rel = candidate.relative_to(REPO_ROOT)
     return send_from_directory(str(REPO_ROOT), str(rel))
+
+
+@bp.route("/player_root/move", methods=["POST"])
+def player_root_move():
+    """Atomically move a file within Player Root.
+
+    Expected JSON body: { "src": "Player Root/PCs/Anju/Anju Inventory.md", "dst": "Player Root/deleted/deleted_Anju Inventory.md" }
+    Both paths may be provided with or without the leading "Player Root/" prefix.
+    """
+    data = request.get_json() or {}
+    src = data.get("src")
+    dst = data.get("dst")
+    if not src or not dst:
+        return jsonify(error="Missing src or dst"), 400
+
+    def norm(p):
+        s = str(p or "").strip()
+        if s.startswith(PLAYER_ROOT_PREFIX):
+            s = s[len(PLAYER_ROOT_PREFIX) :].lstrip("/")
+        return s
+
+    src_rel = norm(src)
+    dst_rel = norm(dst)
+
+    base = REPO_ROOT / "Player Root"
+    src_path = (base / src_rel).resolve()
+    dst_path = (base / dst_rel).resolve()
+
+    # Helper to include debug info when enabled
+    def _debug_info():
+        try:
+            return {
+                '_debug': '1',
+                'src_resolved': str(src_path),
+                'dst_resolved': str(dst_path),
+            }
+        except Exception:
+            return {'_debug': '1'}
+
+    debug_enabled = bool(os.environ.get('FLASK_DEBUG') or os.environ.get('MYCELIUM_DEBUG'))
+
+    try:
+        repo_resolved = REPO_ROOT.resolve()
+        # Ensure both are inside the repo
+        if (repo_resolved not in src_path.parents and src_path != repo_resolved) or (
+            repo_resolved not in dst_path.parents and dst_path != repo_resolved
+        ):
+            resp = {'error': 'Path outside repository'}
+            if debug_enabled:
+                resp.update(_debug_info())
+            return jsonify(resp), 400
+    except Exception:
+        resp = {'error': 'Path resolution error'}
+        if debug_enabled:
+            resp.update(_debug_info())
+        return jsonify(resp), 400
+
+    if not src_path.exists():
+        resp = {'error': 'Source not found'}
+        if debug_enabled:
+            resp.update(_debug_info())
+        return jsonify(resp), 404
+    if src_path.is_dir():
+        resp = {'error': 'Source is a directory'}
+        if debug_enabled:
+            resp.update(_debug_info())
+        return jsonify(resp), 400
+
+    # Ensure destination parent exists
+    try:
+        dst_parent = dst_path.parent
+        if not dst_parent.exists():
+            dst_parent.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        resp = {'error': f"Could not create destination folder: {e}"}
+        if debug_enabled:
+            resp.update(_debug_info())
+        return jsonify(resp), 500
+
+    # Attempt an atomic move (os.replace), fallback to shutil.move
+    try:
+        try:
+            os.replace(str(src_path), str(dst_path))
+        except Exception:
+            shutil.move(str(src_path), str(dst_path))
+    except Exception as e:
+        resp = {'error': str(e)}
+        if debug_enabled:
+            resp.update(_debug_info())
+        return jsonify(resp), 500
+
+    rel = dst_path.relative_to(REPO_ROOT).as_posix()
+    resp = {"success": True, "path": f"{PLAYER_ROOT_PREFIX}{rel}"}
+    if debug_enabled:
+        resp.update(_debug_info())
+    return jsonify(resp)
 
 
 @bp.route("/update_sheet/<pcname>", methods=["POST"])
@@ -529,20 +728,25 @@ def update_sheet(pcname):
                 _sys.path.insert(0, repo_str)
 
             # Try normal package import first, then fall back to file-based import.
-            try:
-                from Mycelium.scripts.python import watch_and_regen as wr
-            except Exception:
+            # Try package imports using importlib to avoid static import errors
+            import importlib as _im
+            wr = None
+            for modname in ("Mycelium.scripts.Python.watch_and_regen", "Mycelium.scripts.python.watch_and_regen"):
                 try:
-                    from Mycelium.scripts.Python import watch_and_regen as wr
+                    wr = _im.import_module(modname)
+                    break
                 except Exception:
-                    import importlib.util as _il
-                    base = Path(__file__).resolve().parent
-                    alt = base.joinpath('watch_and_regen.py')
-                    spec = _il.spec_from_file_location('watch_and_regen', str(alt))
-                    if spec is None or spec.loader is None:
-                        raise ImportError('could not load watch_and_regen module')
-                    wr = _il.module_from_spec(spec)
-                    spec.loader.exec_module(wr)  # type: ignore
+                    wr = None
+            if wr is None:
+                # Fall back to file-based import from the same directory as this module
+                import importlib.util as _il
+                base = Path(__file__).resolve().parent
+                alt = base.joinpath('watch_and_regen.py')
+                spec = _il.spec_from_file_location('watch_and_regen', str(alt))
+                if spec is None or spec.loader is None:
+                    raise ImportError('could not load watch_and_regen module')
+                wr = _il.module_from_spec(spec)
+                spec.loader.exec_module(wr)  # type: ignore
             # prepare args expected by the propagate helper
             from types import SimpleNamespace
             a = SimpleNamespace(dry_run=False, create_placeholders=False)

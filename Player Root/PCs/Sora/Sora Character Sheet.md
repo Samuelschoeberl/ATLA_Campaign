@@ -47,7 +47,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Environmental Variable     |                          value |
 | -------------------------- | -----------------------------: |
-| environmental water charge | 55 |
+| environmental water charge | 11 |
 
 
 #Sora #Character_Sheet

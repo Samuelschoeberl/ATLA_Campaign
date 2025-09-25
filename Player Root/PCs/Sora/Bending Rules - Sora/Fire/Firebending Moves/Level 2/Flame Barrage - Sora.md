@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 Action (0)
 Lingering Effect (0)
 Level 2 (0)
@@ -13,7 +16,8 @@ Firebending (0)
 Firebending Move (0)
 Player Root (0)
 
-#player_root
-#fire
 #Level2
+#fire
+#player_root
+```
 

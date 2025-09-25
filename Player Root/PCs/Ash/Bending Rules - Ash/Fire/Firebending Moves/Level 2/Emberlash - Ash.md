@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 Stress Level (0)
 Level 2 (0)
 
@@ -17,6 +20,10 @@ Firebending Move (0)
 Player Root (0)
 
 #player_root #Rules
-#fire
+
 #Level2
+#Rules
+#fire
+#player_root
+```
 

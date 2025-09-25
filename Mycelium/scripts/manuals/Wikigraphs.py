@@ -1686,8 +1686,29 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
     # caller provided an explicit `outdir`, prefer that outdir so callers
     # (like reboot_env_sync.sh) can control where HTML files are written.
     if safe_root_name.lower() != 'root' and globals().get('ARGS'):
-        # place cluster graphs under Mycelium/<name>clusters when called from CLI
-        effective_outdir = Path(__file__).resolve().parent.joinpath(f"{safe_root_name}clusters")
+        # When invoked from the CLI, default behavior historically placed
+        # cluster graphs under Mycelium/<safe_root_name>clusters so the
+        # outputs are easy to find next to the script. However, if the CLI
+        # explicitly provided a non-default --root path (for example
+        # `--root "Player Root/"`) the user likely expects the outputs to
+        # be written alongside that scanned root. Respect that intent by
+        # writing into the scanned `root` when ARGS.root is set to something
+        # other than the default '.'. Otherwise preserve the historical
+        # Mycelium clusters location for convenience.
+        args_obj = globals().get('ARGS')
+        root_arg = None
+        try:
+            root_arg = getattr(args_obj, 'root', None)
+        except Exception:
+            root_arg = None
+
+        if root_arg and str(root_arg).strip() not in ('.', ''):
+            # Write outputs into the scanned root folder so they appear next to
+            # the user's vault structure (e.g. `Player Root/Player Root_wikigraph_*.html`).
+            effective_outdir = root
+        else:
+            # place cluster graphs under Mycelium/<name>clusters when called from CLI
+            effective_outdir = Path(__file__).resolve().parent.joinpath(f"{safe_root_name}clusters")
     else:
         # prefer the explicit outdir provided by the caller
         effective_outdir = outdir
@@ -2113,9 +2134,18 @@ def main():
     # enable PCS debug via --verbose as convenient shorthand
     global PCS_DEBUG
     PCS_DEBUG = PCS_DEBUG or bool(args.verbose)
-    # Always use the directory the script is run from as the repository/vault root.
-    # This makes the file-tree generation independent of a --root argument.
-    root = Path.cwd().resolve()
+    # Determine the repository/vault root. Default is cwd but allow --root to
+    # explicitly override the scanned root (supports relative and absolute paths).
+    # This makes it possible to run e.g. `--root "Player Root/"` to scan only
+    # that subtree and produce graphs rooted at that folder.
+    try:
+        root_arg = Path(args.root or '.')
+    except Exception:
+        root_arg = Path('.')
+    if not root_arg.is_absolute():
+        root = Path.cwd().joinpath(root_arg).resolve()
+    else:
+        root = root_arg.resolve()
     # Determine output dir from system_state.md (editable) or fall back to CLI
     try:
         script_dir = Path(__file__).resolve().parent
@@ -2156,6 +2186,8 @@ def main():
     target_names: list[str] = []
     pcs_levels = {}
     pcs_stats = {}
+    # Names of graphs we generate during this run (used to prune stale HTMLs)
+    generated_names: list[str] = []
 
     # Helper: collect HTML-inferred root names from existing *_wikigraph_*.html files
     def infer_names_from_existing_htmls(base: Path) -> set:
@@ -2438,12 +2470,34 @@ def main():
         script_dir = Path(__file__).resolve().parent
         pcs_root = find_first_pc_character_sheets(script_dir)
         if pcs_root is None:
-            pcs_root = script_dir.joinpath('Players Part', 'PCs')
-            if not pcs_root.exists():
-                pcs_root = Path('Players Part') / 'PCs'
+            # common vault layouts: 'Players Part/PCs' or 'Player Root/PCs'
+            candidates = [
+                script_dir.joinpath('Players Part', 'PCs'),
+                script_dir.joinpath('Player Root', 'PCs'),
+                Path('Players Part') / 'PCs',
+                Path('Player Root') / 'PCs',
+                # also try a case-insensitive scan under script_dir
+            ]
+            found = None
+            for c in candidates:
+                if c.exists():
+                    found = c
+                    break
+            if not found:
+                # try a case-insensitive search for a folder named 'players part' or 'player root'
+                for child in script_dir.iterdir():
+                    if not child.is_dir():
+                        continue
+                    low = child.name.lower()
+                    if low in ('players part', 'player root'):
+                        pcdir = child.joinpath('PCs')
+                        if pcdir.exists():
+                            found = pcdir
+                            break
+            pcs_root = found or script_dir.joinpath('Players Part', 'PCs')
 
         if not pcs_root.exists():
-            print(f"PCs root not found: {pcs_root}")
+            print(f"PCs root not found: {pcs_root} (tried Players Part/PCs and Player Root/PCs)")
         else:
             # Remove stale punctuation-only graph HTMLs that can be inferred as PCs
             try:
@@ -2586,6 +2640,22 @@ def main():
                 subprocess.run([sys.executable, str(script_dir.joinpath('update_char.py')), '--all'], check=False)
             except Exception as e:
                 print(f"Warning: failed to run update_char.py --all: {e}")
+
+            # Also generate graphs for the top-level Player Root folder (if present)
+            try:
+                player_root_dir = script_dir.joinpath('Player Root')
+                if player_root_dir.exists() and player_root_dir.is_dir():
+                    print(f"Generating graphs for Player Root -> root {player_root_dir}")
+                    try:
+                        make_graphs(root, outdir, exts=exts, excludes=excludes, mode=args.mode, embed_js=args.embed, child_spread=args.child_spread, spread_growth=args.spread_growth, recolor_list=args.recolor, verbose=args.verbose, pc_subtree=player_root_dir, pc_name='Player Root', include_gitignored=args.include_gitignored, materialize_unresolved=args.materialize_unresolved)
+                        try:
+                            generated_names.append('Player Root')
+                        except Exception:
+                            pass
+                    except Exception as e:
+                        print(f"Could not generate Player Root graphs: {e}")
+            except Exception:
+                pass
 
             for child in sorted(pcs_root.iterdir()):
                 if not child.is_dir():

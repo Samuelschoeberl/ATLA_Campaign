@@ -1,3 +1,4 @@
+```markdown
 #shapeshifting_form
 **Transformation Points cost:** 2 Transformation Points (0)
 
@@ -33,3 +34,10 @@ Bending Slots:
 
 
 #spirit  #Level1 #player_root
+
+#Level1
+#player_root
+#shapeshifting_form
+#spirit
+```
+

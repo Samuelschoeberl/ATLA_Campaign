@@ -104,6 +104,13 @@ NO_RELOAD=1 python3 Mycelium/scripts/Python/run_frontend_api.py
 - The blueprint `bp` is imported from `frontend_api.py`. That file contains the application logic for the `/player_root` API and file-write handlers used by the frontend.
 - The frontend files are served from `Mycelium/scripts/frontend`. If you move the UI files, update the `FRONTEND_DIR` in this script accordingly.
 
+### Delete behavior from the frontend UI
+
+- The web UI (served from `Mycelium/scripts/frontend/index.html`) now exposes a Delete button in the markdown editor. When a user deletes a file the client first prompts for confirmation. If confirmed, the client creates a copy of the file under `Player Root/deleted/deleted_<originalfilename>` (preserving the file contents) and then requests deletion of the original file. This is a conservative _move-to-deleted_ approach to avoid immediate destructive deletion.
+- The server endpoints used are the existing `/player_root/<folder>/<name>` POST endpoint to create the deleted copy and the `/player_root/<folder>/<name>` DELETE endpoint to remove the original. Ensure those endpoints are available in `frontend_api.py`.
+- Note: This behavior is implemented client-side; the server does not currently provide a dedicated 'move' endpoint. If desired, an atomic server-side move endpoint could be added to avoid race conditions between create/delete operations.
+ - The server now exposes a dedicated atomic server-side move endpoint at `/player_root/move` which accepts a JSON body `{ "src": "<path>", "dst": "<path>" }`. The frontend uses this endpoint to atomically move files into `Player Root/deleted` when deleting from the UI to avoid the create-then-delete race.
+
 ---
 
 Generated on 2025-09-24

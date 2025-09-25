@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 **Type:** Waterbending spiritbending sub-skill  
 
 **Effect:**  
@@ -28,7 +31,8 @@ Waterbending (0)
 Level 1 (0)
 Player Root (0)
 
+#Level1
 #player_root
 #water
-#Level1
+```
 

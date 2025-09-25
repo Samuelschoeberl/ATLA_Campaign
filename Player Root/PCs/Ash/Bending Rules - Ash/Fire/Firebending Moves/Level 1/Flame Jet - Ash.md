@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 Action (0)
 Level 1 (0)
 
@@ -11,7 +14,8 @@ Damaging Move (0)
 Firebending Move (0)
 Player Root (0)
 
-#player_root
-#fire
 #Level1
+#fire
+#player_root
+```
 

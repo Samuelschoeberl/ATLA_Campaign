@@ -1,4 +1,5 @@
-#Bonus_Action 
+```markdown
+#Bonus_Action
 - **Range:** Self.
 - **Duration:** 1 Turn.
 - Enhance agility by propelling yourself with gusts of air.
@@ -12,7 +13,11 @@
 Tags:
 #Airbending #Mobility #Level_1 #Bonus_Action
 
-
-#player_root
+#Airbending
+#Bonus_Action
 #Level1
+#Level_1
+#Mobility
+#player_root
+```
 

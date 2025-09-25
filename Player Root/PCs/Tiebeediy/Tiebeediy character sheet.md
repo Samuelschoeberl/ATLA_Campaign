@@ -6,7 +6,7 @@ Name: Tiebeediy
 | key          |            value |
 | ------------ | ---------------: |
 | max_hp       |       80 |
-| current hp   |   79 |
+| current hp   |   80 |
 
 ## Core Stats
 
@@ -49,7 +49,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Environmental Variable     |                          value |
 | -------------------------- | -----------------------------: |
-| environmental water charge | 55 |
+| environmental water charge | 11 |
 
 
 #Tiebeediy #Character_Sheet

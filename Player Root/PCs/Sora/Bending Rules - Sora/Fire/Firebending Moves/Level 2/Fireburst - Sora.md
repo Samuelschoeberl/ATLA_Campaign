@@ -1,3 +1,6 @@
+```markdown
+#Action
+
 Lingering Effect (0)
 Action (0)
   - **Range:** 5 * Firebending Slot (6) meters. Sphere with a radius of Firebending Slot (6) * 1 meters.
@@ -13,7 +16,8 @@ Firebending (0)
 Firebending Move (0)
 Player Root (0)
 
-#player_root
-#fire
 #Level2
+#fire
+#player_root
+```
 

@@ -1,12 +1,13 @@
-
-#transformation 
+```markdown
+#transformation
 
 You transform into a creature using Spiritbending Slot (2). The Level of creature corresponds with the Bending Slot used.
 - Range: e.g. Self (0).
 - **Duration:** varies
 
-
+#level1
 #player_root
 #spirit
-#level1
+#transformation
+```
 

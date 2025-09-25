@@ -246,6 +246,7 @@
 
       <nav>
         <div class="back"><button id="up-btn" disabled>Up</button></div>
+        <div><button id="deleted-btn">Deleted</button></div>
         <div class="muted">Current: /<span id="curpath"></span></div>
       </nav>
 
@@ -314,6 +315,58 @@
       const BASE = (
         window.MYCELIUM_BACKEND_BASE || `${location.protocol}//${location.host}`
       ).replace(/\/$/, "");
+
+      // Configure marked for Obsidian-like markdown behaviour:
+      // - enable GFM so common GitHub/Obsidian constructs are parsed
+      // - treat single line breaks as hard breaks (Obsidian's "wrapping" behaviour)
+      // - disable header id mangling so headings remain predictable
+      // - disable automatic email/URL mangling which Obsidian doesn't do
+      try {
+        marked.setOptions({
+          gfm: true,
+          breaks: true,
+          headerIds: false,
+          mangle: false,
+          smartLists: true,
+          smartypants: false,
+        });
+      } catch (e) {
+        console.warn("marked.setOptions failed", e);
+      }
+
+      // Centralized render helper so we can apply the same transformations
+      // everywhere the preview is created. Returns sanitized HTML.
+      function renderMarkdown(src) {
+        const text = String(src || "");
+        // Basic Obsidian-style wiki-link support: convert [[Name]] into an
+        // inline anchor with a data-wikilink attribute so clicks can be
+        // intercepted and routed inside the app rather than navigating.
+        const withWikilinks = text.replace(/\[\[([^\]]+)\]\]/g, (m, name) => {
+          const safe = String(name)
+            .trim()
+            .replace(/"/g, "&quot;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+          return `<a href="#" class="wikilink" data-wikilink="${safe}">${safe}</a>`;
+        });
+        try {
+          const html = marked.parse(withWikilinks || "");
+          return DOMPurify.sanitize(html);
+        } catch (e) {
+          console.warn("renderMarkdown failed", e);
+          return DOMPurify.sanitize(escapeHtml(withWikilinks));
+        }
+      }
+
+      // Minimal fallback escape for the unlikely sanitize branch above
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
 
       function encodeSegments(p) {
         if (!p) return "";
@@ -673,7 +726,8 @@
           el.textContent = ts + " " + msg + "\n" + el.textContent;
         } catch (e) {}
       }
-      function showNotif(title, text, ttl = 4000) {
+      // showNotif now accepts optional actions: [{label: 'Undo', cb: ()=>{}}]
+      function showNotif(title, text, ttl = 4000, actions = []) {
         try {
           const area = document.getElementById("notif-area");
           const n = document.createElement("div");
@@ -685,12 +739,40 @@
           n.style.boxShadow = "0 6px 18px rgba(0,0,0,0.2)";
           n.style.marginTop = "8px";
           n.style.fontSize = "13px";
-          n.innerHTML = `<strong>${title}</strong><div style="margin-top:6px">${text}</div>`;
+          const inner = document.createElement("div");
+          inner.innerHTML = `<strong>${title}</strong><div style="margin-top:6px">${text}</div>`;
+          n.appendChild(inner);
+          if (actions && actions.length) {
+            const actionWrap = document.createElement("div");
+            actionWrap.style.marginTop = "8px";
+            for (const a of actions) {
+              const btn = document.createElement("button");
+              btn.textContent = a.label;
+              btn.style.marginRight = "8px";
+              btn.style.padding = "6px 8px";
+              btn.style.borderRadius = "6px";
+              btn.style.border = "none";
+              btn.style.cursor = "pointer";
+              btn.addEventListener("click", (ev) => {
+                try {
+                  a.cb(ev);
+                } catch (e) {
+                  console.error(e);
+                }
+                // remove the notification immediately when action clicked
+                if (n.parentElement) n.parentElement.removeChild(n);
+              });
+              actionWrap.appendChild(btn);
+            }
+            n.appendChild(actionWrap);
+          }
           area.appendChild(n);
           setTimeout(() => {
-            n.style.transition = "opacity 0.25s";
-            n.style.opacity = "0";
-            setTimeout(() => area.removeChild(n), 300);
+            try {
+              n.style.transition = "opacity 0.25s";
+              n.style.opacity = "0";
+              setTimeout(() => area.removeChild(n), 300);
+            } catch (e) {}
           }, ttl);
         } catch (e) {
           console.warn(e);
@@ -824,6 +906,42 @@
           li.appendChild(
             create("div", { className: "muted", textContent: e.type })
           );
+          // If we're viewing the deleted folder, show a Restore button for files
+          const viewingDeleted = (p || "").replace(/^Player Root\//i, "") === "deleted" || (j && j.path && j.path.replace(/^Player Root\//i, "") === "deleted");
+          if (viewingDeleted && e.type === "file") {
+            const restoreBtn = create("button", { textContent: "Restore" });
+            restoreBtn.style.marginLeft = "8px";
+            restoreBtn.addEventListener("click", async (ev) => {
+              ev.preventDefault();
+              const defaultDst = prompt(
+                "Restore to (path under Player Root, e.g. PCs/Anju):",
+                "PCs/"
+              );
+              if (!defaultDst) return;
+              // build destination path: ensure folder + original filename
+              const dstFolder = defaultDst.replace(/^\/+|\/+$/g, "");
+              const dstFull = ensurePlayerRoot(dstFolder + "/" + e.name);
+              const srcFull = ensurePlayerRoot("deleted/" + e.name);
+              try {
+                const r = await fetch(BASE + "/player_root/move", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ src: srcFull, dst: dstFull }),
+                });
+                if (!r.ok) {
+                  const txt = await r.text();
+                  showNotif("Restore failed", txt || String(r.status));
+                  return;
+                }
+                showNotif("Restored", e.name);
+                // refresh deleted view
+                renderDir("deleted");
+              } catch (err) {
+                showNotif("Restore error", String(err));
+              }
+            });
+            li.appendChild(restoreBtn);
+          }
           ul.appendChild(li);
         }
         // Add an inline "New .md file" input when viewing a directory
@@ -900,9 +1018,7 @@
               return;
             }
             const j = await res.json();
-            preview.innerHTML = DOMPurify.sanitize(
-              marked.parse(j.content || "")
-            );
+            preview.innerHTML = renderMarkdown(j.content || "");
             try {
               // style tables to use a variant of the node background
               const nodeBg =
@@ -946,7 +1062,7 @@
         contentPane.innerHTML = `<div class="file-title"><div><strong id="file-title-name">${name}</strong><div id="file-lock" class="file-meta"></div><div class="file-meta">/${path.replace(
           /^Player Root\//i,
           ""
-        )}</div></div><div><button id="fullscreen-btn">Full screen</button> <button id="refresh-btn" style="margin-left:8px">Refresh</button></div></div><div style="margin-top:8px"><textarea id="file-ta" style="width:100%;min-height:320px" placeholder="Loading..."></textarea></div><div style="margin-top:8px"><button id="save-btn">Save</button> <button id="retry-btn" style="margin-left:8px;display:none">Retry</button> <button id="open-raw" style="margin-left:8px;display:none">Open raw</button> <span id="status" class="muted"></span></div><h3>Preview</h3><div id="preview" style="background:#fff;padding:8px;border-radius:6px;min-height:120px"></div>`;
+        )}</div></div><div><button id="fullscreen-btn">Full screen</button> <button id="refresh-btn" style="margin-left:8px">Refresh</button></div></div><div style="margin-top:8px"><textarea id="file-ta" style="width:100%;min-height:320px" placeholder="Loading..."></textarea></div><div style="margin-top:8px"><button id="save-btn">Save</button> <button id="delete-btn" style="margin-left:8px;background:#ffefef;border:1px solid #cc9999">Delete</button> <button id="retry-btn" style="margin-left:8px;display:none">Retry</button> <button id="open-raw" style="margin-left:8px;display:none">Open raw</button> <span id="status" class="muted"></span></div><h3>Preview</h3><div id="preview" style="background:#fff;padding:8px;border-radius:6px;min-height:120px"></div>`;
         mdContainer.appendChild(contentPane);
 
         const ta = $("#file-ta");
@@ -989,7 +1105,7 @@
             const j = resObj.json;
             ta.value = j.content || "";
             $("#preview").innerHTML = DOMPurify.sanitize(
-              marked.parse(j.content || "")
+              renderMarkdown(j.content || "")
             );
             try {
               const nodeBg =
@@ -1032,7 +1148,9 @@
           ta.addEventListener("input", () => {
             const prev = $("#preview");
             if (prev)
-              prev.innerHTML = DOMPurify.sanitize(marked.parse(ta.value || ""));
+              prev.innerHTML = DOMPurify.sanitize(
+                renderMarkdown(ta.value || "")
+              );
             if (statusEl) statusEl.textContent = "";
             sendLock(path);
           });
@@ -1101,9 +1219,7 @@
                     await doSave(path, content, true);
                   } else if (action === "accept_remote") {
                     ta.value = remote.json.content || "";
-                    $("#preview").innerHTML = DOMPurify.sanitize(
-                      marked.parse(ta.value || "")
-                    );
+                    $("#preview").innerHTML = renderMarkdown(ta.value || "");
                     cachedHash[path] = await hashText(ta.value || "");
                   } else if (action === "merge") {
                     showNotif("Conflict", "Edit merged content and press Save");
@@ -1113,6 +1229,81 @@
               return;
             }
             await doSave(path, content, false);
+          });
+        }
+
+        // Delete button: move file to Player Root/deleted/deleted_<originalname>
+        const deleteBtn = $("#delete-btn");
+        if (deleteBtn) {
+          deleteBtn.addEventListener("click", async () => {
+            const confirmDelete = confirm(
+              `Are you sure you want to delete ${name}? This will move it to Player Root/deleted/deleted_${name}.`
+            );
+            if (!confirmDelete) return;
+            try {
+              const taVal = ta ? ta.value : "";
+
+              // Ensure destination folder path (without Player Root prefix) for the API call
+              const deletedFolderRel = "deleted"; // under Player Root
+              const dstName = `deleted_${name}`;
+
+              // Perform atomic server-side move via POST /player_root/move
+              try {
+                const moveUrl = BASE + "/player_root/move";
+                const srcFull = ensurePlayerRoot(path);
+                const dstFull = ensurePlayerRoot(deletedFolderRel + "/" + dstName);
+                const moveRes = await fetch(moveUrl, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ src: srcFull, dst: dstFull }),
+                });
+                if (!moveRes.ok) {
+                  const txt = await moveRes.text();
+                  showNotif("Delete failed", `move failed: ${moveRes.status} ${txt}`);
+                  return;
+                }
+              } catch (e) {
+                showNotif("Delete failed", String(e));
+                return;
+              }
+
+              showNotif("Deleted", `${name} moved to Player Root/deleted/${dstName}`, 8000, [
+                {
+                  label: "Undo",
+                  cb: async () => {
+                    try {
+                      const moveUrl = BASE + "/player_root/move";
+                      const srcFull = ensurePlayerRoot(deletedFolderRel + "/" + dstName);
+                      const dstFull = ensurePlayerRoot(path);
+                      const r = await fetch(moveUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ src: srcFull, dst: dstFull }),
+                      });
+                      if (!r.ok) {
+                        const txt = await r.text();
+                        showNotif("Undo failed", txt || String(r.status));
+                        return;
+                      }
+                      showNotif("Restored", name);
+                      // refresh current dir view
+                      renderDir(stack[stack.length - 1]);
+                    } catch (err) {
+                      console.error("undo move err", err);
+                      showNotif("Undo error", String(err));
+                    }
+                  },
+                },
+              ]);
+              // close editor and refresh view
+              openPath = null;
+              openFileName = null;
+              mdContainer.innerHTML = "";
+              renderDir(stack[stack.length - 1]);
+            } catch (err) {
+              console.error("delete error", err);
+              showNotif("Delete error", String(err));
+            }
           });
         }
       }
@@ -1322,11 +1513,72 @@
         console.warn("ws not available", e);
       }
 
+      // Delegated click handler for wiki-links rendered in previews: open the PC folder.
+      // This performs a case-insensitive match against folders in `Player Root/PCs`.
+      document.addEventListener("click", async (ev) => {
+        try {
+          const a = ev.target.closest && ev.target.closest(".wikilink");
+          if (!a) return;
+          ev.preventDefault();
+          let name = (
+            a.getAttribute("data-wikilink") ||
+            a.textContent ||
+            ""
+          ).trim();
+          if (!name) return;
+          // Normalize whitespace
+          name = name.replace(/\s+/g, " ");
+
+          // Try to find a case-insensitive match in Player Root/PCs
+          try {
+            const seg = encodeSegments("PCs");
+            const res = await fetch(BASE + "/player_root/" + seg, {
+              cache: "no-store",
+            });
+            if (res && res.ok) {
+              const j = await res.json();
+              const entries = j.entries || [];
+              // Look for directory entries whose name matches case-insensitively
+              const lower = name.toLowerCase();
+              const match = entries.find(
+                (e) =>
+                  e.type === "dir" &&
+                  String(e.name || "").toLowerCase() === lower
+              );
+              if (match) {
+                const pcPath = "PCs/" + match.name;
+                stack.push(pcPath);
+                renderDir(pcPath);
+                return;
+              }
+            }
+          } catch (e) {
+            // If fetching PCs failed, fall back to direct navigation
+            console.warn("failed to fetch PCs for case-insensitive match", e);
+          }
+
+          // Fallback: navigate using the provided name as-is
+          const pcPath = `PCs/${encodeURIComponent(name)}`;
+          stack.push(pcPath);
+          renderDir(pcPath);
+        } catch (e) {
+          console.warn("wikilink handler error", e);
+        }
+      });
+
       upBtn.addEventListener("click", () => {
         if (stack.length <= 1) return;
         stack.pop();
         renderDir(stack[stack.length - 1]);
       });
+      const deletedBtn = document.getElementById("deleted-btn");
+      if (deletedBtn) {
+        deletedBtn.addEventListener("click", () => {
+          // navigate to Player Root/deleted
+          stack.push("deleted");
+          renderDir("deleted");
+        });
+      }
       renderDir("");
     </script>
   </body>
