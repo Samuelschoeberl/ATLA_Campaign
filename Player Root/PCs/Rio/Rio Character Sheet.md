@@ -5,8 +5,8 @@ Name: Rio
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       90 |
-| current hp   |   90 |
+| max_hp       |        90 |
+| current hp   |    90 |
 | Stress Level | 0 |
 
 ## Core Stats
@@ -34,7 +34,7 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |       16 | 0     |
+| Evasion       |        16 | 0     |
 
 
 ## Bending Slots

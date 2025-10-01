@@ -1,12 +1,8 @@
-```markdown
 #Action
 
-[[Action]]
-[[Level 1]]
-
-- **Range:** 5 \* [[Firebending Slot]] meters.
-- **Damage:** [[Firebending Slot]] \* 1 d10 fire
-- [[Fire Fire Attack Roll]]
+- **Range:** 5 \* [[firebending_slot]] meters.
+- **Damage:** [[firebending_slot]] \* 1 d10 fire
+- [[Fire Attack Roll]]
 - Unleash a burst of flames in a straight line, damaging one target
 
 [[Firebending]]
@@ -17,4 +13,4 @@
 #Level1
 #fire
 #player_root
-```
+

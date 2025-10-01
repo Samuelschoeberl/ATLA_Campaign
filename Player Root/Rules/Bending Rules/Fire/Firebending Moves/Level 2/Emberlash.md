@@ -1,10 +1,8 @@
-```markdown
+
 #Action
 
-[[Stress Level]]
-[[Level 2]]
 
-- Range: Reach (whip-like stream) — single target or nearby cluster
+- Range: 3 * [[firebending_slot]]
 - **Duration:** Instant
 - Description: Strike with a whip-like stream of burning embers.
 

@@ -5,8 +5,8 @@ Name: Puy
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       120 |
-| current hp   |   120 |
+| max_hp       |        120 |
+| current hp   |    120 |
 | Stress Level | 0 |
 
 ## Core Stats
@@ -34,8 +34,8 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |       13 | 0     |
-| General Armor | 2 | 0     |
+| Evasion       |        13 | 0     |
+| General Armor |  2 | 0     |
 
 
 ## Bending Slots

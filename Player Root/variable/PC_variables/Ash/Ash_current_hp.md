@@ -1,6 +1,3 @@
-```markdown
 65
 
-#secondary_stat #variable #vitality #current_variable #character_stat #character_stats
-
-```
+#variable #environmental_variables #character_stat #character_stats #secondary_stat

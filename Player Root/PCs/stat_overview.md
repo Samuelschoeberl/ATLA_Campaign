@@ -17,7 +17,7 @@
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
 | max_hp | 95    | Player Root/PCs/Anju/Anju_variables.md |
-| current_hp | 95    | Player Root/PCs/Anju/Anju_variables.md |
+| current_hp | 81    | Player Root/PCs/Anju/Anju_variables.md |
 | evasion | 11    | Player Root/PCs/Anju/Anju_variables.md |
 | general armor | 0    | Player Root/PCs/Anju/Anju Character Sheet.md |
 

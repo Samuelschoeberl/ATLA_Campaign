@@ -58,7 +58,7 @@ d20 + [[Element Level]]
                       ├── Level 1
                           └── [[Air Blade]]
                       └── Level 2
-                          └── [[Wind spiral]]
+                          └── [[Wind Spear]]
               ├── Earth
                   └── Earthbending Moves
                       ├── Base Moves

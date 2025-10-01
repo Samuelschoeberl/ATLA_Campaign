@@ -1,15 +1,41 @@
-from flask import Blueprint, request, jsonify, send_from_directory, abort
+from flask import Blueprint, request, jsonify, send_from_directory, abort, current_app
 from pathlib import Path
 import hashlib
 import re
 import os
 import shutil
+import sys
+import subprocess
+
+from flask import Response, stream_with_context
 
 bp = Blueprint("frontend_api", __name__)
 
 # Repo root (same logic as other scripts in this repo)
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PLAYER_ROOT_PREFIX = "Player Root/"
+
+# Location for generator logs
+LOGS_DIR = REPO_ROOT.joinpath('logs')
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+WIKIGRAPHS_LOG = LOGS_DIR.joinpath('wikigraphs.log')
+
+
+def get_player_root_base() -> Path:
+    """Return the filesystem path that should be considered the Player Root base.
+
+    Some repositories place player files under a literal top-level folder
+    named 'Player Root'. Others have those files at the repository root.
+    This helper prefers REPO_ROOT / 'Player Root' when it exists, and
+    falls back to REPO_ROOT otherwise so API endpoints work in both layouts.
+    """
+    cand = REPO_ROOT.joinpath('Player Root')
+    try:
+        if cand.exists() and cand.is_dir():
+            return cand.resolve()
+    except Exception:
+        pass
+    return REPO_ROOT
 
 
 # Helper: parse canonical stats from free-form markdown content
@@ -301,9 +327,19 @@ def create_md_file():
         rel_folder = folder.lstrip("/")
 
     # The frontend exposes content under the repository's "Player Root" top-level
-    # directory. Ensure we create files under REPO_ROOT / "Player Root".
-    base = REPO_ROOT / "Player Root"
-    target_dir = base if not rel_folder else (base / rel_folder)
+    # directory. Some checkouts place those files at REPO_ROOT itself. Use the
+    # helper to determine the correct base path for Player Root content.
+    player_base = get_player_root_base()
+    if player_base == REPO_ROOT:
+        # repository-root layout: if the frontend passed an explicit
+        # 'Player Root/...' prefix strip it; otherwise use target_rel as-is
+        rel = rel_folder
+        if rel.startswith(PLAYER_ROOT_PREFIX):
+            rel = rel[len(PLAYER_ROOT_PREFIX) :].lstrip('/')
+        target_dir = player_base if not rel else (player_base / rel)
+    else:
+        # explicit Player Root folder exists
+        target_dir = player_base if not rel_folder else (player_base / rel_folder)
 
     try:
         target_dir = target_dir.resolve()
@@ -332,8 +368,28 @@ def create_md_file():
         return jsonify(error=str(e)), 500
 
     # Return the created path in the same "Player Root/..." form the frontend uses
-    rel = full_path.relative_to(REPO_ROOT).as_posix()
-    return jsonify(success=True, path=f"{PLAYER_ROOT_PREFIX}{rel}")
+    # Compute the path relative to the Player Root directory so we don't
+    # accidentally double-prefix 'Player Root/' when returning the API path.
+    # Compute a Player-Root-relative path for frontend consumption. Prefer
+    # paths relative to the configured player_base; fall back to repo
+    # relative paths when necessary.
+    try:
+        if player_base != REPO_ROOT:
+            rel_from_player = full_path.relative_to(player_base).as_posix()
+        else:
+            # repo-root layout: return repo-relative path but strip any leading
+            # 'Player Root/' prefix the client may have sent.
+            rel_from_player = full_path.relative_to(REPO_ROOT).as_posix()
+            if rel_from_player.startswith(PLAYER_ROOT_PREFIX):
+                rel_from_player = rel_from_player[len(PLAYER_ROOT_PREFIX):].lstrip('/')
+    except Exception:
+        # fallback to repo-relative or raw path
+        try:
+            rel_from_player = full_path.relative_to(REPO_ROOT).as_posix()
+        except Exception:
+            rel_from_player = full_path.as_posix()
+
+    return jsonify(success=True, path=f"{PLAYER_ROOT_PREFIX}{rel_from_player}")
 
 
 @bp.route("/player_root", defaults={"subpath": ""})
@@ -345,9 +401,9 @@ def player_root(subpath):
     if sp.startswith(PLAYER_ROOT_PREFIX):
         sp = sp[len(PLAYER_ROOT_PREFIX) :].lstrip("/")
 
-    # target base is the Player Root directory inside the repo
-    base = REPO_ROOT / "Player Root"
-    target = base if not sp else (base / sp)
+    # target base is the Player Root directory inside the repo (or repo root)
+    player_base = get_player_root_base()
+    target = player_base if not sp else (player_base / sp)
 
     try:
         target = target.resolve()
@@ -517,24 +573,113 @@ def player_root(subpath):
         return jsonify(resp)
 
 
-@bp.route("/vault/<path:seg>")
-def vault(seg):
-    # seg may include "Player Root/..."; make it safe relative to REPO_ROOT
-    p = Path(seg)
-    # normalize and prevent traversal by resolving and ensuring inside repo
+
+@bp.route('/graphs/<path:seg>')
+def graphs_alias(seg):
+    """Serve generated graph files under Mycelium/scripts/manuals via a stable /graphs/ URL.
+
+    This creates a safe alias so frontend consumers can link to /graphs/<path>
+    instead of relying on /vault/... paths. Only files inside the manuals
+    directory are served.
+    """
+    from pathlib import Path
     try:
-        candidate = (REPO_ROOT / p).resolve()
+        base_dir = (REPO_ROOT / 'Mycelium' / 'scripts' / 'manuals').resolve()
     except Exception:
-        abort(400)
+        abort(500)
+    # Candidate file path relative to manuals
     try:
-        repo_resolved = REPO_ROOT.resolve()
-        if repo_resolved not in candidate.parents and candidate != repo_resolved:
+        candidate = (base_dir / Path(seg)).resolve()
+    except Exception:
+        # treat malformed or unresolvable paths as not-found rather than
+        # a bad request; this avoids noisy 400 entries from client probes.
+        abort(404)
+    # ensure candidate is inside the manuals dir
+    try:
+        if not candidate.is_file() or not candidate.exists():
+            abort(404)
+        # Python 3.9+: use is_relative_to for clear intent
+        if not str(candidate).startswith(str(base_dir)):
             abort(403)
     except Exception:
-        abort(400)
-    # send the file relative to REPO_ROOT
-    rel = candidate.relative_to(REPO_ROOT)
-    return send_from_directory(str(REPO_ROOT), str(rel))
+        # defensive: treat unexpected failures as not-found to avoid 400 spam
+        abort(404)
+    rel = candidate.relative_to(base_dir)
+    return send_from_directory(str(base_dir), str(rel))
+
+
+@bp.route('/<path:seg>')
+def serve_generated_wikigraph(seg):
+    """Serve generated wikigraph HTML files from the repository root.
+
+    This route only serves files whose names match the known wikigraph
+    filename patterns to avoid exposing arbitrary repo files via HTTP.
+    Example: GET /Player%20Root_wikigraph_sunburst.html
+    """
+    from urllib.parse import unquote
+    # Decode percent-encoded segments (e.g. %20 -> space) so callers can request
+    # URLs that include encoded spaces or other safe characters.
+    raw_seg = unquote(seg)
+
+    try:
+        # Only allow filenames that look like wikigraph outputs
+        allowed_suffixes = ('_wikigraph_sunburst.html', '_wikigraph_treemap.html', '_wikigraph.html')
+        if not any(raw_seg.endswith(suf) for suf in allowed_suffixes):
+            # Not a recognized generated graph file; let other routes handle it
+            abort(404)
+
+        candidate = (REPO_ROOT / raw_seg).resolve()
+    except Exception:
+        # treat resolution/parsing issues as not found rather than bad request
+        abort(404)
+
+    try:
+        repo_resolved = REPO_ROOT.resolve()
+        # If candidate doesn't exist at repo root, attempt to find a file
+        # anywhere in the repo with the same basename (e.g., 'Player Root_wikigraph_sunburst.html')
+        if not candidate.exists() or not candidate.is_file():
+            found = None
+            try:
+                # match by unquoted basename (raw_seg may contain slashes; we want the filename)
+                target_basename = Path(raw_seg).name
+                for p in repo_resolved.rglob('*'):
+                    try:
+                        if p.is_file() and p.name == target_basename and any(p.name.endswith(suf) for suf in allowed_suffixes):
+                            found = p
+                            break
+                    except Exception:
+                        continue
+            except Exception:
+                found = None
+
+            if found is None:
+                abort(404)
+            candidate = found
+
+        # Ensure the candidate is inside the repository
+        if not str(candidate).startswith(str(repo_resolved)):
+            abort(403)
+    except Exception:
+        # defensive: return 404 for unexpected failures when resolving files
+        abort(404)
+
+    # Serve the file relative to the repository root
+    rel = candidate.relative_to(repo_resolved)
+    return send_from_directory(str(repo_resolved), str(rel))
+
+
+@bp.route('/ws', methods=['GET'])
+def ws_probe():
+    """Lightweight HTTP probe for WebSocket path.
+
+    Some frontends attempt a plain GET to /ws to detect a websocket
+    endpoint; if no websocket server is attached the Flask stack will
+    currently reply with 400 which clutters browser console logs. Return
+    a 204 No Content for normal HTTP GET probes so clients see a benign
+    response. Real websocket upgrades are handled separately by a proper
+    websocket server layer and will not be affected by this handler.
+    """
+    return ('', 204)
 
 
 @bp.route("/player_root/move", methods=["POST"])
@@ -631,6 +776,460 @@ def player_root_move():
     if debug_enabled:
         resp.update(_debug_info())
     return jsonify(resp)
+
+
+@bp.route('/api/generate-graphs', methods=['POST'])
+def generate_graphs():
+    """Generate sunburst and treemap HTML files using Wikigraphs.py.
+
+    Expected JSON body: { "folder": "Player Root/PCs/Anju" }
+
+    Behavior/Assumptions:
+      - The generated HTML files will be written into the folder specified by
+        the `folder` parameter (must be a path inside the repository).
+      - The generator will scan the configured Player Root (vault) for data.
+        This keeps behaviour consistent with other repository tools.
+    """
+    data = request.get_json() or {}
+    folder = (data.get('folder') or data.get('folderPath') or '').strip()
+
+    # normalize incoming folder path
+    # Treat an exact 'Player Root' (with or without trailing slash) as the repo root
+    if folder.rstrip('/') == PLAYER_ROOT_PREFIX.rstrip('/'):
+        rel_folder = ''
+    elif folder.startswith(PLAYER_ROOT_PREFIX):
+        rel_folder = folder[len(PLAYER_ROOT_PREFIX) :].lstrip('/')
+    else:
+        rel_folder = folder.lstrip('/')
+
+    player_base = get_player_root_base()
+    # compute target dir where HTML files will be written
+    if player_base == REPO_ROOT:
+        # repo-root layout: treat rel_folder as repo-relative
+        target_dir = REPO_ROOT if not rel_folder else (REPO_ROOT / rel_folder)
+    else:
+        target_dir = player_base if not rel_folder else (player_base / rel_folder)
+
+    try:
+        target_dir = target_dir.resolve()
+    except Exception:
+        return jsonify(error='Invalid folder path'), 400
+
+    # target_path is the folder the generator should scan; use the resolved target_dir
+    target_path = target_dir
+
+    # ensure inside repo
+    try:
+        repo_resolved = REPO_ROOT.resolve()
+        if repo_resolved not in target_dir.parents and target_dir != repo_resolved:
+            return jsonify(error='Folder is outside repository'), 400
+    except Exception:
+        return jsonify(error='Path resolution error'), 400
+
+    if not target_dir.exists() or not target_dir.is_dir():
+        return jsonify(error='Folder does not exist'), 400
+
+    # Try to import Wikigraphs.make_graphs and call it directly for best UX.
+    script_module = None
+    tried_import = []
+    make_graphs_func = None
+    try:
+        import importlib
+        # try package-style import first
+        tried_import.append('Mycelium.scripts.Python.Wikigraphs')
+        script_module = importlib.import_module('Mycelium.scripts.Python.Wikigraphs')
+    except Exception:
+        script_module = None
+    if script_module is None:
+        try:
+            tried_import.append('scripts.Python.Wikigraphs')
+            script_module = importlib.import_module('scripts.Python.Wikigraphs')
+        except Exception:
+            script_module = None
+
+    if script_module is not None:
+        make_graphs_func = getattr(script_module, 'make_graphs', None)
+
+    generated = []
+    errors = []
+    captured_stdout = ''
+    captured_stderr = ''
+
+    # Call make_graphs directly when available. Use target_path as the scan root
+    # so the generator focuses on the requested folder, and use target_dir as
+    # the output directory so files are written into the requested folder.
+    if callable(make_graphs_func):
+        try:
+            # capture any prints the imported function may produce
+            import io
+            old_out, old_err = sys.stdout, sys.stderr
+            buf_out, buf_err = io.StringIO(), io.StringIO()
+            sys.stdout, sys.stderr = buf_out, buf_err
+            try:
+                make_graphs_func(root=target_path, outdir=target_dir)
+            finally:
+                sys.stdout, sys.stderr = old_out, old_err
+            captured_stdout = buf_out.getvalue() or ''
+            captured_stderr = buf_err.getvalue() or ''
+            if captured_stdout:
+                current_app.logger.info('[wikigraphs stdout]\n' + captured_stdout)
+            if captured_stderr:
+                current_app.logger.warning('[wikigraphs stderr]\n' + captured_stderr)
+            # persist to log file
+            try:
+                import json
+                with open(str(WIKIGRAPHS_LOG), 'a', encoding='utf-8') as lf:
+                    # write stdout lines as structured JSON events
+                    if captured_stdout:
+                        for ln in captured_stdout.splitlines():
+                            if ln.strip() == '':
+                                continue
+                            lf.write(json.dumps({'severity': 'info', 'text': ln}) + '\n')
+                    if captured_stderr:
+                        for ln in captured_stderr.splitlines():
+                            if ln.strip() == '':
+                                continue
+                            lf.write(json.dumps({'severity': 'error', 'text': ln}) + '\n')
+            except Exception:
+                pass
+        except Exception as e:
+            errors.append(str(e))
+    else:
+        # Fallback: subprocess invocation of the script file
+        try:
+            script_path = REPO_ROOT.joinpath('Mycelium', 'scripts', 'Python', 'Wikigraphs.py')
+            if not script_path.exists():
+                script_path = REPO_ROOT.joinpath('Mycelium', 'scripts', 'manuals', 'Wikigraphs.py')
+            if not script_path.exists():
+                return jsonify(error='Wikigraphs.py not found to run'), 500
+            # Use relative root arg like the existing /api/wikigraphs endpoint
+            arg_root = str(rel_folder) if rel_folder else '.'
+            cmd = [sys.executable, str(script_path), '--root', arg_root, '--out', str(target_dir)]
+            proc = subprocess.run(cmd, cwd=str(REPO_ROOT), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            captured_stdout = proc.stdout or ''
+            captured_stderr = proc.stderr or ''
+            if captured_stdout:
+                current_app.logger.info('[wikigraphs stdout]\n' + captured_stdout)
+            if captured_stderr:
+                current_app.logger.warning('[wikigraphs stderr]\n' + captured_stderr)
+            # persist to log file
+            try:
+                import json
+                with open(str(WIKIGRAPHS_LOG), 'a', encoding='utf-8') as lf:
+                    if captured_stdout:
+                        for ln in captured_stdout.splitlines():
+                            if ln.strip() == '':
+                                continue
+                            lf.write(json.dumps({'severity': 'info', 'text': ln}) + '\n')
+                    if captured_stderr:
+                        for ln in captured_stderr.splitlines():
+                            if ln.strip() == '':
+                                continue
+                            lf.write(json.dumps({'severity': 'error', 'text': ln}) + '\n')
+            except Exception:
+                pass
+            if proc.returncode != 0:
+                errors.append(proc.stderr or proc.stdout or f'Exit {proc.returncode}')
+        except Exception as e:
+            errors.append(str(e))
+
+    # Collect generated files in the target directory matching wikigraph patterns
+    try:
+        from urllib.parse import quote
+        for p in target_dir.iterdir():
+            if not p.is_file():
+                continue
+            if p.name.endswith('_wikigraph_sunburst.html') or p.name.endswith('_wikigraph_treemap.html') or p.name.endswith('_wikigraph.html'):
+                try:
+                    # Prefer repo-relative path
+                    rel = p.relative_to(REPO_ROOT).as_posix()
+                except Exception:
+                    # If that fails, try to express path relative to the player_base
+                    try:
+                        rel = (player_base.relative_to(REPO_ROOT).as_posix().rstrip('/') + '/' + p.relative_to(player_base).as_posix()).lstrip('/')
+                    except Exception:
+                        rel = p.as_posix()
+                # URL-encode each path segment so the returned path can be requested
+                parts = rel.split('/')
+                quoted = '/'.join(quote(seg) for seg in parts if seg != '')
+                generated.append('/' + quoted)
+    except Exception:
+        pass
+
+    if errors and not generated:
+        return jsonify(success=False, errors=errors, tried_import=tried_import, stdout=captured_stdout, stderr=captured_stderr), 500
+
+    return jsonify(success=True, files=generated, errors=errors, tried_import=tried_import, stdout=captured_stdout, stderr=captured_stderr)
+
+
+@bp.route("/player_root/search", methods=["GET"])
+def player_root_search():
+    """Search markdown files under Player Root for a substring.
+
+    Query params:
+      q - search query (required)
+      max_files - optional, max number of files to return (default 200)
+
+    Response: { results: [ { path: 'Player Root/PCs/Anju/Anju.md', matches: [ {line_no: N, context: ['prev','match','next'], excerpt: 'matched line snippet'} ], match_count: M } ] }
+    """
+    q = request.args.get('q', '').strip()
+    if not q:
+        return jsonify(error='Missing query param q'), 400
+    try:
+        max_files = int(request.args.get('max_files', 200))
+    except Exception:
+        max_files = 200
+
+    base = REPO_ROOT.joinpath('Player Root')
+    try:
+        base = base.resolve()
+    except Exception:
+        return jsonify(error='Repository path error'), 500
+
+    out = []
+    q_lower = q.lower()
+    debug_enabled = bool(os.environ.get('FLASK_DEBUG') or os.environ.get('MYCELIUM_DEBUG'))
+    # prepare filename tokenization for better ranking
+    normalized_q = re.sub(r"\s+", " ", q_lower).strip()
+    q_tokens = [t.strip() for t in re.split(r"\s+", normalized_q) if t.strip()]
+
+    # Walk Player Root for .md files
+    for p in base.rglob('*.md'):
+        try:
+            p_res = p.resolve()
+        except Exception:
+            continue
+        # ensure inside repo
+        try:
+            repo_res = REPO_ROOT.resolve()
+            if repo_res not in p_res.parents and p_res != repo_res:
+                continue
+        except Exception:
+            continue
+
+        # compute filename-based score boost
+        filename = p_res.name or ""
+        filename_lower = filename.lower()
+        # strip extension for filename phrase matching (prefer 'Anju Character Sheet' over '.md')
+        filename_no_ext = filename_lower.rsplit('.', 1)[0]
+        score = 0
+        filename_phrase_match = False
+        filename_token_matches = []
+        path_token_matches = []
+        # exact phrase in filename (no extension) -> very large boost
+        if normalized_q and normalized_q in filename_no_ext:
+            score += 5000
+            filename_phrase_match = True
+        # token matches in filename -> medium boost
+        for tok in q_tokens:
+            if tok and tok in filename_no_ext:
+                score += 500
+                filename_token_matches.append(tok)
+            # also boost if token appears anywhere in the file's repo-relative path
+            try:
+                rel_candidate = p_res.relative_to(REPO_ROOT).as_posix().lower()
+            except Exception:
+                rel_candidate = filename_lower
+            if tok and tok in rel_candidate:
+                score += 50
+                path_token_matches.append(tok)
+
+        # read lines
+        try:
+            text = p_res.read_text(encoding='utf-8')
+        except Exception:
+            continue
+        lines = text.splitlines()
+        matches = []
+        for i, line in enumerate(lines):
+            if q_lower in line.lower():
+                # gather context: two lines before and after where available
+                start = max(0, i - 2)
+                end = min(len(lines), i + 3)
+                context = lines[start:end]
+                matches.append({
+                    'line_no': i + 1,
+                    'excerpt': line.strip(),
+                    'context': context,
+                })
+        # include files that either have content matches, or have a filename/path match score
+        if matches or score > 0:
+            rel = p_res.relative_to(REPO_ROOT).as_posix()
+            # Avoid double-prefixing 'Player Root/' if the relative path already includes it
+            display_path = rel if rel.startswith(PLAYER_ROOT_PREFIX) else f"{PLAYER_ROOT_PREFIX}{rel}"
+            # add content-based score (each match contributes)
+            score += 10 * len(matches)
+            entry = {
+                'path': display_path,
+                'match_count': len(matches),
+                'matches': matches,
+                'score': score,
+            }
+            if debug_enabled:
+                entry['_debug_score'] = {
+                    'filename_phrase': filename_phrase_match,
+                    'filename_tokens': filename_token_matches,
+                    'path_tokens': path_token_matches,
+                    'content_matches': [m['line_no'] for m in matches],
+                    'score_breakdown': {
+                        'filename_phrase': 5000 if filename_phrase_match else 0,
+                        'filename_tokens': 500 * len(filename_token_matches),
+                        'path_tokens': 50 * len(path_token_matches),
+                        'content_matches': 10 * len(matches),
+                    },
+                }
+            out.append(entry)
+
+    # sort primarily by score (desc), then match_count, then path
+    out.sort(key=lambda e: (-(e.get('score', 0)), -e['match_count'], e['path']))
+    if len(out) > max_files:
+        out = out[:max_files]
+    return jsonify(results=out)
+
+
+@bp.route('/api/wikigraphs', methods=['POST'])
+def api_wikigraphs():
+    """Run the repository's Wikigraphs script for a given folder under Player Root.
+
+    Expected JSON body: { "root": "Player Root/PCs/Anju" } or { "root": "PCs/Anju" }
+    """
+    data = request.get_json() or {}
+    root = data.get('root') or ''
+    s = str(root or '').strip()
+    # Accept either 'Player Root' or 'Player Root/...' forms from the client.
+    prefix_no_slash = PLAYER_ROOT_PREFIX.rstrip('/')
+    if s == prefix_no_slash:
+        s = ''
+    elif s.startswith(prefix_no_slash + '/'):
+        s = s[len(prefix_no_slash) + 1 :].lstrip('/')
+    target_rel = s or ''
+
+    # resolve target folder using the configured player base
+    try:
+        player_base = get_player_root_base()
+        if target_rel:
+            target_path = (player_base / target_rel).resolve()
+        else:
+            target_path = player_base.resolve()
+    except Exception as e:
+        return jsonify({'error': f'Path resolution error: {e}'}), 400
+
+    try:
+        repo_res = REPO_ROOT.resolve()
+        if repo_res not in target_path.parents and target_path != repo_res:
+            return jsonify({'error': 'Target outside repository'}), 400
+    except Exception:
+        return jsonify({'error': 'Repository resolution error'}), 500
+
+    if not target_path.exists() or not target_path.is_dir():
+        return jsonify({'error': 'Target folder not found'}), 404
+
+    # Try known script locations
+    script_path = REPO_ROOT.joinpath('Mycelium', 'scripts', 'Python', 'Wikigraphs.py')
+    if not script_path.exists():
+        script_path = REPO_ROOT.joinpath('Mycelium', 'scripts', 'manuals', 'Wikigraphs.py')
+        if not script_path.exists():
+            return jsonify({'error': 'Wikigraphs script not found on server'}), 500
+
+    # When no specific target was requested, pass '.' so the script's
+    # argument parser receives a sensible default rather than an empty string.
+    arg_root = str(target_rel) if target_rel else '.'
+    cmd = [sys.executable, str(script_path), '--root', arg_root]
+    try:
+        proc = subprocess.run(cmd, cwd=str(REPO_ROOT), capture_output=True, text=True, timeout=300)
+        out = proc.stdout or ''
+        err = proc.stderr or ''
+        status = proc.returncode
+        if status != 0:
+            return jsonify({'success': False, 'code': status, 'stdout': out, 'stderr': err}), 500
+
+        # Attempt to discover the generated graph HTML files and return
+        # URL-encoded paths so the frontend can probe them directly. This
+        # helps when filenames contain spaces which become percent-encoded
+        # in HTTP requests.
+        written = []
+        try:
+            from urllib.parse import quote
+
+            # Collect candidate files across the repository that look like
+            # output of the generator.
+            candidates = list(repo_res.rglob('*_wikigraph_*.html'))
+            for p in candidates:
+                try:
+                    rel = p.relative_to(repo_res).as_posix()
+                except Exception:
+                    # skip paths that cannot be relativized
+                    continue
+
+                # Decide whether this file is relevant to the requested target
+                rel_norm = rel
+                # If a specific target was requested, require target_rel to
+                # appear in the relative path.
+                if target_rel:
+                    if target_rel.replace('\\', '/') not in rel_norm:
+                        continue
+                else:
+                    # root requested: behavior depends on whether the repo
+                    # uses an explicit 'Player Root' folder or places player
+                    # content at the repository root. When a literal Player
+                    # Root folder exists, prefer files under it; otherwise
+                    # accept repo-root candidates.
+                    player_base = get_player_root_base()
+                    if player_base != REPO_ROOT:
+                        if not (rel_norm.startswith('Player Root/') or 'Player Root' in rel_norm):
+                            continue
+
+                # URL-encode each path segment to produce a safe HTTP path
+                parts = rel.split('/')
+                quoted = '/'.join(quote(p) for p in parts)
+                written.append('/' + quoted)
+        except Exception:
+            written = []
+
+        return jsonify({'success': True, 'code': status, 'stdout': out, 'stderr': err, 'written': written})
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Wikigraphs run timed out'}), 504
+    except Exception as e:
+        return jsonify({'error': f'Failed to run Wikigraphs: {e}'}), 500
+
+
+@bp.route('/api/tail-wikigraphs')
+def tail_wikigraphs():
+    """Stream the latest Wikigraphs log as Server-Sent Events (SSE).
+
+    Clients can open an EventSource to this endpoint to receive new log
+    lines as they are appended. This is a simple implementation which polls
+    the log file for new content.
+    """
+    def event_stream():
+        import time
+        # Keep polling: if the log file doesn't exist yet, wait silently until it does.
+        while True:
+            try:
+                # Open file and seek to the end
+                with open(str(WIKIGRAPHS_LOG), 'r', encoding='utf-8', errors='ignore') as f:
+                    f.seek(0, os.SEEK_END)
+                    while True:
+                        line = f.readline()
+                        if line:
+                            # SSE data: each event is a data: line
+                            yield f'data: {line.rstrip()}\n\n'
+                        else:
+                            # sleep briefly before retrying
+                            time.sleep(0.2)
+            except FileNotFoundError:
+                # Do not send a placeholder message; wait for the log file to appear.
+                time.sleep(0.5)
+                continue
+            except GeneratorExit:
+                return
+            except Exception as e:
+                # Send an explicit error event (useful for debugging), then continue polling.
+                yield f'data: (tail error: {e})\n\n'
+                time.sleep(0.5)
+                continue
+
+    return Response(stream_with_context(event_stream()), mimetype='text/event-stream')
 
 
 @bp.route("/update_sheet/<pcname>", methods=["POST"])
@@ -795,4 +1394,60 @@ def update_sheet(pcname):
     relpath = str(target.relative_to(REPO_ROOT).as_posix())
     if write_warning:
         return jsonify(success=True, path=relpath, files=files, warning=write_warning)
-    return jsonify(success=True, path=relpath, files=files)
+    resp = jsonify(success=True, path=relpath, files=files)
+    # return the normal response
+    # NOTE: subsequent routes appended below
+    
+    # --- Additional endpoint: run Wikigraphs for a folder under Player Root ---
+    @bp.route('/player_root/wikigraphs', methods=['POST'])
+    def player_root_wikigraphs():
+        """Run the repository's Wikigraphs script for a given folder under Player Root.
+
+        Expected JSON body: { "root": "Player Root/PCs/Anju" } or { "root": "PCs/Anju" }
+        """
+        data = request.get_json() or {}
+        root = data.get('root') or ''
+        s = str(root or '').strip()
+        if s.startswith(PLAYER_ROOT_PREFIX):
+            s = s[len(PLAYER_ROOT_PREFIX):].lstrip('/')
+        target_rel = s or ''
+
+        # resolve target folder
+        try:
+            base = (REPO_ROOT / 'Player Root').resolve()
+            target_path = (base / target_rel).resolve()
+        except Exception as e:
+            return jsonify({'error': f'Path resolution error: {e}'}), 400
+
+        try:
+            repo_res = REPO_ROOT.resolve()
+            if repo_res not in target_path.parents and target_path != repo_res:
+                return jsonify({'error': 'Target outside repository'}), 400
+        except Exception:
+            return jsonify({'error': 'Repository resolution error'}), 500
+
+        if not target_path.exists() or not target_path.is_dir():
+            return jsonify({'error': 'Target folder not found'}), 404
+
+        # Try known script locations
+        script_path = REPO_ROOT.joinpath('Mycelium', 'scripts', 'Python', 'Wikigraphs.py')
+        if not script_path.exists():
+            script_path = REPO_ROOT.joinpath('Mycelium', 'scripts', 'manuals', 'Wikigraphs.py')
+            if not script_path.exists():
+                return jsonify({'error': 'Wikigraphs script not found on server'}), 500
+
+        cmd = [sys.executable, str(script_path), '--root', str(target_rel)]
+        try:
+            proc = subprocess.run(cmd, cwd=str(REPO_ROOT), capture_output=True, text=True, timeout=300)
+            out = proc.stdout or ''
+            err = proc.stderr or ''
+            status = proc.returncode
+            if status != 0:
+                return jsonify({'success': False, 'code': status, 'stdout': out, 'stderr': err}), 500
+            return jsonify({'success': True, 'code': status, 'stdout': out, 'stderr': err})
+        except subprocess.TimeoutExpired:
+            return jsonify({'error': 'Wikigraphs run timed out'}), 504
+        except Exception as e:
+            return jsonify({'error': f'Failed to run Wikigraphs: {e}'}), 500
+
+    return resp

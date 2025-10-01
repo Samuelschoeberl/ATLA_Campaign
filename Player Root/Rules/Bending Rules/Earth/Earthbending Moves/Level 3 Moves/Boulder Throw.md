@@ -1,23 +1,15 @@
-```markdown
+
 #Action
 
-**Boulder Throw**
-
-**Level 3 Slot**
 - Lift and hurl a large boulder.
-- Range: 30ft.
-- Damage: 4d8 bludgeoning.
+- Range: 2 * [[Player Root/variable/secondary_stat/earthbending slot|earthbending slot]] meter.
+- Damage: [[Player Root/variable/secondary_stat/earthbending slot|earthbending slot]] d12 bludgeoning.
 
 **Usage**: Powerful ranged attack for dealing heavy damage.
 
-**Links**:
-- [[Boulder Throw]]
-
 Tags:
-#Earthbending
-[[Earthbending]]
-[[Player Root]]
-
+#Level3 
+#earth 
 #Earthbending
 #player_root
-```
+

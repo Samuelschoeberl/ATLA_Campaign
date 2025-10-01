@@ -5,8 +5,8 @@ Name: Mahogany
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       50 |
-| current hp   |   50 |
+| max_hp       |        50 |
+| current hp   |    50 |
 
 ## Core Stats
 
@@ -27,7 +27,7 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |       11 | 0     |
+| Evasion       |        11 | 0     |
 
 
 ## Bending Slots

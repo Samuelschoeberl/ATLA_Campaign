@@ -5,8 +5,8 @@ Name: Ash
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       65 |
-| current hp   |   65 |
+| max_hp       |        65 |
+| current hp   |    65 |
 | Stress Level | 0 |
 
 ## Core Stats
@@ -34,7 +34,7 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |       11 | 0     |
+| Evasion       |        11 | 0     |
 
 
 ## Bending Slots

@@ -5,8 +5,8 @@ Name: Tiebeediy
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       80 |
-| current hp   |   80 |
+| max_hp       |        80 |
+| current hp   |    80 |
 
 ## Core Stats
 
@@ -33,8 +33,8 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |       13 | 0     |
-| General Armor | 1 | 0     |
+| Evasion       |        13 | 0     |
+| General Armor |  1 | 0     |
 
 
 ## Bending Slots

@@ -1,4 +1,4 @@
-```markdown
+
 #Danger_Sense_Reaction
 
 - **Range:** 3 * [[Airbending Slot]] meters.
@@ -11,4 +11,3 @@
 #Level1
 #Mobility
 #air
-```

@@ -1,7 +1,6 @@
-```markdown
 #Action
 
-- **Range:** [[CL]] * 1 meters.
+- **Range:** [[air]] * 1 meters.
 - **Duration:** Concentration, up to 1 Minute.
 
 
@@ -15,4 +14,4 @@
 #air
 #player_root
 #utility
-```
+

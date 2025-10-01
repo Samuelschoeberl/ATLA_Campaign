@@ -1,7 +1,7 @@
-```markdown
-#Danger_Sense_Reaction
-**Level 2
-	- **Range:** 2 * [[Airbending Slot]] meters radius.
+
+#Action 
+
+- **Range:** 2  [[Airbending Slot]] meters radius.
 - **Duration:** Instantaneous.
 
 **Effects:**
@@ -11,4 +11,4 @@
 #Level2
 #air
 #player_root
-```
+

@@ -1,6 +1,0 @@
-127.0.0.1 - - [24/Sep/2025 23:51:23] code 404, message File not found
-127.0.0.1 - - [24/Sep/2025 23:51:23] "GET /ws HTTP/1.1" 404 -
-127.0.0.1 - - [24/Sep/2025 23:51:23] code 404, message File not found
-127.0.0.1 - - [24/Sep/2025 23:51:23] "GET /events HTTP/1.1" 404 -
-127.0.0.1 - - [24/Sep/2025 23:51:24] code 404, message File not found
-127.0.0.1 - - [24/Sep/2025 23:51:24] "GET /favicon.ico HTTP/1.1" 404 -

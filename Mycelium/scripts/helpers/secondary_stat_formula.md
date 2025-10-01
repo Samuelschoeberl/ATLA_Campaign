@@ -9,13 +9,13 @@ This file lists the secondary character stats and their formula expressions (sou
 
 ## Secondary Stat Formulas
 
-| Stat Key                  | Formula                                              |
-| ------------------------- | ---------------------------------------------------- |
+| Stat Key                      | Formula                                              |
+| ----------------------------- | ---------------------------------------------------- |
 | [[CL]]                        | CL                                                   |
 | [[HP Multiplier]]             | 10                                                   |
 | [[max_hit_points]]            | CON _ CL + Manually_Rolled_Hitpoints _ HP Multiplier |
-| [[Player Root/Rules/Evasion]]                   | 10 + DEX + Airbending_Level                          |
-| [[Armor definition]]                     | 0 + Earthbending_Level                               |
+| [[Player Root/Rules/Evasion]] | 10 + DEX + Airbending_Level                          |
+| [[Armor definition]]          | 0 + Earthbending_Level                               |
 | [[Stress Level]]              | 0                                                    |
 | [[airbending_bonus]]          | Air Level + DEX                                      |
 | [[airbending_dc]]             | 10 + airbending_bonus                                |
@@ -35,7 +35,7 @@ This file lists the secondary character stats and their formula expressions (sou
 | [[Earth Level]]               | Earth                                                |
 | [[Earthbending_Level]]        | Earth                                                |
 | [[Fire Level]]                | Fire                                                 |
-| [[Firebending_Level]]         | Fire                                                |
+| [[Firebending_Level]]         | Fire                                                 |
 | [[Spirit Level]]              | Spirit                                               |
 | [[Manually_Rolled_Hitpoints]] | Manually Rolled HP                                   |
 | [[Manually Rolled HP]]        | Manually Rolled HP                                   |
