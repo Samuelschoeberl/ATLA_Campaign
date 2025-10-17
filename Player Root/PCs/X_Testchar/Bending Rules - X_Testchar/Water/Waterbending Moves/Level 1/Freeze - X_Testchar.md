@@ -1,0 +1,11 @@
+#Action
+- **Range:** 3m * water (20) level
+- **Effect:**  
+    The waterbender can freeze an amount of water. The higher the water (20) Level the more water can be frozen. (for big amounts might need to roll an Player Root/variable/primary_stat/Intelligence|Intelligence (0) check) 
+
+
+#Waterbending
+#freezing
+#water 
+#Level1 
+

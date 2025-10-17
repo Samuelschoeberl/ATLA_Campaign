@@ -1,5 +1,4 @@
 
-#🍇_Origin:
 
 High on the outer cliffs of Omashu and the surrounding valley grow the rare **Glassfruit Trees**—bizarre plants that draw heavy mineral content from the stone and soil, producing **glass-like fruit** with dense crystalline seeds. These seeds:
 
@@ -15,4 +14,5 @@ Local legend says the **Earth Lion Turtle** left these trees here, believing the
 
 #earth
 #player_root
-
+#signature_move
+#Puy 

@@ -19,3 +19,5 @@ A soundblast builds from multiple frequencies and shatters the ground.
 #air 
 #player_root
 #teamup
+#signature_move
+#Puy 

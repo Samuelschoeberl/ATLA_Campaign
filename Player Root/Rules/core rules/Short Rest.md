@@ -1,6 +1,5 @@
-Take a break and rest for an Hour.
-
-You Have a pool of Your [[Hitpoints]] and 
+You restore all your Hitpoints and Bending Slots
 [[Player Root]]
 
 #player_root
+

@@ -48,7 +48,7 @@ app.register_blueprint(bp)
 
 # serve the lightweight frontend files from scripts/frontend
 FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
-STATIC_SNAPSHOT_FILENAME = "disconnected_mycelium.html"
+STATIC_SNAPSHOT_FILENAME = "static_mycelium.html"
 
 # ---- Targeted static asset helpers and routes (favicon/logo fallbacks) ----
 def _safe_send_path(candidate_path: Path):

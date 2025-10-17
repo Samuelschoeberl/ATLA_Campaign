@@ -19,4 +19,5 @@ Reaction: Must be initiated by a Earthbender in line of sight
 #earth
 #player_root
 #teamup
-
+#signature_move
+#Puy 

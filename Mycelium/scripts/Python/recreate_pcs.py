@@ -718,87 +718,14 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
             rules_root = ROOT.joinpath('Player Root', 'Rules', 'Bending Rules')
             if rules_root.exists():
                 token_re = re.compile(r"\[\[\s*([^\]]+)\s*\]\]")
-                # ensure old single-file renderer is removed (legacy)
-                try:
-                    old_r = pc_dir.joinpath('Bending Rules - rendered.md')
-                    if old_r.exists():
-                        old_r.unlink()
-                except Exception:
-                    pass
-                # create a per-PC Bending Rules folder with suffixed names
-                br_root = pc_dir.joinpath(f"Bending Rules - {safe}")
-                # remove existing folder to ensure clean regeneration
-                try:
-                    if br_root.exists():
-                        shutil.rmtree(br_root)
-                except Exception:
-                    pass
-                for p in sorted(rules_root.rglob('*.md')):
-                    try:
-                        rel = p.relative_to(rules_root)
-                    except Exception:
-                        rel = Path(p.name)
-                    txt = p.read_text(encoding='utf-8')
-                    # parse tags to decide if this move is learnable by the character
-                    tags_in_file = {t.lower() for t in re.findall(r"#[-\w]+", txt)}
-                    # Normalize element tags so variants like #spiritbending, #spirit-bending,
-                    # or #spirit_bending are recognised as the 'spirit' element (same for others).
-                    def _normalize_element_tag(tag: str) -> Optional[str]:
-                        # tag is like '#spiritbending' or '#water' (lowercased)
-                        if not tag or not tag.startswith('#'):
-                            return None
-                        core = tag[1:]
-                        core = core.replace('-', '').replace('_', '')
-                        # strip common suffix 'bending' if present
-                        if core.endswith('bending'):
-                            core = core[:-7]
-                        core = core.strip()
-                        if core in ('air', 'water', 'earth', 'fire', 'spirit'):
-                            return core
-                        return None
 
-                    element_tags = []
-                    for t in tags_in_file:
-                        et = _normalize_element_tag(t)
-                        if et and et not in element_tags:
-                            element_tags.append(et)
-                    level_re = re.compile(r"#level(\d+)(?:-(\d+))?", flags=re.I)
-                    level_matches = level_re.findall(' '.join(tags_in_file))
-                    if not element_tags or not level_matches:
-                        # skip files that don't declare element and level tags
-                        continue
+                def render_rule_content(source_text: str) -> str:
+                    """Replace tokens like [[Stat]] with rendered values for this PC."""
 
-                    satisfied_any = False
-                    for elem in element_tags:
-                        v = norm_kv.get(normalize_name(elem))
-                        try:
-                            vnum = float(v) if v is not None else 0.0
-                        except Exception:
-                            try:
-                                vnum = float(to_number(v))
-                            except Exception:
-                                vnum = 0.0
-                        for lm in level_matches:
-                            lo = int(lm[0])
-                            hi = int(lm[1]) if lm[1] else None
-                            if hi is None:
-                                if vnum >= lo:
-                                    satisfied_any = True
-                                    break
-                            else:
-                                if vnum >= lo and vnum <= hi:
-                                    satisfied_any = True
-                                    break
-                        if satisfied_any:
-                            break
-
-                    if not satisfied_any:
-                        continue
-
-                    # perform token substitution (same behaviour as before)
                     def sub_token(m):
                         raw = m.group(1).strip()
                         nk = normalize_name(raw)
+
                         def _tags_for(name_norm: str):
                             if not secondary_tags:
                                 return None
@@ -831,6 +758,7 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                                 tmpl = secondary_templates.get(raw) or secondary_templates.get(raw.title())
                             if tmpl:
                                 token_pat = re.compile(r"\[\[\s*([^\]]+)\s*\]\]")
+
                                 def _sub_inner(m2):
                                     raw2 = m2.group(1).strip()
                                     nk2 = normalize_name(raw2)
@@ -875,7 +803,99 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                             vnum = val
                         return f"{raw} ({vnum})"
 
-                    rendered = token_re.sub(sub_token, txt)
+                    return token_re.sub(sub_token, source_text)
+
+                # ensure old single-file renderer is removed (legacy)
+                try:
+                    old_r = pc_dir.joinpath('Bending Rules - rendered.md')
+                    if old_r.exists():
+                        old_r.unlink()
+                except Exception:
+                    pass
+                # create a per-PC Bending Rules folder with suffixed names
+                br_root = pc_dir.joinpath(f"Bending Rules - {safe}")
+                # remove existing folder to ensure clean regeneration
+                try:
+                    if br_root.exists():
+                        shutil.rmtree(br_root)
+                except Exception:
+                    pass
+                category_tags = {
+                    '#action': 'Action',
+                    '#bonus_action': 'Bonus Action',
+                    '#reaction': 'Reaction',
+                    '#danger_sense_reaction': 'Danger Sense Reaction',
+                }
+                action_type_root = None
+                for p in sorted(rules_root.rglob('*.md')):
+                    try:
+                        rel = p.relative_to(rules_root)
+                    except Exception:
+                        rel = Path(p.name)
+                    txt = p.read_text(encoding='utf-8')
+                    # parse tags to decide if this move is learnable by the character
+                    tags_in_file = {t.lower() for t in re.findall(r"#[-\w]+", txt)}
+                    # Normalize element tags so variants like #spiritbending, #spirit-bending,
+                    # or #spirit_bending are recognised as the 'spirit' element (same for others).
+                    def _normalize_element_tag(tag: str) -> Optional[str]:
+                        # tag is like '#spiritbending' or '#water' (lowercased)
+                        if not tag or not tag.startswith('#'):
+                            return None
+                        core = tag[1:]
+                        core = core.replace('-', '').replace('_', '')
+                        # strip common suffix 'bending' if present
+                        if core.endswith('bending'):
+                            core = core[:-7]
+                        core = core.strip()
+                        if core in ('air', 'water', 'earth', 'fire', 'spirit'):
+                            return core
+                        return None
+
+                    element_tags = []
+                    for t in tags_in_file:
+                        et = _normalize_element_tag(t)
+                        if et and et not in element_tags:
+                            element_tags.append(et)
+                    level_re = re.compile(r"#level(\d+)(?:-(\d+))?", flags=re.I)
+                    level_matches = level_re.findall(' '.join(tags_in_file))
+                    if not element_tags or not level_matches:
+                        # skip files that don't declare element and level tags
+                        continue
+
+                    if '#signature_move' in tags_in_file:
+                        pc_tag = f"#{normalize_name(name)}"
+                        if pc_tag not in tags_in_file:
+                            continue
+
+                    satisfied_any = False
+                    for elem in element_tags:
+                        v = norm_kv.get(normalize_name(elem))
+                        try:
+                            vnum = float(v) if v is not None else 0.0
+                        except Exception:
+                            try:
+                                vnum = float(to_number(v))
+                            except Exception:
+                                vnum = 0.0
+                        for lm in level_matches:
+                            lo = int(lm[0])
+                            hi = int(lm[1]) if lm[1] else None
+                            if hi is None:
+                                if vnum >= lo:
+                                    satisfied_any = True
+                                    break
+                            else:
+                                if vnum >= lo and vnum <= hi:
+                                    satisfied_any = True
+                                    break
+                        if satisfied_any:
+                            break
+
+                    if not satisfied_any:
+                        continue
+
+                    rendered = render_rule_content(txt)
+                    matched_categories = [category_tags[t] for t in category_tags.keys() if t in tags_in_file]
 
                     # build target path inside per-PC bending rules folder
                     # Preserve the original folder structure under the rules root
@@ -897,6 +917,57 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                     except Exception:
                         # best-effort write; continue on failure
                         pass
+
+                    # Additionally copy move into action-based folders when tagged.
+                    if matched_categories:
+                        if action_type_root is None:
+                            action_type_root = br_root.joinpath('by Action Type')
+                        for cat in matched_categories:
+                            cat_dir = action_type_root.joinpath(cat)
+                            try:
+                                cat_dir.mkdir(parents=True, exist_ok=True)
+                            except Exception:
+                                continue
+                            cat_file = cat_dir.joinpath(new_fname)
+                            try:
+                                cat_file.write_text(rendered + '\n', encoding='utf-8')
+                            except Exception:
+                                # Non-fatal; continue attempting other categories.
+                                continue
+
+                # Always include the shared Core Rules folder, preserving structure.
+                core_rules_root = ROOT.joinpath('Player Root', 'Rules', 'core rules')
+                if core_rules_root.exists():
+                    core_dest_root = br_root.joinpath('core rules')
+                    try:
+                        if core_dest_root.exists():
+                            shutil.rmtree(core_dest_root)
+                    except Exception:
+                        pass
+                    for p in sorted(core_rules_root.rglob('*.md')):
+                        try:
+                            rel = p.relative_to(core_rules_root)
+                        except Exception:
+                            rel = Path(p.name)
+                        try:
+                            txt = p.read_text(encoding='utf-8')
+                        except Exception:
+                            continue
+                        rendered = render_rule_content(txt)
+                        if rel.parent and str(rel.parent) != '.':
+                            target_dir = core_dest_root.joinpath(rel.parent)
+                        else:
+                            target_dir = core_dest_root
+                        target_dir.mkdir(parents=True, exist_ok=True)
+                        orig_fname = rel.name
+                        stem = Path(orig_fname).stem
+                        ext = Path(orig_fname).suffix
+                        new_fname = f"{stem} - {safe}{ext}"
+                        tgt_file = target_dir.joinpath(new_fname)
+                        try:
+                            tgt_file.write_text(rendered + '\n', encoding='utf-8')
+                        except Exception:
+                            pass
         except Exception:
             # non-fatal; don't stop sheet generation if rules rendering fails
             pass
@@ -1488,4 +1559,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-

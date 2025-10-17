@@ -2,7 +2,7 @@
 [[Firebending Slot Progression]]
 [[earthbending slot]]
 [[Water Charges]]
-[[Spiritbending Slot]]
+[[Spiritbending Slot Progression]]
 
 Slot progression rule: for a bending element at level N you receive slots distributed by slot level as follows — 1 slot at level N, 2 slots at level N-1, 3 slots at level N-2, and so on down to N slots at level 1. In formula form: for each k from 1..N you get k slots of level (N+1-k).
 

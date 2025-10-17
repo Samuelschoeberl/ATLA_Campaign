@@ -17,5 +17,6 @@ Stick and grow trapping enemies and reshaping the terrain.
 #Level1 
 #earth
 #water 
-#player_root
 #teamup
+#signature_move
+#Puy 

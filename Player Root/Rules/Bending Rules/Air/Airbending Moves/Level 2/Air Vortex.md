@@ -7,7 +7,7 @@
 **Effects:**
 	Create a swirling vortex of air around you to deflect projectiles and disperse lingering Damgage effects.
 
-#Danger_Sense_Reaction
+
 #Level2
 #air
 #player_root

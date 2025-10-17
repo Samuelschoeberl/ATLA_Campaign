@@ -1,6 +1,10 @@
-Move or disperse most Lingering Damage effects
-[[Airbending]]
-[[Player Root]]
+#Action 
 
-#player_root
+- Radius:  [[Airbending_slot]] meters radius
+- Range: [[air]] meters
+- Move most lingering effects within Range
+
+
 #air
+#Level1 
+#lingering_effect 

@@ -1,5 +1,6 @@
 **Movement per Round**:
-10 meters + Airbending Level * 3
-[[Player Root]]
+10 meters + [[air]] Level * 3
+
 
 #player_root
+
