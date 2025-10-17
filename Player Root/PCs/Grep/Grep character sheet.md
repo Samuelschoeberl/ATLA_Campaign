@@ -5,18 +5,18 @@ Name: Grep
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       85 |
-| current hp   |   85 |
+| max_hp       |       125 |
+| current hp   |   125 |
 
 ## Core Stats
 
 | Stat         |            Value |
 | ------------ | ---------------: |
-| Strength     |     1 |
-| Dexterity    |    2 |
+| Strength     |     7 |
+| Dexterity    |    5 |
 | Constitution | 5 |
-| Intelligence | 6 |
-| Wisdom       |       7 |
+| Intelligence | 1 |
+| Wisdom       |       2 |
 | Charisma     |     7 |
 
 ## Bending Levels
@@ -26,13 +26,14 @@ Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Spirit  | 2 | 1d20 + 2 + 2 | 19 |
+| Earth   |  2 | 1d20 + 2 + 7  | 19  |
 |         |            |                        |                      |
 ## Defensive
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |       12 | 0     |
+| Evasion       |       15 | 0     |
+| General Armor | 2 | 0     |
 
 
 ## Bending Slots
@@ -40,7 +41,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Spiritbending slot     |    2 |
+| Earthbending slot      |     4 |
 
 ## Water charges
 
@@ -50,6 +51,3 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 
 #Grep #Character_Sheet
-
-> WARNING: The following character stats could not be placed by context and were appended:
-| Chaos energy | 0 |

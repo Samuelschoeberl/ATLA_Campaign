@@ -1,6 +1,6 @@
 Airbending Slot Progression (0)
 Firebending Slot Progression (0)
-earthbending slot (0)
+earthbending slot (4)
 Water Charges (0)
 Spiritbending Slot Progression (0)
 

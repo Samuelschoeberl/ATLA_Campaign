@@ -1,5 +1,5 @@
 ```markdown
-0
+2
 
 #primary_stat #variable #character_stat #character_stats
 
