@@ -1,7 +1,6 @@
-```markdown
+
 #Action
 
-Bonus Action (0)
 Level 3 (0)
 Cyclic Flow (0)
 

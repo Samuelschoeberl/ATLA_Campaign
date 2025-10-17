@@ -1,5 +1,5 @@
-```markdown
 #Action
+#Reaction 
 
 You may use Levels from **Water only**.
 Each Bender-decides to which pool to add their Bending slots:
@@ -9,10 +9,6 @@ Each Bender-decides to which pool to add their Bending slots:
 - One waterbender shoots X Water Projectiles (rolls the attack role) and the other one Freezes them  rolls the damage rolls)
 
 
-[[Waterbending]]
-[[Team-up Moves]]
-[[Player Root]]
-
-#player_root
-#teamup
-```
+#teamup 
+#Level3 
+#water 

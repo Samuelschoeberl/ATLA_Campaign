@@ -5,8 +5,8 @@ Name: Sora
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |        80 |
-| current hp   |    80 |
+| max_hp       |       80 |
+| current hp   |   80 |
 | Stress Level | 0 |
 
 ## Core Stats
@@ -33,7 +33,7 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |        12 | 0     |
+| Evasion       |       12 | 0     |
 
 
 ## Bending Slots
@@ -47,7 +47,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Environmental Variable     |                          value |
 | -------------------------- | -----------------------------: |
-| environmental water charge | 11 |
+| Environmental water charge | 11 |
 
 
 #Sora #Character_Sheet

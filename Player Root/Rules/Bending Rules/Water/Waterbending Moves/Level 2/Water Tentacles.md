@@ -1,7 +1,6 @@
-```markdown
+
 #Action
 
-[[Bonus Action]]
 [[Level 3]]
 [[Cyclic Flow]]
 

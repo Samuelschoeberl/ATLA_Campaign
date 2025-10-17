@@ -5,8 +5,8 @@ Name: Tapioca
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |        90 |
-| current hp   |    90 |
+| max_hp       |       90 |
+| current hp   |   90 |
 
 ## Core Stats
 
@@ -33,8 +33,8 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |        19 | 0     |
-| General Armor |  1 | 0     |
+| Evasion       |       19 | 0     |
+| General Armor | 1 | 0     |
 
 
 ## Bending Slots
@@ -50,7 +50,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Environmental Variable     |                          value |
 | -------------------------- | -----------------------------: |
-| environmental water charge | 11 |
+| Environmental water charge | 11 |
 
 
 #Tapioca #Character_Sheet

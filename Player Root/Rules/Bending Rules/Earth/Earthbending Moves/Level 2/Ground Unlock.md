@@ -1,7 +1,7 @@
 
 #Bonus_Action 
-- Range: 3* [[Earthbending Slot]] Meters
-- Target: 1 * [[Earthbending Slot]]  Enemies within range
+- Range: 3* [[earthbending slot]] Meters
+- Target: 1 * [[earthbending slot]]  Enemies within range
 Revert Immobilisation through [[Ground Lock]]
 
 

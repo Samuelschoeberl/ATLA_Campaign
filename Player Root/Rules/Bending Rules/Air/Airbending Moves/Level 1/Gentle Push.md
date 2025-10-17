@@ -1,10 +1,10 @@
 
 #Danger_Sense_Reaction
 
-- **Range:** 3 * [[Airbending Slot]] meters.
+- **Range:** 3 * [[Airbending Slot Progression]] meters.
 
 **Effects:**
-- Push up to [[Airbending Slot]]  objects or creatures within Range away, up to Airbending Slot Meters in a chosen direction.
+- Push up to [[Airbending Slot Progression]]  objects or creatures within Range away, up to Airbending Slot Meters in a chosen direction.
 - Creatures must make a Strength save against your [[Airbending DC]].
 
 #Danger_Sense_Reaction

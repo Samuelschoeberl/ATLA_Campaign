@@ -1,7 +1,7 @@
 
 #Action 
 
-- **Range:** 2  [[Airbending Slot]] meters radius.
+- **Range:** 2  [[Airbending Slot Progression]] meters radius.
 - **Duration:** Instantaneous.
 
 **Effects:**

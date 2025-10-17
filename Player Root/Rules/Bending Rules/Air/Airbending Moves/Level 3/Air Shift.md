@@ -1,4 +1,3 @@
-
 #Danger_Sense_Reaction
 	- **Range:** Self
 

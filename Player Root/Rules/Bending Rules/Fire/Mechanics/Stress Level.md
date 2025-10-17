@@ -8,7 +8,7 @@ Firebenders draw power from passion, heat, and intensity. Stress is both a resou
 
 When do you gain [[Stress Level]]:
 - For every 10 damage you take you take 1 [[Stress Level]]
-- For every [[Firebending Slot]] used in a [[Damaging Move]]
+- For every [[Firebending Slot Progression]] used in a [[Damaging Move]]
 When you loose [[Stress Level]]:
 - 1 [[Stress Level]] after every turn
 

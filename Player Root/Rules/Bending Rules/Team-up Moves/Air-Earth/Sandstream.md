@@ -1,21 +1,18 @@
-```markdown
-#Action
 
-You may use Levels from **Air and Earth **.
+#Action 
+#Reaction 
+
 Each Bender-decides to which pool to add their Bending slots:
 -  **Y**(Earth): Yd12 Damage per projectile
-- **X**(Air): X Sand Projectiles
-
-- Z(Earth * Air): Z * 5 meter Cone Range
+- **X**(Air): X Projectiles [[Air Attack Roll]]
+- **Range:** Y * X meters from the Airbender 
+ 
  
 - One Earthbender shoots Y Sand Projectiles (rolls the Damage roll) and the Airbender controlls them to home to the X Targets)
 
 
-#player_root #air #earth #Level3
-
-#Level3
+#Level1
 #air
 #earth
-#player_root
 #teamup
-```
+

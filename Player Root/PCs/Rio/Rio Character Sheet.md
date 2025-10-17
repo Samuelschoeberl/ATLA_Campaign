@@ -5,8 +5,8 @@ Name: Rio
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |        90 |
-| current hp   |    90 |
+| max_hp       |       90 |
+| current hp   |   90 |
 | Stress Level | 0 |
 
 ## Core Stats
@@ -34,7 +34,7 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |        16 | 0     |
+| Evasion       |       16 | 0     |
 
 
 ## Bending Slots
@@ -48,11 +48,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Environmental Variable     |                          value |
 | -------------------------- | -----------------------------: |
-| environmental water charge | 11 |
+| Environmental water charge | 11 |
 | Waterbottle charge         |         4 |
 
 
 #Rio #Character_Sheet
 
 > WARNING: The following character stats could not be placed by context and were appended:
-| Water charge | 7 |
+| Water charge | 15 |

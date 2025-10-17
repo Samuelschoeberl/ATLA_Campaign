@@ -1,19 +1,12 @@
 
 #Action 
 
-- **Range:** 1 * [[Airbending Slot]] Meter cone 
+- **Range:** 1 * [[Airbending_slot]] Meter cone 
 - [[Air Attack Roll]]
-- [[Airbending_slot]]*3 d6 Bludgeoning  Damage
-
-**Effects:**
-- Kick a wave of compressed air to deal [[Airbending_slot]] * 3 d6 Damage
-
-
-
-
+- [[Airbending_slot]]\* d8 Bludgeoning  Damage
 
 
 #Level4
 #air
-#player_root
+
 

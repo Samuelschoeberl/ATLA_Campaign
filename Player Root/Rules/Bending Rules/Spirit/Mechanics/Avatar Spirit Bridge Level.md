@@ -1,5 +1,5 @@
-#Collectionfile 
-[[Avatar Spirit Check]]
+
+#revision_needed
 ### 🌌 **Bridge of the Spirit: A Personal Journey**
 
 > _"To be the Avatar is not merely to bend all elements, but to bend one’s self—to align will and wisdom with the needs of the world."_  

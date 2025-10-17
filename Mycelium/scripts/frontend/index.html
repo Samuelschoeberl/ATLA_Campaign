@@ -4,6 +4,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Mycelium — Repo Browser</title>
+    <!-- Favicons: prefer the repo logo; fall back to other common locations -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/Mycelium/Mycelium Logo.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/Mycelium/Mycelium Logo.png"
+    />
+    <link rel="shortcut icon" href="/Mycelium/Mycelium Logo.png" />
+    <!-- Additional fallbacks (server will decode percent-encodings) -->
+    <link rel="icon" href="/Mycelium/Logo.png" />
+    <link rel="icon" href="/Logo.png" />
+    <meta name="theme-color" content="#0b0f13" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
     <style>
@@ -413,9 +431,9 @@
           <!-- Repository logo: uses the file at Mycelium/Mycelium Logo.png (URL-encoded) -->
           <img
             id="repo-logo"
-            src="/Mycelium/Mycelium%20Logo.png"
+            src="/Mycelium/Mycelium Logo.png"
             alt="Mycelium"
-            onerror="(function(img){img.onerror=null;var tries=['/Mycelium%20Logo.png','/Mycelium/Logo.png','/Logo.png'];for(var i=0;i<tries.length;i++){try{var u=tries[i];if(img.src.indexOf(u)===-1){img.src=u;return}}catch(e){}}})(this)"
+            onerror="(function(img){img.onerror=null;var tries=['/Mycelium/Mycelium Logo.png','/Mycelium%20Logo.png','/Mycelium/Logo.png','/Logo.png'];for(var i=0;i<tries.length;i++){try{var u=tries[i];if(img.src.indexOf(u)===-1){img.src=u;return}}catch(e){}}})(this)"
             style="
               width: 40px;
               height: 40px;
@@ -1541,23 +1559,42 @@
               }
 
               // If we received structured JSON, append to the persistent event log.
-              if (obj && typeof obj === 'object') {
-                const sev = (obj.severity || obj.level || 'info').toLowerCase();
-                const mapped = sev === 'warn' ? 'warn' : (sev === 'error' ? 'error' : 'info');
-                const channel = (obj.channel === 'debug' || obj.debug === true) ? 'debug' : 'general';
+              if (obj && typeof obj === "object") {
+                const sev = (obj.severity || obj.level || "info").toLowerCase();
+                const mapped =
+                  sev === "warn" ? "warn" : sev === "error" ? "error" : "info";
+                const channel =
+                  obj.channel === "debug" || obj.debug === true
+                    ? "debug"
+                    : "general";
                 // Only append persistent events when there's a title or text; avoid
                 // creating spurious 'Generator' entries for empty messages.
-                const payloadText = obj.text || obj.message || '';
-                if ((obj.title && String(obj.title).trim()) || payloadText.trim()) {
-                  appendEventLog(obj.title || '', payloadText, mapped, [], channel);
+                const payloadText = obj.text || obj.message || "";
+                if (
+                  (obj.title && String(obj.title).trim()) ||
+                  payloadText.trim()
+                ) {
+                  appendEventLog(
+                    obj.title || "",
+                    payloadText,
+                    mapped,
+                    [],
+                    channel
+                  );
                 }
                 // Also append the same human-readable text to the busy overlay if visible
                 try {
-                  const genLogEl = document.getElementById('generator-log');
-                  if (genLogEl && genLogEl.parentElement && genLogEl.parentElement.style.display !== 'none') {
-                    const span = document.createElement('span');
-                    span.className = 'log-line ' + (mapped === 'error' ? 'log-error' : 'log-info');
-                    span.textContent = (obj.text || obj.message || '') + '\n';
+                  const genLogEl = document.getElementById("generator-log");
+                  if (
+                    genLogEl &&
+                    genLogEl.parentElement &&
+                    genLogEl.parentElement.style.display !== "none"
+                  ) {
+                    const span = document.createElement("span");
+                    span.className =
+                      "log-line " +
+                      (mapped === "error" ? "log-error" : "log-info");
+                    span.textContent = (obj.text || obj.message || "") + "\n";
                     genLogEl.appendChild(span);
                     genLogEl.scrollTop = genLogEl.scrollHeight;
                   }
@@ -1566,18 +1603,22 @@
                 // Raw text: show in the busy overlay if visible, but do NOT create
                 // a persistent event log entry to avoid spurious Generator messages.
                 try {
-                  const genLogEl = document.getElementById('generator-log');
-                  if (genLogEl && genLogEl.parentElement && genLogEl.parentElement.style.display !== 'none') {
-                    const span = document.createElement('span');
-                    span.className = 'log-line log-info';
-                    span.textContent = ev.data + '\n';
+                  const genLogEl = document.getElementById("generator-log");
+                  if (
+                    genLogEl &&
+                    genLogEl.parentElement &&
+                    genLogEl.parentElement.style.display !== "none"
+                  ) {
+                    const span = document.createElement("span");
+                    span.className = "log-line log-info";
+                    span.textContent = ev.data + "\n";
                     genLogEl.appendChild(span);
                     genLogEl.scrollTop = genLogEl.scrollHeight;
                   }
                 } catch (e) {}
               }
             } catch (e) {
-              console.warn('GLOBAL_LOG_ES.onmessage failed', e);
+              console.warn("GLOBAL_LOG_ES.onmessage failed", e);
             }
           };
           // restore persisted events
@@ -1610,6 +1651,7 @@
             });
           }
         } catch (e) {}
+      }
       // Apply search and filter bindings
       document.addEventListener("DOMContentLoaded", () => {
         try {

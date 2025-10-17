@@ -5,8 +5,8 @@ Name: Anju
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |        95 |
-| current hp   |    81 |
+| max_hp       |       95 |
+| current hp   |   95 |
 
 ## Core Stats
 
@@ -33,8 +33,8 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |        11 | 0     |
-| General Armor |  0 | 0     |
+| Evasion       |       11 | 0     |
+| General Armor | 1 | 0     |
 
 
 ## Bending Slots
@@ -55,4 +55,4 @@ You can always only use maximum half of you current Bending slots (rounded up so
 #Anju #Character_Sheet
 
 > WARNING: The following character stats could not be placed by context and were appended:
-| Water charge | 7 |
+| Water charge | 15 |

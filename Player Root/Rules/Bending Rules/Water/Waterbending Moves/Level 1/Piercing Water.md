@@ -1,25 +1,13 @@
-```markdown
+
 #Action
 
-[[Action]]
-[[Level 1]]
+- Range: 3\* [[Water_charge]] meters
+- [[Water Attack Roll]]
+- Damage: [[Water_charge]]d6 piercing.
 
-    The waterbender shoots a sharp, pressurized stream of water at a target.
-    - [[Water Water Attack Rolll]]
+The waterbender shoots a sharp, pressurized stream of water at a target.
 
-- [[Int]]
-
-Tags:
-#Waterbending
-[[Waterbending]]
-[[Level 1]]
-[[Player Root]]
-
-#player_root
-#Level1 #water
 
 #Level1
-#Waterbending
-#player_root
-#water
-```
+#water 
+

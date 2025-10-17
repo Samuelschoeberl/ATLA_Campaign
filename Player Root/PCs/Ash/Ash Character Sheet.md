@@ -5,8 +5,8 @@ Name: Ash
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |        65 |
-| current hp   |    65 |
+| max_hp       |       65 |
+| current hp   |   65 |
 | Stress Level | 0 |
 
 ## Core Stats
@@ -34,7 +34,7 @@ Damage Dice Bonus: 0
 
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
-| Evasion       |        11 | 0     |
+| Evasion       |       11 | 0     |
 
 
 ## Bending Slots
@@ -49,7 +49,10 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Environmental Variable     |                          value |
 | -------------------------- | -----------------------------: |
-| environmental water charge | 11 |
+| Environmental water charge | 11 |
 
 
 #Ash #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Chaos energy | 0 |

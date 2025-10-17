@@ -2,7 +2,7 @@
 #utility
 
 
-- Range: [[fire]] meters
+- Range: [[fire]] \* 3 meters
 - You manipulate a flame within range
 
 
