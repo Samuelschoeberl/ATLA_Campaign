@@ -5,8 +5,8 @@ Name: Sheph
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       70 |
-| current hp   |   70 |
+| max_hp       |       28 |
+| current hp   |   28 |
 
 ## Core Stats
 

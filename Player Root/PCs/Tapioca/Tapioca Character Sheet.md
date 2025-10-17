@@ -5,8 +5,8 @@ Name: Tapioca
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       90 |
-| current hp   |   90 |
+| max_hp       |       36 |
+| current hp   |   36 |
 
 ## Core Stats
 

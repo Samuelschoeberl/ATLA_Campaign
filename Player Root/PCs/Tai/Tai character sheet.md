@@ -5,8 +5,8 @@ Name: Tai
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       125 |
-| current hp   |   125 |
+| max_hp       |       50 |
+| current hp   |   50 |
 
 ## Core Stats
 

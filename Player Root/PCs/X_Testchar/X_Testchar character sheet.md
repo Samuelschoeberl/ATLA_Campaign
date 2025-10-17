@@ -5,8 +5,8 @@ Name: X_Testchar
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       6500 |
-| current hp   |   6500 |
+| max_hp       |       2600 |
+| current hp   |   2600 |
 | Stress Level | 0 |
 
 ## Core Stats

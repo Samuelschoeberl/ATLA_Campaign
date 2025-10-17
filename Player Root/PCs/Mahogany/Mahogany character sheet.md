@@ -5,8 +5,8 @@ Name: Mahogany
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       50 |
-| current hp   |   50 |
+| max_hp       |       20 |
+| current hp   |   20 |
 
 ## Core Stats
 

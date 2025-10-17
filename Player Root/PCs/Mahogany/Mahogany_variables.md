@@ -13,8 +13,8 @@
 | chaos_energy | 0 |
 | cl | 3 |
 | con | 0 |
-| current.hp | 50 |
-| current_hp | 50 |
+| current.hp | 20 |
+| current_hp | 20 |
 | damage dice bonus | 0 |
 | damage.dice.bonus | 0 |
 | danger sense reaction | 1 |
@@ -41,8 +41,8 @@
 | general armor | 0 |
 | general.armor | 0 |
 | int | 0 |
-| max.hp | 50 |
-| max_hp | 50 |
+| max.hp | 20 |
+| max_hp | 20 |
 | rolled.hp | 10 |
 | spirit | 2 |
 | spirit attack roll | 1d20 + 2 + 0 |

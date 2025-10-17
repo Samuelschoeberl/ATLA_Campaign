@@ -5,7 +5,7 @@
 - **Range:** self and every creature within 1+1 * earthbending slot (4) meters of you
 
 **Effect**:
-Tripping opponents with minor terrain manipulation. The target must succeed on a Dexterity saving throw against your Player Root/Rules/Bending Rules/Earth/mechanics/Earthbending DC (0)) or be knocked Prone.
+Tripping opponents with minor terrain manipulation. The target must succeed on a Dexterity saving throw against your Earthbending DC (17)) or be knocked Prone.
 
 
 

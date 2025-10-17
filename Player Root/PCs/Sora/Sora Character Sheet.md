@@ -5,8 +5,8 @@ Name: Sora
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       80 |
-| current hp   |   80 |
+| max_hp       |       32 |
+| current hp   |   32 |
 | Stress Level | 0 |
 
 ## Core Stats

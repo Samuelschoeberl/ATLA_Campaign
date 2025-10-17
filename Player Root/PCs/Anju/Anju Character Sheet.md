@@ -5,8 +5,8 @@ Name: Anju
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       95 |
-| current hp   |   95 |
+| max_hp       |       38 |
+| current hp   |   38 |
 
 ## Core Stats
 

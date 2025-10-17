@@ -5,8 +5,8 @@ Name: Puy
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       120 |
-| current hp   |   120 |
+| max_hp       |       48 |
+| current hp   |   48 |
 | Stress Level | 0 |
 
 ## Core Stats

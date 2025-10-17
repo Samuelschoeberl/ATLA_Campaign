@@ -5,8 +5,8 @@ Name: Ash
 
 | key          |            value |
 | ------------ | ---------------: |
-| max_hp       |       65 |
-| current hp   |   65 |
+| max_hp       |       26 |
+| current hp   |   26 |
 | Stress Level | 0 |
 
 ## Core Stats
