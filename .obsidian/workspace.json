@@ -8,24 +8,38 @@
         "type": "tabs",
         "children": [
           {
-            "id": "990dd68d57f6fd0e",
+            "id": "e4ed73c4184b073d",
             "type": "leaf",
             "pinned": true,
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/variable/environmental/secondary_stat/environmental_water_charge.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
               "pinned": true,
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "environmental_water_charge"
             }
           },
           {
-            "id": "009800753f0acac0",
+            "id": "28c7dae63a127752",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/Rules/Bending Rules/Air/Mechanics/Speed Boost.md",
+                "file": "Player Root/Rules/Stat Shorts/Temporary Hitpoints.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -40,59 +54,11 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Speed Boost"
-            }
-          },
-          {
-            "id": "c1961be8ee3bd108",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/variable/secondary_stat/chaos_energy.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "chaos_energy"
-            }
-          },
-          {
-            "id": "77327562520b2e09",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/variable/secondary_stat/spiritbending slot.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "spiritbending slot"
+              "title": "Temporary Hitpoints"
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -124,7 +90,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "environmental_water_charges",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -175,7 +141,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Player Root/variable/secondary_stat/chaos_energy.md",
+                "file": "Player Root/Rules/Stat Shorts/Temporary Hitpoints.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -185,7 +151,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for chaos_energy"
+              "title": "Backlinks for Temporary Hitpoints"
             }
           },
           {
@@ -253,44 +219,45 @@
       "runjs:RunJS": false
     }
   },
-  "active": "c1961be8ee3bd108",
+  "active": "28c7dae63a127752",
   "lastOpenFiles": [
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
-    "Player Root/variable/secondary_stat/chaos_energy.md",
-    "Player Root/pc_primary_stats.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Reaction/Spirit Ward - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Reaction/Sandstream - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Reaction/Earth Brace - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Stone Knuckles - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Sandstream - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Rock Hurl - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Human Form - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Bonus Action/Earth Shift - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Reaction",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Bonus Action",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Reaction/Spirit Ward - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Reaction/Sandstream - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Danger Sense Reaction/Gentle Push - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Bonus Action/Airdash - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Shifting Winds - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Sandstream - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Human Form - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Air Blade - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Reaction",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Danger Sense Reaction",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Bonus Action",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type",
-    "Player Root/PCs/Sora/Bending Rules - Sora/by Action Type/Reaction/Flaming Funnel - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/by Action Type/Bonus Action/Smoldering Focus - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/by Action Type/Action/Rage Fuel - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/by Action Type/Action/Inferno Wave - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/by Action Type/Action/Flaming Funnel - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/by Action Type/Action/Flame Jet - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/by Action Type/Action/Flame Barrage - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/by Action Type/Reaction",
+    "Player Root/PCs/Tai/Bending Rules - Tai/core rules/General Armor Definition - Tai.md",
+    "Player Root/PCs/Tai/Bending Rules - Tai/core rules/Barrier definintion - Tai.md",
+    "Player Root/PCs/Tai/Bending Rules - Tai/core rules/Armor definition - Tai.md",
+    "Player Root/PCs/Sheph/Bending Rules - Sheph/core rules/General Armor Definition - Sheph.md",
+    "Player Root/PCs/Sheph/Bending Rules - Sheph/core rules/Barrier definintion - Sheph.md",
+    "Player Root/PCs/Sheph/Bending Rules - Sheph/core rules/Armor definition - Sheph.md",
+    "Player Root/PCs/Grep/Bending Rules - Grep/core rules/General Armor Definition - Grep.md",
+    "Player Root/PCs/Grep/Bending Rules - Grep/core rules/Barrier definintion - Grep.md",
+    "Player Root/PCs/Grep/Bending Rules - Grep/core rules/Armor definition - Grep.md",
+    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/core rules/General Armor Definition - Tiebeediy.md",
+    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/core rules/Barrier definintion - Tiebeediy.md",
+    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/core rules/Armor definition - Tiebeediy.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/core rules/General Armor Definition - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/core rules/Barrier definintion - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/core rules/Armor definition - Mahogany.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/core rules/General Armor Definition - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/core rules/Barrier definintion - Sora.md",
+    "Player Root/PCs/Sora/Bending Rules - Sora/core rules/Armor definition - Sora.md",
+    "Player Root/PCs/Ash/Bending Rules - Ash/core rules/General Armor Definition - Ash.md",
+    "Player Root/PCs/Ash/Bending Rules - Ash/core rules/Barrier definintion - Ash.md",
+    "Player Root/PCs/Ash/Bending Rules - Ash/core rules/Armor definition - Ash.md",
+    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/core rules/General Armor Definition - Tapioca.md",
+    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/core rules/Barrier definintion - Tapioca.md",
+    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/core rules/Armor definition - Tapioca.md",
+    "Player Root/PCs/Rio/Bending Rules - Rio/core rules/General Armor Definition - Rio.md",
+    "Player Root/PCs/Rio/Bending Rules - Rio/core rules/Barrier definintion - Rio.md",
+    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/Spirit/Spiritbending Moves/Shapeshifting Forms",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Shapeshifting Forms",
+    "Player Root/PCs/Ash/Bending Rules - Ash/Spirit/Spiritbending Moves/Shapeshifting Forms",
+    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/Spirit/Spiritbending Moves/Shapeshifting Forms",
+    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/Earth/Earthbending Moves/Level 3",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms",
+    "Mycelium/scripts/Python/__pycache__/generate_pc_sheets.cpython-313.pyc",
+    "static_mycelium.html",
+    "Dms Root/NPCs/DMPCs/Kaedo.png",
+    "Player Root/NPCs/Lotus/Lotus_wikigraph_treemap.html",
+    "Player Root/NPCs/Other Importants/Other Importants_wikigraph_treemap.html",
     "Mycelium/Mycelium Logo.png",
     "Mycelium/Mycellium Logo.png",
     "Dms Root/visuals/Sandkheg_-_Tyler_Walpole.png",
@@ -299,7 +266,6 @@
     "Dms Root/visuals/Reilora_-_Tyler_Walpole.png",
     "Dms Root/visuals/Predathos_-_Tyler_Walpole.jpg",
     "Dms Root/visuals/Ozo_Cruth_-_Tyler_Walpole.jpg",
-    "Dms Root/visuals/Omentis_-_Tyler_Walpole.jpg",
-    "Dms Root/visuals/Jirana_the_Shore_Shrew_-_Tyler_Walpole.webp"
+    "Dms Root/visuals/Omentis_-_Tyler_Walpole.jpg"
   ]
 }

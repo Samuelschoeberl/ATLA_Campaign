@@ -35,6 +35,8 @@ Damage Dice Bonus: 0
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
 | Evasion       |       16 | 0     |
+| General Armor | 0 | 0     |
+| Barrier       |       0 | 0     |
 
 
 ## Bending Slots
@@ -42,7 +44,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Firebending slot       |      2 |
+| Firebending slot       |      3 |
 
 ## Water charges
 

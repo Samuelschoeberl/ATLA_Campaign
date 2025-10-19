@@ -6,6 +6,7 @@ Name: {{name}}
 | max_hp       |       {{max hp}} |
 | current hp   |   {{current hp}} |
 | Stress Level | {{Stress Level}} |
+| Chaos energy | {{Chaos_energy}} |
 
 ## Core Stats
 

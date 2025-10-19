@@ -23,9 +23,9 @@ The Lotus is a venerable organization dedicated to the balance of the world, act
 **Links**:
 - [[Mistress Akira Meiyu]]
 - [[Armor definition]]
-- [[Strength]]
+- [[Player Root/variable/primary_stat/Strength]]
 - [[Stonewarden Garon]]
-- [[Wisdom]]
+- [[Player Root/variable/primary_stat/Wisdom]]
 - [[Grandmaster Iroh Tanaka]]
 - [[The Lotus]]
 

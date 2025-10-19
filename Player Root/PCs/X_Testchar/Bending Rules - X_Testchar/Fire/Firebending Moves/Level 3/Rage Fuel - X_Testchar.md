@@ -9,7 +9,7 @@ Stress Level (0)
 - **Duration:** until the beginning of your next turn
 
 **Effects:**
-- Increase your Stress Level (0) by 2* Firebending Slot (40)
+- Increase your Stress Level (0) by 2* Firebending Slot (60)
 
 Element (0)
 

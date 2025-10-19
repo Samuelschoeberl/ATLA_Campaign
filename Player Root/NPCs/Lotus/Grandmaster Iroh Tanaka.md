@@ -44,7 +44,7 @@
 
 **Links**:
 
-- [[Wisdom]]
+- [[Player Root/variable/primary_stat/Wisdom]]
 
 Tags:
 #Firebending

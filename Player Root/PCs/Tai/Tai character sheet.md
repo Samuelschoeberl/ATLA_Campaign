@@ -33,6 +33,8 @@ Damage Dice Bonus: 0
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
 | Evasion       |       18 | 0     |
+| General Armor | 0 | 0     |
+| Barrier       |       0 | 0     |
 
 
 ## Bending Slots

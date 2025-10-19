@@ -8,7 +8,7 @@
 
 **Links**:
 
-- Strength (0)
+- Player Root/variable/primary_stat/Strength (0)
 - _Rules (0)
 - Water Whip (0)
 - Proficiency (0)

@@ -1,8 +1,8 @@
 #Action
 
-- Range: 3 * firebending_slot (4)
+- Range: 3 * firebending_slot (6)
 - Fire Attack Roll (1d20 + 2 + 8)
-- The Target takes firebending_slot (4) \* d6 fire Damage and is pulled towards you by firebending_slot (4) meters
+- The Target takes firebending_slot (6) \* d6 fire Damage and is pulled towards you by firebending_slot (6) meters
 - Description: Strike with a whip-like stream of burning embers.
 
 

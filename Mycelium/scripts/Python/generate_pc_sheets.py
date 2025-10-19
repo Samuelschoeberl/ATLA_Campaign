@@ -16,6 +16,12 @@ import re
 import ast
 from typing import Dict, List, Tuple, Any
 
+try:
+    from common import dedupe_variable_items
+except Exception:
+    # fallback when run as module
+    from Mycelium.scripts.Python.common import dedupe_variable_items  # type: ignore
+
 ROOT = Path('.').resolve()
 INPUT_TABLE = ROOT.joinpath('Player Root', 'pc_primary_stats.md')
 PRIMARY_TEMPLATES = ROOT.joinpath('Player Root', 'variable', 'primary_stat')
@@ -199,8 +205,8 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
     # variables file
     vars_path = pc_dir.joinpath(f"{safe_name}_variables.md")
     lines = ["| Variable | Value |", "|---|---:|"]
-    for k, v in sorted(kv_all.items()):
-        lines.append(f"| {k} | {v} |")
+    for display_key, value in dedupe_variable_items(kv_all):
+        lines.append(f"| {display_key} | {value} |")
     vars_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
     # per-stat mirrored folder

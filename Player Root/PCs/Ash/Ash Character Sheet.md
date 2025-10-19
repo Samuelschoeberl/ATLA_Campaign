@@ -8,6 +8,7 @@ Name: Ash
 | max_hp       |       26 |
 | current hp   |   26 |
 | Stress Level | 0 |
+| Chaos energy | 0 |
 
 ## Core Stats
 
@@ -35,6 +36,8 @@ Damage Dice Bonus: 0
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
 | Evasion       |       11 | 0     |
+| General Armor | 0 | 0     |
+| Barrier       |       0 | 0     |
 
 
 ## Bending Slots
@@ -42,7 +45,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Firebending slot       |      4 |
+| Firebending slot       |      6 |
 | Spiritbending slot     |    1 |
 
 ## Water charges
@@ -53,6 +56,3 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 
 #Ash #Character_Sheet
-
-> WARNING: The following character stats could not be placed by context and were appended:
-| Chaos energy | 0 |

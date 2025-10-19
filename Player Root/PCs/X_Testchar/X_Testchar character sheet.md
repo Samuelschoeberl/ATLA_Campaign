@@ -8,6 +8,7 @@ Name: X_Testchar
 | max_hp       |       2600 |
 | current hp   |   2600 |
 | Stress Level | 0 |
+| Chaos energy | 0 |
 
 ## Core Stats
 
@@ -39,6 +40,7 @@ Damage Dice Bonus: 0
 | ------------- | ----------------: | ----- |
 | Evasion       |       32 | 0     |
 | General Armor | 20 | 0     |
+| Barrier       |       0 | 0     |
 
 
 ## Bending Slots
@@ -46,10 +48,10 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Airbending slot        |       40 |
+| Airbending slot        |       60 |
 | Danger Sense Reactions | 20 |
-| Firebending slot       |      40 |
-| Earthbending slot      |     40 |
+| Firebending slot       |      60 |
+| Earthbending slot      |     60 |
 | Spiritbending slot     |    20 |
 
 ## Water charges
@@ -63,5 +65,4 @@ You can always only use maximum half of you current Bending slots (rounded up so
 #X_Testchar #Character_Sheet
 
 > WARNING: The following character stats could not be placed by context and were appended:
-| Chaos energy | 0 |
 | Water charge | 51 |

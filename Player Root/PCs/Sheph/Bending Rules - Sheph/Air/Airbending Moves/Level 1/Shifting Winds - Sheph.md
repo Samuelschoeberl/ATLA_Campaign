@@ -1,6 +1,6 @@
 #Action 
 
-- Radius:  Airbending_slot (4) meters radius
+- Radius:  Airbending_slot (6) meters radius
 - Range: air (2) meters
 - Move most lingering effects within Range
 

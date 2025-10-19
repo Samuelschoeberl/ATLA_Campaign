@@ -5,7 +5,7 @@ Level 4 (0)
 
 - **Lightning Strike**
   - **Action (0):** 2 actions (Charge required).
-  - **Range:** 10 * Firebending Slot (40) meters.
+  - **Range:** 10 * Firebending Slot (60) meters.
   - **Duration:** Instantaneous.
   - **Damage:** 4d10 lightning.
 - Fire Attack Roll (1d20 + 20 + 5)

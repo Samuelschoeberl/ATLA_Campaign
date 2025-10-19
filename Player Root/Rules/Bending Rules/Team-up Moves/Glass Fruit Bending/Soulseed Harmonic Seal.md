@@ -14,10 +14,9 @@ Reaction: Must be initiated by a Earthbender in line of sight
 	- If X ≥ 15, the seal also protects against being [[Immobilised]]  
     
 
-#defensive 
+
 #Level1 
 #earth
-#player_root
 #teamup
 #signature_move
 #Puy 

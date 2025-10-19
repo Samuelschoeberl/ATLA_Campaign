@@ -43,7 +43,7 @@
 **Links**:
 
 - [[The Lotus]]
-- [[Strength]]
+- [[Player Root/variable/primary_stat/Strength]]
 
 Tags:
 #Waterbending

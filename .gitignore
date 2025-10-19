@@ -5,6 +5,8 @@
 *.DS_Store*
 *__pycache__/
 *.obsidian/workspace.json
+*logs
+*.log
 # All paths that contain the word "Collectionfiles" or "ExpandedCollections"
 
 # Ignore backups and vault/workspace folders

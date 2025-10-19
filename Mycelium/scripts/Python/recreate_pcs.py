@@ -31,6 +31,7 @@ try:
         load_template_tags as _load_template_tags,
         display_name_for as _display_name_for,
         pc_safe as _pc_safe,
+        dedupe_variable_items as _dedupe_variable_items,
     )
 except Exception:
     try:
@@ -45,6 +46,7 @@ except Exception:
             load_template_tags as _load_template_tags,
             display_name_for as _display_name_for,
             pc_safe as _pc_safe,
+            dedupe_variable_items as _dedupe_variable_items,
         )
     except Exception:
         # Last-resort: import by file path (works even when not a package)
@@ -62,8 +64,13 @@ except Exception:
             _load_template_tags = getattr(mod, 'load_template_tags', None)
             _display_name_for = getattr(mod, 'display_name_for', None)
             _pc_safe = getattr(mod, 'pc_safe', None)
+            _dedupe_variable_items = getattr(mod, 'dedupe_variable_items', None)
         else:
-            _to_number = _safe_eval = _parse_markdown_table = _name_from_cell = _get_variable_root = _load_secondary_templates = _load_template_tags = _display_name_for = _pc_safe = None
+            _to_number = _safe_eval = _parse_markdown_table = _name_from_cell = _get_variable_root = _load_secondary_templates = _load_template_tags = _display_name_for = _pc_safe = _dedupe_variable_items = None
+
+if _dedupe_variable_items is None:
+    def _dedupe_variable_items(items: Dict[str, Any]):
+        return sorted(items.items())
 
 
 def get_variable_root(foldername: Optional[str] = None) -> Optional[Path]:
@@ -533,8 +540,8 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
     # variables table
     vars_path = pc_dir.joinpath(f"{safe}_variables.md")
     lines = ['| Variable | Value |', '|---|---:|']
-    for k in sorted(kv_all.keys()):
-        lines.append(f'| {k} | {kv_all[k]} |')
+    for display_key, value in _dedupe_variable_items(kv_all):
+        lines.append(f'| {display_key} | {value} |')
     vars_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
     # write per-stat variable files into the global variable root (if available)
@@ -627,20 +634,21 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                 tags.append(req)
         # If this secondary stat evaluates to numeric zero, skip creating the
         # per-PC variable file unless the template is explicitly tagged with
-        # #vitality. This keeps zero-valued secondaries out of the variables
-        # folder and prevents them from appearing in regenerated character
-        # sheets.
+        # #vitality or #defensive. This keeps most zero-valued secondaries out
+        # of the variables folder while ensuring key defensive/vital stats stay
+        # present even when their value is currently 0.
         try:
             is_zero_numeric = isinstance(val, (int, float)) and val == 0
         except Exception:
             is_zero_numeric = False
         # If this secondary is numeric zero, skip creating the per-PC file
-        # unless the template is tagged with #vitality or #environmental_variable
-        # (environmental variables should still be shown even when 0).
-        if is_zero_numeric and ('#vitality' not in tags) and ('#environmental_variable' not in tags):
+        # unless the template is tagged with #vitality, #defensive or
+        # #environmental_variable (environmental variables should still be
+        # shown even when 0).
+        if is_zero_numeric and ('#vitality' not in tags) and ('#defensive' not in tags) and ('#environmental_variable' not in tags):
             # skip writing this secondary variable file
             if verbose:
-                print(f"Skipping secondary var file for '{p}' for {name} because value is 0 and not #vitality or #environmental_variable")
+                print(f"Skipping secondary var file for '{p}' for {name} because value is 0 and not tagged #vitality, #defensive or #environmental_variable")
         else:
             fpath.write_text(f'```markdown\n{val}\n\n{" ".join(tags)}\n\n```\n', encoding='utf-8')
 
@@ -1120,13 +1128,13 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                         out_words.append(p.lower())
             return ' '.join(out_words)
 
-        # build a set of secondary templates that are tagged with #vitality or
-        # #environmental_variable so those are still shown even when their
-        # numeric value is zero
+        # build a set of secondary templates that are tagged with #vitality,
+        # #defensive or #environmental_variable so those are still shown even
+        # when their numeric value is zero
         vitality_set: set = set()
         if secondary_tags:
             for stem, tags in secondary_tags.items():
-                if '#vitality' in tags or '#environmental_variable' in tags:
+                if '#vitality' in tags or '#defensive' in tags or '#environmental_variable' in tags:
                     vitality_set.add(normalize_name(stem))
 
         # force-show rules: parse tags of the form #show_if_<var>_<op>_<n>
@@ -1253,17 +1261,18 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                     lines.append(r)
 
         out_text = '\n'.join(lines) + '\n'
-        # Remove any table rows where the value is numeric zero for
-        # non-vital secondary stats. This handles placeholders that were
+        # Remove any table rows where the value is numeric zero for secondary
+        # stats that are not tagged #vitality, #defensive, or #environmental_variable.
+        # This handles placeholders that were
         # directly replaced in the template (e.g. | Foo | 0 |) so those
-        # rows don't appear in the final sheet unless the stat is tagged
-        # with #vitality.
+        # rows don't appear in the final sheet unless the stat carries one of
+        # the protected tags.
         try:
-            # build vitality set from secondary_tags (normalized names)
+            # build vitality/defensive set from secondary_tags (normalized names)
             vitality_set: set = set()
             if secondary_tags:
                 for stem, tags in secondary_tags.items():
-                    if '#vitality' in tags:
+                    if '#vitality' in tags or '#defensive' in tags or '#environmental_variable' in tags:
                         vitality_set.add(normalize_name(stem))
 
             for nk, v in sorted(norm_kv.items()):
@@ -1296,7 +1305,8 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                             pass
             # Also remove rows that still contain unreplaced placeholders like
             # {{Danger Sense Reaction Slot}} when the corresponding variable
-            # value is numeric zero and the stat is not #vitality.
+            # value is numeric zero and the stat is not tagged #vitality, #defensive,
+            # or #environmental_variable.
             try:
                 phs = set(re.findall(r'{{\s*([^}]+)\s*}}', tpl_sub))
                 for ph in phs:

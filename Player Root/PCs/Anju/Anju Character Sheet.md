@@ -35,6 +35,7 @@ Damage Dice Bonus: 0
 | ------------- | ----------------: | ----- |
 | Evasion       |       11 | 0     |
 | General Armor | 1 | 0     |
+| Barrier       |       0 | 0     |
 
 
 ## Bending Slots
@@ -42,7 +43,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Earthbending slot      |     2 |
+| Earthbending slot      |     3 |
 
 ## Water charges
 

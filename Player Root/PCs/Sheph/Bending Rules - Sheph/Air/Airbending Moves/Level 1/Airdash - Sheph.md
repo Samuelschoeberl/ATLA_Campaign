@@ -4,7 +4,7 @@
 - Enhance agility by propelling yourself with gusts of air.
 
 **Effects:**
-- You gain 5 * Airbending_slot (4) meters movement for this turn.
+- You gain 5 * Airbending_slot (6) meters movement for this turn.
 
 
 

@@ -6,8 +6,8 @@ Level 2 (0)
 Lingering Effect (0)
 Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC (0)
 
-  - **Range:** 2* Firebending Slot (40) meter Cone.
-  - **Damage:** 4 * Firebending Slot (40) d6 fire.
+  - **Range:** 2* Firebending Slot (60) meter Cone.
+  - **Damage:** 4 * Firebending Slot (60) d6 fire.
 - Effect: 
 	- Dexterity saving thow against your Player Root/Rules/Bending Rules/Fire/Mechanics/Firebending DC (0) or take Damage
 

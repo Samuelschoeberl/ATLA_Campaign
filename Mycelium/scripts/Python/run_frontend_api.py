@@ -1,8 +1,10 @@
 from flask import Flask, send_from_directory, send_file
 from flask_cors import CORS
 from pathlib import Path
+from html.parser import HTMLParser
 import os
 import sys
+import re
 from urllib.parse import unquote
 import fnmatch
 # Determine repository root and ensure it's on sys.path so package-style
@@ -49,6 +51,33 @@ app.register_blueprint(bp)
 # serve the lightweight frontend files from scripts/frontend
 FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
 STATIC_SNAPSHOT_FILENAME = "static_mycelium.html"
+
+# Simple helper to strip wikilink anchors from HTML fragments in the static snapshot.
+_WIKILINK_RE = re.compile(
+    r'<a\b[^>]*class=(?:"[^"]*\bwikilink\b[^"]*"|\'[^\']*\bwikilink\b[^\']*\')[^>]*>(.*?)</a>',
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _strip_wikilinks(text: str) -> str:
+    if not text or "<a" not in text:
+        return text
+
+    def _replace(match: re.Match) -> str:
+        attrs = match.group(0)
+        inner = (match.group(1) or "").strip()
+        data_attr = ""
+        try:
+            attr_match = re.search(r'data-wikilink=(["\'])(.*?)\1', attrs, flags=re.IGNORECASE)
+            if attr_match:
+                data_attr = attr_match.group(2)
+        except Exception:
+            data_attr = ""
+        return inner or data_attr
+
+    return _WIKILINK_RE.sub(_replace, text)
+
+
 
 # ---- Targeted static asset helpers and routes (favicon/logo fallbacks) ----
 def _safe_send_path(candidate_path: Path):
@@ -181,42 +210,73 @@ def _ensure_static_index_at_repo_root():
 
                 max_size = 100 * 1024  # only embed files up to 100KB
                 manifest = {}
-                file_count = 0
                 max_files = 5000
+                general_count = 0
+                player_root = REPO_ROOT.joinpath('Player Root')
+                player_root_exists = player_root.exists() and player_root.is_dir()
+
+                def add_file_to_manifest(abs_path: Path, rel: str, *, force: bool = False):
+                        nonlocal general_count
+                        if rel in manifest:
+                                return
+                        if rel in ('index.html', STATIC_SNAPSHOT_FILENAME):
+                                return
+                        try:
+                                size = abs_path.stat().st_size
+                        except Exception:
+                                return
+                        entry = {'size': size}
+                        if size > max_size:
+                                entry['type'] = 'large'
+                                entry['note'] = 'file too large to embed in static snapshot'
+                        else:
+                                try:
+                                        text = abs_path.read_text(encoding='utf-8')
+                                        entry['type'] = 'text'
+                                        entry['text'] = _strip_wikilinks(text)
+                                except Exception:
+                                        entry['type'] = 'binary'
+                        manifest[rel] = entry
+                        if not force:
+                                general_count += 1
+
+                # First, force-include every file under Player Root so the static snapshot
+                # always contains that vault regardless of .gitignore patterns or limits.
+                if player_root_exists:
+                        manifest.setdefault('Player Root', {'type': 'dir'})
+                        for abs_path in sorted(player_root.rglob('*')):
+                                try:
+                                        rel = abs_path.relative_to(REPO_ROOT).as_posix()
+                                except Exception:
+                                        continue
+                                if abs_path.is_dir():
+                                        manifest.setdefault(rel, {'type': 'dir'})
+                                        continue
+                                add_file_to_manifest(abs_path, rel, force=True)
 
                 for root, dirs, files in os.walk(str(REPO_ROOT)):
+                        root_path = Path(root)
+                        if player_root_exists and root_path == REPO_ROOT:
+                                dirs[:] = [d for d in dirs if (root_path / d) != player_root]
                         dirs[:] = [d for d in dirs if not is_ignored_dir(d)]
                         for fn in files:
-                                if file_count >= max_files:
+                                if general_count >= max_files:
                                         break
                                 abs_path = Path(root).joinpath(fn)
-                                rel = abs_path.relative_to(REPO_ROOT).as_posix()
-                                if rel in ('index.html', STATIC_SNAPSHOT_FILENAME):
+                                try:
+                                        rel = abs_path.relative_to(REPO_ROOT).as_posix()
+                                except Exception:
                                         continue
-                                # Respect .gitignore patterns: skip files that match
+                                if rel in manifest:
+                                        continue
+                                # Respect .gitignore patterns for the general pass
                                 try:
                                     if is_ignored_by_gitignore(rel):
                                         continue
                                 except Exception:
                                     pass
-                                try:
-                                        size = abs_path.stat().st_size
-                                except Exception:
-                                        continue
-                                entry = {'size': size}
-                                if size > max_size:
-                                        entry['type'] = 'large'
-                                        entry['note'] = 'file too large to embed in static snapshot'
-                                else:
-                                        try:
-                                                text = abs_path.read_text(encoding='utf-8')
-                                                entry['type'] = 'text'
-                                                entry['text'] = text
-                                        except Exception:
-                                                entry['type'] = 'binary'
-                                manifest[rel] = entry
-                                file_count += 1
-                        if file_count >= max_files:
+                                add_file_to_manifest(abs_path, rel)
+                        if general_count >= max_files:
                                 break
 
                 static_title = 'Mycelium — Static Repo Browser'
@@ -235,6 +295,39 @@ def _ensure_static_index_at_repo_root():
                     frontend_html = None
 
                 if frontend_html:
+                    class WikiLinkStripper(HTMLParser):
+                        def __init__(self):
+                            super().__init__(convert_charrefs=True)
+                            self.output = []
+                            self._skip_level = 0
+
+                        def handle_starttag(self, tag, attrs):
+                            attrs_dict = dict(attrs)
+                            cls = attrs_dict.get('class', '')
+                            data_wikilink = attrs_dict.get('data-wikilink')
+                            if tag.lower() == 'a' and cls and 'wikilink' in cls.lower() and data_wikilink:
+                                # emit the wikilink text immediately and skip the tag
+                                self.output.append(data_wikilink)
+                                self._skip_level += 1
+                                return
+                            self.output.append(self.get_starttag_text())
+
+                        def handle_endtag(self, tag):
+                            if self._skip_level and tag.lower() == 'a':
+                                self._skip_level -= 1
+                                return
+                            self.output.append(f"</{tag}>")
+
+                        def handle_data(self, data):
+                            if self._skip_level > 0:
+                                if data and data.strip():
+                                    self.output.append(data)
+                                return
+                            self.output.append(data)
+
+                        def get_data(self):
+                            return ''.join(self.output)
+
                     injection = textwrap.dedent(r"""
                     <script>
                     // Lightweight inline replacements for marked.parse and DOMPurify.sanitize
@@ -247,12 +340,90 @@ def _ensure_static_index_at_repo_root():
                             let s = String(md);
                             // escape HTML
                             s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-                            // code blocks ```
-                            s = s.replace(/```([\s\S]*?)```/g, function(m, code){ return '<pre><code>'+code.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</code></pre>'; });
+
+                            // extract fenced code blocks first to avoid interfering with table/list parsing
+                            const CODE_PLACEHOLDER = '__CODE_BLOCK__';
+                            const codeBlocks = [];
+                            s = s.replace(/```([\s\S]*?)```/g, function(m, code){
+                                const idx = codeBlocks.push(code) - 1;
+                                return CODE_PLACEHOLDER + idx + '__';
+                            });
+
+                            // basic markdown tables
+                            const lines = s.split('\n');
+                            const outLines = [];
+                            let tableBuffer = [];
+                            function flushTable(){
+                                if(!tableBuffer.length){
+                                    return;
+                                }
+                                const rawLines = tableBuffer.slice();
+                                const rows = tableBuffer
+                                    .map(line => line.trim())
+                                    .filter(line => line.length)
+                                    .map(line => line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim()));
+                                tableBuffer = [];
+                                if(rows.length < 2){
+                                    outLines.push(...rawLines);
+                                    return;
+                                }
+                                let header = rows[0];
+                                let alignRow = [];
+                                let bodyRows = rows.slice(1);
+                                if(bodyRows.length && bodyRows[0].every(cell => /^:?-{2,}:?$/.test(cell.replace(/\s+/g,'')))){
+                                    alignRow = bodyRows[0];
+                                    bodyRows = bodyRows.slice(1);
+                                }
+                                const aligns = alignRow.map(cell => {
+                                    const trimmed = cell.replace(/\s+/g,'');
+                                    if(trimmed.startsWith(':') && trimmed.endsWith(':')) return 'center';
+                                    if(trimmed.endsWith(':')) return 'right';
+                                    if(trimmed.startsWith(':')) return 'left';
+                                    return 'left';
+                                });
+                                const colCount = header.length;
+                                function cellAlign(idx){
+                                    return aligns[idx] || 'left';
+                                }
+                                let html = '<table class="markdown-table"><thead><tr>';
+                                for(let i=0;i<colCount;i++){
+                                    const align = cellAlign(i);
+                                    html += '<th style="text-align:'+align+'">'+header[i]+'</th>';
+                                }
+                                html += '</tr></thead><tbody>';
+                                if(!bodyRows.length){
+                                    html += '<tr>' + header.map((_,i)=>'<td style="text-align:'+cellAlign(i)+'"></td>').join('') + '</tr>';
+                                } else {
+                                    for(const row of bodyRows){
+                                        if(row.length === 1 && row[0] === ''){
+                                            continue;
+                                        }
+                                        html += '<tr>';
+                                        for(let i=0;i<colCount;i++){
+                                            const cell = row[i] || '';
+                                            html += '<td style="text-align:'+cellAlign(i)+'">'+cell+'</td>';
+                                        }
+                                        html += '</tr>';
+                                    }
+                                }
+                                html += '</tbody></table>';
+                                outLines.push(html);
+                            }
+                            for(const line of lines){
+                                if(/^\s*\|/.test(line)){
+                                    tableBuffer.push(line);
+                                } else {
+                                    flushTable();
+                                    outLines.push(line);
+                                }
+                            }
+                            flushTable();
+                            s = outLines.join('\n');
+
                             // headings
-                            s = s.replace(/^###\s*(.+)$/gm, '<h3>$1</h3>');
-                            s = s.replace(/^##\s*(.+)$/gm, '<h2>$1</h2>');
-                            s = s.replace(/^#\s*(.+)$/gm, '<h1>$1</h1>');
+                            s = s.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+                            s = s.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+                            s = s.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
                             // bold and italic
                             s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
                             s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
@@ -260,14 +431,23 @@ def _ensure_static_index_at_repo_root():
                             s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
                             // links [text](url)
                             s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(m,t,u){ return '<a href="'+u.replace(/"/g,'&quot;')+'">'+t+'</a>'; });
-                            // unordered lists: convert lines starting with - into <ul>
-                            s = s.replace(/(^|\n)(?:-\s+(.+))(?:\n|$)/g, function(_,pre,item){ return pre+'<ul><li>'+item+'</li></ul>'; });
-                            // paragraphs: two or more newlines => paragraph breaks
+                            // unordered lists
+                            s = s.replace(/(^|\n)\s*-\s+(.+)(?=\n|$)/g, function(_, pre, item){ return pre + '<ul><li>' + item + '</li></ul>'; });
+                            // paragraphs: two or more newlines => break
                             s = s.replace(/\n{2,}/g, '</p><p>');
                             // wrap remaining single newlines with <br>
                             s = s.replace(/\n/g, '<br>');
-                            // ensure top-level paragraphs
-                            if(!/^\s*<h|^\s*<ul|^\s*<pre/.test(s)){
+
+                            // strip Obsidian-style wikilink anchors back to plain text
+                            s = s.replace(/<a\b[^>]*class=["']wikilink["'][^>]*>(.*?)<\/a>/gi, '$1');
+
+                            // restore code blocks
+                            s = s.replace(new RegExp(CODE_PLACEHOLDER + '(\\d+)__', 'g'), function(_, idx){
+                                const code = (codeBlocks[idx] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+                                return '<pre><code>'+code+'</code></pre>';
+                            });
+
+                            if(!/^\s*<h|^\s*<ul|^\s*<pre|^\s*<table/.test(s)){
                                 s = '<p>' + s + '</p>';
                             }
                             return s;
@@ -291,6 +471,18 @@ def _ensure_static_index_at_repo_root():
                                         if(tag === 'script' || tag === 'iframe' || tag === 'object' || tag === 'embed'){
                                             node.parentNode && node.parentNode.removeChild(node);
                                             return;
+                                        }
+                                        if(tag === 'a'){
+                                            const cls = (node.getAttribute('class') || '').toLowerCase().split(/\s+/);
+                                            if(cls.includes('wikilink')){
+                                                try{
+                                                    const repl = document.createTextNode(node.textContent || node.getAttribute('data-wikilink') || '');
+                                                    node.parentNode && node.parentNode.replaceChild(repl, node);
+                                                }catch(err){
+                                                    node.parentNode && node.parentNode.removeChild(node);
+                                                }
+                                                return;
+                                            }
                                         }
                                         // remove event handler attributes and dangerous URIs
                                         for(const attr of Array.from(node.attributes || [])){
@@ -317,53 +509,80 @@ def _ensure_static_index_at_repo_root():
 
                     // Normalize helper: accept either 'Player Root/...' or relative paths
                     function _normPath(p){
-                        if(!p && p!=="") return "";
-                        p = String(p || "");
-                        if(/^Player Root\//i.test(p)) p = p.replace(/^Player Root\//i, "");
-                        return p.replace(/^\/+|\/+$/g, "");
+                        if(p == null) return "";
+                        let s = String(p || "").replace(/^\/+|\/+$/g, "");
+                        if(!s) return "";
+                        const prefix = "Player Root";
+                        const lower = s.toLowerCase();
+                        const prefixLower = prefix.toLowerCase();
+                        // direct manifest hit takes precedence (preserve exact key when present)
+                        if(Object.prototype.hasOwnProperty.call(MANIFEST, s)){
+                            return s;
+                        }
+                        if(lower === prefixLower) {
+                            return prefix;
+                        }
+                        if(lower.startsWith(prefixLower + "/")){
+                            const rest = s.slice(prefix.length).replace(/^\/+/, "");
+                            return rest ? prefix + "/" + rest : prefix;
+                        }
+                        const prefixed = prefix + "/" + s;
+                        if(Object.prototype.hasOwnProperty.call(MANIFEST, prefixed)){
+                            return prefixed;
+                        }
+                        return s;
                     }
 
                     // Build a lightweight folder view from MANIFEST for the given relative path.
                     async function static_fetchPath(p){
                         const rel = _normPath(p);
                         const entriesMap = Object.create(null);
-                        for(const k of Object.keys(MANIFEST)){
-                            const key = k.replace(/^\/+/,"");
+                        for(const originalKey of Object.keys(MANIFEST)){
+                            const key = originalKey.replace(/^\/+/,"");
+                            if(!key) continue;
+                            const manifestEntry = MANIFEST[originalKey];
                             if(!rel){
-                                // top-level: take first segment
                                 const seg = key.split('/')[0];
-                                entriesMap[seg] = entriesMap[seg] || { name: seg, path: seg, type: 'dir' };
-                                // if key has no slash, it's a file at top-level
-                                if(key.indexOf('/')===-1){
-                                    entriesMap[seg] = { name: seg, path: seg, type: 'file' };
+                                if(!seg) continue;
+                                const segPath = seg;
+                                const segEntry = MANIFEST[seg] || MANIFEST[segPath];
+                                const isDir = key.indexOf('/') !== -1 || (segEntry && segEntry.type === 'dir');
+                                const existing = entriesMap[seg];
+                                if(!existing || (existing.type === 'file' && isDir)){
+                                    entriesMap[seg] = { name: seg, path: isDir ? segPath : key, type: isDir ? 'dir' : 'file' };
                                 }
-                            } else {
-                                if(key === rel) {
-                                    const name = rel.split('/').pop();
-                                    entriesMap[name] = { name, path: rel, type: 'file' };
-                                } else if(key.startsWith(rel + '/')){
-                                    const rest = key.slice((rel + '/').length);
-                                    const first = rest.split('/')[0];
-                                    const isDir = rest.indexOf('/') !== -1;
-                                    if(isDir){
-                                        entriesMap[first] = entriesMap[first] || { name: first, path: (rel? rel + '/'+ first: first), type: 'dir' };
-                                    } else {
-                                        entriesMap[first] = { name: first, path: (rel? rel + '/'+ first: first), type: 'file' };
-                                    }
+                                continue;
+                            }
+                            if(key === rel){
+                                continue;
+                            }
+                            if(key.startsWith(rel + '/')){
+                                const rest = key.slice((rel + '/').length);
+                                if(!rest) continue;
+                                const first = rest.split('/')[0];
+                                if(!first) continue;
+                                const candidatePath = rel + '/' + first;
+                                const candidateEntry = MANIFEST[candidatePath] || MANIFEST[candidatePath.replace(/^\/+/,"")];
+                                const entryType = rest.indexOf('/') !== -1 || (candidateEntry && candidateEntry.type === 'dir') ? 'dir' : 'file';
+                                const existing = entriesMap[first];
+                                if(!existing || (existing.type === 'file' && entryType === 'dir')){
+                                    entriesMap[first] = { name: first, path: candidatePath, type: entryType };
                                 }
                             }
                         }
                         const entries = Object.keys(entriesMap).sort().map(k=>entriesMap[k]);
-                        return { path: (rel? 'Player Root/' + rel : 'Player Root'), entries };
+                        const displayPath = !rel ? 'Player Root' : rel;
+                        return { path: displayPath, entries };
                     }
 
                     async function static_fetchPathWithHash(p){
-                        const rel = _normPath(p);
-                        const key = rel;
-                        if(MANIFEST[key] && MANIFEST[key].type === 'text'){
-                            return { json: { content: MANIFEST[key].text }, hash: null };
+                        const rel = p || '';
+                        const fileData = fileContentFromManifest(rel);
+                        if(fileData){
+                            return { json: { content: fileData.content }, hash: fileData.hash };
                         }
-                        return { json: { content: '' }, hash: null };
+                        const dirData = await static_fetchPath(rel);
+                        return { json: dirData, hash: null };
                     }
 
                     async function static_resolveHtmlUrl(seg){
@@ -395,6 +614,64 @@ def _ensure_static_index_at_repo_root():
                                 }
                             });
                         }catch(e){}
+                    }
+
+                    function removeSearchControls(){
+                        try{
+                            const searchInput = document.getElementById('search-input');
+                            if(searchInput){
+                                const container = searchInput.closest('div');
+                                if(container && container.parentElement){
+                                    container.parentElement.removeChild(container);
+                                }else{
+                                    searchInput.remove();
+                                }
+                            }
+                            const searchClear = document.getElementById('search-clear');
+                            if(searchClear){
+                                searchClear.remove();
+                            }
+                            const searchResults = document.getElementById('search-results');
+                            if(searchResults){
+                                searchResults.innerHTML = '';
+                                searchResults.style.display = 'none';
+                            }
+                        }catch(e){}
+                    }
+
+                    function disableSearchBindings(){
+                        try{
+                            const searchInput = document.getElementById('search-input');
+                            if(searchInput){
+                                searchInput.value = '';
+                                searchInput.disabled = true;
+                            }
+                            const searchClear = document.getElementById('search-clear');
+                            if(searchClear){
+                                searchClear.disabled = true;
+                            }
+                        }catch(e){}
+                    }
+
+                    function fileContentFromManifest(rel){
+                        const key = _normPath(rel);
+                        const entry = MANIFEST[key];
+                        if(!entry){
+                            return null;
+                        }
+                        if(entry.type === 'text'){
+                            return { content: entry.text || '', hash: null };
+                        }
+                        if(entry.type === 'binary'){
+                            const msg = entry.note || 'Binary file not embedded in static snapshot.';
+                            const size = entry.size != null ? ` (${entry.size} bytes)` : '';
+                            return { content: msg + size, hash: null };
+                        }
+                        if(entry.type === 'large'){
+                            const msg = entry.note || 'File too large to embed in static snapshot.';
+                            return { content: msg, hash: null };
+                        }
+                        return null;
                     }
 
                     // If the original frontend defines fetchPath/renderDir later in
@@ -458,8 +735,24 @@ def _ensure_static_index_at_repo_root():
                             if(el) el.disabled = true;
                         }
 
+                        try{
+                            if(typeof window.renderDir === 'function' && !window.__STATIC_RENDER_WRAPPED__){
+                                const origRenderDir = window.renderDir;
+                                window.__STATIC_RENDER_WRAPPED__ = true;
+                                window.renderDir = async function(...args){
+                                    const result = await origRenderDir.apply(this, args);
+                                    try{ removeCreateControls(); }catch(e){}
+                                    try{ removeSearchControls(); }catch(e){}
+                                    try{ disableSearchBindings(); }catch(e){}
+                                    return result;
+                                };
+                            }
+                        }catch(e){ console.warn('Failed to wrap renderDir for static snapshot', e); }
+
                         try{ if(typeof renderDir === 'function') renderDir(''); }catch(e){}
                         try{ if(typeof removeCreateControls === 'function') removeCreateControls(); }catch(e){}
+                        try{ removeSearchControls(); }catch(e){}
+                        try{ disableSearchBindings(); }catch(e){}
                     });
 
                     // Also patch the global fetch() so that calls to backend
@@ -478,6 +771,10 @@ def _ensure_static_index_at_repo_root():
                                     // renderDir and other callers use endpoints like /player_root/<seg>
                                     // Build a JSON response object similar to server's API
                                     const rel = seg || '';
+                                    const fileData = fileContentFromManifest(rel);
+                                    if(fileData){
+                                        return new Response(JSON.stringify({ content: fileData.content, hash: fileData.hash }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+                                    }
                                     const data = await static_fetchPath(rel);
                                     return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
                                 }
@@ -496,7 +793,9 @@ def _ensure_static_index_at_repo_root():
                     """)
 
                     # Substitute escaped manifest JSON into the injection template
-                    injection = injection.replace('__MANIFEST_JSON__', manifest_json)
+                    stripper = WikiLinkStripper()
+                    stripper.feed(injection.replace('__MANIFEST_JSON__', manifest_json))
+                    injection = stripper.get_data()
 
                     # Insert the injection into the <head> so it runs before the
                     # frontend's main script. This allows us to intercept global
@@ -517,6 +816,7 @@ def _ensure_static_index_at_repo_root():
                 # existing disconnected_mycelium.html to preserve manual edits; set
                 # FORCE_STATIC_UPDATE=1 in the environment to force an overwrite.
                 try:
+                    static_browser_html = _strip_wikilinks(static_browser_html)
                     static_path = REPO_ROOT.joinpath(STATIC_SNAPSHOT_FILENAME)
                     # Always overwrite the static snapshot so the file matches the
                     # output of the current run_frontend_api generation logic.

@@ -16,7 +16,7 @@ This file lists the secondary character stats and their formula expressions (sou
 | [[max_hit_points]]            | CON _ CL + Manually_Rolled_Hitpoints _ HP Multiplier |
 | [[Player Root/Rules/Evasion]] | 10 + DEX + Airbending_Level                          |
 | [[Armor definition]]          | 0 + Earthbending_Level                               |
-| [[Stress Level]]              | 0                                                    |
+| [[stress level]]              | 0                                                    |
 | [[airbending_bonus]]          | Air Level + DEX                                      |
 | [[airbending_dc]]             | 10 + airbending_bonus                                |
 | [[waterbending_bonus]]        | Water Level + INT                                    |
@@ -41,7 +41,7 @@ This file lists the secondary character stats and their formula expressions (sou
 | [[Manually Rolled HP]]        | Manually Rolled HP                                   |
 | [[CON]]                       | CON                                                  |
 | [[DEX]]                       | DEX                                                  |
-| [[INT]]                       | INT                                                  |
+| [[Int]]                       | INT                                                  |
 | [[STR]]                       | STR                                                  |
 | [[WIS]]                       | WIS                                                  |
 

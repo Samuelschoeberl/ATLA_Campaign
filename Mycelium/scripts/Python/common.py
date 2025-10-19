@@ -179,6 +179,50 @@ def pc_safe(name: str) -> str:
     return re.sub(r"[^A-Za-z0-9_\-]", '_', name)
 
 
+def canonical_variable_key(key: str) -> str:
+    """Normalize variable keys so aliases like spaces/dots/underscores match."""
+    return re.sub(r'[\s._]+', '_', key.strip().lower())
+
+
+def _variable_display_score(key: str) -> tuple:
+    """Return a tuple that ranks display variants consistently.
+
+    Preference order:
+      1. Keys containing underscores (canonical style)
+      2. Keys containing spaces
+      3. Plain or dotted keys
+    Longest key wins within the same bucket, then lexical tiebreaker for stability.
+    """
+    s = str(key)
+    if '_' in s:
+        bucket = 2
+    elif ' ' in s:
+        bucket = 1
+    else:
+        bucket = 0
+    return (bucket, len(s), s.lower())
+
+
+def dedupe_variable_items(items: Dict[str, Any]) -> List[Tuple[str, Any]]:
+    """Return (display_key, value) pairs with aliases collapsed.
+
+    The incoming `items` may contain keys like 'air attack roll', 'air_attack_roll',
+    or 'air.attack.roll' that represent the same statistic. This helper keeps only
+    the preferred display variant while preserving deterministic ordering.
+    """
+    dedup: Dict[str, Tuple[str, Any, tuple]] = {}
+    for raw_key, raw_val in items.items():
+        if raw_key is None:
+            continue
+        display_key = str(raw_key)
+        canon = canonical_variable_key(display_key)
+        score = _variable_display_score(display_key)
+        existing = dedup.get(canon)
+        if existing is None or score > existing[2] or (score == existing[2] and display_key < existing[0]):
+            dedup[canon] = (display_key, raw_val, score)
+    return [(entry[0], entry[1]) for canon, entry in sorted(dedup.items(), key=lambda kv: kv[0])]
+
+
 def parse_markdown_table(path: Path) -> Tuple[List[str], List[List[str]]]:
     try:
         txt = path.read_text(encoding='utf-8')

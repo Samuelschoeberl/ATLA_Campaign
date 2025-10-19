@@ -3,8 +3,8 @@
 
 Lingering Effect (0)
 Action (0)
-  - **Range:** 5 * firebending_slot (4) meters. Sphere with a radius of firebending_slot (4) * 1 meters.
-  - **Damage:** 2d6 fire per firebending_slot (4).
+  - **Range:** 5 * firebending_slot (6) meters. Sphere with a radius of firebending_slot (6) * 1 meters.
+  - **Damage:** 2d6 fire per firebending_slot (6).
   - **Save:** Dex DC against your  Firebending DC (20) 
   - Create a fiery explosion at a target point, affecting all creatures within a 10-foot radius.
 

@@ -7,6 +7,7 @@ Name: Mahogany
 | ------------ | ---------------: |
 | max_hp       |       20 |
 | current hp   |   20 |
+| Chaos energy | 0 |
 
 ## Core Stats
 
@@ -28,6 +29,8 @@ Damage Dice Bonus: 0
 | key           |              Base | Bonus |
 | ------------- | ----------------: | ----- |
 | Evasion       |       11 | 0     |
+| General Armor | 0 | 0     |
+| Barrier       |       0 | 0     |
 
 
 ## Bending Slots
@@ -35,7 +38,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Airbending slot        |       2 |
+| Airbending slot        |       3 |
 | Danger Sense Reactions | 1 |
 | Spiritbending slot     |    2 |
 
@@ -47,6 +50,3 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 
 #Mahogany #Character_Sheet
-
-> WARNING: The following character stats could not be placed by context and were appended:
-| Chaos energy | 0 |

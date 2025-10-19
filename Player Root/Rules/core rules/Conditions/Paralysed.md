@@ -1,10 +1,3 @@
-# Paralysis Mechanics
+ Prevents the target from taking actions or Move
 
-Certain Chi Blocking moves cause paralysis, preventing the target from taking actions or bending for a specified duration.
-
-## Key Moves
-- Pressure Point Strike
-- Nerve Strike
-[[Player Root]]
-
-#player_root
+#condition

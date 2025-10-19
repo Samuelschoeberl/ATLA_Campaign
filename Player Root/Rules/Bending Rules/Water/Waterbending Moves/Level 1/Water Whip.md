@@ -8,7 +8,7 @@
 
 **Links**:
 
-- [[Strength]]
+- [[Player Root/variable/primary_stat/Strength]]
 - [[_Rules]]
 - [[Water Whip]]
 - [[Proficiency]]

@@ -2,9 +2,9 @@
 #Action
 
 
-- Range: 3\* earthbending slot (2) meters
+- Range: 3\* earthbending slot (3) meters
 - Earth Attack Roll (1d20 + 1 + 5)
-- Damage: 1d6 \* earthbending slot (2) bludgeoning.
+- Damage: 1d6 \* earthbending slot (3) bludgeoning.
 
 **Effect**:
 
