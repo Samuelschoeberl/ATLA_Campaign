@@ -3,39 +3,45 @@ Name: Sora
 
 
 
-| key          |            value |
-| ------------ | ---------------: |
-| max_hp       |       32 |
-| current hp   |   32 |
-| Stress Level | 0 |
+| key               |                 value |
+| ----------------- | --------------------: |
+| max_hp            |            32 |
+| current hp        |        32 |
+| Stress Level      |      0 |
+| Fire Damage Bonus | 0 |
+| Initiative        |        1d20 + 2 |
 
 ## Core Stats
 
-| Stat         |            Value |
-| ------------ | ---------------: |
-| Strength     |     2 |
-| Dexterity    |    2 |
+| Stat         |   Value |
+| ------------ | ------: |
+| Strength     | 2 |
+| Dexterity    | 2 |
 | Constitution | 2 |
 | Intelligence | 5 |
-| Wisdom       |       6 |
-| Charisma     |     8 |
+| Wisdom       | 6 |
+| Charisma     | 8 |
 
 ## Bending Levels
 
 Total Bending Level: 3
-Damage Dice Bonus: 0
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Fire    |   3 | 1d20 + 3 + 6   | 19   |
-|         |            |                        |                      |
+| Fire    |   3 | 1d20 + 3 + 6   | 12   |
+
 ## Defensive
 
-| key           |              Base | Bonus |
-| ------------- | ----------------: | ----- |
-| Evasion       |       12 | 0     |
-| General Armor | 0 | 0     |
-| Barrier       |       0 | 0     |
+| key            |               Base | Bonus |
+| -------------- | -----------------: | ----- |
+| Evasion        |        12 | 0     |
+| Barrier        |        0 | 0     |
+| General Armor  |  0 | 0     |
+| Physical Armor | 0 | 0     |
+| Fire Armor     |     0 | 0     |
+| Ice Armor      |      3 | 0     |
+| Spirit Armor   |   0 | 0     |
+
 
 
 ## Bending Slots
@@ -47,9 +53,10 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 ## Water charges
 
-| Environmental Variable     |                          value |
+| Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
 | Environmental water charge | 11 |
+
 
 
 #Sora #Character_Sheet

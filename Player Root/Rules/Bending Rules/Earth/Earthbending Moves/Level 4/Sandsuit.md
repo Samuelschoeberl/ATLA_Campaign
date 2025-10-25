@@ -1,4 +1,4 @@
-```markdown
+
 #Action
 
 **Level 4**
@@ -9,13 +9,13 @@
 - Surround yourself in a thick layer of Sand until the start of your next turn.
 
 **Effect**:
-Provides 2 * [[Earthbending Slot]]  [[General Armor Definition]]
-Provides 5* [[Earthbending Slot]] [[Physical Armor]]
-Provides 10 * [[Earthbending Slot]]  [[Barrier Armor definintion]]
+Provides 2 * [[Earthbending slot]]  [[General Armor]]
+Provides 5* [[Earthbending slot]] [[Player Root/Rules/Stat Shorts/Physical Armor]]
+Provides 10 * [[Earthbending slot]]  [[Barrier]]
  
 **Links**:
 - [[Armor definition]]
-- [[Earthbending Slot]]
+- [[Earthbending slot]]
 
 Tags:
 #Earthbending

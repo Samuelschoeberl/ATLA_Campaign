@@ -1,6 +1,6 @@
 [[Airbending Slot Progression]]
 [[Firebending Slot Progression]]
-[[earthbending slot]]
+[[Earthbending Slot Progression]]
 [[Spiritbending Slot Progression]]
 [[Water Charges]]
 [[Waterbottle Charge]]

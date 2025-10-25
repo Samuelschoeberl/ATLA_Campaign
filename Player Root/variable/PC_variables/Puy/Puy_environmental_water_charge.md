@@ -1,6 +1,6 @@
 ```markdown
 11
 
-#variable #secondary_stat #environmental_variables #character_stat #character_stats
+#environmental_variables #variable_Puy #character_stat_Puy #character_stats_Puy #secondary_stat_Puy
 
 ```

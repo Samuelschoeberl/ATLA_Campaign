@@ -1,13 +1,13 @@
-#Action
-#utility
+#Action_Ash
+#utility_Ash
 
 
-- Range: fire (2) \* 3 meters
+- Range: [[fire]] (2) \* 3 meters
 - You manipulate a flame within range
 
 
-#Level1
-#fire
-#player_root
+#Level1_Ash
+#fire_Ash
+#player_root_Ash
 
 

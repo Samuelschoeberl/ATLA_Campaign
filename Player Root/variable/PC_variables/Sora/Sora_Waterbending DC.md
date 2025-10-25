@@ -1,6 +1,6 @@
 ```markdown
-15
+8
 
-#secondary_stat #variable #character_stat #water #show_if_water_ge_1 #character_stats
+#water #show_if_water_ge_1 #variable_Sora #character_stat_Sora #character_stats_Sora #secondary_stat_Sora
 
 ```

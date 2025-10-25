@@ -1,6 +1,6 @@
 ```markdown
 38
 
-#secondary_stat #variable #vitality #current_variable #character_stat #character_stats
+#vitality #current_variable #variable_Anju #character_stat_Anju #character_stats_Anju #secondary_stat_Anju
 
 ```

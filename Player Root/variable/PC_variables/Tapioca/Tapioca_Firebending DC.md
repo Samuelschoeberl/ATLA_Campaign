@@ -1,6 +1,6 @@
 ```markdown
-13
+6
 
-#secondary_stat #variable #character_stat #fire #show_if_fire_ge_1 #character_stats
+#fire #show_if_fire_ge_1 #variable_Tapioca #character_stat_Tapioca #character_stats_Tapioca #secondary_stat_Tapioca
 
 ```

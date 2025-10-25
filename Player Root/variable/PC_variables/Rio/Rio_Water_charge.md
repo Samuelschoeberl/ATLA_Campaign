@@ -1,6 +1,6 @@
 ```markdown
 15
 
-#secondary_stat #variable #character_stat #show_if_water_ge_1 #character_stats
+#show_if_water_ge_21 #variable_Rio #character_stat_Rio #character_stats_Rio #secondary_stat_Rio
 
 ```

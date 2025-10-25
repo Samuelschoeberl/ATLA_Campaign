@@ -1,6 +1,6 @@
 ```markdown
 5
 
-#variable #character_stat #character_stats #primary_stat
+#variable_Tai #character_stat_Tai #character_stats_Tai #primary_stat_Tai
 
 ```

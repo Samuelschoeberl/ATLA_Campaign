@@ -1,6 +1,6 @@
 ```markdown
 2600
 
-#secondary_stat #variable #vitality #current_variable #character_stat #character_stats
+#vitality #current_variable #variable_X_Testchar #character_stat_X_Testchar #character_stats_X_Testchar #secondary_stat_X_Testchar
 
 ```

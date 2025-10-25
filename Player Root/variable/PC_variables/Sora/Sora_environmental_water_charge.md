@@ -1,6 +1,6 @@
 ```markdown
 11
 
-#variable #secondary_stat #environmental_variables #character_stat #character_stats
+#environmental_variables #variable_Sora #character_stat_Sora #character_stats_Sora #secondary_stat_Sora
 
 ```

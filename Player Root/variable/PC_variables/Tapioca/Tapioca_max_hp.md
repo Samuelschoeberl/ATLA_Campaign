@@ -1,6 +1,6 @@
 ```markdown
 36
 
-#secondary_stat #variable #vitality #character_stat #character_stats
+#vitality #variable_Tapioca #character_stat_Tapioca #character_stats_Tapioca #secondary_stat_Tapioca
 
 ```

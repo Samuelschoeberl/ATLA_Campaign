@@ -1,6 +1,6 @@
 
-#Action
-#revision_needed 
+#Action_X_Testchar
+#revision_needed_X_Testchar 
 
 **Earth Spike**
 
@@ -11,5 +11,5 @@
 
 **Usage**: Ideal for area control and damage. creates a Lingering Effect with piercing damage
 
-#earth 
-#Level3 
+#earth_X_Testchar 
+#Level3_X_Testchar 

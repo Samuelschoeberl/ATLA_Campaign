@@ -1,22 +1,22 @@
-#Bonus_Action
+#Bonus_Action_Tapioca
 - **Range:** Self.
 - **Duration:** 1 Turn.
 - Enhance agility by propelling yourself with gusts of air.
 
 **Effects:**
-- You gain 5 * Airbending_slot (6) meters movement for this turn.
+- You gain 5 * [[Airbending_slot]] (6) meters movement for this turn.
 
 
 
 
 Tags:
-#Airbending #Mobility #Level_1 #Bonus_Action
+#Airbending_Tapioca #Mobility_Tapioca #Level_1_Tapioca #Bonus_Action_Tapioca
 
-#Airbending
-#Bonus_Action
-#Level1
-#Level_1
-#Mobility
-#player_root
+#Airbending_Tapioca
+#Bonus_Action_Tapioca
+#Level1_Tapioca
+#Level_1_Tapioca
+#Mobility_Tapioca
+#player_root_Tapioca
 
 

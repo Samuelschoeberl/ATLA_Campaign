@@ -1,6 +1,6 @@
 ```markdown
-14
+7
 
-#secondary_stat #variable #character_stat #water #show_if_water_ge_1 #character_stats
+#water #show_if_water_ge_1 #variable_Tiebeediy #character_stat_Tiebeediy #character_stats_Tiebeediy #secondary_stat_Tiebeediy
 
 ```

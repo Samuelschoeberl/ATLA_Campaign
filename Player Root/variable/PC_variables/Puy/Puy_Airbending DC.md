@@ -1,6 +1,6 @@
 ```markdown
-13
+6
 
-#secondary_stat #variable #character_stat #air #show_if_air_ge_1 #character_stats
+#air #show_if_air_ge_1 #variable_Puy #character_stat_Puy #character_stats_Puy #secondary_stat_Puy
 
 ```

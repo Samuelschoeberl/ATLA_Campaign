@@ -8,7 +8,7 @@
 *logs
 *.log
 # All paths that contain the word "Collectionfiles" or "ExpandedCollections"
-
+*/deleted/
 # Ignore backups and vault/workspace folders
 backups/
 *.bak
@@ -20,6 +20,7 @@ backups/
 # - Ignore the canonical vault directory and any sibling folders that start
 #   with "Mycelium_" (these are working or intermediate folders).
 Mycelium/*
+!Mycelium/scripts/
 Mycelium_*
 
 

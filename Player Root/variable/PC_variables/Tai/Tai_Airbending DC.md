@@ -1,6 +1,6 @@
 ```markdown
-18
+10
 
-#secondary_stat #variable #character_stat #air #show_if_air_ge_1 #character_stats
+#air #show_if_air_ge_1 #variable_Tai #character_stat_Tai #character_stats_Tai #secondary_stat_Tai
 
 ```

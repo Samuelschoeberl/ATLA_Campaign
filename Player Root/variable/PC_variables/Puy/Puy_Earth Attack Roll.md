@@ -1,6 +1,6 @@
 ```markdown
 1d20 + 2 + 5
 
-#secondary_stat #variable #character_stat #earth #show_if_earth_ge_1 #roll #rollable #character_stats
+#earth #show_if_earth_ge_1 #roll #rollable #variable_Puy #character_stat_Puy #character_stats_Puy #secondary_stat_Puy
 
 ```

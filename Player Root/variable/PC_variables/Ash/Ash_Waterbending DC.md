@@ -1,6 +1,6 @@
 ```markdown
-12
+5
 
-#secondary_stat #variable #character_stat #water #show_if_water_ge_1 #character_stats
+#water #show_if_water_ge_1 #variable_Ash #character_stat_Ash #character_stats_Ash #secondary_stat_Ash
 
 ```

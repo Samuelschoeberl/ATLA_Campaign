@@ -8,13 +8,13 @@
         "type": "tabs",
         "children": [
           {
-            "id": "e4ed73c4184b073d",
+            "id": "8500d3bce12cc8a8",
             "type": "leaf",
             "pinned": true,
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/variable/environmental/secondary_stat/environmental_water_charge.md",
+                "file": "Mycelium/data/template/template_Character_Sheet.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -30,16 +30,40 @@
               },
               "pinned": true,
               "icon": "lucide-file",
-              "title": "environmental_water_charge"
+              "title": "template_Character_Sheet"
             }
           },
           {
-            "id": "28c7dae63a127752",
+            "id": "ce2fdee9192ff1dc",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/Rules/Stat Shorts/Temporary Hitpoints.md",
+                "file": "Player Root/variable/environmental/environmental_water_charge.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": true,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": false
+                }
+              },
+              "icon": "lucide-file",
+              "title": "environmental_water_charge"
+            }
+          },
+          {
+            "id": "126891e4f792f020",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/Rules/Bending Rules/Air/Airbending Moves/Level 1/Air Blade.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -54,11 +78,179 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Temporary Hitpoints"
+              "title": "Air Blade"
+            }
+          },
+          {
+            "id": "bb6eca8435cf6620",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Rock Hurl.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Rock Hurl"
+            }
+          },
+          {
+            "id": "4f8c8459ad200b53",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/variable/secondary_stat/spiritbending slot.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "spiritbending slot"
+            }
+          },
+          {
+            "id": "8682009ea7ed74e7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/PCs/X_Testchar/X_Testchar character sheet.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "X_Testchar character sheet"
+            }
+          },
+          {
+            "id": "130aaef4ad6502be",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/variable/secondary_stat/Spiritbending DC.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Spiritbending DC"
+            }
+          },
+          {
+            "id": "800e69051bfdd3c7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/pc_primary_stats.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "pc_primary_stats"
+            }
+          },
+          {
+            "id": "9f06bb0c5e59c3e1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "checkboxed_list.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "checkboxed_list"
+            }
+          },
+          {
+            "id": "a39d57a9323557dc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/PCs/stat_overview.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "stat_overview"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -90,10 +282,10 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "Waterbending DC",
                 "matchingCase": false,
-                "explainSearch": false,
-                "collapseAll": false,
+                "explainSearch": true,
+                "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical"
               },
@@ -125,7 +317,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 370.5
   },
   "right": {
     "id": "ae20c8aeba8214cb",
@@ -141,7 +333,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Player Root/Rules/Stat Shorts/Temporary Hitpoints.md",
+                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms/Luma’tik.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -151,7 +343,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Temporary Hitpoints"
+              "title": "Backlinks for Luma’tik"
             }
           },
           {
@@ -189,20 +381,22 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "obsidian-plugins-setup.md",
+                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms/Luma’tik.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of obsidian-plugins-setup"
+              "title": "Outline of Luma’tik"
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
-    "width": 306.5
+    "width": 200,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -219,53 +413,53 @@
       "runjs:RunJS": false
     }
   },
-  "active": "28c7dae63a127752",
+  "active": "bb6eca8435cf6620",
   "lastOpenFiles": [
-    "Player Root/PCs/Tai/Bending Rules - Tai/core rules/General Armor Definition - Tai.md",
-    "Player Root/PCs/Tai/Bending Rules - Tai/core rules/Barrier definintion - Tai.md",
-    "Player Root/PCs/Tai/Bending Rules - Tai/core rules/Armor definition - Tai.md",
-    "Player Root/PCs/Sheph/Bending Rules - Sheph/core rules/General Armor Definition - Sheph.md",
-    "Player Root/PCs/Sheph/Bending Rules - Sheph/core rules/Barrier definintion - Sheph.md",
-    "Player Root/PCs/Sheph/Bending Rules - Sheph/core rules/Armor definition - Sheph.md",
-    "Player Root/PCs/Grep/Bending Rules - Grep/core rules/General Armor Definition - Grep.md",
-    "Player Root/PCs/Grep/Bending Rules - Grep/core rules/Barrier definintion - Grep.md",
-    "Player Root/PCs/Grep/Bending Rules - Grep/core rules/Armor definition - Grep.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/core rules/General Armor Definition - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/core rules/Barrier definintion - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/core rules/Armor definition - Tiebeediy.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/core rules/General Armor Definition - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/core rules/Barrier definintion - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/core rules/Armor definition - Mahogany.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/core rules/General Armor Definition - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/core rules/Barrier definintion - Sora.md",
-    "Player Root/PCs/Sora/Bending Rules - Sora/core rules/Armor definition - Sora.md",
-    "Player Root/PCs/Ash/Bending Rules - Ash/core rules/General Armor Definition - Ash.md",
-    "Player Root/PCs/Ash/Bending Rules - Ash/core rules/Barrier definintion - Ash.md",
-    "Player Root/PCs/Ash/Bending Rules - Ash/core rules/Armor definition - Ash.md",
-    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/core rules/General Armor Definition - Tapioca.md",
-    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/core rules/Barrier definintion - Tapioca.md",
-    "Player Root/PCs/Tapioca/Bending Rules - Tapioca/core rules/Armor definition - Tapioca.md",
-    "Player Root/PCs/Rio/Bending Rules - Rio/core rules/General Armor Definition - Rio.md",
-    "Player Root/PCs/Rio/Bending Rules - Rio/core rules/Barrier definintion - Rio.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/Spirit/Spiritbending Moves/Shapeshifting Forms",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Shapeshifting Forms",
-    "Player Root/PCs/Ash/Bending Rules - Ash/Spirit/Spiritbending Moves/Shapeshifting Forms",
-    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/Spirit/Spiritbending Moves/Shapeshifting Forms",
-    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/Earth/Earthbending Moves/Level 3",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms",
-    "Mycelium/scripts/Python/__pycache__/generate_pc_sheets.cpython-313.pyc",
-    "static_mycelium.html",
+    "Mycelium/scripts/archived_20251025_161441/README.md",
+    "Mycelium/scripts/archived_20251025_161441/graph_md_io.py",
+    "Mycelium/scripts/archived_20251025_161441/graph_from_json.py",
+    "Mycelium/scripts/archived_20251025_161441/cleanup_unused.py",
+    "Mycelium/scripts/archived_20251025_161441/create_variable_aliases.py",
+    "Mycelium/scripts/archived_20251025_161441/create_unsorted_from_wikilinks.py",
+    "Mycelium/scripts/archived_20251025_161441/run_propagate_dry.py",
+    "Mycelium/scripts/archived_20251025_161441/Resiliance.py",
+    "Mycelium/scripts/archived_20251025_161441/test_change_var_integration.py",
+    "Mycelium/scripts/archived_20251025_161441/diagnose_allowed.py",
+    "Mycelium/scripts/archived_20251025_161441/aggregate_mycelium.py",
+    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Earth Shift.md",
+    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Earth Brace.md",
+    "Player Root/Rules/Bending Rules/Team-up Moves/Water-Water/Frozen Safe.md",
+    "Dms Root/variable/NPC_variables/Phot_the_sandsnake/Phot_the_sandsnake_Earthbending slot.md",
+    "Dms Root/NPCs/mid_water/Bending Moves by Action Type - mid_water/Reaction/Frozen Safe - mid_water.md",
+    "Dms Root/NPCs/mid_water/Bending Moves by Action Type - mid_water/Action/Frozen Safe - mid_water.md",
+    "Dms Root/NPCs/mid_water/Bending Rules - mid_water/Team-up Moves/Water-Water/Frozen Safe - mid_water.md",
+    "Dms Root/variable/NPC_variables/mid_earth/mid_earth_Earthbending slot.md",
+    "Dms Root/NPCs/low_water/Bending Moves by Action Type - low_water/Reaction/Frozen Safe - low_water.md",
+    "Dms Root/NPCs/low_water/Bending Moves by Action Type - low_water/Action/Frozen Safe - low_water.md",
+    "Dms Root/NPCs/low_water/Bending Rules - low_water/Team-up Moves/Water-Water/Frozen Safe - low_water.md",
+    "Dms Root/variable/NPC_variables/low_earth/low_earth_Earthbending slot.md",
+    "Dms Root/NPCs/X_Testchar/Bending Moves by Action Type - X_Testchar/Reaction/Frozen Safe - X_Testchar.md",
+    "Dms Root/NPCs/X_Testchar/Bending Moves by Action Type - X_Testchar/Action/Frozen Safe - X_Testchar.md",
+    "Dms Root/NPCs/X_Testchar/Bending Rules - X_Testchar/Team-up Moves/Water-Water/Frozen Safe - X_Testchar.md",
+    "Dms Root/variable/NPC_variables/X_Testchar/X_Testchar_Earthbending slot.md",
+    "Player Root/PCs/Tai/Bending Rules - Tai/by Action Type/Reaction/Frozen Safe - Tai.md",
+    "Player Root/PCs/Tai/Bending Rules - Tai/by Action Type/Action/Frozen Safe - Tai.md",
+    "Player Root/PCs/Tai/Bending Rules - Tai/Team-up Moves/Water-Water/Frozen Safe - Tai.md",
+    "Player Root/PCs/Rio/Bending Rules - Rio/by Action Type/Reaction/Frozen Safe - Rio.md",
+    "Player Root/PCs/Rio/Bending Rules - Rio/by Action Type/Action/Frozen Safe - Rio.md",
+    "Player Root/PCs/Rio/Bending Rules - Rio/Team-up Moves/Water-Water/Frozen Safe - Rio.md",
+    "Player Root/PCs/Anju/Bending Rules - Anju/by Action Type/Reaction/Frozen Safe - Anju.md",
+    "Player Root/PCs/Anju/Bending Rules - Anju/by Action Type/Action/Frozen Safe - Anju.md",
+    "Player Root/PCs/Anju/Bending Rules - Anju/Team-up Moves/Water-Water/Frozen Safe - Anju.md",
+    "Player Root/NPCs/The Night Bloom/Rin Kotak/meditating dark.png",
+    "Player Root/NPCs/The Night Bloom/Rin Kotak/Rin Kotak.png",
+    "Mycelium/scripts/frontend-react/public/Mycelium Logo.png",
     "Dms Root/NPCs/DMPCs/Kaedo.png",
-    "Player Root/NPCs/Lotus/Lotus_wikigraph_treemap.html",
-    "Player Root/NPCs/Other Importants/Other Importants_wikigraph_treemap.html",
     "Mycelium/Mycelium Logo.png",
     "Mycelium/Mycellium Logo.png",
     "Dms Root/visuals/Sandkheg_-_Tyler_Walpole.png",
     "Dms Root/visuals/Ruin-Crawler_-_Tyler_Walpole.jpg",
     "Dms Root/visuals/Reilora_Shrike_-_Tyler_Walpole.webp",
-    "Dms Root/visuals/Reilora_-_Tyler_Walpole.png",
-    "Dms Root/visuals/Predathos_-_Tyler_Walpole.jpg",
-    "Dms Root/visuals/Ozo_Cruth_-_Tyler_Walpole.jpg",
-    "Dms Root/visuals/Omentis_-_Tyler_Walpole.jpg"
+    "Dms Root/visuals/Reilora_-_Tyler_Walpole.png"
   ]
 }

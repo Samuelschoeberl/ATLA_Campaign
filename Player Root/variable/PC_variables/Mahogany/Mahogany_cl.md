@@ -1,6 +1,6 @@
 ```markdown
 3
 
-#secondary_stat #variable #character_stat #character_stats
+#variable_Mahogany #character_stat_Mahogany #character_stats_Mahogany #secondary_stat_Mahogany
 
 ```

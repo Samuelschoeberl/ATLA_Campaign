@@ -1,15 +1,15 @@
-#Action
+#Action_X_Testchar
 
 - **Cost:** 1 Water Charge per 1 meter radius .
-- **Type:** Action (0).
+- **Type:** [[Action]] (0).
 - **Range:** 1 meter radius centered on self.
     - Will grow 1 meter per round until full sized
     - Creates a heavily obscured area for concealment that can be absorbed to regain charges (1 meter radius per Turn) or blown await by air.
 
 
-#water 
-#Level3
-#utility 
+#water_X_Testchar 
+#Level3_X_Testchar
+#utility_X_Testchar 
 
 
 

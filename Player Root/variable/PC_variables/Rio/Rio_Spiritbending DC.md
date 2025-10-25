@@ -1,6 +1,6 @@
 ```markdown
-12
+5
 
-#secondary_stat #variable #character_stat #spirit #show_if_spirit_ge_1 #character_stats
+#spirit #show_if_spirit_ge_1 #variable_Rio #character_stat_Rio #character_stats_Rio #secondary_stat_Rio
 
 ```

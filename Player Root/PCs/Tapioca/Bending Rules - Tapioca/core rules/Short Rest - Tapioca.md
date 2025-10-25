@@ -1,6 +1,6 @@
 You restore all your Hitpoints and Bending Slots
-Player Root (0)
+[[Player Root]] (0)
 
-#player_root
+#player_root_Tapioca
 
 

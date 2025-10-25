@@ -1,0 +1,6 @@
+```markdown
+1d20 + 1
+
+#roll #variable_Anju #character_stat_Anju #character_stats_Anju #secondary_stat_Anju
+
+```

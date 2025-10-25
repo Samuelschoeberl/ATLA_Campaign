@@ -1,0 +1,473 @@
+### Air Nomads
+- [ ] Aang: 安昂[1] – Peaceful soaring.
+- [ ] Aditi: अदिति – Hindi for "boundless".[2]
+- [ ] Akash: आकाश – Hindi for "open space", "sky".[2]
+- [ ] Anil: अनिल – Hindi for "air" or "wind".[2]
+- [ ] Appa: 阿柏[3] – Probably phonetic. The latter character means "cypress".
+- [ ] Baljin: དཔལ་སྦྱན – Tibetan for "fortune giver".[2]
+- [ ] Batsal: बत्सल - Nepali for "love" or "affection".[2]
+- [ ] Chaha: चाह – Nepali for "wish" or "desire".[2]
+- [ ] Chang: 昌 – Chinese for "flourish" or "prosper".[2]
+- [ ] Chime: འཆི་མེད – Tibetan for "immortality", "undying",[4] or "eternal".[2]
+- [ ] Chimini: Nepali for "light".[2]
+- [ ] Chökyi: ཆོས་ཀྱི – Tibetan name meaning "religious" or "objective".[5][6]
+- [ ] Dechen: བདེ་ཆེན – Tibetan name meaning "great happiness".[6][7]
+- [ ] Devna: Nepali for "divine".[2]
+- [ ] Diki: བདེ་སྐྱད – Tibetan for "happiness".[2]
+- [ ] Disha: दिशा – Sanskrit name meaning "direction", "region".[8]
+- [ ] Dolma: སྒྲལ་མ – Tibetan translation of the Sanskrit "Tara", an important Buddhist deity. Lit. "mother of liberation".[2][9]
+- [ ] Dorje: རྡོ་རྗེ – Tibetan name meaning "invincible, indestructible"; it also refers to the vajra, a Buddhist ritual weapon.[9]
+- [ ] Dronma: སྒྲན་མ – Tibetan for "light".[2]
+- [ ] Ehani: Nepali for "song".[2]
+- [ ] Gawa: དགའ་བ – Tibetan for "happy", "joy", or "to love".[2][10]
+- [ ] Gedun: དགེ་འདུན – Tibetan translation of the Sanskrit "Sangha", which means "community" and specifically refers to Buddhist disciples.[11] Alternate spelling of Gendun. This name can also be interpreted as "seeking enlightenment".[2]
+- [ ] Gyatso: རྒྱ་མཚོ – "Ocean" in Tibetan, sometimes implying "ocean of wisdom," and a common name. It is included as one of the titles given to a number of Dalai Lamas, including the XIV Dalai Lama.[12]
+- [ ] Gyemtsen: རྒྱལ་མཚན – Gyemtsen is an alternate spelling of Gyaltsen, a Tibetan name meaning "victory banner".[13]
+- [ ] Gyurme: འགྱུར་མེད – Tibetan name meaning "changeless".[6][14]
+- [ ] Hayate: 颯 – Japanese for "sound of the wind".[2]
+- [ ] Idha: इध – Nepali name meaning "insight".[2]
+- [ ] Imay: इमे – Nepali name meaning "one with an independent nature".[2]
+- [ ] Jamyang: འཇམ་དབྱངས – Tibetan name meaning "gentle voice".[9][6]
+- [ ] Jetsun: རྗེ་བཙུན – Tibetan for "venerable".[15]
+- [ ] Jinpa: སྦྱན་པ – Tibetan name that means "generosity" (one of the Six Perfections).[9]
+- [ ] Kelsang: སྐལ་བཟང – In Tibetan, it means "good fortune".[9]
+- [ ] Khandro: མཁའ་འགྲོ – Tibetan translation of the Sanskrit "Daka", male form of Dakini. The dakinis are enlightened Buddhist deities who guide spiritual practitioners. Lit. "sky-goer", "celestial dancer".[16]
+- [ ] Laghima: लघिमा – A Sanskrit word meaning "absence of weight".[17]
+- [ ] Lekshe: ལེགས་བཤད – Tibetan for "elegant description"[18] or "teaching".[9][6]
+- [ ] Matangi: मातङ्गी (Sanskrit) – Refers to the Hindu goddess of arts and wisdom.[19]
+- [ ] Mikyo: མི་བསྐྱད – Tibetan for "unshakeable".[20][21]
+- [ ] Mingyur: མི་འགྱུར – Tibetan name meaning "unchangeable".[22]
+- [ ] Momo: 模模[1] - Transliteration of the Japanese word "momo", meaning "peach"; used as a common pet name in Japan. Characters mean "imitate".
+- [ ] Mukta: मुक्त – Hindi for "liberated".[2]
+- [ ] Namthöse: རྣམ་ཐོས་སྲས – Tibetan translation of the Sanskrit "Vaiśravaṇa", an important Buddhist deity. Lit. "all-hearing".[23]
+- [ ] Norbu: ནོར་བུ་ – Tibetan for "jewel".[9]
+- [ ] Nyandak: སྙན་གྲགས – Tibetan name meaning "fame", "glory".[6][24]
+- [ ] Palden: དཔལ་ལྡན – Tibetan name meaning "glorious".[9][6]
+- [ ] Pasang: པ་སངས། – Venus; Friday; also a Tibetan name meaning "born on Friday".[25]
+- [ ] Rabten: རབ་བརྟན – Tibetan name meaning "steadfast".[9] This name is also used in the United Republic of Nations.
+- [ ] Sameera: A name meaning "night-companion" in Arabic and "breeze, wind" in Sanskrit.[26]
+- [ ] Samlo: བསམ་བློ – Tibetan for "thought", "idea", "frame of mind".[27] Can also be interpreted as "glorious idea".[2]
+- [ ] Sanani: Nepali for "creative (man)".[2]
+- [ ] Sangge: སངས་རྒྱས – Tibetan name meaning "Buddha". Alternate spelling of Sangye.[6][9]
+- [ ] Sherab: ཤེས་རབ་ – Tibetan for "wisdom".[9]
+- [ ] Soma: Japanese for "genuine".[2]
+- [ ] Sonam: བསོད་ནམས – Tibetan for "merit", "fortune".[9]
+- [ ] Sora: Japanese name meaning "sky". Can be spelled with different kanji, the most common being 空.[2]
+- [ ] Sumati: सुमती – Sanskrit name meaning "wise, good mind".[28]
+- [ ] Tashi: བཀྲ་ཤིས – Tibetan name meaning "good fortune", "auspiciousness".[9]
+- [ ] Tau: Nepali for "handsome".[2]
+- [ ] Toofan: Nepali for "wind".[2]
+- [ ] Tsering: ཚེ་རིང – Tibetan and Buthanese for "long life".[9]
+- [ ] Tsewang: ཚེ་དབང – Tibetan name meaning "life empowerment", "powerful life".[29][9]
+- [ ] Ugyen: ཨོ་རྒྱན – Bhutanese and Tibetan name derived from the Sanskrit "Oddiyana", a medieval Indian state which had a significant role in the development of Vajrayana Buddhism. Lit. "going above and far".[6][30]
+- [ ] Unnat: Nepali for "progress".[2]
+- [ ] Wangchuk: དབང་ཕྱུག – Tibetan name meaning "mighty".[6][9]
+- [ ] Wangmo: དབང་མོ – Tibetan name meaning "powerful woman".[31]
+- [ ] Yangchen: དབྱངས་ཅན - Tibetan translation of the Sanskrit "Saraswati," Goddess of learning and music. Lit. "melodious", "singer".[32]
+- [ ] Yawen: 雅雯 – Chinese for "graceful cloud patterns".[2]
+- [ ] Yeshe: ཡེ་ཤེས – Tibetan for "wisdom".[2][9]
+- [ ] Yonten: ཡོན་ཏན – Tibetan name meaning "good qualities".[6][9]
+- [ ] Youdron: གཡུ་སྒྲན – Tibetan for "turquoise light".[9]
+
+### Air Nation
+- [ ] Otaku: オタク – Japanese term referring to someone with an obsessive interest, usually in anime or manga.
+- [ ] Pema: པདྨ། – Tibetan name meaning "lotus flower".[9]
+- [ ] Rohan: रोहण – Sanskrit name meaning "to ascend; to rise; to attain great heights". Named after Bryan Konietzko's Indian nephew.[33]
+- [ ] Tenzin: བསྟན་འཛིན – Meaning "upholder of the Dharma" or "defender of the faith", it is one of the given names of the XIV Dalai Lama.[34]
+- [ ] Tsemo: རྩེ་མོ – Tibetan name meaning "peak".[35]
+### Water Tribe
+- [ ] Achak: Algonquin for "spirit".[36]
+- [ ] Ahnah: Inuit name meaning "wise woman".[37]
+- [ ] Aklaq: Inuit for "black bear".[36]
+- [ ] Amak: Amak is a volcanic island in Alaska; its name means "blood" (amaq) in Aleut.[38]
+- [ ] Amaruq: Inuit name meaning "gray wolf"; alternate spelling of Amarok, a giant wolf in Inuit mythology.[39][40]
+- [ ] Amon: 阿蒙[41] – Multiple meanings: most appropriately, "to cover" or "to deceive". Refers to the Egyptian god, Amon.
+- [ ] Aputi: Inuit for "snow".[36]
+- [ ] Atka: Inuit for "guardian spirit".[36]
+- [ ] Atuat: Inuit for "clear sky".[37]
+- [ ] Changunak: Changunak was the name of a famous Inupiaq businesswoman, commonly known as Sinrock Mary.[42]
+- [ ] Chukagnak: Chukagnak is an alternate spelling of Cungagnaq, an Alutiiq saint better known as Peter the Aleut.[43]
+- [ ] Desna: Desna is an Inuit name meaning "boss".[44]
+- [ ] Eska: Eska is an Inuit name after a creek in Sutton, Alaska.[45]
+- [ ] Hakoda: The name Hakoda is of aboriginal origin and means "captain".[46]
+- [ ] Hanta: Inuit for "hunter".[36]
+- [ ] Iknik Blackstone Varrick: 法力克[47] - Iknik is an alternate spelling of Iqniq, an Inuit name meaing "fiery, bright meteor".[48] Characters mean "law", "strength", and "overcome".
+- [ ] Ivalu: Greenlandic name meaning "tendon, thread, sinew".[49]
+- [ ] Kallik: Inuit for "lightning".[36]
+- [ ] Kanti: Algonquin for "sings".[36]
+- [ ] Kapena – Hawaiian name meaning "captain".[50][21]
+- [ ] Katara: 卡塔拉[1] – Probably phonetic. Characters mean "block", "pagoda" and "pull".
+- [ ] Kavik: Qavvik is Inupiat for "wolverine".[51]
+- [ ] Kirima: Inuit name meaning "hill".[37]
+- [ ] Kitchi: Algonquin for "brave".[36]
+- [ ] Kiwaq: In the Wabanaki foklore, Kiwahq is an ice giant; also spelled as Kee-wakw or Giwakwa.[52]
+- [ ] Korra: 柯拉[53] – From the name Cora, Celtic and Greek for "maiden". She is named after the dog of the owner of a hotel in Alberta, Canada.[54] On the wanted poster issued by the Earth Queen, her name was written with the characters 寇拉, meaning "bandit drag".[55]
+- [ ] Kuruk: Kuúruk means "bear" in Pawnee, a Native American language.[56]
+- [ ] Kya: The name Kya is of African origin and means "diamond in the sky".[57]
+- [ ] Makittuq: Inuit name that means "stand".[58][59]
+- [ ] Makwa: Anishinaabe for "bear".[36]
+- [ ] Malina: Malina is the name of a Greenlandic Inuit goddess who became the sun.[60]
+- [ ] Maliq: Malik is a common Greenlandic name meaning "wave" or "sea".[37]
+- [ ] Massak: Inuit for "soft snow".[40]
+- [ ] Meeka: Inuit for "corageous".[36]
+- [ ] Miki: Inuit for "small".[36]
+- [ ] Naga: Naagga means "no" in Greenlandic.[61]
+- [ ] Niimi: Anishinaabe for "they are dancing".[36]
+- [ ] Noatak: (Inuit: nautaag) – Inland river. Name of a village in Alaska.
+- [ ] Noodin: Anishinaabe for "wind".[36]
+- [ ] Pitseolak: Inuit name meaning "sea pigeon".[37]
+- [ ] Qanitt: Qaniit is Inuit for "falling snow".[40]
+- [ ] Senna: Senna is an alternate spelling of Sedna, an Inuit mythological figure who is the goddess of the sea and marine animals in some legends, and a giantess in others.[62]
+- [ ] Siku: Inuit name meaning "ice".[37]
+- [ ] Siqniq: Inuit for "sun".[36]
+- [ ] Sokka: 索卡[1] – Probably phonetic. Characters mean "inquire" and "block".
+- [ ] Sura: Inuit name meaning "new life".[40]
+- [ ] Taliriktug: Inuit name meaning "strong arm".[37]
+- [ ] Tapeesa: Inuit for "arctic flower", also spelled as Tapisa.[36][37]
+- [ ] Taqukaq: Taqukaq is an Inuit name that means "grizzly bear".[63]
+- [ ] Thaki: Algonquin for "cold".[36]
+- [ ] Tiqriganiannig: Inuit for "arctic fox".[37]
+- [ ] Tonraq: Tonraq is an Inuit name for boys meaning "a tiny man; a spirit or ghost".[64]
+- [ ] Tulok: Inuit for "warrior"; also the Inuit god of the stars.[37]
+- [ ] Ujurak: Inuit name meaning "rock".[37]
+- [ ] Uki: Inuit for "survivor".[37]
+- [ ] Ukiuk: Inuit for "winter".[36]
+- [ ] Unalaq: Inuit for "west wind".[65]
+- [ ] Wakkanai: 稚内 – Name of a Japanese city, from Ainu yam wakka nay, meaning "cold water river".[66]
+- [ ] Yakone: In the Ahtna-Athabaskan language spoken by the Ahtna group of Alaskan Natives, Yakone means "red aurora". When used as a metaphor, it can mean "blood spray on the snow".[67]
+- [ ] Yue: 月[68] – "Moon" in Mandarin Chinese.
+- [ ] Yuka: Inuit for "bright star".[36]
+- [ ] Ziibi: Anishinaabe for "river".[36]
+
+### Foggy Swamp Tribe
+- [ ] Bai: Chinese for "cedar tree".[36]
+- [ ] Bo: Chinese for "wave".[36]
+- [ ] Fern: An English name, referring to the group of plants of the same name.[69]
+- [ ] He: Chinese for "river".[36]
+- [ ] Hua: Chinese for "flower" or "blossom".[36]
+- [ ] Huu: A Sino-Vietnamese name meaning "friend, companion".[70]
+- [ ] Jia: Chinese for "home" or "family".[36]
+- [ ] Ju: Chinese for "big".[36]
+- [ ] Mu: Chinese for "tree" or "wood".[36]
+- [ ] Shi: Chinese for "time".[36]
+- [ ] Yan: Chinese for "beautiful".[36]
+- [ ] Zan: Chinese for "help".[36]
+### Earth Kingdom
+- [ ] Aisha: Arabic female name meaning "life" or "womanly". It was the name of Muhammad's third wife, Aisha bint Abu Bakr.
+- [ ] Amethyst: An English name referring to the precious stone of the same name.[2]
+- [ ] Baatar: Баатар/ᠪᠠᠭᠠᠲᠤᠷ – Mongolian word meaning "hero".
+- [ ] Basalt: Is an aphanitic extrusive igneous rock.
+- [ ] Beryl: An English name referring to the precious stone of the same name.[71]
+- [ ] Binh: Vietnamese for "peaceful".[36]
+- [ ] Bowen: Chinese for "abundant" or "rich".[36]
+- [ ] Bumi: 布米[72] – Bhumi (भूमि) means "earth" in Sanskrit. Many northern Indian languages derived from Sanskrit, as well as in Indonesian and Malay. The Chinese characters used for transliteration mean "to spread rice".
+- [ ] Caihong: Chinese for "colorful rainbow".[36]
+- [ ] Camellia: An English name referring to the flower of the same name.[2]
+- [ ] Chia-Hao: Chinese for "having a great objective in life".[36]
+- [ ] Chin: 秦[73] – Qin was a state in China during the warring states period. May be a reference to Qin Shi Huang, the title of the first emperor of China, who ruled the state of Qin.
+- [ ] Dae: Korean for "greatness".[36]
+- [ ] Destiny: An English name referring to the concept of the same name.[2]
+- [ ] Diu: Chinese for "down to earth".[36]
+- [ ] Emerald: An English name referring to the gemstone of the same name.
+- [ ] Faith: An English name referring to the concept of the same name.[2]
+- [ ] Garnet: An English name referring to the precious stone of the same name.[2]
+- [ ] Guo: 郭[74] - Common Chinese surname meaning "city wall".
+- [ ] Guaba: Her name is bagua (八卦) written backward, meaning "gossip", which fits her personality.
+- [ ] Gong-gong: Gonggong (公公) refers to one's grandfather in some southeastern Chinese dialects.
+- [ ] Hope: An English name referring to the concept of the same name.[2]
+- [ ] Hanna: Chinese for "beautiful flower".[36]
+- [ ] Haoran: 浩然 – Chinese name meaning "vast", "overwhelming".[75]
+- [ ] Heng: Chinese for "eternal".[36]
+- [ ] Hong Mushi (Iroh): 洪慕士[76] – Hong is a traditional Chinese surname meaning "vast" or "deluge"; Mushi means "to want to become a scholar".
+- [ ] Hua: Chinese name meaning "flower".[36][77]
+- [ ] Hui: From Chinese, 慧 meaning "intelligent, wise" and 辉 meaning "brightness".[78]
+- [ ] Iris: An English name referring to the flower of the same name.[79]
+- [ ] Jade: An English name referring to the precious stone of the same name.[80]
+- [ ] Jae: A Korean name that can either mean "talent" or "wealth".[81]
+- [ ] Jasper: An English name referring to the precious gemstone of the same name.
+- [ ] Jiang: 江 – 'Jiang' translates to "river" in Mandarin, befitting her history as a river pirate.[82]
+- [ ] Jianzhu: 建筑 - In Chinese, it means "building" or "structure".
+- [ ] Jie: 杰 – Chinese name that translates to "heroic", "outstanding".[83]
+- [ ] Joy: An English name referring to the concept of the same name.[36]
+- [ ] Juniper Kim: Juniper is an English name referring to the tree of the same name. Kim is a common Korean surname.[84]
+- [ ] Junyi: Likely refers to the character Lu Junyi from Water Margin. The name Junyi (俊義) means "handsome and righteous".
+- [ ] Joo Dee - Her name sounds like 주둥이, a Korean term to call someone who has a big mouth or someone who does not shut up.
+- [ ] Kim: Vietnamese for "gold".[36]
+- [ ] Kuei: His name may be a transliteration variant of the word 魁, meaning "chief", referencing his position as the Earth King. It may also be a variant of 傀, meaning "puppet", alluding to how Long Feng controlled Kuei's actions from behind the scenes.
+- [ ] Kuvira: कुवीरा 古維拉[85] - Hindi name meaning "courageous woman".
+- [ ] Kyoshi: 虛子[73] – Japanese, meaning "empty child"; this was the pen name of the famous Japanese poet Takahama Kiyoshi.
+- [ ] Kyung: Korean for "respect".[36]
+- [ ] Langzi: Likely refers to Yan Qing, a fictional character from Water Margin, also known as Langzi. Langzi (浪子) means "the Wanderer" or "the Prodigal".
+- [ ] Lao Ge: 老哥 - In Chinese, it means "older brother" or "older male person".
+- [ ] Lao Yiu: Based on an alternative rendering of his nickname, "Old Greasy", "Lao Yiu" can be written as 老油, meaning "old" and "oil", respectively.
+- [ ] Lee (Zuko): 禮 (礼) – Lee references the Confucian virtue li, meaning "propriety" or "ritual".
+- [ ] Lek: เล็ก - Thai word and nickname meaning "small" or "tiny", referring to his small stature and youthful appearance.
+- [ ] Lu Beifong: Surname (北方[86]) means "north region". The name Lu (禄) can mean "prosperity" or "professional success".
+- [ ] Lily: An English name referring to the flower of the same name.
+- [ ] Long Feng: 龍鳳 (龙凤) – Dragon Phoenix. In Chinese tradition, the dragon and phoenix represented the royal throne.
+- [ ] Macmu-Ling – Named after Avatar writer Lauren MacMullan.[87]
+- [ ] Meilin – Meilin is a feminine and masculine name with several possible combinations that form different meanings. 美 means "beautiful", 梅 means "plum" or "apricot", while 玫 means "rose" or "gemstone". 林 means "forest", 琳 means "fine jade" or "fine gem", and 麟 means "female unicorn".[88]
+- [ ] Mingxia: (明霞) – Chinese name meaning "bright halo".[89]
+- [ ] Minh: Vietnamese for "bright".[36]
+- [ ] Miyuki: 美雪 – Common Japanese girl's name meaning "beautiful snow". Named after storyboard artist Miyuki Hoshikawa.[76]
+- [ ] Nuan: Chinese for "wholehearted".[36]
+- [ ] Oh: 吳 - Korean: O - Oh (Wu in Chinese) is a common surname in Korea, referring to the ancient Kingdom of Wu in China. Named after animator Seung-Hyun Oh.[76]
+- [ ] Oma: 奧瑪 (奥玛)[90] – Characters mean "obscure" and "carnelian".
+- [ ] Opal: Opal is an English name referring to the gem of the same name, which ultimately derives from the Sanskrit word for "stone".[91]
+- [ ] Oyaji: 親父 - Japanese informal term for "dad" or "old man".
+- [ ] Pao: 包[92] – Bao is a traditional Chinese surname meaning "To cover".
+- [ ] Pearl: An English name referring to the precious stone of the same name.[2]
+- [ ] Peony: An English name referring to the flower of the same name.[2]
+- [ ] Pong: 乓 – An abortive pun on the word ping-pong.
+- [ ] Poppy Beifong: Surname (北方[86]) means "north region".
+- [ ] Pu-on Tim: 浦安添[95] - Cantonese: pu on tim - Pu is a traditional Chinese surname meaning "beach"; On-Tim means "Increasing Peace".
+- [ ] Qiang: Chinese for "strong".[36]
+- [ ] Quartz: An English name referring to the precious stone of the same name.[71]
+- [ ] Quiyue: Chinese for "autumn moon".[36]
+- [ ] Rin: From Japanese 凛, meaning "dignified, severe, cold".[97]
+- [ ] Rose: An English name referring to the flower of the same name.[98]
+- [ ] Ryu: 류 – Korean surname / Japanese for "dragon".
+- [ ] Saiful: In Arabic, it stems from "sword".[100]
+- [ ] Sarnai: Сарнай – Mongolian name meaning "rose".[101]
+- [ ] Sela: סֶלַע – Hebrew for "rock".[102]
+- [ ] Sha-Mo: 沙漠 – Meaning "Desert" in Chinese.
+- [ ] Shu: 舒 – Traditional Chinese surname meaning "relax".
+- [ ] Shufen: Chinese for "good fragrance".[36]
+- [ ] Sidao: 似道 – Name of a Chinese statesman.
+- [ ] Song - Common Chinese and Korean surname.
+- [ ] Star: An English name referring to the celestial body of the same name.
+- [ ] Suyin Beifong: Surname (北方[86]) means "north region".
+- [ ] Suzu: From Japanese 鈴 (suzu) meaning "bell".
+- [ ] Shihan: Shihan (師範) is a Japanese title meaning "master instructor".
+- [ ] The Boulder: 大塊石 (大块石)[107] - Lit. Big rock.
+- [ ] Thi: Vietnamese for "poem".[36]
+- [ ] Tieguai (Lao Ge): 鐵拐 – Lit. "iron crutch".
+- [ ] Tong and Sing: Combined resemble the Hokkien pronunciation of 忠心 (tiongsim), "loyalty".
+- [ ] Toph Beifong: 北方拓芙 [86].
+- [ ] Tu: 土 - Chinese for "earth".
+- [ ] Willow: An English name referring to the tree of the same name.
+- [ ] Woong: Korean for "magnificence".[36]
+- [ ] Wu: 巫 - Chinese surname meaning "sorceress" or "shaman".
+- [ ] Wu - 武 - Chinese name meaning "military, martial".
+- [ ] Xiaobo: Chinese for "little wrestler".[36]
+- [ ] Xin Fu: 辛富[107].
+- [ ] Ya-Ting: Chinese for "beautiful and graceful".[36]
+- [ ] Yi Ming: 貽明.
+- [ ] Yu: 余[107] - common Chinese surname meaning "surplus".
+- [ ] Yulduz: (Uzbek) - feminine name meaning "star".
+- [ ] Yun: From Chinese, 云 ("cloud") or 允 ("allow, consent").[110]
+- [ ] Zixin: Chinese for "self confidence".[36]
+
+### Fire Nation
+- [ ] Asayo: Japanese for "morning".[36]
+- [ ] Ayami: Japanese for "colorful".[36]
+- [ ] Azula: 'Azul' translates as "blue".
+- [ ] Bashira: Japanese for "joyful".[36]
+- [ ] Bujing: 不敬 – Chinese for "disrespect", "irreverent".[111]
+- [ ] Chaisee: Thai name meaning "innocent".[112]
+- [ ] Chan: 陳 – Common Chinese surname.
+- [ ] Chey: 濟 – To ferry; to help.
+- [ ] Chit Sang: 捷生 – "victory/quick" + "gentleman".[115]
+- [ ] Dalisay: Filipino name meaning "pure".[116]
+- [ ] Davaa: Даваа – Mongolian name meaning "threshold", "mountain pass".[36][117]
+- [ ] Ding: 丁 – Common Chinese surname.
+- [ ] Druk: འབྲུག – "Thunder Dragon" (Bhutan/Tibet).[118]
+- [ ] Erdene: Эрдэнэ – Mongolian for "treasure", "jewel".[36][119]
+- [ ] Ezra: Hebrew origin, meaning "help".[120]
+- [ ] Ganzaya: Ганзаяа – Mongolian for "steel fate".[36]
+- [ ] Gerel: Гэрэл – Mongolian name meaning "light".[121]
+- [ ] Goro: 五郎 – "fifth son".[122]
+- [ ] Gyaku: 逆 – "reverse/opposite".[123]
+- [ ] Hanako: 花子 – "flower child".[36]
+- [ ] Hei-Ran: Korean name meaning "grace" or "orchid".[124]
+- [ ] Ikem: 毅勤 – "resolute" + "hard-working".
+- [ ] Ilah: Arabic term meaning "god".[126]
+- [ ] Iroh: 艾洛 – Phonetic.
+- [ ] Izumi: 泉 - "fountain/spring".[128]
+- [ ] Jaw Long: "like a dragon".[36]
+- [ ] Jeong Jeong: 琤琤 – sound of tinkling gems; also Korean "정".
+- [ ] Junho: 준호 – Korean given name.[130]
+- [ ] Juro: 十郎 – "tenth son".[131]
+- [ ] Kaja: From Persian "master".
+- [ ] Kangana: कंगना – "bracelet".[132]
+- [ ] Kayo: Japanese for "good".[36]
+- [ ] Keisuke: Japanese for "save".[36]
+- [ ] Kenshin: 謙信 – "modest".[36]
+- [ ] Kiku: 菊 – "chrysanthemum".[133]
+- [ ] Khuchtei: Хүчтэй – Mongolian for "strong".[134]
+- [ ] Liang: 梁 - surname meaning "bridge/beam".
+- [ ] Lu Ten: 路騰 – "gallop over a road".
+- [ ] Mak: 麥 - Cantonese surname "wheat/barley".
+- [ ] Mamushi: 蝮 – Japanese viper (nickname).[135]
+- [ ] Manami: Japanese for "love".[36]
+- [ ] Masaru: 勝 – "victory".[136]
+- [ ] Mayu: Japanese for "evening".[36]
+- [ ] Meng Shou: 猛獸 – "fierce beast".[36]
+- [ ] Mongke: 蒙哥 – Mongolian name "eternal".
+- [ ] Morishita: 森下 – "below the forest".
+- [ ] Naoki: Japanese name; one meaning "straight tree".[137]
+- [ ] Nergüi: Нэргүй – "nameless".[138]
+- [ ] Noriko: Japanese girls' name; e.g., "ruling child" (法子).[139]
+- [ ] Ogodei: 窝阔台 – name of Ögedei Khan.
+- [ ] Ozai: 敖載 – "carry proudly".
+- [ ] Qacha: Mongolian for "flank".[36]
+- [ ] Qudan: Mongolian for "cliff".[36]
+- [ ] Ran and Shaw: 燃 / 燒 – "burn/ignite" and "burn/braze".[141]
+- [ ] Rangi: 랑이 – truncated "horangi" (tiger) in Korean.[142]
+- [ ] Roku: 六 - "six".
+- [ ] Satsuki: Japanese for "early moon".[36]
+- [ ] Saya: Japanese for "sand".[36]
+- [ ] Sozin: 蘇進 – "revival and progress".[143]
+- [ ] Szeto: Cantonese romanization of Situ (司徒).[144]
+- [ ] Taiso: 太祖 – "founder/progenitor/emperor".[145]
+- [ ] Tengfei: 騰飛 – "soaring high".[146]
+- [ ] Thapa: थापा – Nepali surname (military rank origin).[147]
+- [ ] Tom-Tom: 湯湯 – phonetic; "soup/hot water".
+- [ ] Tuguslar: Mongolian for "easygoing/playful".[36]
+- [ ] Ursa: 爾姝 – phonetic; also Latin "female bear".[148]
+- [ ] Uyanga: Уянга – Mongolian "melody".[149]
+- [ ] Vachir: Mongolian word for "thunderbolt".[150]
+- [ ] Wan: 萬 – "ten thousand"; also "one".
+- [ ] Yeh-Lu: 耶律 – Khitan family name.
+- [ ] Yuka: Japanese for "reason".[36]
+- [ ] Zolzayaa: Золзаяа – Mongolian for "luck/fate".[36][151]
+- [ ] Zuko: 蘇科 – various renderings noted.[1]
+
+### United Republic
+- [ ] Amrita: अमृता – Sanskrit for "immortality".[152][153]
+- [ ] Asami Sato: 佐藤麻美 – Asami "hemp beauty"; Sato is common surname.
+- [ ] Bolin 博林 – "abundant" + "forest".
+- [ ] Buttercup Raiko: English flower name.
+- [ ] Ginger: English spice name.
+- [ ] Hibiki: 響 – "echo/resonance".[155][156]
+- [ ] Hiroshi Sato: Japanese given name; Sato the most common surname.
+- [ ] Kwong: 鄺 – Chinese surname.
+- [ ] Lau Gan-Lan: 老甘藍 – "Old Man Cabbage".
+- [ ] Lin Beifong: 林 "forest"/"fine jade"; surname 北方 "north region".[158]
+- [ ] Mako: 馬高 – transliteration of Makoto ("faithfulness/trust").
+- [ ] Metog: མེ་ཏོག – Tibetan for "flower".[159]
+- [ ] Nomin: Номин – Mongolian for "lapis lazuli".[160][161]
+- [ ] Raiko: 雷光 – "lightning".[162]
+- [ ] Rinchen: རིན་ཆེན – "precious/jewel".[9]
+- [ ] Saikhan: Сайхан – "beautiful".
+- [ ] Samnang: សំណាង – Khmer "luck/fortune".[163]
+- [ ] Shiro Shinobi: Japanese "fourth son"; "ninja".
+- [ ] Wáahlaal: Haida for "potlatch".[164]
+- [ ] Wonyong Keum: Won-yong "first dragon"; Keum "gold".[165]
+- [ ] Yasuko Sato: e.g., "peaceful child" (靖子).[166]
+- [ ] Yichen: 逸塵 – "outstanding/above the common".[167]
+- [ ] Zaheer: Common name; Islamic interpretive concept reference.
+- [ ] Zhu Li Moon: 朱莉月 – "cinnabar" + "jasmine"; Moon as Korean surname.
+
+### Other
+- [ ] Dawa: ཟླཝ – Tibetan for "moon".[9][169]
+- [ ] Gun: 鯀 – mythical giant fish; historical figure tasked with floods.
+- [ ] Mula: "Beginning/first" in Malay and Indonesian; also "mule" in Romance langs.
+- [ ] Pathik: पथिक – Hindi "traveler".
+- [ ] Praew: Thai name commonly meaning "shine".[15]
+- [ ] Raldri: རལ་གྲི – Tibetan for "sword".[170][69]
+- [ ] Tidao: 剃刀 – "razor".[171]
+
+### Lambak clan
+- [ ] Amihan: Filipino term for the cool northeasterly wind season.[172]
+- [ ] Kamao: Tagalog for "fist/back of the hand".[173]
+- [ ] Kilat: Tagalog for "lightning".[174]
+- [ ] Malaya: Tagalog for "free/independent".[175]
+- [ ] Mamamaril: Tagalog for "marksman".[176]
+- [ ] Ulo: Tagalog for "head".[177]
+
+### Spirits
+- [ ] Hei Bai: 黑白 – Black and white.[178]
+- [ ] Kemurikage: 煙影 - Smoke and shadow.
+- [ ] La: 拉 – Pull.[178]
+- [ ] Lady Tienhai: 天海 – Sky and ocean.[178]
+- [ ] Raava: Rava (रव) "sound" in Sanskrit.[179][180]
+- [ ] Tui: 推 – Push.[178]
+- [ ] Vaatu: From Sanskrit vatu (वतु) "silence!".[181][180]
+- [ ] Wan Shi Tong: 萬知堂 – "Hall of ten thousand (immeasurable) knowledge".[182]
+- [ ] Yungib: Tagalog for "cave".[183]
+
+### Bending arts
+- [ ] The format of this list of bending art translations is: Bending Art: Traditional Hanzi (Simplified Hanzi if different) - Mandarin Pronunciation (in Hanyu Pinyin) - English translation.
+
+- [ ] Airbending: 截氣神功 (截气神功) – Spiritual ability to halt air.[140]
+- [ ] Waterbending: 截水神功 – Spiritual ability to halt water.[184]
+- [ ] Earthbending: 運土術 (运土术) – Technique of moving earth.[107]
+- [ ] Firebending: 制火術 (制火术) – Technique of creating fire.[114]
+
+### Location and organization names
+- [ ] The format of this list of location translations is: Location: Traditional Hanzi (simplified Hanzi if different) - Mandarin Pronunciation (in Hanyu Pinyin) - English translation.
+
+### Water Tribe
+- [ ] Northern Water Tribe: 北方水族 – Literal.[68]
+- [ ] Southern Water Tribe: 南方水族 – Literal.
+### Earth Kingdom
+- [ ] Earth Kingdom: 土國 (土国) – Literal[86]
+- [ ] Ba Sing Se: 永固城 – Eternally solid city.[185]
+- [ ] Cave of Two Lovers: 情人洞 – Lover cave[90]
+- [ ] Chin Village: 秦 – Name of an ancient state.[73]
+- [ ] Chaoyang Market: 朝陽市集 - "sunny" or "morning sun".[55]
+- [ ] Du'an Village: 杜安村 - birch-leaf pear/barrier + peace.[55]
+- [ ] Full Moon Bay: 滿月灣 (满月湾) – Literal.[86]
+- [ ] Golden Phoenix Mountain: 金鳳山 - Literal.[55]
+- [ ] Hujiang: shares characters with jianghu (江湖).[186]
+- [ ] Kyoshi Island: 虛子島 – Literal; see names.[73]
+- [ ] Misty Palms Oasis: 霧櫚綠洲 - Literal.[55]
+- [ ] Omashu:: 奥瑪舒城 (奥玛舒城) – Transliteration; 城 "city".[90]
+- [ ] Senlin Village: 森林村 – Forest Village.
+- [ ] Serpent's Pass: 盤蛇關 (盘蛇关) – Coiled Snake Pass.[86]
+- [ ] Seven Sun Temple: 七日寺 - or "Seven Days Temple".[55]
+- [ ] Shuiji River: 睡鷄江 - "Sleeping Chicken River".[55]
+- [ ] Si Wong Desert: 死亡沙漠 – Desert of death.[55]
+- [ ] South Sea: 南海 – Literal
+- [ ] State of Yi: 夷國 - "Eastern Barbarians". [85]
+- [ ] Wan Shi Tong's Library: 萬知堂神祕圖書館 (万知堂神秘图书馆) – "Mysterious Library".[182]
+- [ ] Wen Wilderness: 文荒漠 - "culture/literature" sense.[55]
+- [ ] Yi State Capital: 夷國京師 - See above.[85]
+- [ ] Yu Dao: 玉島 (玉岛) – Jade Island.[187]
+- [ ] Zaofu: 皂阜市 - Black Mound.[74]
+
+### Fire Nation
+- [ ] Fire Nation: 烈火國 (烈火国) – Raging Fire Nation.[114]
+- [ ] Fire Nation Capital: 皇家首都 – Imperial Capital City.[188]
+- [ ] Capital Island: 首都島 (首都岛) – Literal.[188]
+- [ ] Dragonbone Catacombs: 龍骨墓窟 (龙骨墓窟) – Literal.[143]
+- [ ] Hari Bulkan: Tagalog "king volcano".
+- [ ] Ember Island: 餘燼島 (余烬岛) – Literal.[189]
+- [ ] Forgetful Valley: 忘憂谷 (忘忧谷) – Forget Sorrows Valley.[190]
+- [ ] Jang Hui:' 江灰 – "Gray River" / "River of ash".[191]
+- [ ] Lambak Island: Lambak = "valley" in Tagalog.[192]
+
+### United Republic
+- [ ] Republic City: 共和城 – Literal[41]
+
+### Businesses and organizations
+- [ ] Ba Sing Se University: 永固城大學 (永固城大学) – Literal.[92]
+- [ ] Ba Sing Se Zoo: 快樂動物園 (快乐动物园) – Happy Zoo.[1]
+- [ ] Baybayin clan: Baybayin = "coast" in Tagalog.[193][194][195]
+- [ ] Dai Li: 戴笠 – name + historical figure Dai Li.[196]
+- [ ] Earthen Fire Refinery: 泥土火公司 – "earth-fire company".[197]
+- [ ] Ember Island Theater: 餘烬島劇院 (余烬岛剧院) – Literal.[95]
+- [ ] Fancy Lady Day Spa: 貴婦美容院 (贵妇美容院) – Literal.[1]
+- [ ] Fire Ferrets: 火焰貂
+- [ ] Five-Seven-Five Society: 五七五會社 – Literal.[1]
+- [ ] Green Blaze Inn: 綠焰客棧 (绿焰客栈) – Literal.[187]
+- [ ] Green Flame Inn: 綠炎旅館 (绿炎旅馆) – Literal.[187]
+- [ ] Happy Traveler's Opera Troupe: 快樂浪人歌劇團 (快乐浪人歌剧团) – Literal.[199]
+- [ ] Jasmine Dragon: 茉莉龍 (茉莉龙) – Literal.[200]
+- [ ] Kwong's Cuisine: 鄺氏美食 (邝氏美食) – "Mr. Kwong's Fine Food".[157]
+- [ ] Little Ba Sing Se Fashion Mall: 小永固 – Literal.[201]
+- [ ] Lambak clan: "valley" in Tagalog.[192]
+- [ ] Master Yu's Earthbending Academy: 余師傅著名運土術武館 – Renowned Earthbending Academy.[107]
+- [ ] Metal Clan: 金族 – "metal" as element.[85]
+- [ ] Metalbending Police Force: 共和城警隊 – Republic City Police Force.[202]
+- [ ] Misty Palms Inn: 霧櫚客栈 – Literal.[55]
+- [ ] Old Chen's Blacksmith Shop: 老陳鐵匠鋪 – Literal.[187]
+- [ ] Pao Family Tea House: 包氏茶館 – Literal.[92]
+- [ ] Republic City Four Elements: 四元賓館 – Four Elements Hotel.[85]
+- [ ] Sweet Aroma Tea House: 芬芳茶館 – Literal.[187]
+- [ ] Shang merchants: 商 – merchant class in premodern China.
+- [ ] Tasty Hotpot Restaurant: 美味火鍋食堂 – Literal.[187]
+- [ ] Two Fishes Northern Cuisine: 兩條魚北方餐館 – Literal.[203]
+- [ ] Yu Dao Grocery Store: 玉島雜貨店 – Literal.[187]
+- [ ] Zaofu Security Force: 皂阜保安隊 – Literal.[204]

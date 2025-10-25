@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, send_from_directory, abort, current_app
+from flask import Blueprint, request, jsonify, send_from_directory, send_file, abort, current_app
 from pathlib import Path
 import hashlib
 import re
@@ -392,6 +392,46 @@ def create_md_file():
     return jsonify(success=True, path=f"{PLAYER_ROOT_PREFIX}{rel_from_player}")
 
 
+@bp.route("/api/find-file/<filename>", methods=["GET"])
+def find_file_by_name(filename):
+    """Find a file or folder by name in Player Root. Returns the first match.
+    Priority: exact filename match (any extension) > .md file > folder
+    """
+    player_root = get_player_root_base()
+    if not player_root.exists():
+        return jsonify(error="Player Root not found"), 404
+    
+    try:
+        # First, search for exact filename match (including images, etc.)
+        for path in player_root.rglob(filename):
+            if path.is_file():
+                # Return the relative path from Player Root
+                rel_path = path.relative_to(player_root).as_posix()
+                return jsonify(path=rel_path, found=True, type='file')
+        
+        # If filename doesn't have .md extension, try adding it
+        if not filename.endswith('.md'):
+            search_name = f"{filename}.md"
+            for path in player_root.rglob(search_name):
+                if path.is_file():
+                    # Return the relative path from Player Root
+                    rel_path = path.relative_to(player_root).as_posix()
+                    return jsonify(path=rel_path, found=True, type='file')
+        
+        # If no file found, search for a folder with the exact name (without .md)
+        folder_name = filename.replace('.md', '') if filename.endswith('.md') else filename
+        for path in player_root.rglob(folder_name):
+            if path.is_dir():
+                # Return the relative path from Player Root
+                rel_path = path.relative_to(player_root).as_posix()
+                return jsonify(path=rel_path, found=True, type='folder')
+        
+        # If neither found, return not found
+        return jsonify(found=False, message=f"File or folder '{filename}' not found"), 404
+    except Exception as e:
+        return jsonify(error=str(e)), 500
+
+
 @bp.route("/player_root", defaults={"subpath": ""})
 @bp.route("/player_root/<path:subpath>", methods=["GET", "POST", "DELETE"])
 def player_root(subpath):
@@ -459,7 +499,30 @@ def player_root(subpath):
                 })
             return jsonify(entries=entries)
 
-        # file: return content + hash
+        # Check if file is an image or binary file
+        file_ext = target.suffix.lower()
+        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'}
+        
+        if file_ext in image_extensions:
+            # Serve image files directly
+            try:
+                # Determine mimetype
+                mimetype_map = {
+                    '.jpg': 'image/jpeg',
+                    '.jpeg': 'image/jpeg',
+                    '.png': 'image/png',
+                    '.gif': 'image/gif',
+                    '.webp': 'image/webp',
+                    '.svg': 'image/svg+xml',
+                    '.bmp': 'image/bmp',
+                    '.ico': 'image/x-icon',
+                }
+                mimetype = mimetype_map.get(file_ext, 'application/octet-stream')
+                return send_file(str(target), mimetype=mimetype)
+            except Exception as e:
+                return jsonify(error=str(e)), 500
+
+        # Text file: return content + hash
         try:
             text = target.read_text(encoding="utf-8")
         except Exception as e:
@@ -1016,10 +1079,22 @@ def player_root_search():
         filename_phrase_match = False
         filename_token_matches = []
         path_token_matches = []
+        filename_match_ratio = 0.0
+        
         # exact phrase in filename (no extension) -> very large boost
         if normalized_q and normalized_q in filename_no_ext:
             score += 5000
             filename_phrase_match = True
+            
+            # Add bonus based on how much of the filename the query represents
+            # This favors shorter filenames that are closer matches
+            # e.g., "Airdash" matching "Airdash.md" (100% match) vs "Airdash - Mahogany.md" (50% match)
+            if len(filename_no_ext) > 0:
+                filename_match_ratio = len(normalized_q) / len(filename_no_ext)
+                # Scale the ratio bonus: up to 2000 points for a perfect match
+                ratio_bonus = int(filename_match_ratio * 2000)
+                score += ratio_bonus
+        
         # token matches in filename -> medium boost
         for tok in q_tokens:
             if tok and tok in filename_no_ext:
@@ -1059,6 +1134,15 @@ def player_root_search():
             display_path = rel if rel.startswith(PLAYER_ROOT_PREFIX) else f"{PLAYER_ROOT_PREFIX}{rel}"
             # add content-based score (each match contributes)
             score += 10 * len(matches)
+            
+            # Apply path length penalty - prefer shorter paths
+            # Count directory depth (number of slashes in path)
+            path_depth = display_path.count('/')
+            # Subtract points based on depth (each level costs 100 points)
+            # This ensures shorter paths rank higher when scores are otherwise equal
+            depth_penalty = path_depth * 100
+            score -= depth_penalty
+            
             entry = {
                 'path': display_path,
                 'match_count': len(matches),
@@ -1071,11 +1155,15 @@ def player_root_search():
                     'filename_tokens': filename_token_matches,
                     'path_tokens': path_token_matches,
                     'content_matches': [m['line_no'] for m in matches],
+                    'path_depth': path_depth,
+                    'filename_match_ratio': filename_match_ratio,
                     'score_breakdown': {
                         'filename_phrase': 5000 if filename_phrase_match else 0,
+                        'filename_match_ratio': int(filename_match_ratio * 2000) if filename_phrase_match else 0,
                         'filename_tokens': 500 * len(filename_token_matches),
                         'path_tokens': 50 * len(path_token_matches),
                         'content_matches': 10 * len(matches),
+                        'depth_penalty': -depth_penalty,
                     },
                 }
             out.append(entry)

@@ -1,5 +1,3 @@
-```markdown
-#Level2
 #spirit 
 #Reaction 
 
@@ -7,7 +5,7 @@
 - Duration: [[spiritbending slot]] rounds.
 
 **Effect**:
-Provides 4 * [[spiritbending slot]] [[General Armor]], [[Evasion]],  [[Barrier]] and [[Damage Dice Bonus]] until the start of your next turn. 
+Provides [[spiritbending slot]]d8  [[General Armor]], [[Evasion]],  [[Barrier]] and [[Fire Damage Bonus]] for [[spiritbending slot]] rounds.
 
 
 Tags:
@@ -17,4 +15,4 @@ Tags:
 #Reaction
 #player_root
 #spirit
-```
+

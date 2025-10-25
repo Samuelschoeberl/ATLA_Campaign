@@ -1,13 +1,13 @@
-#Action
-#utility
+#Action_Sora
+#utility_Sora
 
 
-- Range: fire (3) \* 3 meters
+- Range: [[fire]] (3) \* 3 meters
 - You manipulate a flame within range
 
 
-#Level1
-#fire
-#player_root
+#Level1_Sora
+#fire_Sora
+#player_root_Sora
 
 

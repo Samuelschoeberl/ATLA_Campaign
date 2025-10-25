@@ -1,6 +1,6 @@
 ```markdown
 1d20 + 1 + 3
 
-#secondary_stat #variable #character_stat #earth #show_if_earth_ge_1 #roll #rollable #character_stats
+#earth #show_if_earth_ge_1 #roll #rollable #variable_Anju #character_stat_Anju #character_stats_Anju #secondary_stat_Anju
 
 ```

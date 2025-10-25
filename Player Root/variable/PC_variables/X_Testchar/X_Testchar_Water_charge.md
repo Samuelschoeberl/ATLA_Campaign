@@ -1,6 +1,6 @@
 ```markdown
 51
 
-#secondary_stat #variable #character_stat #show_if_water_ge_1 #character_stats
+#show_if_water_ge_21 #variable_X_Testchar #character_stat_X_Testchar #character_stats_X_Testchar #secondary_stat_X_Testchar
 
 ```

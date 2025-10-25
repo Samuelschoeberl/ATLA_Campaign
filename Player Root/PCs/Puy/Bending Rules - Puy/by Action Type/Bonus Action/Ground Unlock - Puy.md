@@ -1,15 +1,15 @@
 
-#Bonus_Action 
-- Range: 3* earthbending slot (6) Meters
-- Target: 1 * earthbending slot (6)  Enemies within range
-Revert Immobilisation through Ground Lock (0)
+#Bonus_Action_Puy 
+- Range: 3* [[Earthbending slot]] (6) Meters
+- Target: 1 * [[Earthbending slot]] (6)  Enemies within range
+Revert Immobilisation through [[Ground Lock]] (0)
 
 
 Tags:
-#Earthbending #Mobility #Immobilisation
-#earth 
-#Level2 
-#Mobility
-#player_root
+#Earthbending_Puy #Mobility_Puy #Immobilisation_Puy
+#earth_Puy 
+#Level2_Puy 
+#Mobility_Puy
+#player_root_Puy
 
 

@@ -1,6 +1,6 @@
 ```markdown
 50
 
-#secondary_stat #variable #vitality #current_variable #character_stat #character_stats
+#vitality #current_variable #variable_Grep #character_stat_Grep #character_stats_Grep #secondary_stat_Grep
 
 ```

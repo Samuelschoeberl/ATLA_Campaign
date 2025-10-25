@@ -1,6 +1,6 @@
 ```markdown
 11
 
-#variable #secondary_stat #environmental_variables #character_stat #character_stats
+#environmental_variables #variable_Ash #character_stat_Ash #character_stats_Ash #secondary_stat_Ash
 
 ```

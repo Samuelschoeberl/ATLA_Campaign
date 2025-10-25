@@ -1,6 +1,6 @@
 ```markdown
-14
+6
 
-#secondary_stat #variable #character_stat #fire #show_if_fire_ge_1 #character_stats
+#fire #show_if_fire_ge_1 #variable_Sheph #character_stat_Sheph #character_stats_Sheph #secondary_stat_Sheph
 
 ```

@@ -1,12 +1,12 @@
-#Reaction
-#Concentration 
-- **Range:** self and every creature within earthbending slot (6) Meters of you
+#Reaction_Grep
+#Concentration_Grep 
+- **Range:** self and every creature within [[Earthbending slot]] (6) Meters of you
 - **Effect:**  
 	- Root yourself and every creature within range to resist forced movement.
 	- Duration: 1 round.
 
 
-#Level1
-#earth
-#player_root
+#Level1_Grep
+#earth_Grep
+#player_root_Grep
 

@@ -1,17 +1,17 @@
-#Action 
-#Reaction 
+#Action_X_Testchar 
+#Reaction_X_Testchar 
 
 
 Each Bender-decides to which pool to add their Bending slots:
--  **Y**(Water): Yd6 Barrier (0) 
-- **X**(Air): X/2 (rounded down) Targets
+-  **Y**([[Water_charge]] (51)): Yd6 [[Barrier]] (0) 
+- **X**([[Airbending_slot]] (60)): X/2 (rounded down) Targets
 - Duration: 2 Rounds
 
 Airbending vaporizes water into a puffy cloud that creates a temporary Barrier. 
 
-#teamup
-#Level4
-#air 
-#water 
+#teamup_X_Testchar
+#Level4_X_Testchar
+#air_X_Testchar 
+#water_X_Testchar 
 
 

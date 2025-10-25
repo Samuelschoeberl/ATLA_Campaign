@@ -3,8 +3,8 @@
 #Reaction 
 
 Each Bender-decides to which pool to add their Bending slots:
--  **Y**(Earth): Yd12 Damage per projectile
-- **X**(Air): X Projectiles [[Air Attack Roll]]
+-  **Y**([[Earthbending slot]]): Yd12 Damage per projectile
+- **X**([[Airbending_slot]]): X Projectiles [[Air Attack Roll]]
 - **Range:** Y * X meters from the Airbender 
  
  

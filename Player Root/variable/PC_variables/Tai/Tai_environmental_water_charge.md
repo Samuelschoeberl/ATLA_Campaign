@@ -1,6 +1,6 @@
 ```markdown
 11
 
-#variable #secondary_stat #environmental_variables #character_stat #character_stats
+#environmental_variables #variable_Tai #character_stat_Tai #character_stats_Tai #secondary_stat_Tai
 
 ```

@@ -1,6 +1,6 @@
 ```markdown
 11
 
-#variable #secondary_stat #environmental_variables #character_stat #character_stats
+#environmental_variables #variable_Anju #character_stat_Anju #character_stats_Anju #secondary_stat_Anju
 
 ```

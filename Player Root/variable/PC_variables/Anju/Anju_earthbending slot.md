@@ -1,6 +1,6 @@
 ```markdown
 3
 
-#secondary_stat #variable #character_stat #earth #show_if_earth_ge_1 #character_stats
+#earth #show_if_earth_ge_1 #variable_Anju #character_stat_Anju #character_stats_Anju #secondary_stat_Anju
 
 ```

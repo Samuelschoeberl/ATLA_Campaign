@@ -1,6 +1,6 @@
 ```markdown
 0
 
-#primary_stat #variable #character_stat #character_stats
+#variable_Sora #character_stat_Sora #character_stats_Sora #primary_stat_Sora
 
 ```

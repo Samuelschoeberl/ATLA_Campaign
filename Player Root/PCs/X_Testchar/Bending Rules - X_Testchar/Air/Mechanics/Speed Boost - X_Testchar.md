@@ -1,7 +1,7 @@
-!Movement (0) 
+![[Movement]] (0) 
 
 Additionally Many Airbending techniques can boost movement
 
-#player_root
-#air
-#Level1 
+#player_root_X_Testchar
+#air_X_Testchar
+#Level1_X_Testchar 

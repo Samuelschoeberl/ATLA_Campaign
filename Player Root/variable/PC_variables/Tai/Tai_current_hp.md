@@ -1,6 +1,6 @@
 ```markdown
 50
 
-#secondary_stat #variable #vitality #current_variable #character_stat #character_stats
+#vitality #current_variable #variable_Tai #character_stat_Tai #character_stats_Tai #secondary_stat_Tai
 
 ```

@@ -16,9 +16,9 @@
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| max_hp | 95    | Player Root/PCs/Anju/Anju_variables.md |
-| current_hp | 81    | Player Root/PCs/Anju/Anju_variables.md |
-| evasion | 11    | Player Root/PCs/Anju/Anju_variables.md |
+| max_hp | 38    | Player Root/PCs/Anju/Anju Character Sheet.md |
+| current_hp | 38    | Player Root/PCs/Anju/Anju Character Sheet.md |
+| evasion | 0    | Player Root/PCs/Anju/Anju Character Sheet.md |
 | general armor | 0    | Player Root/PCs/Anju/Anju Character Sheet.md |
 
 
@@ -28,10 +28,22 @@
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| max_hp | 65    | Player Root/PCs/Ash/Ash_variables.md |
-| current_hp | 65    | Player Root/PCs/Ash/Ash_variables.md |
-| evasion | 11    | Player Root/PCs/Ash/Ash_variables.md |
-| general armor | 0    | Player Root/PCs/Ash/Ash_variables.md |
+| max_hp | 26    | Player Root/PCs/Ash/Ash Character Sheet.md |
+| current_hp | 26    | Player Root/PCs/Ash/Ash Character Sheet.md |
+| evasion | 0    | Player Root/PCs/Ash/Ash Character Sheet.md |
+| general armor | 0    | Player Root/PCs/Ash/Ash Character Sheet.md |
+
+
+
+### Grep
+
+
+| Key           | Value | Source File                            |
+| ------------- | ----- | -------------------------------------- |
+| max_hp | 50    | Player Root/PCs/Grep/Grep character sheet.md |
+| current_hp | 50    | Player Root/PCs/Grep/Grep character sheet.md |
+| evasion | 0    | Player Root/PCs/Grep/Grep character sheet.md |
+| general armor | 0    | Player Root/PCs/Grep/Grep character sheet.md |
 
 
 
@@ -40,10 +52,10 @@
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| max_hp | 50    | Player Root/PCs/Mahogany/Mahogany_variables.md |
-| current_hp | 50    | Player Root/PCs/Mahogany/Mahogany_variables.md |
-| evasion | 11    | Player Root/PCs/Mahogany/Mahogany_variables.md |
-| general armor | 0    | Player Root/PCs/Mahogany/Mahogany_variables.md |
+| max_hp | 20    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
+| current_hp | 20    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
+| evasion | 0    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
+| general armor | 0    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
 
 
 
@@ -52,10 +64,10 @@
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| max_hp | 120    | Player Root/PCs/Puy/Puy_variables.md |
-| current_hp | 120    | Player Root/PCs/Puy/Puy_variables.md |
-| evasion | 13    | Player Root/PCs/Puy/Puy_variables.md |
-| general armor | 2    | Player Root/PCs/Puy/Puy_variables.md |
+| max_hp | 48    | Player Root/PCs/Puy/Puy Character Sheet.md |
+| current_hp | 48    | Player Root/PCs/Puy/Puy Character Sheet.md |
+| evasion | 0    | Player Root/PCs/Puy/Puy Character Sheet.md |
+| general armor | 0    | Player Root/PCs/Puy/Puy Character Sheet.md |
 
 
 
@@ -64,10 +76,22 @@
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| max_hp | 90    | Player Root/PCs/Rio/Rio_variables.md |
-| current_hp | 90    | Player Root/PCs/Rio/Rio_variables.md |
-| evasion | 16    | Player Root/PCs/Rio/Rio_variables.md |
-| general armor | 0    | Player Root/PCs/Rio/Rio_variables.md |
+| max_hp | 36    | Player Root/PCs/Rio/Rio Character Sheet.md |
+| current_hp | 36    | Player Root/PCs/Rio/Rio Character Sheet.md |
+| evasion | 0    | Player Root/PCs/Rio/Rio Character Sheet.md |
+| general armor | 0    | Player Root/PCs/Rio/Rio Character Sheet.md |
+
+
+
+### Sheph
+
+
+| Key           | Value | Source File                            |
+| ------------- | ----- | -------------------------------------- |
+| max_hp | 28    | Player Root/PCs/Sheph/Sheph character sheet.md |
+| current_hp | 28    | Player Root/PCs/Sheph/Sheph character sheet.md |
+| evasion | 0    | Player Root/PCs/Sheph/Sheph character sheet.md |
+| general armor | 0    | Player Root/PCs/Sheph/Sheph character sheet.md |
 
 
 
@@ -76,10 +100,22 @@
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| max_hp | 80    | Player Root/PCs/Sora/Sora_variables.md |
-| current_hp | 80    | Player Root/PCs/Sora/Sora_variables.md |
-| evasion | 12    | Player Root/PCs/Sora/Sora_variables.md |
-| general armor | 0    | Player Root/PCs/Sora/Sora_variables.md |
+| max_hp | 32    | Player Root/PCs/Sora/Sora Character Sheet.md |
+| current_hp | 32    | Player Root/PCs/Sora/Sora Character Sheet.md |
+| evasion | 0    | Player Root/PCs/Sora/Sora Character Sheet.md |
+| general armor | 0    | Player Root/PCs/Sora/Sora Character Sheet.md |
+
+
+
+### Tai
+
+
+| Key           | Value | Source File                            |
+| ------------- | ----- | -------------------------------------- |
+| max_hp | 50    | Player Root/PCs/Tai/Tai character sheet.md |
+| current_hp | 50    | Player Root/PCs/Tai/Tai character sheet.md |
+| evasion | 0    | Player Root/PCs/Tai/Tai character sheet.md |
+| general armor | 0    | Player Root/PCs/Tai/Tai character sheet.md |
 
 
 
@@ -88,10 +124,10 @@
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| max_hp | 90    | Player Root/PCs/Tapioca/Tapioca_variables.md |
-| current_hp | 90    | Player Root/PCs/Tapioca/Tapioca_variables.md |
-| evasion | 19    | Player Root/PCs/Tapioca/Tapioca_variables.md |
-| general armor | 1    | Player Root/PCs/Tapioca/Tapioca_variables.md |
+| max_hp | 36    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
+| current_hp | 36    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
+| evasion | 0    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
+| general armor | 0    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
 
 
 
@@ -100,10 +136,22 @@
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| max_hp | 80    | Player Root/PCs/Tiebeediy/Tiebeediy_variables.md |
-| current_hp | 80    | Player Root/PCs/Tiebeediy/Tiebeediy_variables.md |
-| evasion | 13    | Player Root/PCs/Tiebeediy/Tiebeediy_variables.md |
-| general armor | 1    | Player Root/PCs/Tiebeediy/Tiebeediy_variables.md |
+| max_hp | 32    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
+| current_hp | 32    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
+| evasion | 0    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
+| general armor | 0    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
+
+
+
+### X_Testchar
+
+
+| Key           | Value | Source File                            |
+| ------------- | ----- | -------------------------------------- |
+| max_hp | 2600    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
+| current_hp | 2600    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
+| evasion | 0    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
+| general armor | 0    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
 
 
 

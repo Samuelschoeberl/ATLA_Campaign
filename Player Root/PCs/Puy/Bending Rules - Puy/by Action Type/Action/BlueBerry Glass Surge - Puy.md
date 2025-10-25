@@ -1,22 +1,25 @@
 
-#Action
-#Reaction 
+#Action_Puy
+#Reaction_Puy 
 
 Reaction: Must be initiated by a Waterbender in line of sight 
 
-Lingering Effect (0)
+X = y\*z
 
 Stick and grow trapping enemies and reshaping the terrain.
 - Range: 2X meter radius Sphere
 
 - **Effects:** 
-	- Targets in area must make  a DCX * 2 Dex (3) save to jump aside or get Immobilised in cold soft and barely liquid Glass.
-	- If X ≥ 8, brambles regenerate once if destroyed
+	- Targets in area must make  a DC X\*2 [[Dex]] (3) save to jump aside or get Immobilised in cold soft and barely liquid Glass.
+	- The Sphere has X [[Hitpoints]] (0)
+	- If X ≥ 10, brambles regenerate once with half hitpoints if destroyed
 
 
-#Level1 
-#earth
-#water 
-#teamup
-#signature_move
-#Puy 
+#Level1_Puy 
+#earth_Puy
+#water_Puy 
+#teamup_Puy
+#signature_move_Puy
+#Puy_Puy 
+
+![[Glassfruit Seed Mechanics]] (0)

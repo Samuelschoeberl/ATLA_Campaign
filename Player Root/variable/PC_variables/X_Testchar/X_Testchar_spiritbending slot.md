@@ -1,6 +1,6 @@
 ```markdown
 20
 
-#secondary_stat #variable #character_stat #spirit #show_if_spirit_ge_1 #character_stats
+#spirit #show_if_spirit_ge_1 #variable_X_Testchar #character_stat_X_Testchar #character_stats_X_Testchar #secondary_stat_X_Testchar
 
 ```

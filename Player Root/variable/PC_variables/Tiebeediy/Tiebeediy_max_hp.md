@@ -1,6 +1,6 @@
 ```markdown
 32
 
-#secondary_stat #variable #vitality #character_stat #character_stats
+#vitality #variable_Tiebeediy #character_stat_Tiebeediy #character_stats_Tiebeediy #secondary_stat_Tiebeediy
 
 ```

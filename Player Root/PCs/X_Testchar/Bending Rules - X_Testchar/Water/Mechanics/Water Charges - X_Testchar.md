@@ -7,7 +7,7 @@ Water Charges represent the amount of water available for a water-bender to mani
   - **Near Water Source (Lake, Ocean, etc.):** 15 Water Charges.
   - **In Lake, Ocean, etc.:** ~50+ charges
 
-#water 
-#Level1 
+#water_X_Testchar 
+#Level1_X_Testchar 
 
 

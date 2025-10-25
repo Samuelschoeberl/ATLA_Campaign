@@ -1,6 +1,6 @@
 ```markdown
 0
 
-#variable #character_stat #character_stats #primary_stat
+#variable_Grep #character_stat_Grep #character_stats_Grep #primary_stat_Grep
 
 ```

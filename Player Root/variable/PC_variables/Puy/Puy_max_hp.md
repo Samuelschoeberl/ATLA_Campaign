@@ -1,6 +1,6 @@
 ```markdown
 48
 
-#secondary_stat #variable #vitality #character_stat #character_stats
+#vitality #variable_Puy #character_stat_Puy #character_stats_Puy #secondary_stat_Puy
 
 ```

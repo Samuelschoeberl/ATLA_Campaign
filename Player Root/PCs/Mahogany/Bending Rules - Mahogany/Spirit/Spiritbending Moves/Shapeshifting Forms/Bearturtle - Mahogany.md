@@ -1,60 +1,57 @@
+#shapeshifting_form_Mahogany
+**Transformation Points cost:** 2 [[Transformation Points]] (0)
 
-#shapeshifting_form
-!Bearturtle.webp (0)#### **Bearturtle Form**
+Bending Levels:
+	[[Earth]] (0): Level 1
+
+![[Bearturtle.webp]] (0)#### **Bearturtle Form**
 - **Size:** 2x2 meters
 - On Transform:
-	- **Defensive Presence:** Allies within 5 meter gain +3 Armor until you Form Drops.
+	- **Defensive Presence:** Allies within 5 meter gain 3 [[General Armor]] (0) until you Form Drops.
 
-| **Stat**                       | **Value** |
-| ------------------------------ | --------- |
-| **Player Root/variable/primary_stat/Strength (0) (STR (0))**     | 22 (+6)   |
-| **Dexterity (0) (Dex (0))**    | 2 (-4)    |
-| **Constitution (0) (Con (0))** | 24 (+7)   |
-| Player Root/variable/primary_stat/Wisdom (0)(WIS (0))            | 10(+0)    |
-| Player Root/variable/primary_stat/Intelligence (0)(Int (0))      | 8(-1)     |
+| **Stat**         | **Value** |
+| ---------------- | --------- |
+| [[Strength]] (0)     | 6         |
+| [[Dexterity]] (0)    | 0         |
+| [[Constitution]] (0) | 7         |
+| [[Intelligence]] (0) | 0         |
+| [[Wisdom]] (0)       | 1         |
+| [[Charisma]] (0)     | 2         |
 
 - **Movement:**
     
-    - Walk 20 meter.
-    - Swim 10 meter
+    - Walk 5 meter.
+    - Swim 3 meter
 
 
-- **Abilities in Bearturtle Form:**
+- **Special Abilities in Bearturtle Form:**
     - **Shell Shield:**
-	    - Reaction (0)
-	        When an ally within 3 meter is attacked, impose Disadvantage on the Attack Roll (0) as you shift to protect them with your shell. Can be used 3 times per long rest.
+	    - [[Reaction]] (0)
+	        When an ally within 3 meter is attacked, impose Disadvantage on the [[Attack Roll]] (0) as you shift to protect them with your shell. Can be used 3 times per long rest.
 	    **Tuck in**: 
-	    - Reaction (0)
-		    When you fail a dexterity saving throw you still only take half damage. Your Movement (0) in the next round is halved.
+	    - [[Reaction]] (0)
+		    When you fail a dexterity saving throw you still only take half damage. Your [[Movement]] (0) in the next round is halved.
 
     - **Sturdy Form:**
 	    - You have Advantage on saving throws against being knocked prone or moved against your will.
-    -
-    - 
+
+
 - **Combat Stats (Bearturtle):**
-    
     - Evasion: 15
-    - 
     - Armor: 
-	    - 5 Physical Armor (0)
-	    - 3 General Armor (0)
+	    - 3 [[General Armor]] (0)
+	    - 5 [[Physical Armor]] (0)
     - HP: 50.
     - Attacks:
-        - **Powerful Swipe:** Melee Weapon Attack, +Strength to hit, 2d6 + Str slashing damage.
-	- **Shell Slam (AOE):** All creatures within a 1 meter radius must make a Dexterity save DC17 or take 2d8 bludgeoning damage.
-
+        - **Powerful Swipe:** Melee Weapon Attack, 1d20 + 6 to hit, 2d6 +6 slashing damage.
+	- **Shell Slam (AOE):** All creatures within a 1 meter radius must make a Dexterity save DC17 or take 1d8 bludgeoning damage.
     
 
-    
-Bending Slots:
-	Earth Lvl1: 3
 
-#transformation #spirit  #Level2 #player_root
 
-#Level2
-#player_root
-#shapeshifting_form
-#spirit
-#transformation
-```
+#Level2_Mahogany
+#shapeshifting_form_Mahogany
+#spirit_Mahogany
+#transformation_Mahogany
+
 

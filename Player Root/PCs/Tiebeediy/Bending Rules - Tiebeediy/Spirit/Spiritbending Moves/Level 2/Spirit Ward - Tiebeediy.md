@@ -1,21 +1,19 @@
-```markdown
-#Level2
-#spirit 
-#Reaction 
+#spirit_Tiebeediy 
+#Reaction_Tiebeediy 
 
 - Range: self
-- Duration: spiritbending slot (2) rounds.
+- Duration: [[spiritbending slot]] (2) rounds.
 
 **Effect**:
-Provides 4 * spiritbending slot (2) General Armor (1), Evasion (13),  Barrier (0) and Damage Dice Bonus (0) until the start of your next turn. 
+Provides [[spiritbending slot]] (2)d8  [[General Armor]] (1), [[Evasion]] (13),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[spiritbending slot]] (2) rounds.
 
 
 Tags:
-#spirit
+#spirit_Tiebeediy
 
-#Level2
-#Reaction
-#player_root
-#spirit
-```
+#Level2_Tiebeediy
+#Reaction_Tiebeediy
+#player_root_Tiebeediy
+#spirit_Tiebeediy
+
 

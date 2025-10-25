@@ -73,6 +73,18 @@ if _dedupe_variable_items is None:
         return sorted(items.items())
 
 
+# Find repository root by looking for .git directory
+_script_path = Path(__file__).resolve()
+ROOT = _script_path
+while ROOT.parent != ROOT:
+    if (ROOT / '.git').exists():
+        break
+    ROOT = ROOT.parent
+# If no .git found, fall back to 3 levels up from script (Mycelium/scripts/Python -> repo root)
+if not (ROOT / '.git').exists():
+    ROOT = _script_path.parent.parent.parent
+
+
 def get_variable_root(foldername: Optional[str] = None) -> Optional[Path]:
     """Try to find a Root.md file using the existing mycelium helper.
 
@@ -148,7 +160,6 @@ def get_variable_root(foldername: Optional[str] = None) -> Optional[Path]:
     return None
 
 
-ROOT = Path('.').resolve()
 INPUT_TABLE = ROOT.joinpath('Player Root', 'pc_primary_stats.md')
 PRIMARY_TEMPLATES_DIR = ROOT.joinpath('Player Root', 'variable', 'primary_stat')
 SECONDARY_TEMPLATES_DIR = ROOT.joinpath('Player Root', 'variable', 'secondary_stat')
@@ -383,12 +394,13 @@ def templates_referencing_var(var_stem: str, templates: Dict[str, str]) -> List[
 
 # Prefer shared implementations from common.py when available to reduce duplication.
 # These assignments override the local functions above with the shared ones.
+# NOTE: Do NOT override get_variable_root since it relies on our local ROOT variable
 try:
     to_number = _to_number
     safe_eval = _safe_eval
     parse_markdown_table = _parse_markdown_table
     name_from_cell = _name_from_cell
-    get_variable_root = _get_variable_root
+    # get_variable_root = _get_variable_root  # Keep local version that uses correct ROOT
     load_secondary_templates = _load_secondary_templates
     load_template_tags = _load_template_tags
     display_name_for = _display_name_for
@@ -451,8 +463,25 @@ def compute_secondaries(kv: Dict[str, Any], templates: Dict[str, str], passes: i
                 tok = raw.lower()
                 tok = tok.replace(' ', '.').replace('_', '.')
                 if tok not in kv_local:
-                    # if token not known from variable files, warn once
-                    if known_dot and tok not in known_dot:
+                    # Check if raw looks like a file path (contains / or starts with a vault name)
+                    # and if the file exists - if so, don't warn
+                    file_path_exists = False
+                    if '/' in raw or '\\' in raw:
+                        # Try to resolve as a file path relative to ROOT
+                        try:
+                            candidate_path = ROOT.joinpath(raw)
+                            if candidate_path.exists():
+                                file_path_exists = True
+                            else:
+                                # Try with .md extension
+                                candidate_with_md = ROOT.joinpath(raw + '.md')
+                                if candidate_with_md.exists():
+                                    file_path_exists = True
+                        except Exception:
+                            pass
+                    
+                    # if token not known from variable files, warn once (unless file path exists)
+                    if not file_path_exists and known_dot and tok not in known_dot:
                         if raw not in missing_vars:
                             missing_vars.add(raw)
                             # attempt to create a placeholder file if requested
@@ -535,14 +564,29 @@ def compute_secondaries(kv: Dict[str, Any], templates: Dict[str, str], passes: i
 
 def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List[str], secondary_templates: Dict[str, str], out_root: Path, var_root: Optional[Path] = None, primary_tags: Optional[Dict[str, List[str]]] = None, secondary_tags: Optional[Dict[str, List[str]]] = None, verbose: bool = False, suppress_warnings: Optional[set] = None) -> None:
     safe = re.sub(r"[^A-Za-z0-9_\-]", '_', name)
+    tag_suffix = f"_{safe}"
+    tag_suffix_lower = tag_suffix.lower()
+    tag_pattern = re.compile(r'(?<!\w)#([A-Za-z0-9][A-Za-z0-9_\-]*)')
+
+    def append_pc_tag_suffix(text: str) -> str:
+        def _replace_tag(m):
+            tag_body = m.group(1)
+            if tag_body.lower().endswith(tag_suffix_lower):
+                return f"#{tag_body}"
+            return f"#{tag_body}{tag_suffix}"
+
+        return tag_pattern.sub(_replace_tag, text)
+
     pc_dir = out_root.joinpath(safe)
     pc_dir.mkdir(parents=True, exist_ok=True)
-    # variables table
-    vars_path = pc_dir.joinpath(f"{safe}_variables.md")
-    lines = ['| Variable | Value |', '|---|---:|']
-    for display_key, value in _dedupe_variable_items(kv_all):
-        lines.append(f'| {display_key} | {value} |')
-    vars_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    
+    # REMOVED: variables table file generation (_variables.md)
+    # These intermediate files are no longer used - individual variable files are the source of truth
+    # vars_path = pc_dir.joinpath(f"{safe}_variables.md")
+    # lines = ['| Variable | Value |', '|---|---:|']
+    # for display_key, value in _dedupe_variable_items(kv_all):
+    #     lines.append(f'| {display_key} | {value} |')
+    # vars_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
     # write per-stat variable files into the global variable root (if available)
     if var_root is None:
@@ -553,15 +597,24 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
     else:
         # create a per-character subfolder inside a dedicated PC_variables folder
         target_root = var_root.joinpath('PC_variables', safe)
+        # delete existing folder to ensure clean regeneration
+        try:
+            if target_root.exists():
+                import shutil
+                shutil.rmtree(target_root)
+        except Exception:
+            pass
         target_root.mkdir(parents=True, exist_ok=True)
-    # Preserve any templates tagged with #current_variable by reading existing
-    # character sheet values and injecting them into kv_all so they survive
+    # Preserve any templates tagged with #current_variable (or #current_variable_<charactername>) 
+    # by reading existing character sheet values and injecting them into kv_all so they survive
     # regeneration. secondary_tags keys are template stems (lowercased).
     try:
         cur_keys: List[str] = []
         if secondary_tags:
             for stem, tags in secondary_tags.items():
-                if '#current_variable' in (t.lower() for t in tags):
+                tag_lowers = [t.lower() for t in tags]
+                # Check for #current_variable or #current_variable_<any_suffix>
+                if any(t == '#current_variable' or t.startswith('#current_variable_') for t in tag_lowers):
                     cur_keys.append(stem)
         existing_sheet = pc_dir.joinpath(f"{safe} character sheet.md")
         if cur_keys and existing_sheet.exists():
@@ -614,10 +667,12 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
         fpath = target_root.joinpath(fname)
         tags: List[str] = []
         if primary_tags and key in primary_tags:
-            tags = [t for t in primary_tags[key] if t != '#template']
-        for req in ('#variable', '#character_stat', '#character_stats', '#primary_stat'):
-            if req not in tags:
-                tags.append(req)
+            # preserve original tags except #template and the required tags (which will be suffixed)
+            base_required = {'#variable', '#character_stat', '#character_stats', '#primary_stat'}
+            tags = [t for t in primary_tags[key] if t != '#template' and t not in base_required]
+        # add required tags with character name suffix (always, to track which character generated this)
+        for req in ('#variable_', '#character_stat_', '#character_stats_', '#primary_stat_'):
+            tags.append(f'{req}{safe}')
         fpath.write_text(f'```markdown\n{val}\n\n{" ".join(tags)}\n\n```\n', encoding='utf-8')
     # secondary
     for p in secondary_templates.keys():
@@ -628,10 +683,12 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
         fpath = target_root.joinpath(fname)
         tags: List[str] = []
         if secondary_tags and key in secondary_tags:
-            tags = [t for t in secondary_tags[key] if t != '#template']
-        for req in ('#variable', '#character_stat', '#character_stats', '#secondary_stat'):
-            if req not in tags:
-                tags.append(req)
+            # preserve original tags except #template and the required tags (which will be suffixed)
+            base_required = {'#variable', '#character_stat', '#character_stats', '#secondary_stat'}
+            tags = [t for t in secondary_tags[key] if t != '#template' and t not in base_required]
+        # add required tags with character name suffix (always, to track which character generated this)
+        for req in ('#variable_', '#character_stat_', '#character_stats_', '#secondary_stat_'):
+            tags.append(f'{req}{safe}')
         # If this secondary stat evaluates to numeric zero, skip creating the
         # per-PC variable file unless the template is explicitly tagged with
         # #vitality or #defensive. This keeps most zero-valued secondaries out
@@ -789,7 +846,8 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                                 expr = token_pat.sub(_sub_inner, tmpl)
                                 expr = re.sub(r"\s+", ' ', expr).strip()
                                 # include the token's display name next to the roll expression
-                                return f"{raw} ({expr})"
+                                # preserve wikilink format
+                                return f"[[{raw}]] ({expr})"
 
                         val = norm_kv.get(nk)
                         if val is None:
@@ -801,17 +859,20 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                                     m2 = re.search(r'```markdown\n(.*?)\n\n', global_var.read_text(encoding='utf-8'), flags=re.S)
                                     if m2:
                                         vv = m2.group(1).strip()
-                                        return f"{raw} ({to_number(vv)})"
+                                        # preserve wikilink format
+                                        return f"[[{raw}]] ({to_number(vv)})"
                             except Exception:
                                 pass
-                            return f"{raw} (0)"
+                            # preserve wikilink format
+                            return f"[[{raw}]] (0)"
                         try:
                             vnum = to_number(val)
                         except Exception:
                             vnum = val
-                        return f"{raw} ({vnum})"
+                        # preserve wikilink format
+                        return f"[[{raw}]] ({vnum})"
 
-                    return token_re.sub(sub_token, source_text)
+                    return append_pc_tag_suffix(token_re.sub(sub_token, source_text))
 
                 # ensure old single-file renderer is removed (legacy)
                 try:
@@ -1526,7 +1587,14 @@ def main() -> None:
                 print(f"primary: {key_out} = {kv[key_out]!r}")
         for s in ['str','dex','con','int','wis','cha','water','earth','air','fire','spirit','rolled.hp']:
             kv.setdefault(s, 0)
-        known = set(primary_names) | set(secondary_templates.keys())
+        known = set(primary_names) | set(secondary_templates.keys()) | set(['str','dex','con','int','wis','cha','water','earth','air','fire','spirit','rolled.hp'])
+        
+        # Also add variable file stems from the global variable directory
+        if variable_root and variable_root.exists():
+            for var_dir in variable_root.glob('*/'):  # subdirectories like primary_stat, secondary_stat, etc.
+                for var_file in var_dir.glob('*.md'):
+                    known.add(var_file.stem)
+        
         # determine which secondary templates are marked #rollable so the
         # evaluator can suppress non-numeric-evaluation warnings for them
         rollable_set = set()

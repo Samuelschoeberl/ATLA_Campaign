@@ -3,7 +3,7 @@
 
 - Range: #Meele
 - **[[Earth Attack Roll]]**
-- Damage: 1+ [[earthbending slot]] d6 bludgeoning damage.
+- Damage: 1+ [[Earthbending slot]] d6 bludgeoning damage.
 
 
 #earth 

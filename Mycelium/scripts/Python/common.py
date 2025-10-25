@@ -21,7 +21,8 @@ import importlib.util
 import sys
 
 # Single canonical ROOT
-ROOT = Path('.').resolve()
+# This file is in Mycelium/scripts/Python/, so go up 3 levels to repo root
+ROOT = Path(__file__).resolve().parents[3]
 
 
 # -------- number and expression helpers --------

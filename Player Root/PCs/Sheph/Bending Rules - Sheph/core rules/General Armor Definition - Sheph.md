@@ -1,5 +1,5 @@
 Reduces All Damage Types other than Spirit Damage.
 base general armor:
-earth (0) level
+[[earth]] (0) level
 
 

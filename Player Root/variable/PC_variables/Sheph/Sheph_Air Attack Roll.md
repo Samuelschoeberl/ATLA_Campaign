@@ -1,6 +1,6 @@
 ```markdown
 1d20 + 2 + 6
 
-#secondary_stat #variable #character_stat #air #show_if_air_ge_1 #roll #character_stats
+#air #show_if_air_ge_1 #roll #variable_Sheph #character_stat_Sheph #character_stats_Sheph #secondary_stat_Sheph
 
 ```

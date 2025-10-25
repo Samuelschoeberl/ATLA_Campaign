@@ -1,16 +1,13 @@
-#Action
+#Action_Sheph
 
-- **Range:** 5 * Airbending Slot Progression (0) meters.
-- **Air Attack Roll (1d20 + 2 + 6)**
-- **Damage**: 1d8 bludgeoning per Airbending_slot (6). Deals another 1d6 * Airbending_slot (6) if the Creature hits a Wall.
-- The Target has to succeed a Player Root/variable/primary_stat/Strength (0) saving throw against your Airbending DC (18) or be knocked back half your travelled distance this turn. 
+- **Range:** 5 \* [[Airbending_slot]] (6) meters.
+- **[[Air Attack Roll]] (1d20 + 2 + 6)**
+- **Damage**: 1d8 bludgeoning per [[Airbending_slot]] (6). Deals another 1d6 \* [[Airbending_slot]] (6) if the Creature hits a Wall.
+- The Target has to succeed a [[Player Root/variable/primary_stat/Strength]] (0) saving throw against your [[Airbending DC]] (10) or be knocked back half your travelled distance this turn.
 - **Effects:**
-	- Utilize airbending to dash towards an enemy within range and line of sight and hit them with a fast blow of pressurised air. 
-	
+  - Utilize airbending to dash towards an enemy within range and line of sight and hit them with a fast blow of pressurised air.
 
-
-#Level2
-#air
-#movement
-
+#Level2_Sheph
+#air_Sheph
+#movement_Sheph
 

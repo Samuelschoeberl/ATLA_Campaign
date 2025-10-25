@@ -5,6 +5,6 @@ Earthbenders are solid and steadfast, drawing upon the Strength of their bodies 
 
 
 
-#player_root
-#earth
-#Level1 
+#player_root_Tapioca
+#earth_Tapioca
+#Level1_Tapioca 

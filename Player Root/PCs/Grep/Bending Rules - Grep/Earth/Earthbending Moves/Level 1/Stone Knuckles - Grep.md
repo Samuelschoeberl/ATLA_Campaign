@@ -1,13 +1,13 @@
 
-#Action
+#Action_Grep
 
-- Range: #Meele
-- **Earth Attack Roll (1d20 + 2 + 7)**
-- Damage: 1+ earthbending slot (6) d6 bludgeoning damage.
+- Range: #Meele_Grep
+- **[[Earth Attack Roll]] (1d20 + 2 + 7)**
+- Damage: 1+ [[Earthbending slot]] (6) d6 bludgeoning damage.
 
 
-#earth 
-#Level1 
+#earth_Grep 
+#Level1_Grep 
 
 
 

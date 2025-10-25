@@ -1,6 +1,6 @@
 ```markdown
 0
 
-#primary_stat #variable #character_stat #character_stats
+#variable_Mahogany #character_stat_Mahogany #character_stats_Mahogany #primary_stat_Mahogany
 
 ```

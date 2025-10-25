@@ -1,25 +1,30 @@
-
 #shapeshifting_form
+**Transformation Points cost:** 2 [[Transformation Points]]
+
+Bending Levels:
+	[[Earth]]: Level 1
+
 ![[Bearturtle.webp]]#### **Bearturtle Form**
 - **Size:** 2x2 meters
 - On Transform:
-	- **Defensive Presence:** Allies within 5 meter gain +3 Armor until you Form Drops.
+	- **Defensive Presence:** Allies within 5 meter gain 3 [[General Armor]] until you Form Drops.
 
-| **Stat**                       | **Value** |
-| ------------------------------ | --------- |
-| **[[Player Root/variable/primary_stat/Strength]] ([[STR]])**     | 22 (+6)   |
-| **[[Dexterity]] ([[Dex]])**    | 2 (-4)    |
-| **[[Constitution]] ([[Con]])** | 24 (+7)   |
-| [[Player Root/variable/primary_stat/Wisdom]]([[WIS]])            | 10(+0)    |
-| [[Player Root/variable/primary_stat/Intelligence]]([[Int]])      | 8(-1)     |
+| **Stat**         | **Value** |
+| ---------------- | --------- |
+| [[Strength]]     | 6         |
+| [[Dexterity]]    | 0         |
+| [[Constitution]] | 7         |
+| [[Intelligence]] | 0         |
+| [[Wisdom]]       | 1         |
+| [[Charisma]]     | 2         |
 
 - **Movement:**
     
-    - Walk 20 meter.
-    - Swim 10 meter
+    - Walk 5 meter.
+    - Swim 3 meter
 
 
-- **Abilities in Bearturtle Form:**
+- **Special Abilities in Bearturtle Form:**
     - **Shell Shield:**
 	    - [[Reaction]]
 	        When an ally within 3 meter is attacked, impose Disadvantage on the [[Attack Roll]] as you shift to protect them with your shell. Can be used 3 times per long rest.
@@ -29,31 +34,23 @@
 
     - **Sturdy Form:**
 	    - You have Advantage on saving throws against being knocked prone or moved against your will.
-    -
-    - 
+
+
 - **Combat Stats (Bearturtle):**
-    
     - Evasion: 15
-    - 
     - Armor: 
-	    - 5 [[Physical Armor]]
 	    - 3 [[General Armor]]
+	    - 5 [[Physical Armor]]
     - HP: 50.
     - Attacks:
-        - **Powerful Swipe:** Melee Weapon Attack, +Strength to hit, 2d6 + Str slashing damage.
-	- **Shell Slam (AOE):** All creatures within a 1 meter radius must make a Dexterity save DC17 or take 2d8 bludgeoning damage.
-
+        - **Powerful Swipe:** Melee Weapon Attack, 1d20 + 6 to hit, 2d6 +6 slashing damage.
+	- **Shell Slam (AOE):** All creatures within a 1 meter radius must make a Dexterity save DC17 or take 1d8 bludgeoning damage.
     
 
-    
-Bending Slots:
-	Earth Lvl1: 3
 
-#transformation #spirit  #Level2 #player_root
 
 #Level2
-#player_root
 #shapeshifting_form
 #spirit
 #transformation
-```
+

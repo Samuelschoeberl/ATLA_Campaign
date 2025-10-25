@@ -1,6 +1,6 @@
 ```markdown
 1d20 + 0 + 2
 
-#secondary_stat #variable #character_stat #fire #show_if_fire_ge_1 #roll #rollable #character_stats
+#fire #show_if_fire_ge_1 #roll #rollable #variable_Tai #character_stat_Tai #character_stats_Tai #secondary_stat_Tai
 
 ```

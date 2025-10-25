@@ -1,14 +1,14 @@
 
-#Bonus_Action  
+#Bonus_Action_Grep  
 
-- Range: 2 * earthbending slot (6) Meters
+- Range: 2 * [[Earthbending slot]] (6) Meters
 - Duration: Until Saved.
-- Save: Dex Save against your Earthbending DC (19).
-- Target: 1 * earthbending slot (6)  Enemies within range
-- an opponent becomes Immobilised (0) . They get to re-roll the save at the end of their turn.
+- Save: Dex Save against your [[Earthbending DC]] (11).
+- Target: 1 * [[Earthbending slot]] (6)  Enemies within range
+- an opponent becomes [[Immobilised]] (0) . They get to re-roll the save at the end of their turn.
 
-#earth
-#player_root
-#Level2 
+#earth_Grep
+#player_root_Grep
+#Level2_Grep 
 
 

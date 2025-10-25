@@ -1,8 +1,8 @@
-#Action
+#Action_X_Testchar
 
-- Range: 3 * firebending_slot (60)
-- Fire Attack Roll (1d20 + 20 + 5)
-- The Target takes firebending_slot (60) \* d6 fire Damage and is pulled towards you by firebending_slot (60) meters
+- Range: 3 * [[Dms Root/variable/secondary_stat/firebending_slot]] (0)
+- [[Fire Attack Roll]] (1d20 + 20 + 5)
+- The Target takes [[Dms Root/variable/secondary_stat/firebending_slot]] (0) \* d6 fire Damage and is pulled towards you by [[Dms Root/variable/secondary_stat/firebending_slot]] (0) meters
 - Description: Strike with a whip-like stream of burning embers.
 
 
@@ -10,6 +10,6 @@
 - On a 7–9: Deal the base damage; choose one: push the target back one position, or add +1 damage die.
 - On a miss (6 or less): The attack fizzles; no damage and the GM may impose a minor complication.
 
-#Level2
-#fire
+#Level2_X_Testchar
+#fire_X_Testchar
 

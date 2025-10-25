@@ -1,6 +1,6 @@
 ```markdown
 0
 
-#primary_stat #variable #character_stat #character_stats
+#variable_Sheph #character_stat_Sheph #character_stats_Sheph #primary_stat_Sheph
 
 ```

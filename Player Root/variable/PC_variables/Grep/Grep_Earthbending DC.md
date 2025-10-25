@@ -1,6 +1,6 @@
 ```markdown
-19
+11
 
-#secondary_stat #variable #character_stat #earth #show_if_earth_ge_1 #character_stats
+#earth #show_if_earth_ge_1 #variable_Grep #character_stat_Grep #character_stats_Grep #secondary_stat_Grep
 
 ```

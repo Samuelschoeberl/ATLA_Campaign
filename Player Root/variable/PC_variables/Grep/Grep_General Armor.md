@@ -1,6 +1,6 @@
 ```markdown
 2
 
-#secondary_stat #variable #defensive #character_stat #character_stats
+#defensive #variable_Grep #character_stat_Grep #character_stats_Grep #secondary_stat_Grep
 
 ```

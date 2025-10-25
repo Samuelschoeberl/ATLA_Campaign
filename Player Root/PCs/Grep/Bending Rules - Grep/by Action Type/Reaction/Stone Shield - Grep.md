@@ -1,19 +1,19 @@
-#Reaction 
-#Concentration 
+#Reaction_Grep 
+#Concentration_Grep 
 
-- Range: 2* earthbending slot (6) Meters
+- Range: 2* [[Earthbending slot]] (6) Meters
 - Duration: 1 round.
-- Target earthbending slot (6) / 2 * Creatures 
+- Target [[Earthbending slot]] (6) / 2 * Creatures 
 
 **Effect**:
-Provides 10 * earthbending slot (6) temporary  General Armor (2) until the start of your next turn. 
+Provides 10 * [[Earthbending slot]] (6) temporary  [[General Armor]] (2) until the start of your next turn. 
 
 
 
-#Earthbending
-#Level2 
-#earth 
-#Earthbending
-#player_root
+#Earthbending_Grep
+#Level2_Grep 
+#earth_Grep 
+#Earthbending_Grep
+#player_root_Grep
 
 

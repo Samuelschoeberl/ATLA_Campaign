@@ -1,19 +1,19 @@
-#Reaction 
-#Concentration 
+#Reaction_X_Testchar 
+#Concentration_X_Testchar 
 
-- Range: 2* earthbending slot (60) Meters
+- Range: 2* [[Earthbending slot]] (60) Meters
 - Duration: 1 round.
-- Target earthbending slot (60) / 2 * Creatures 
+- Target [[Earthbending slot]] (60) / 2 * Creatures 
 
 **Effect**:
-Provides 10 * earthbending slot (60) temporary  General Armor (20) until the start of your next turn. 
+Provides 10 * [[Earthbending slot]] (60) temporary  [[General Armor]] (20) until the start of your next turn. 
 
 
 
-#Earthbending
-#Level2 
-#earth 
-#Earthbending
-#player_root
+#Earthbending_X_Testchar
+#Level2_X_Testchar 
+#earth_X_Testchar 
+#Earthbending_X_Testchar
+#player_root_X_Testchar
 
 

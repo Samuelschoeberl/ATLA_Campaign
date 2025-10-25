@@ -1,6 +1,6 @@
 ```markdown
 0
 
-#primary_stat #variable #character_stat #character_stats
+#variable_Tiebeediy #character_stat_Tiebeediy #character_stats_Tiebeediy #primary_stat_Tiebeediy
 
 ```

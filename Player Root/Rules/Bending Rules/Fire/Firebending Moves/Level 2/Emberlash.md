@@ -1,8 +1,8 @@
 #Action
 
-- Range: 3 * [[firebending_slot]]
+- Range: 3 * [[Dms Root/variable/secondary_stat/firebending_slot]]
 - [[Fire Attack Roll]]
-- The Target takes [[firebending_slot]] \* d6 fire Damage and is pulled towards you by [[firebending_slot]] meters
+- The Target takes [[Dms Root/variable/secondary_stat/firebending_slot]] \* d6 fire Damage and is pulled towards you by [[Dms Root/variable/secondary_stat/firebending_slot]] meters
 - Description: Strike with a whip-like stream of burning embers.
 
 

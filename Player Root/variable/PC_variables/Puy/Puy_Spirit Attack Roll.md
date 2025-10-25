@@ -1,6 +1,6 @@
 ```markdown
 1d20 + 0 + 3
 
-#secondary_stat #variable #character_stat #spirit #show_if_spirit_ge_1 #roll #rollable #character_stats
+#spirit #show_if_spirit_ge_1 #roll #rollable #variable_Puy #character_stat_Puy #character_stats_Puy #secondary_stat_Puy
 
 ```

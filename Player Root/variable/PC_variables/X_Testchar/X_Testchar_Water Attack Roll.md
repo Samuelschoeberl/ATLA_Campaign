@@ -1,6 +1,6 @@
 ```markdown
 1d20 + 20 + 4
 
-#secondary_stat #variable #character_stat #water #show_if_water_ge_1 #roll #rollable #character_stats
+#water #show_if_water_ge_1 #roll #rollable #variable_X_Testchar #character_stat_X_Testchar #character_stats_X_Testchar #secondary_stat_X_Testchar
 
 ```

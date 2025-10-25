@@ -1,14 +1,14 @@
 #Action
 #Reaction 
-
+#lingering_effect 
 
 Reaction: Must be initiated by a Firebender in line of sight 
 
-[[Lingering Effect]]
+#lingering_effect 
 
 - Range: 2X meter radius Sphere
 
-- **Effect:** Explosion in an area, dealing Xd6  bludgeoning + half fire damage
+- **Effect:** Explosion in an area, dealing Xd4  bludgeoning + half fire damage
     
 
 

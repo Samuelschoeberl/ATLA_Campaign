@@ -1,6 +1,6 @@
 ```markdown
 2
 
-#secondary_stat #variable #defensive #character_stat #character_stats
+#defensive #variable_Puy #character_stat_Puy #character_stats_Puy #secondary_stat_Puy
 
 ```

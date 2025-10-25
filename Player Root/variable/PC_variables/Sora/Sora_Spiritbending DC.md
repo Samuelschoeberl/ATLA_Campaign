@@ -1,6 +1,6 @@
 ```markdown
-16
+9
 
-#secondary_stat #variable #character_stat #spirit #show_if_spirit_ge_1 #character_stats
+#spirit #show_if_spirit_ge_1 #variable_Sora #character_stat_Sora #character_stats_Sora #secondary_stat_Sora
 
 ```

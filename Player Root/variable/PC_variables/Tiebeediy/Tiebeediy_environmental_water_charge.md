@@ -1,6 +1,6 @@
 ```markdown
 11
 
-#variable #secondary_stat #environmental_variables #character_stat #character_stats
+#environmental_variables #variable_Tiebeediy #character_stat_Tiebeediy #character_stats_Tiebeediy #secondary_stat_Tiebeediy
 
 ```

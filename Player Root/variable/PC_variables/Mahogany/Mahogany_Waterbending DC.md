@@ -1,6 +1,6 @@
 ```markdown
-10
+3
 
-#secondary_stat #variable #character_stat #water #show_if_water_ge_1 #character_stats
+#water #show_if_water_ge_1 #variable_Mahogany #character_stat_Mahogany #character_stats_Mahogany #secondary_stat_Mahogany
 
 ```

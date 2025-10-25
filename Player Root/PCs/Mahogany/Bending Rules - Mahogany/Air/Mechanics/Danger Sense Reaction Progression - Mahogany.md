@@ -1,5 +1,5 @@
-You have the air (1) level amount of Danger Sense Reaction PER ROUND
+You have the [[air]] (1) level amount of Danger Sense Reaction PER ROUND
 
-#air 
-#Level1 
-#Danger_Sense_Reaction 
+#air_Mahogany 
+#Level1_Mahogany 
+#Danger_Sense_Reaction_Mahogany 

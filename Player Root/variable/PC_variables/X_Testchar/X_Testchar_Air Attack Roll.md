@@ -1,6 +1,6 @@
 ```markdown
 1d20 + 20 + 2
 
-#secondary_stat #variable #character_stat #air #show_if_air_ge_1 #roll #character_stats
+#air #show_if_air_ge_1 #roll #variable_X_Testchar #character_stat_X_Testchar #character_stats_X_Testchar #secondary_stat_X_Testchar
 
 ```

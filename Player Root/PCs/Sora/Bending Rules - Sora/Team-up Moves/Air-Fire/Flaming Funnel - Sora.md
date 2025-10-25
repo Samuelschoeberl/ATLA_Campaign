@@ -1,13 +1,13 @@
-#Action 
-#Reaction 
+#Action_Sora 
+#Reaction_Sora 
 
 Each Bender-decides to which pool to add their Bending slots:
--  **Y**(Fire): Yd12 Fire Damage
-- **X**(Air): X * 10 meter Range Air Attack Roll (1d20 + 0 + 2)
+-  **Y**([[Firebending_slot]] (9)): Yd12 Fire Damage
+- **X**([[Airbending_slot]] (0)): X * 10 meter Range [[Air Attack Roll]] (1d20 + 0 + 2)
 
-- One Firebender shoots a roaring flame without carefull aiming (rolls the Damage roll) and the Airbender creates an air funnel that controlls it to home to a distant target (Air Attack Roll (1d20 + 0 + 2))
+- One Firebender shoots a roaring flame without carefull aiming (rolls the Damage roll) and the Airbender creates an air funnel that controlls it to home to a distant target ([[Air Attack Roll]] (1d20 + 0 + 2))
 
-#teamup
-#Level3 
-#air 
-#fire 
+#teamup_Sora
+#Level3_Sora 
+#air_Sora 
+#fire_Sora 

@@ -1,6 +1,6 @@
 ```markdown
 20
 
-#secondary_stat #variable #vitality #current_variable #character_stat #character_stats
+#vitality #current_variable #variable_Mahogany #character_stat_Mahogany #character_stats_Mahogany #secondary_stat_Mahogany
 
 ```

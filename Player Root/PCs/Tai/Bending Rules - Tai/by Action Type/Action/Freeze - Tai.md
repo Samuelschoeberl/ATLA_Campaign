@@ -1,11 +1,11 @@
-#Action
-- **Range:** 3m * water (2) level
+#Action_Tai
+- **Range:** 3m * [[water]] (2) level
 - **Effect:**  
-    The waterbender can freeze an amount of water. The higher the water (2) Level the more water can be frozen. (for big amounts might need to roll an Player Root/variable/primary_stat/Intelligence|Intelligence (0) check) 
+    The waterbender can freeze an amount of water. The higher the [[water]] (2) Level the more water can be frozen. (for big amounts might need to roll an [[Player Root/variable/primary_stat/Intelligence|Intelligence]] (0) check) 
 
 
-#Waterbending
-#freezing
-#water 
-#Level1 
+#Waterbending_Tai
+#freezing_Tai
+#water_Tai 
+#Level1_Tai 
 

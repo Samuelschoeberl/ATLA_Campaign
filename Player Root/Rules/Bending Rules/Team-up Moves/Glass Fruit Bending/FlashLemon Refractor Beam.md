@@ -3,7 +3,9 @@
 
 Reaction: Must be initiated by a Firebender in line of sight 
 
-#lingering_effect 
+X = y\*z
+
+
 
 Focused light is amplified by mirrored shards into a blinding beam.
 - **Effect:** 

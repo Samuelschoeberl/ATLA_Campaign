@@ -125,9 +125,7 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
             tpl = env_templates.get(cand)
             canonical_stem = tpl.stem if (tpl is not None) else cand
             global_var = vars_root.joinpath(canonical_stem + '.md')
-            sec_dir = vars_root.joinpath('secondary_stat')
-            sec_dir.mkdir(parents=True, exist_ok=True)
-            sec_var = sec_dir.joinpath(canonical_stem + '.md')
+            # Environmental variables go directly in environmental/, not in secondary_stat/
             new_content = f"{val}\n\n#variable #secondary_stat #template #environmental_variables\n"
             # read canonical existing numeric value
             def _read_canonical(p: Path) -> Optional[str]:
@@ -157,7 +155,8 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
                         return None
                 return None
 
-            canon_val = _read_canonical(global_var) or _read_canonical(sec_var)
+            # Only check the global environmental variable file
+            canon_val = _read_canonical(global_var)
             try:
                 sheet_num = _norm_num(val)
             except Exception:
@@ -177,15 +176,7 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
                     global_var.write_text(new_content, encoding='utf-8')
                     _recently_written[global_var] = time.time()
                     _last_authoritative[cand] = time.time()
-                    # determine whether the template lives in an environmental/ folder
-                    tpl = env_templates.get(cand)
-                    tpl_in_env_folder = _is_in_environmental_folder(tpl, vars_root) if tpl is not None else False
-                    if not tpl_in_env_folder:
-                        sec_var.write_text(new_content, encoding='utf-8')
-                        _recently_written[sec_var] = time.time()
-                        print('Updated environmental variable files:', _safe_rel(global_var), _safe_rel(sec_var))
-                    else:
-                        print('Updated environmental variable file:', _safe_rel(global_var), '(no mirror written because template is in environmental/)')
+                    print('Updated environmental variable file:', _safe_rel(global_var))
                 except Exception as e:
                     print('Failed to write canonical var', global_var, e)
 
@@ -255,20 +246,19 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
                             except Exception:
                                 pass
 
-            # print canonical files after propagation
+            # print canonical file after propagation
             try:
-                for p in (global_var, sec_var):
-                    if p.exists():
-                        try:
-                            txt = p.read_text(encoding='utf-8')
-                        except Exception:
-                            txt = '<failed to read>'
-                        print('Canonical file', _safe_rel(p), 'now contains:')
-                        print(txt)
-                    else:
-                        if args.dry_run:
-                            print('[DRY] Canonical file (would be)', p.relative_to(ROOT), 'with content:')
-                            print(new_content)
+                if global_var.exists():
+                    try:
+                        txt = global_var.read_text(encoding='utf-8')
+                    except Exception:
+                        txt = '<failed to read>'
+                    print('Canonical file', _safe_rel(global_var), 'now contains:')
+                    print(txt)
+                else:
+                    if args.dry_run:
+                        print('[DRY] Canonical file (would be)', global_var.relative_to(ROOT), 'with content:')
+                        print(new_content)
             except Exception as e:
                 print('Failed to print canonical files after propagation:', e)
 
@@ -555,13 +545,10 @@ def main() -> None:
                                 continue
                             if cand not in env_templates:
                                 continue
-                            # canonical path(s)
+                            # canonical path
                             tpl = env_templates.get(cand)
                             canonical_stem = tpl.stem if (tpl is not None) else cand
                             global_var = vars_root.joinpath(canonical_stem + '.md')
-                            sec_dir = vars_root.joinpath('secondary_stat')
-                            sec_dir.mkdir(parents=True, exist_ok=True)
-                            sec_var = sec_dir.joinpath(canonical_stem + '.md')
                             # build canonical content we would write
                             new_content = f"{val}\n\n#variable #secondary_stat #template #environmental_variables\n"
                             # read canonical existing numeric value (if any)
@@ -580,7 +567,8 @@ def main() -> None:
                                     return None
                                 return None
 
-                            canon_val = _read_canonical(global_var) or _read_canonical(sec_var)
+                            # Only check the global environmental variable file
+                            canon_val = _read_canonical(global_var)
                             # normalize numeric strings for compare
                             def _norm_num(s: Optional[str]) -> Optional[float]:
                                 if s is None:
@@ -618,8 +606,6 @@ def main() -> None:
                             try:
                                 if global_var.exists():
                                     canon_mtime = global_var.stat().st_mtime
-                                elif sec_var.exists():
-                                    canon_mtime = sec_var.stat().st_mtime
                             except Exception:
                                 canon_mtime = None
                             last_auth = _last_authoritative.get(cand)
@@ -639,14 +625,7 @@ def main() -> None:
                                     _recently_written[global_var] = time.time()
                                     # mark last authoritative update for this candidate
                                     _last_authoritative[cand] = time.time()
-                                    tpl = env_templates.get(cand)
-                                    tpl_in_env_folder = _is_in_environmental_folder(tpl, vars_root) if tpl is not None else False
-                                    if not tpl_in_env_folder:
-                                        sec_var.write_text(new_content, encoding='utf-8')
-                                        _recently_written[sec_var] = time.time()
-                                        print('Updated environmental variable files:', global_var.relative_to(ROOT), sec_var.relative_to(ROOT))
-                                    else:
-                                        print('Updated environmental variable file:', global_var.relative_to(ROOT), '(no mirror written because template is in environmental/)')
+                                    print('Updated environmental variable file:', global_var.relative_to(ROOT))
                                 except Exception as e:
                                     print('Failed to write canonical var', global_var, e)
                             # propagate this value into other character sheets: replace matching table rows
@@ -718,22 +697,21 @@ def main() -> None:
                                                 print('Propagated (stem) ', display, '->', _safe_rel(sheet_path))
                                             except Exception:
                                                 pass
-                            # After propagating into other sheets, print the canonical file(s)
+                            # After propagating into other sheets, print the canonical file
                             try:
-                                for p in (global_var, sec_var):
-                                    if p.exists():
-                                        try:
-                                            txt = p.read_text(encoding='utf-8')
-                                        except Exception:
-                                            txt = '<failed to read>'
-                                        print('Canonical file', _safe_rel(p), 'now contains:')
-                                        print(txt)
-                                    else:
-                                        if args.dry_run:
-                                            print('[DRY] Canonical file (would be)', _safe_rel(p), 'with content:')
-                                            print(new_content)
+                                if global_var.exists():
+                                    try:
+                                        txt = global_var.read_text(encoding='utf-8')
+                                    except Exception:
+                                        txt = '<failed to read>'
+                                    print('Canonical file', _safe_rel(global_var), 'now contains:')
+                                    print(txt)
+                                else:
+                                    if args.dry_run:
+                                        print('[DRY] Canonical file (would be)', _safe_rel(global_var), 'with content:')
+                                        print(new_content)
                             except Exception as e:
-                                print('Failed to print canonical files after propagation:', e)
+                                print('Failed to print canonical file after propagation:', e)
                             # mark this candidate as handled for this scan
                             processed_candidates.add(cand)
                             # trigger regenerations for all PCs with this element >= 1

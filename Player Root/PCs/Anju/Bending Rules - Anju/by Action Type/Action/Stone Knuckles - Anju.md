@@ -1,13 +1,13 @@
 
-#Action
+#Action_Anju
 
-- Range: #Meele
-- **Earth Attack Roll (1d20 + 1 + 3)**
-- Damage: 1+ earthbending slot (3) d6 bludgeoning damage.
+- Range: #Meele_Anju
+- **[[Earth Attack Roll]] (1d20 + 1 + 3)**
+- Damage: 1+ [[Earthbending slot]] (3) d6 bludgeoning damage.
 
 
-#earth 
-#Level1 
+#earth_Anju 
+#Level1_Anju 
 
 
 

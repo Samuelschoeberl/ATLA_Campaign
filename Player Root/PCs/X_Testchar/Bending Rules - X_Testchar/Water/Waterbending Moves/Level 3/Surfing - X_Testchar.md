@@ -1,5 +1,5 @@
 ```markdown
-#Action
+#Action_X_Testchar
 
 - **Cost:** None.
 - **Type:** Passive.
@@ -12,8 +12,8 @@
 
 Tags:
 
-#Level3
-#player_root
-#water
+#Level3_X_Testchar
+#player_root_X_Testchar
+#water_X_Testchar
 ```
 
