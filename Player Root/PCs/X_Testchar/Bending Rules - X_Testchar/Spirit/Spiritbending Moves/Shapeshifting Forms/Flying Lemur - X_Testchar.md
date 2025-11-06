@@ -6,11 +6,11 @@ Bending Levels:
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]] (0)     | -2        |
-| [[Dexterity]] (0)    | 7         |
-| [[Constitution]] (0) | -2        |
-| [[Wisdom]] (0)       | 2         |
-| [[Intelligence]] (0) | 2         |
+| [[Strength]] (1)     | -2        |
+| [[Dexterity]] (2)    | 7         |
+| [[Constitution]] (3) | -2        |
+| [[Wisdom]] (5)       | 2         |
+| [[Intelligence]] (4) | 2         |
 **Transformation Points cost:** 1 [[Transformation Points]] (0)
 - **Size:** Small
     
@@ -35,10 +35,10 @@ Bending Slots:
 	Air Lvl1: 4
 
 
-#spirit_X_Testchar  #Level1_X_Testchar #player_root_X_Testchar
+#spirit_X_Testchar  #Level1_X_Testchar 
 
 #Level1_X_Testchar
-#player_root_X_Testchar
+
 #shapeshifting_form_X_Testchar
 #spirit_X_Testchar
 ```

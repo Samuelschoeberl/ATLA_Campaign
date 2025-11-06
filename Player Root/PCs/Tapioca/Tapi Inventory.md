@@ -21,4 +21,4 @@
 - ruby (from ornament)
 - muddy glas stone (we made)
 - 5 fist-big red shiny crystal (from siwong desert rock) maybe amplifiers?
-- luminescent scale (disadvantage for attacker once)
+- luminescent scale (disadvantage for attacker once as reaction)

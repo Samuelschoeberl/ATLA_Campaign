@@ -5,9 +5,10 @@ Name: Sheph
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            28 |
-| current hp        |        28 |
+| max_hp            |                28 |
+| current_hp        |            28 |
 | Initiative        |        1d20 + 6 |
+| Movement          |          11 |
 
 ## Core Stats
 
@@ -30,15 +31,15 @@ Total Bending Level: 2
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        18 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  0 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     0 | 0     |
-| Ice Armor      |      0 | 0     |
-| Spirit Armor   |   0 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        18 |
+| Barrier        |        0 |
+| General Armor  |  0 |
+| Physical Armor | 0 |
+| Fire Armor     |     0 |
+| Ice Armor      |      0 |
+| Spirit Armor   |   0 |
 
 
 
@@ -54,8 +55,16 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
+| Environmental water charge |  9 |
 
 
 
 #Sheph #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Charisma | 5 |
+| Constitution | 2 |
+| Dexterity | 6 |
+| Intelligence | 2 |
+| Strength | 5 |
+| Wisdom | 4 |

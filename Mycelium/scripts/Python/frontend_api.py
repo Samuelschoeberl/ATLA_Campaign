@@ -174,20 +174,8 @@ def write_pc_variable_files(pcname: str, stats: dict):
         # non-fatal: ignore
         pass
 
-    # Also write/overwrite a canonical combined file named <pcname>_variables.md
-    try:
-        pc_dir = REPO_ROOT.joinpath('Player Root', 'PCs', pcname)
-        if pc_dir.exists() and pc_dir.is_dir():
-            combined = pc_dir.joinpath(f"{pcname}_variables.md")
-            lines = []
-            lines.append("| Variable                   |        Value |")
-            lines.append("| -------------------------- | -----------: |")
-            for k, v in stats.items():
-                key_variant = k.replace(' ', '_')
-                lines.append(f"| {key_variant} | {str(v).rjust(11)} |")
-            combined.write_text('\n'.join(lines) + '\n', encoding='utf-8')
-    except Exception:
-        pass
+    # DISABLED: No longer creating summary *_variables.md files
+    # Variables are tracked in Player Root/variable/PC_variables/ only
 
     return True, None
 
@@ -433,7 +421,7 @@ def find_file_by_name(filename):
 
 
 @bp.route("/player_root", defaults={"subpath": ""})
-@bp.route("/player_root/<path:subpath>", methods=["GET", "POST", "DELETE"])
+@bp.route("/player_root/<path:subpath>", methods=["GET", "POST", "PUT", "DELETE"])
 def player_root(subpath):
     # Accept requests for repo root or subpaths. Frontend sends paths without
     # the leading "Player Root/" prefix in most calls; normalize both forms.
@@ -459,8 +447,8 @@ def player_root(subpath):
         return jsonify(error="Path resolution error"), 400
 
     if not target.exists():
-        # For POST, allow creating a new file if parent exists
-        if request.method == "POST":
+        # For POST/PUT, allow creating a new file if parent exists
+        if request.method in ("POST", "PUT"):
             # allow creating the parent directories if missing so clients
             # can create files in newly created folders such as 'deleted'
             parent = target.parent
@@ -499,12 +487,13 @@ def player_root(subpath):
                 })
             return jsonify(entries=entries)
 
-        # Check if file is an image or binary file
+        # Check if file is an image, HTML, or binary file
         file_ext = target.suffix.lower()
         image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'}
+        direct_serve_extensions = image_extensions | {'.html', '.htm'}
         
-        if file_ext in image_extensions:
-            # Serve image files directly
+        if file_ext in direct_serve_extensions:
+            # Serve image and HTML files directly
             try:
                 # Determine mimetype
                 mimetype_map = {
@@ -516,6 +505,8 @@ def player_root(subpath):
                     '.svg': 'image/svg+xml',
                     '.bmp': 'image/bmp',
                     '.ico': 'image/x-icon',
+                    '.html': 'text/html',
+                    '.htm': 'text/html',
                 }
                 mimetype = mimetype_map.get(file_ext, 'application/octet-stream')
                 return send_file(str(target), mimetype=mimetype)
@@ -530,8 +521,8 @@ def player_root(subpath):
         h = hashlib.sha256(text.encode("utf-8")).hexdigest()
         return jsonify(content=text, hash=h)
 
-    # POST: save/update file content
-    if request.method == "POST":
+    # POST/PUT: save/update file content
+    if request.method in ("POST", "PUT"):
         data = request.get_json() or {}
         content = data.get("content")
         if content is None:
@@ -1539,3 +1530,27 @@ def update_sheet(pcname):
             return jsonify({'error': f'Failed to run Wikigraphs: {e}'}), 500
 
     return resp
+
+
+@bp.route('/api/file-colors', methods=['GET'])
+def get_file_colors():
+    """
+    Return color mapping for files and folders in the current directory tree.
+    Colors are computed based on element tags and hierarchical blending.
+    """
+    try:
+        # Import the color computation module
+        sys.path.insert(0, str(Path(__file__).parent))
+        from file_colors import compute_file_colors
+    except Exception as e:
+        return jsonify({'error': f'Failed to import file_colors module: {e}'}), 500
+    
+    # Get the player root base
+    base = get_player_root_base()
+    
+    # Compute colors for all files/folders
+    try:
+        colors = compute_file_colors(base, exts=['.md'], excludes=['.git', '__pycache__', 'node_modules'])
+        return jsonify({'colors': colors})
+    except Exception as e:
+        return jsonify({'error': f'Failed to compute colors: {e}'}), 500

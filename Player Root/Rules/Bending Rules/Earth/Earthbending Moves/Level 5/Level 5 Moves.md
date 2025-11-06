@@ -11,5 +11,5 @@ Tags:
 [[Player Root]]
 
 #Earthbending
-#player_root
+
 ```

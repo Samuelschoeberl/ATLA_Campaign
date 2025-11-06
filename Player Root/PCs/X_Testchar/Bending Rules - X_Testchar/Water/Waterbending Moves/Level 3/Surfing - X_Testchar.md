@@ -13,7 +13,7 @@
 Tags:
 
 #Level3_X_Testchar
-#player_root_X_Testchar
+
 #water_X_Testchar
 ```
 

@@ -12,7 +12,7 @@ X = y\*z
 
 - **Effect:** 
 	- As the air vibrates with a cleansing energy as creatures of your choice within radius gain 5 * X [[Barrier]] (if this barrier is halfed for one creature its halfed for all)
-	- If X ≥ 15, the seal also protects against being [[Immobilised]]  
+	- If X ≥ 15, the seal also protects against being [[Player Root/Rules/core rules/Conditions/Immobilised]]  
     
 
 

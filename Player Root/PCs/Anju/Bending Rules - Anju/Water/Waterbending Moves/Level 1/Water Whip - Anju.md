@@ -1,5 +1,5 @@
 #water_Anju 
-- **Range:** [[Water_charge]] (15) meters
+- **Range:** [[Water_charge]] (4) meters
 - **Effect:**  
    The waterbender lashes out with a tendril of water, striking a target within range.
   - **[[Water Attack Roll]] (1d20 + 2 + 5):**
@@ -17,7 +17,7 @@
 Tags:
 
 #Level1_Anju
-#player_root_Anju
+
 #water_Anju
 ```
 

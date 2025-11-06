@@ -1,5 +1,3 @@
-
-
 #Bonus_Action_Tapioca  
 
 - **Range:** self and every creature within 1+1 * [[Earthbending slot]] (3) meters of you
@@ -11,6 +9,6 @@ Tripping opponents with minor terrain manipulation. The target must succeed on a
 
 #Level1_Tapioca 
 #earth_Tapioca
-#player_root_Tapioca
+
 
 

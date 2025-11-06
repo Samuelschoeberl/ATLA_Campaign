@@ -5,11 +5,12 @@ Name: Sora
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            32 |
-| current hp        |        32 |
+| max_hp            |                32 |
+| current_hp        |            32 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Initiative        |        1d20 + 2 |
+| Movement          |          5 |
 
 ## Core Stats
 
@@ -32,15 +33,15 @@ Total Bending Level: 3
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        12 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  0 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     0 | 0     |
-| Ice Armor      |      3 | 0     |
-| Spirit Armor   |   0 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        12 |
+| Barrier        |        0 |
+| General Armor  |  0 |
+| Physical Armor | 0 |
+| Fire Armor     |     0 |
+| Ice Armor      |      3 |
+| Spirit Armor   |   0 |
 
 
 
@@ -55,8 +56,16 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
+| Environmental water charge |  9 |
 
 
 
 #Sora #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Charisma | 8 |
+| Constitution | 2 |
+| Dexterity | 2 |
+| Intelligence | 5 |
+| Strength | 2 |
+| Wisdom | 6 |

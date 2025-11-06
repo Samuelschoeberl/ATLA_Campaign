@@ -13,6 +13,6 @@
 
 #firebending_Sora
 #level3_Sora
-#player_root_Sora
+
 ```
 

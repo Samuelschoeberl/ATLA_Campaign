@@ -1,5 +1,5 @@
 #water_Tai 
-- **Range:** [[Water_charge]] (15) meters
+- **Range:** [[Water_charge]] (4) meters
 - **Effect:**  
    The waterbender lashes out with a tendril of water, striking a target within range.
   - **[[Water Attack Roll]] (1d20 + 2 + 8):**
@@ -17,7 +17,7 @@
 Tags:
 
 #Level1_Tai
-#player_root_Tai
+
 #water_Tai
 ```
 

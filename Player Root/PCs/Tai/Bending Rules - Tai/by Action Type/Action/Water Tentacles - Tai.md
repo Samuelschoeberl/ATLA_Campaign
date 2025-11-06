@@ -29,7 +29,7 @@
 Tags:
 
 #Level2_Tai
-#player_root_Tai
+
 #water_Tai
 ```
 

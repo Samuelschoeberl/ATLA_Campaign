@@ -1,5 +1,3 @@
-
-
 #Bonus_Action_X_Testchar  
 
 - **Range:** self and every creature within 1+1 * [[Earthbending slot]] (60) meters of you
@@ -11,6 +9,6 @@ Tripping opponents with minor terrain manipulation. The target must succeed on a
 
 #Level1_X_Testchar 
 #earth_X_Testchar
-#player_root_X_Testchar
+
 
 

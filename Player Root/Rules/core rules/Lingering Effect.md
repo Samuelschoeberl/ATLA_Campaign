@@ -2,4 +2,4 @@ If not Specified otherwise, lingering effect last until the start of your next T
 If caused by a damaging Move: Every creature that ends its turn there will get half the original attacks Damage.
 [[Player Root]]
 
-#player_root
+

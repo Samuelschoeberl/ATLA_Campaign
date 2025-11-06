@@ -1,5 +1,3 @@
-
-
 #Bonus_Action_Anju  
 
 - **Range:** self and every creature within 1+1 * [[Earthbending slot]] (3) meters of you
@@ -11,6 +9,6 @@ Tripping opponents with minor terrain manipulation. The target must succeed on a
 
 #Level1_Anju 
 #earth_Anju
-#player_root_Anju
+
 
 

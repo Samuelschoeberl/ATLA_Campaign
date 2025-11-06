@@ -562,7 +562,7 @@ def compute_secondaries(kv: Dict[str, Any], templates: Dict[str, str], passes: i
     return kv_local
 
 
-def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List[str], secondary_templates: Dict[str, str], out_root: Path, var_root: Optional[Path] = None, primary_tags: Optional[Dict[str, List[str]]] = None, secondary_tags: Optional[Dict[str, List[str]]] = None, verbose: bool = False, suppress_warnings: Optional[set] = None) -> None:
+def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List[str], secondary_templates: Dict[str, str], out_root: Path, var_root: Optional[Path] = None, primary_tags: Optional[Dict[str, List[str]]] = None, secondary_tags: Optional[Dict[str, List[str]]] = None, verbose: bool = False, suppress_warnings: Optional[set] = None, environmental_keys: Optional[set] = None) -> None:
     safe = re.sub(r"[^A-Za-z0-9_\-]", '_', name)
     tag_suffix = f"_{safe}"
     tag_suffix_lower = tag_suffix.lower()
@@ -673,10 +673,16 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
         # add required tags with character name suffix (always, to track which character generated this)
         for req in ('#variable_', '#character_stat_', '#character_stats_', '#primary_stat_'):
             tags.append(f'{req}{safe}')
-        fpath.write_text(f'```markdown\n{val}\n\n{" ".join(tags)}\n\n```\n', encoding='utf-8')
+        fpath.write_text(f'{val}\n\n{" ".join(tags)}\n', encoding='utf-8')
     # secondary
     for p in secondary_templates.keys():
         key = p.lower()
+        # Skip templates that are environmental variables; those should not be written
+        # as per-character files. Environmental templates are global and live under
+        # the `variable/environmental` directory.
+        if environmental_keys and key in environmental_keys:
+            # do not write per-PC environmental variables
+            continue
         val = kv_all.get(key, '')
         # follow same naming as primary: <character>_<originalfilename>.md
         fname = f"{safe}_{p}.md"
@@ -689,25 +695,8 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
         # add required tags with character name suffix (always, to track which character generated this)
         for req in ('#variable_', '#character_stat_', '#character_stats_', '#secondary_stat_'):
             tags.append(f'{req}{safe}')
-        # If this secondary stat evaluates to numeric zero, skip creating the
-        # per-PC variable file unless the template is explicitly tagged with
-        # #vitality or #defensive. This keeps most zero-valued secondaries out
-        # of the variables folder while ensuring key defensive/vital stats stay
-        # present even when their value is currently 0.
-        try:
-            is_zero_numeric = isinstance(val, (int, float)) and val == 0
-        except Exception:
-            is_zero_numeric = False
-        # If this secondary is numeric zero, skip creating the per-PC file
-        # unless the template is tagged with #vitality, #defensive or
-        # #environmental_variable (environmental variables should still be
-        # shown even when 0).
-        if is_zero_numeric and ('#vitality' not in tags) and ('#defensive' not in tags) and ('#environmental_variable' not in tags):
-            # skip writing this secondary variable file
-            if verbose:
-                print(f"Skipping secondary var file for '{p}' for {name} because value is 0 and not tagged #vitality, #defensive or #environmental_variable")
-        else:
-            fpath.write_text(f'```markdown\n{val}\n\n{" ".join(tags)}\n\n```\n', encoding='utf-8')
+        # Always write the variable file regardless of value
+        fpath.write_text(f'{val}\n\n{" ".join(tags)}\n', encoding='utf-8')
 
     # write a character sheet using the template if available
     sheet = pc_dir.joinpath(f"{safe} character sheet.md")
@@ -743,6 +732,34 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
 
         # helper: normalize keys in kv_all for lookup
         norm_kv = {k.lower().replace('.', '_').replace(' ', '_'): v for k, v in kv_all.items()}
+        
+        # Load environmental variables from the environmental folder and add them to norm_kv
+        # so they can be used in character sheet templates even though they're not in kv_all
+        env_dir = ROOT.joinpath('Player Root', 'variable', 'environmental')
+        if env_dir.exists():
+            for env_file in env_dir.glob('*.md'):
+                try:
+                    content = env_file.read_text(encoding='utf-8')
+                    lines = [line.strip() for line in content.split('\n') if line.strip() and not line.strip().startswith('#')]
+                    if lines:
+                        value = lines[0]
+                        # Try to parse as number
+                        try:
+                            if value.isdigit() or (value.startswith('-') and value[1:].isdigit()):
+                                value = int(value)
+                            elif '.' in value:
+                                try:
+                                    value = float(value)
+                                except ValueError:
+                                    pass
+                        except:
+                            pass
+                        # Add to norm_kv with normalized key
+                        stem = env_file.stem
+                        norm_key = stem.lower().replace('.', '_').replace(' ', '_')
+                        norm_kv[norm_key] = value
+                except Exception:
+                    pass
 
         # Canonical mapping for environmental variables: many templates and
         # placeholders use singular or plural forms (e.g. environmental_water_charge
@@ -1490,9 +1507,11 @@ def main() -> None:
     # Also load environmental templates and include them alongside secondary templates
     environmental_templates = load_environmental_templates(ENVIRONMENTAL_TEMPLATES_DIR)
     environmental_tags = load_template_tags(ENVIRONMENTAL_TEMPLATES_DIR)
-    # Merge environmental templates into secondary_templates (env should override if duplicate)
-    for k, v in environmental_templates.items():
-        secondary_templates[k] = v
+    # Do NOT merge environmental templates into per-character secondary_templates.
+    # Environmental templates are global and should remain under
+    # `variable/environmental` rather than being written into each PC's folder.
+    # Keep `environmental_templates` separate and pass the keys to the writer
+    # so it can skip writing those templates per-PC.
     # Merge tags: combine tag lists when keys overlap
     for k, tags in (environmental_tags or {}).items():
         if k in secondary_tags and isinstance(secondary_tags[k], list):
@@ -1571,6 +1590,16 @@ def main() -> None:
         if not args.pc and run not in ('yes', 'y', 'true'):
             continue
         kv: Dict[str, Any] = {}
+        # Mapping from table column abbreviations to both short and full stat names
+        stat_mappings = {
+            'str': ['str', 'strength'],
+            'dex': ['dex', 'dexterity'],
+            'con': ['con', 'constitution'],
+            'int': ['int', 'intelligence'],
+            'wis': ['wis', 'wisdom'],
+            'riz': ['cha', 'charisma'],
+        }
+        
         for k, v in data.items():
             key = k.strip().lower()
             if key == 'name' or key == 'run update':
@@ -1582,7 +1611,14 @@ def main() -> None:
             else:
                 key_out = key
             key_out = key_out.replace(' ', '.').replace('/', '.')
-            kv[key_out] = to_number(v)
+            value = to_number(v)
+            kv[key_out] = value
+            
+            # Store under both short and full names for primary stats
+            if key in stat_mappings:
+                for stat_name in stat_mappings[key]:
+                    kv[stat_name] = value
+            
             if args.verbose:
                 print(f"primary: {key_out} = {kv[key_out]!r}")
         for s in ['str','dex','con','int','wis','cha','water','earth','air','fire','spirit','rolled.hp']:
@@ -1631,7 +1667,19 @@ def main() -> None:
 
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     for name, kv_all in pcs:
-        write_character_files(name, kv_all, primary_names, secondary_templates, OUT_ROOT, var_root=variable_root, primary_tags=primary_tags, secondary_tags=secondary_tags, verbose=args.verbose, suppress_warnings=suppress_set)
+        write_character_files(
+            name,
+            kv_all,
+            primary_names,
+            secondary_templates,
+            OUT_ROOT,
+            var_root=variable_root,
+            primary_tags=primary_tags,
+            secondary_tags=secondary_tags,
+            verbose=args.verbose,
+            suppress_warnings=suppress_set,
+            environmental_keys=set(k.lower() for k in (environmental_templates or {}).keys()) if 'environmental_templates' in locals() else None,
+        )
         print('Wrote', name)
 
 

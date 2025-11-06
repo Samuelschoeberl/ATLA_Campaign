@@ -5,11 +5,12 @@ Name: Rio
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            36 |
-| current hp        |        36 |
+| max_hp            |                36 |
+| current_hp        |            36 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Initiative        |        1d20 + 6 |
+| Movement          |          5 |
 
 ## Core Stats
 
@@ -33,15 +34,15 @@ Total Bending Level: 3
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        16 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  0 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     2 | 0     |
-| Ice Armor      |      1 | 0     |
-| Spirit Armor   |   0 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        16 |
+| Barrier        |        0 |
+| General Armor  |  0 |
+| Physical Armor | 0 |
+| Fire Armor     |     2 |
+| Ice Armor      |      1 |
+| Spirit Armor   |   0 |
 
 
 
@@ -56,9 +57,17 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
+| Environmental water charge |  9 |
 | Waterbottle charge         |         4 |
 
 
 
 #Rio #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Charisma | 4 |
+| Constitution | 2 |
+| Dexterity | 6 |
+| Intelligence | 8 |
+| Strength | 1 |
+| Wisdom | 2 |

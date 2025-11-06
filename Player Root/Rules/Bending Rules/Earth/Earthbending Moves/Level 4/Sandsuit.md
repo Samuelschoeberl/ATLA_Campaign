@@ -2,10 +2,10 @@
 #Action
 
 **Level 4**
-[[Concentration]]
+[[Player Root/Rules/core rules/Concentration]]
 - **[[Bonus Action]]** .
 - Range: Self
-- Duration: 3 round. [[Concentration]]
+- Duration: 3 round. [[Player Root/Rules/core rules/Concentration]]
 - Surround yourself in a thick layer of Sand until the start of your next turn.
 
 **Effect**:
@@ -14,7 +14,7 @@ Provides 5* [[Earthbending slot]] [[Player Root/Rules/Stat Shorts/Physical Armor
 Provides 10 * [[Earthbending slot]]  [[Barrier]]
  
 **Links**:
-- [[Armor definition]]
+- [[Player Root/Rules/core rules/Armor definition]]
 - [[Earthbending slot]]
 
 Tags:
@@ -23,5 +23,5 @@ Tags:
 [[Player Root]]
 
 #Earthbending
-#player_root
+
 ```

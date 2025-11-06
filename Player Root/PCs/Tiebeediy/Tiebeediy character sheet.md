@@ -5,10 +5,11 @@ Name: Tiebeediy
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            32 |
-| current hp        |        32 |
+| max_hp            |                32 |
+| current_hp        |            32 |
 | Chaos energy      |      0 |
 | Initiative        |        1d20 + 3 |
+| Movement          |          5 |
 
 ## Core Stats
 
@@ -32,15 +33,15 @@ Total Bending Level: 3
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        13 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  1 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     0 | 0     |
-| Ice Armor      |      0 | 0     |
-| Spirit Armor   |   2 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        13 |
+| Barrier        |        0 |
+| General Armor  |  1 |
+| Physical Armor | 0 |
+| Fire Armor     |     0 |
+| Ice Armor      |      0 |
+| Spirit Armor   |   2 |
 
 
 
@@ -50,14 +51,22 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
 | Earthbending slot      |     3 |
-| Spiritbending slot     |    2 |
+| Spiritbending slot     |    0 |
 
 ## Water charges
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
+| Environmental water charge |  9 |
 
 
 
 #Tiebeediy #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Charisma | 5 |
+| Constitution | 3 |
+| Dexterity | 3 |
+| Intelligence | 4 |
+| Strength | 5 |
+| Wisdom | 7 |

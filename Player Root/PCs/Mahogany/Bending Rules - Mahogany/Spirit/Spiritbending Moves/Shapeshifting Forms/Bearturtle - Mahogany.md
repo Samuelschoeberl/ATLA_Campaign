@@ -30,7 +30,7 @@ Bending Levels:
 	        When an ally within 3 meter is attacked, impose Disadvantage on the [[Attack Roll]] (0) as you shift to protect them with your shell. Can be used 3 times per long rest.
 	    **Tuck in**: 
 	    - [[Reaction]] (0)
-		    When you fail a dexterity saving throw you still only take half damage. Your [[Movement]] (0) in the next round is halved.
+		    When you fail a dexterity saving throw you still only take half damage. Your [[Movement]] (8) in the next round is halved.
 
     - **Sturdy Form:**
 	    - You have Advantage on saving throws against being knocked prone or moved against your will.

@@ -11,6 +11,7 @@ import {
   moveFile,
   generateGraphs,
   searchFiles,
+  fetchFileColors,
 } from "./utils/api";
 import { ensurePlayerRoot } from "./utils/helpers";
 import "./styles/App.css";
@@ -41,6 +42,79 @@ function App() {
   const [events, setEvents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState(null);
+  const [fileFromUrl, setFileFromUrl] = useState(false); // Track if file came from URL
+  const [fileColors, setFileColors] = useState({}); // Color mapping for files/folders
+
+  // Helper function to build path stack from a path string
+  const buildPathStack = (path) => {
+    if (!path) {
+      return [''];
+    }
+    const segments = path.split('/').filter(p => p); // Filter out empty segments
+    const stack = [''];
+    let current = '';
+    for (const segment of segments) {
+      current = current ? `${current}/${segment}` : segment;
+      stack.push(current);
+    }
+    return stack;
+  };
+
+  // Check for file parameter in URL (for opening in new tab)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fileParam = params.get('file');
+    const pathParam = params.get('path');
+    
+    console.log('App.jsx useEffect - URL params:', {
+      search: window.location.search,
+      fileParam,
+      pathParam,
+      allParams: Object.fromEntries(params.entries())
+    });
+    
+    // Handle folder navigation via path parameter
+    if (pathParam) {
+      console.log('Navigating to folder:', pathParam);
+      setCurrentPath(pathParam);
+      setPathStack(buildPathStack(pathParam));
+      return; // Don't process file parameter if path parameter exists
+    }
+    
+    // Handle file opening via file parameter
+    if (fileParam) {
+      try {
+        const fileData = JSON.parse(fileParam);
+        console.log('Parsed file data:', fileData);
+        setFileFromUrl(true); // Mark that we have a file from URL
+        setOpenedFile(fileData);
+        // Extract the path to navigate to the correct directory
+        const filePath = fileData.path?.replace(/^Player Root\//i, '') || '';
+        const pathParts = filePath.split('/').filter(p => p);
+        pathParts.pop(); // Remove filename to get directory
+        const dirPath = pathParts.join('/');
+        console.log('Setting path:', { filePath, pathParts, dirPath });
+        setCurrentPath(dirPath);
+        setPathStack(buildPathStack(dirPath));
+      } catch (error) {
+        console.error('Failed to parse file parameter:', error);
+      }
+    }
+  }, []);
+
+  // Fetch file colors on mount
+  useEffect(() => {
+    const loadColors = async () => {
+      try {
+        const data = await fetchFileColors();
+        setFileColors(data.colors || {});
+      } catch (error) {
+        console.error('Failed to fetch file colors:', error);
+        // Continue without colors if fetch fails
+      }
+    };
+    loadColors();
+  }, []);
 
   useEffect(() => {
     loadDirectory(currentPath);
@@ -53,7 +127,13 @@ function App() {
         (entry) => !shouldIgnoreFile(entry.name)
       );
       setEntries(filteredEntries);
-      setOpenedFile(null);
+      // Don't clear the opened file if it came from a URL parameter
+      if (!fileFromUrl) {
+        setOpenedFile(null);
+      } else {
+        // Clear the flag after the first directory load
+        setFileFromUrl(false);
+      }
     } catch (error) {
       console.error("Failed to load directory:", error);
       logEvent("error", "Directory Error", error.message);
@@ -72,7 +152,7 @@ function App() {
 
   const handleNavigate = (entry) => {
     const rel = (entry.path || "").replace(/^Player Root\//i, "");
-    setPathStack((prev) => [...prev, rel]);
+    setPathStack(buildPathStack(rel));
     setCurrentPath(rel);
   };
 
@@ -132,6 +212,23 @@ function App() {
       return;
     }
 
+    // Update currentPath to the file's directory
+    let filePath = file.path || "";
+    if (/^Player Root\//i.test(filePath)) {
+      filePath = filePath.replace(/^Player Root\//i, "");
+    }
+    
+    // Extract the directory path (everything except the filename)
+    const pathParts = filePath.split("/").filter(p => p);
+    pathParts.pop(); // Remove the filename
+    const dirPath = pathParts.join("/");
+    
+    // Update currentPath and pathStack if the file is in a different directory
+    if (dirPath !== currentPath) {
+      setCurrentPath(dirPath);
+      setPathStack(buildPathStack(dirPath));
+    }
+
     setOpenedFile(file);
   };
 
@@ -149,20 +246,8 @@ function App() {
 
   const handleNavigateToPinned = (path) => {
     // Build proper pathStack from the path segments
-    if (!path) {
-      setPathStack([""]);
-      setCurrentPath("");
-    } else {
-      const segments = path.split("/");
-      const stack = [""];
-      let current = "";
-      for (const segment of segments) {
-        current = current ? `${current}/${segment}` : segment;
-        stack.push(current);
-      }
-      setPathStack(stack);
-      setCurrentPath(path);
-    }
+    setCurrentPath(path || "");
+    setPathStack(buildPathStack(path));
   };
 
   const handleGenerateGraphs = async () => {
@@ -364,6 +449,7 @@ function App() {
           onRestore={handleRestore}
           onRefresh={() => loadDirectory(currentPath)}
           isDeletedFolder={isDeletedFolder}
+          fileColors={fileColors}
         />
       </section>
 
@@ -386,6 +472,7 @@ function App() {
               onOpen={handleOpenFile}
               onNavigate={handleNavigate}
               onDiceRoll={handleDiceRoll}
+              fileColors={fileColors}
             />
           ))
         )}

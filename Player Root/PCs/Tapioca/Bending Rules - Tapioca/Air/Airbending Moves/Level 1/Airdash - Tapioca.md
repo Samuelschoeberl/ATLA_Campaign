@@ -6,17 +6,9 @@
 **Effects:**
 - You gain 5 * [[Airbending_slot]] (6) meters movement for this turn.
 
-
-
-
-Tags:
-#Airbending_Tapioca #Mobility_Tapioca #Level_1_Tapioca #Bonus_Action_Tapioca
-
-#Airbending_Tapioca
-#Bonus_Action_Tapioca
+#Air_Tapioca
 #Level1_Tapioca
-#Level_1_Tapioca
 #Mobility_Tapioca
-#player_root_Tapioca
+
 
 

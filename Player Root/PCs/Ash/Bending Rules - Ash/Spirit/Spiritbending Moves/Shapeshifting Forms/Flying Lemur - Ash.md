@@ -6,11 +6,11 @@ Bending Levels:
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]] (0)     | -2        |
-| [[Dexterity]] (0)    | 7         |
-| [[Constitution]] (0) | -2        |
-| [[Wisdom]] (0)       | 2         |
-| [[Intelligence]] (0) | 2         |
+| [[Strength]] (1)     | -2        |
+| [[Dexterity]] (1)    | 7         |
+| [[Constitution]] (1) | -2        |
+| [[Wisdom]] (8)       | 2         |
+| [[Intelligence]] (2) | 2         |
 **Transformation Points cost:** 1 [[Transformation Points]] (0)
 - **Size:** Small
     
@@ -35,10 +35,10 @@ Bending Slots:
 	Air Lvl1: 4
 
 
-#spirit_Ash  #Level1_Ash #player_root_Ash
+#spirit_Ash  #Level1_Ash 
 
 #Level1_Ash
-#player_root_Ash
+
 #shapeshifting_form_Ash
 #spirit_Ash
 ```

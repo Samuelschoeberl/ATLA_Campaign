@@ -3,11 +3,12 @@ Name: Anju
 
 
 
-| key               |                 value |
-| ----------------- | --------------------: |
-| max_hp            |            38 |
-| current hp        |        38 |
-| Initiative        |        1d20 + 1 |
+| key        |    value |
+| ---------- | -------: |
+| max_hp     |       38 |
+| current_hp |       39 |
+| Initiative | 1d20 + 1 |
+| Movement   |        5 |
 
 ## Core Stats
 
@@ -31,15 +32,15 @@ Total Bending Level: 3
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        11 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  1 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     2 | 0     |
-| Ice Armor      |      0 | 0     |
-| Spirit Armor   |   0 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        11 |
+| Barrier        |        0 |
+| General Armor  |  1 |
+| Physical Armor | 0 |
+| Fire Armor     |     2 |
+| Ice Armor      |      0 |
+| Spirit Armor   |   0 |
 
 
 
@@ -52,11 +53,19 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 ## Water charges
 
-| Water charge type          |                          value |
-| -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
-| Waterbottle charge         |         4 |
+| Water charge type          | value |
+| -------------------------- | ----: |
+| Environmental water charge | 9 |
+| Waterbottle charge         |     4 |
 
 
 
 #Anju #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Charisma | 1 |
+| Constitution | 2 |
+| Dexterity | 1 |
+| Intelligence | 5 |
+| Strength | 3 |
+| Wisdom | 3 |

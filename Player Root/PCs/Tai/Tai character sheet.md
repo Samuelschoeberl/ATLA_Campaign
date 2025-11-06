@@ -5,9 +5,10 @@ Name: Tai
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            50 |
-| current hp        |        50 |
+| max_hp            |                50 |
+| current_hp        |            50 |
 | Initiative        |        1d20 + 8 |
+| Movement          |          5 |
 
 ## Core Stats
 
@@ -30,15 +31,15 @@ Total Bending Level: 2
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        18 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  0 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     2 | 0     |
-| Ice Armor      |      0 | 0     |
-| Spirit Armor   |   0 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        18 |
+| Barrier        |        0 |
+| General Armor  |  0 |
+| Physical Armor | 0 |
+| Fire Armor     |     2 |
+| Ice Armor      |      0 |
+| Spirit Armor   |   0 |
 
 
 
@@ -52,9 +53,17 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
+| Environmental water charge |  9 |
 | Waterbottle charge         |         4 |
 
 
 
 #Tai #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Charisma | 4 |
+| Constitution | 5 |
+| Dexterity | 8 |
+| Intelligence | 8 |
+| Strength | 1 |
+| Wisdom | 2 |

@@ -4,66 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "7584b76ed7eb4dcf",
+        "id": "c23658048c0cfad6",
         "type": "tabs",
         "children": [
           {
-            "id": "8500d3bce12cc8a8",
-            "type": "leaf",
-            "pinned": true,
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Mycelium/data/template/template_Character_Sheet.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "pinned": true,
-              "icon": "lucide-file",
-              "title": "template_Character_Sheet"
-            }
-          },
-          {
-            "id": "ce2fdee9192ff1dc",
+            "id": "1d8248157aa1eab7",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/variable/environmental/environmental_water_charge.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": true,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": false
-                }
-              },
-              "icon": "lucide-file",
-              "title": "environmental_water_charge"
-            }
-          },
-          {
-            "id": "126891e4f792f020",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/Rules/Bending Rules/Air/Airbending Moves/Level 1/Air Blade.md",
+                "file": "Player Root/PCs/Anju/Anju Character Sheet.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -78,179 +28,104 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Air Blade"
-            }
-          },
-          {
-            "id": "bb6eca8435cf6620",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Rock Hurl.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Rock Hurl"
-            }
-          },
-          {
-            "id": "4f8c8459ad200b53",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/variable/secondary_stat/spiritbending slot.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "spiritbending slot"
-            }
-          },
-          {
-            "id": "8682009ea7ed74e7",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/PCs/X_Testchar/X_Testchar character sheet.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "X_Testchar character sheet"
-            }
-          },
-          {
-            "id": "130aaef4ad6502be",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/variable/secondary_stat/Spiritbending DC.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Spiritbending DC"
-            }
-          },
-          {
-            "id": "800e69051bfdd3c7",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/pc_primary_stats.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "pc_primary_stats"
-            }
-          },
-          {
-            "id": "9f06bb0c5e59c3e1",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "checkboxed_list.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "checkboxed_list"
-            }
-          },
-          {
-            "id": "a39d57a9323557dc",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Player Root/PCs/stat_overview.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "stat_overview"
+              "title": "Anju Character Sheet"
             }
           }
+        ]
+      },
+      {
+        "id": "db2119ca077212e6",
+        "type": "split",
+        "children": [
+          {
+            "id": "7584b76ed7eb4dcf",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "8500d3bce12cc8a8",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Mycelium/data/template/template_Character_Sheet.md",
+                    "mode": "source",
+                    "source": false,
+                    "backlinks": true,
+                    "backlinkOpts": {
+                      "collapseAll": false,
+                      "extraContext": false,
+                      "sortOrder": "alphabetical",
+                      "showSearch": false,
+                      "searchQuery": "",
+                      "backlinkCollapsed": false,
+                      "unlinkedCollapsed": true
+                    }
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "template_Character_Sheet"
+                }
+              },
+              {
+                "id": "90b204c4943c4a67",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Player Root/PCs/stat_overview.md",
+                    "mode": "source",
+                    "source": false,
+                    "backlinks": true,
+                    "backlinkOpts": {
+                      "collapseAll": false,
+                      "extraContext": false,
+                      "sortOrder": "alphabetical",
+                      "showSearch": false,
+                      "searchQuery": "",
+                      "backlinkCollapsed": false,
+                      "unlinkedCollapsed": true
+                    }
+                  },
+                  "icon": "lucide-file",
+                  "title": "stat_overview"
+                }
+              }
+            ],
+            "currentTab": 1
+          },
+          {
+            "id": "d2a86ea39f7e6e0f",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "88a209543548ec19",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Player Root/variable/PC_variables/Anju/Anju_current_hp.md",
+                    "mode": "source",
+                    "source": false,
+                    "backlinks": true,
+                    "backlinkOpts": {
+                      "collapseAll": false,
+                      "extraContext": false,
+                      "sortOrder": "alphabetical",
+                      "showSearch": false,
+                      "searchQuery": "",
+                      "backlinkCollapsed": false,
+                      "unlinkedCollapsed": true
+                    }
+                  },
+                  "icon": "lucide-file",
+                  "title": "Anju_current_hp"
+                }
+              }
+            ]
+          }
         ],
-        "currentTab": 3
+        "direction": "horizontal"
       }
     ],
     "direction": "vertical"
@@ -282,7 +157,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "Waterbending DC",
+                "query": "barrier",
                 "matchingCase": false,
                 "explainSearch": true,
                 "collapseAll": true,
@@ -413,53 +288,53 @@
       "runjs:RunJS": false
     }
   },
-  "active": "bb6eca8435cf6620",
+  "active": "1d8248157aa1eab7",
   "lastOpenFiles": [
-    "Mycelium/scripts/archived_20251025_161441/README.md",
-    "Mycelium/scripts/archived_20251025_161441/graph_md_io.py",
-    "Mycelium/scripts/archived_20251025_161441/graph_from_json.py",
-    "Mycelium/scripts/archived_20251025_161441/cleanup_unused.py",
-    "Mycelium/scripts/archived_20251025_161441/create_variable_aliases.py",
-    "Mycelium/scripts/archived_20251025_161441/create_unsorted_from_wikilinks.py",
-    "Mycelium/scripts/archived_20251025_161441/run_propagate_dry.py",
-    "Mycelium/scripts/archived_20251025_161441/Resiliance.py",
-    "Mycelium/scripts/archived_20251025_161441/test_change_var_integration.py",
-    "Mycelium/scripts/archived_20251025_161441/diagnose_allowed.py",
-    "Mycelium/scripts/archived_20251025_161441/aggregate_mycelium.py",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Earth Shift.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Earth Brace.md",
-    "Player Root/Rules/Bending Rules/Team-up Moves/Water-Water/Frozen Safe.md",
-    "Dms Root/variable/NPC_variables/Phot_the_sandsnake/Phot_the_sandsnake_Earthbending slot.md",
-    "Dms Root/NPCs/mid_water/Bending Moves by Action Type - mid_water/Reaction/Frozen Safe - mid_water.md",
-    "Dms Root/NPCs/mid_water/Bending Moves by Action Type - mid_water/Action/Frozen Safe - mid_water.md",
-    "Dms Root/NPCs/mid_water/Bending Rules - mid_water/Team-up Moves/Water-Water/Frozen Safe - mid_water.md",
-    "Dms Root/variable/NPC_variables/mid_earth/mid_earth_Earthbending slot.md",
-    "Dms Root/NPCs/low_water/Bending Moves by Action Type - low_water/Reaction/Frozen Safe - low_water.md",
-    "Dms Root/NPCs/low_water/Bending Moves by Action Type - low_water/Action/Frozen Safe - low_water.md",
-    "Dms Root/NPCs/low_water/Bending Rules - low_water/Team-up Moves/Water-Water/Frozen Safe - low_water.md",
-    "Dms Root/variable/NPC_variables/low_earth/low_earth_Earthbending slot.md",
-    "Dms Root/NPCs/X_Testchar/Bending Moves by Action Type - X_Testchar/Reaction/Frozen Safe - X_Testchar.md",
-    "Dms Root/NPCs/X_Testchar/Bending Moves by Action Type - X_Testchar/Action/Frozen Safe - X_Testchar.md",
-    "Dms Root/NPCs/X_Testchar/Bending Rules - X_Testchar/Team-up Moves/Water-Water/Frozen Safe - X_Testchar.md",
-    "Dms Root/variable/NPC_variables/X_Testchar/X_Testchar_Earthbending slot.md",
-    "Player Root/PCs/Tai/Bending Rules - Tai/by Action Type/Reaction/Frozen Safe - Tai.md",
-    "Player Root/PCs/Tai/Bending Rules - Tai/by Action Type/Action/Frozen Safe - Tai.md",
-    "Player Root/PCs/Tai/Bending Rules - Tai/Team-up Moves/Water-Water/Frozen Safe - Tai.md",
-    "Player Root/PCs/Rio/Bending Rules - Rio/by Action Type/Reaction/Frozen Safe - Rio.md",
-    "Player Root/PCs/Rio/Bending Rules - Rio/by Action Type/Action/Frozen Safe - Rio.md",
-    "Player Root/PCs/Rio/Bending Rules - Rio/Team-up Moves/Water-Water/Frozen Safe - Rio.md",
-    "Player Root/PCs/Anju/Bending Rules - Anju/by Action Type/Reaction/Frozen Safe - Anju.md",
-    "Player Root/PCs/Anju/Bending Rules - Anju/by Action Type/Action/Frozen Safe - Anju.md",
-    "Player Root/PCs/Anju/Bending Rules - Anju/Team-up Moves/Water-Water/Frozen Safe - Anju.md",
+    "Player Root/PCs/stat_overview.md",
+    "Player Root/PCs/Anju/Anju Character Sheet.md",
+    "Player Root/PCs/Anju/Anju Notes.md",
+    "Mycelium/data/template/template_Character_Sheet.md",
+    "Player Root/variable/PC_variables/Anju/Anju_current_hp.md",
+    "Player Root/deleted/deleted_testfile.md",
+    "Player Root/PCs/Anju/testfile.md",
+    "Mycelium/scripts/Python/__pycache__/sync_variables_direct_edit.cpython-313.pyc",
+    "Player Root/variable/PC_variables/Anju/Anju_general_armor.md",
+    "Player Root/deleted/deleted_X_Testchar_variables.md",
+    "Player Root/deleted",
+    "Player Root/PCs/X_Testchar/X_Testchar_variables.md",
+    "Player Root/PCs/Tiebeediy/Tiebeediy_variables.md",
+    "Player Root/PCs/Tapioca/Tapioca_variables.md",
+    "Player Root/PCs/Tai/Tai_variables.md",
+    "Player Root/PCs/Sora/Sora_variables.md",
+    "Player Root/PCs/Sheph/Sheph_variables.md",
+    "Player Root/PCs/Rio/Rio_variables.md",
+    "Player Root/PCs/Puy/Puy_variables.md",
+    "Player Root/PCs/Mahogany/Mahogany_variables.md",
+    "Player Root/PCs/Grep/Grep_variables.md",
+    "Player Root/PCs/Ash/Ash_variables.md",
+    "Player Root/PCs/Anju/Anju_variables.md",
+    "Mycelium/scripts/frontend-react/vite.config.js.timestamp-1762390245967-9b8f265c53e3f.mjs",
+    "Player Root/variable/secondary_stat/chaos_energy.md",
+    "Player Root/variable/environmental/environmental_water_charge.md",
+    "Player Root/PCs/Grep/Grep character sheet.md",
+    "Player Root/variable/PC_variables/Anju/Anju_air.md",
+    "Player Root/variable/PC_variables/Ash/Ash_air.md",
+    "Player Root/variable/PC_variables/Tai",
+    "Player Root/variable/PC_variables/Sheph",
+    "Player Root/variable/PC_variables/Grep",
+    "Player Root/variable/PC_variables/Tiebeediy",
+    "Player Root/variable/PC_variables/Mahogany",
+    "Player Root/variable/PC_variables/Sora",
+    "Player Root/variable/PC_variables/Ash",
+    "Dms Root/NPCs/Spirits/assets_task_01jqk4rq81fnsrfydwnb0gnxr1_img_1.webp",
+    "Dms Root/NPCs/Spirits/assets_task_01jqk424c7ea58gb9jdd0zmvqj_img_0.webp",
+    "Dms Root/NPCs/Spirits/Jellytee.webp",
+    "Dms Root/NPCs/DMPCs/Kaedo.png",
     "Player Root/NPCs/The Night Bloom/Rin Kotak/meditating dark.png",
     "Player Root/NPCs/The Night Bloom/Rin Kotak/Rin Kotak.png",
     "Mycelium/scripts/frontend-react/public/Mycelium Logo.png",
-    "Dms Root/NPCs/DMPCs/Kaedo.png",
     "Mycelium/Mycelium Logo.png",
     "Mycelium/Mycellium Logo.png",
-    "Dms Root/visuals/Sandkheg_-_Tyler_Walpole.png",
-    "Dms Root/visuals/Ruin-Crawler_-_Tyler_Walpole.jpg",
-    "Dms Root/visuals/Reilora_Shrike_-_Tyler_Walpole.webp",
-    "Dms Root/visuals/Reilora_-_Tyler_Walpole.png"
+    "Dms Root/visuals/Sandkheg_-_Tyler_Walpole.png"
   ]
 }

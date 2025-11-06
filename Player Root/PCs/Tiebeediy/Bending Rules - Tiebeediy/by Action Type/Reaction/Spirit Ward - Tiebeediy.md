@@ -2,10 +2,10 @@
 #Reaction_Tiebeediy 
 
 - Range: self
-- Duration: [[spiritbending slot]] (2) rounds.
+- Duration: [[spiritbending slot]] (0) rounds.
 
 **Effect**:
-Provides [[spiritbending slot]] (2)d8  [[General Armor]] (1), [[Evasion]] (13),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[spiritbending slot]] (2) rounds.
+Provides [[spiritbending slot]] (0)d8  [[General Armor]] (1), [[Evasion]] (13),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[spiritbending slot]] (0) rounds.
 
 
 Tags:
@@ -13,7 +13,7 @@ Tags:
 
 #Level2_Tiebeediy
 #Reaction_Tiebeediy
-#player_root_Tiebeediy
+
 #spirit_Tiebeediy
 
 

@@ -6,7 +6,7 @@
 - **Range:** 5 Meter.
 - **Effect:**  
     You create A number of Icicles equal to the used charges.
-	They swirl around the Target and grants them the [[Reaction]] to send any or all of the [[Ammunition]] against one target within 100 Meters of them until all Icicles are used.
+	They swirl around the Target and grants them the [[Reaction]] to send any or all of the [[Player Root/Rules/core rules/Ammunition]] against one target within 100 Meters of them until all Icicles are used.
 	Ammunition:
     - **HP:** 20 HP.
     - **AC:** 12.
@@ -19,6 +19,6 @@ Tags:
 
 #Level3
 #Waterbending
-#player_root
+
 #water
 ```

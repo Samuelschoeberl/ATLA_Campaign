@@ -1,6 +1,3 @@
-```markdown
 50
 
-#vitality #variable_Tai #character_stat_Tai #character_stats_Tai #secondary_stat_Tai
-
-```
+#variable #environmental_variables #character_stat #character_stats #secondary_stat

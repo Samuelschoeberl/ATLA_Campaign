@@ -5,6 +5,6 @@ Earthbenders are solid and steadfast, drawing upon the Strength of their bodies 
 
 
 
-#player_root_Anju
+
 #earth_Anju
 #Level1_Anju 

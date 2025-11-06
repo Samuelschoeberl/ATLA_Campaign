@@ -18,5 +18,5 @@ Example:
 [[Avatar Spirit Bridge Level]]
 [[Player Root]]
 
-#player_root
+
 #spirit

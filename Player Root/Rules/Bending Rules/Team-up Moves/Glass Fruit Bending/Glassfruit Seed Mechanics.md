@@ -26,7 +26,7 @@ These are **powerful, multi-element, terrain-altering** moves that consume Glass
 #Fire
 #teamup 
 #earth
-#player_root
+
 #signature_move
 #Puy 
 #Level1 

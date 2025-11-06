@@ -35,10 +35,10 @@ Bending Slots:
 	Air Lvl1: 4
 
 
-#spirit  #Level1 #player_root
+#spirit  #Level1 
 
 #Level1
-#player_root
+
 #shapeshifting_form
 #spirit
 ```

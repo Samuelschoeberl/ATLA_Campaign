@@ -120,6 +120,21 @@ ul.entries li a.html-link::after {
   opacity: 0.9;
 }
 
+ul.entries li a.external-link {
+  background: linear-gradient(180deg, #f0f8ff, #e0f0ff);
+  color: #0047ab;
+  padding: 6px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+ul.entries li a.external-link::after {
+  content: " ↗";
+  font-size: 0.85em;
+  margin-left: 4px;
+  opacity: 0.7;
+}
+
 .md-container {
   margin-top: 18px;
   display: flex;

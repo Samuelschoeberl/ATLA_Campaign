@@ -7,7 +7,7 @@ she her
         Oversees the Night Bloom’s military operations, crafting strategies for their attacks.
 
 **Links**:
-- [[Armor definition]]
+- [[Player Root/Rules/core rules/Armor definition]]
 - [[Night Bloom]]
 
 Tags:
@@ -15,4 +15,4 @@ Tags:
 [[NPC]]
 [[Player Root]]
 
-#player_root
+

@@ -49,7 +49,7 @@ The Night Bloom is a radical faction seeking to overthrow the Avatar’s influen
     - Small spirit-charms integrated into their outfits, glowing faintly with corrupted energy during rituals or battles.
 
 **Links**:
-- [[Armor definition]]
+- [[Player Root/Rules/core rules/Armor definition]]
 - [[Isay Trekal]]
 - [[Rin Kotak]]
 - [[Night Bloom]]
@@ -62,4 +62,4 @@ Tags:
 #Avatar
 [[Player Root]]
 
-#player_root
+

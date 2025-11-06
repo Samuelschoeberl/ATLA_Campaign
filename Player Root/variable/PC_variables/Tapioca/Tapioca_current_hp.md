@@ -1,6 +1,3 @@
-```markdown
 36
 
-#vitality #current_variable #variable_Tapioca #character_stat_Tapioca #character_stats_Tapioca #secondary_stat_Tapioca
-
-```
+#variable #environmental_variables #character_stat #character_stats #secondary_stat

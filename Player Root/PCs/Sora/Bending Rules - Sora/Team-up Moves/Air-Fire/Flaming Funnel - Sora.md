@@ -1,7 +1,6 @@
 #Action_Sora 
 #Reaction_Sora 
 
-Each Bender-decides to which pool to add their Bending slots:
 -  **Y**([[Firebending_slot]] (9)): Yd12 Fire Damage
 - **X**([[Airbending_slot]] (0)): X * 10 meter Range [[Air Attack Roll]] (1d20 + 0 + 2)
 

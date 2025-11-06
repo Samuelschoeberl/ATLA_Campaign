@@ -15,7 +15,7 @@ Reaction: Must be initiated by a Firebender in line of sight
 #Level1 
 #earth
 #fire 
-#player_root
+
 #teamup
 #signature_move
 #Puy 

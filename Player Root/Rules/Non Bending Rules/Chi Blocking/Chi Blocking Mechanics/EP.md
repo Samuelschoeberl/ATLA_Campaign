@@ -7,4 +7,4 @@ Chi Blockers use Energy Points (EP) to perform their moves. EP are a finite reso
 - Replenish: Gain 2 EP at the End of your turn if not using any EP this Turn.
 [[Player Root]]
 
-#player_root
+

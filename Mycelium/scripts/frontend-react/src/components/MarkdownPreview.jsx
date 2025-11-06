@@ -1,16 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   renderMarkdown,
-  nodeColorForKey,
   stylePreviewTables,
   rollDiceExpression,
 } from "../utils/helpers";
 import { findFileByName } from "../utils/api";
 
-const MarkdownPreview = ({ file, onOpen, onNavigate, onDiceRoll }) => {
+const MarkdownPreview = ({ file, onOpen, onNavigate, onDiceRoll, fileColors = {} }) => {
   const [content, setContent] = useState("Loading...");
   const previewRef = useRef(null);
-  const backgroundColor = nodeColorForKey(file.path || file.name);
+  
+  // Get background color from fileColors prop
+  const getBackgroundColor = () => {
+    // Normalize the path to match color keys
+    let filePath = (file.path || "").replace(/^Player Root\//i, "");
+    
+    // Try exact match first
+    if (fileColors[filePath]) {
+      return fileColors[filePath];
+    }
+    
+    // Default to white if no color found
+    return '#ffffff';
+  };
+  
+  const backgroundColor = getBackgroundColor();
 
   useEffect(() => {
     const loadContent = async () => {
@@ -96,50 +110,83 @@ const MarkdownPreview = ({ file, onOpen, onNavigate, onDiceRoll }) => {
       // Add click handlers to wikilinks
       const wikilinkElements = previewRef.current.querySelectorAll(".wikilink");
       wikilinkElements.forEach((el) => {
-        el.onclick = async (e) => {
+        const clickHandler = async (e) => {
+          // For command/ctrl-click on anchor tags, the browser handles it naturally
+          const isCommandClick = e.metaKey || e.ctrlKey;
+          
+          // Always prevent default navigation since href="#"
           e.preventDefault();
+          
           const target = el.getAttribute("data-wikilink");
-          if (target) {
-            try {
-              // Find the file or folder by name
-              const result = await findFileByName(target);
-              if (result.found && result.path) {
-                if (result.type === "file") {
-                  // Open the found file
-                  onOpen({
-                    name: target.endsWith(".md") ? target : `${target}.md`,
-                    path: `Player Root/${result.path}`,
-                    type: "file",
-                  });
-                } else if (result.type === "folder") {
-                  // Navigate to the folder
-                  onNavigate({
-                    name: target,
-                    path: `Player Root/${result.path}`,
-                    type: "dir",
-                  });
-                }
-              } else {
-                console.warn(`Wikilink target not found: ${target}`);
-                // Show error message in event log
-                if (onDiceRoll) {
-                  onDiceRoll(
-                    { error: `File or folder not found: ${target}` },
-                    `[[${target}]]`
-                  );
-                }
-              }
-            } catch (error) {
-              console.error("Failed to resolve wikilink:", error);
+          if (!target) return;
+          
+          try {
+            // Find the file or folder by name
+            const result = await findFileByName(target);
+            if (!result.found || !result.path) {
+              console.warn(`Wikilink target not found: ${target}`);
+              // Show error message in event log
               if (onDiceRoll) {
                 onDiceRoll(
-                  { error: `Error resolving link: ${error.message}` },
+                  { error: `File or folder not found: ${target}` },
                   `[[${target}]]`
                 );
               }
+              return;
+            }
+            
+            const fileData = {
+              name: target.endsWith(".md") ? target : `${target}.md`,
+              path: `Player Root/${result.path}`,
+              type: result.type,
+            };
+            
+            // For command/ctrl-click, open in new tab
+            if (isCommandClick) {
+              // For folders, encode the path to navigate to; for files, encode the file data
+              if (result.type === "folder") {
+                // Navigate to the folder in a new tab
+                const folderPath = result.path.replace(/^Player Root\//i, '');
+                const url = `${window.location.origin}${window.location.pathname}?path=${encodeURIComponent(folderPath)}`;
+                console.log('MarkdownPreview - Opening folder in new tab:', {
+                  url,
+                  folderPath
+                });
+                window.open(url, '_blank', 'noopener,noreferrer');
+              } else {
+                // Open file in new tab
+                const params = new URLSearchParams({
+                  file: JSON.stringify(fileData)
+                });
+                const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+                console.log('MarkdownPreview - Opening file in new tab:', {
+                  url,
+                  fileData,
+                  serialized: JSON.stringify(fileData)
+                });
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }
+              return;
+            }
+            
+            // Normal click: open in current view or navigate to folder
+            if (result.type === "file") {
+              onOpen(fileData);
+            } else if (result.type === "folder") {
+              onNavigate(fileData);
+            }
+          } catch (error) {
+            console.error("Failed to resolve wikilink:", error);
+            if (onDiceRoll) {
+              onDiceRoll(
+                { error: `Error resolving link: ${error.message}` },
+                `[[${target}]]`
+              );
             }
           }
         };
+        
+        el.addEventListener('click', clickHandler);
       });
     }
   }, [content, backgroundColor, onDiceRoll, onOpen, onNavigate]);

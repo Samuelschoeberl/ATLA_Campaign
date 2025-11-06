@@ -22,6 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 PLAYER_ROOT = REPO_ROOT / "Player Root"
 ENV_DIR = PLAYER_ROOT / "variable" / "environmental"
 PC_DIR = PLAYER_ROOT / "PCs"
+PC_VARS_DIR = PLAYER_ROOT / "variable" / "PC_variables"
 OUT_FILE = PC_DIR / "stat_overview.md"
 
 
@@ -32,16 +33,52 @@ def read_text(p: Path):
         return ""
 
 
+def extract_first_value_and_tags_from_env(text: str):
+    """Extract the first non-empty value and all tags from a variable file."""
+    # Handle markdown code blocks
+    in_code_block = False
+    value = ""
+    tags = []
+    
+    for line in text.splitlines():
+        stripped = line.strip()
+        
+        # Handle markdown code blocks
+        if stripped.startswith('```'):
+            in_code_block = not in_code_block
+            continue
+        
+        # Extract value (first non-empty, non-tag line - inside or outside code block)
+        if not value and stripped and not stripped.startswith("#"):
+            value = stripped
+        
+        # Extract tags - they may be space-separated on one line
+        if stripped.startswith("#"):
+            # Split by space to handle multiple tags on one line
+            line_tags = [t for t in stripped.split() if t.startswith("#")]
+            tags.extend(line_tags)
+    
+    return value, tags
+
+
 def extract_first_value_from_env(text: str):
     # prefer the first non-empty, non-comment line that looks like a value
+    # handle both plain text and markdown code blocks
+    in_code_block = False
     for line in text.splitlines():
-        s = line.strip()
-        if not s:
+        stripped = line.strip()
+        
+        # Handle markdown code blocks
+        if stripped.startswith('```'):
+            in_code_block = not in_code_block
             continue
-        if s.startswith("#"):
+            
+        if not stripped:
             continue
-        # return raw line (e.g. '10')
-        return s
+        if stripped.startswith("#"):
+            continue
+        # return raw line (e.g. '10' or '32')
+        return stripped
     return ""
 
 
@@ -122,22 +159,38 @@ def gather_environmentals():
 
 
 def gather_pc_stats():
+    """Gather PC stats from Player Root/variable/PC_variables/<Name>/ directories.
+    
+    Only includes stats tagged with #vitality or #defensive.
+    """
     pcs = {}
-    if not PC_DIR.exists():
+    
+    if not PC_VARS_DIR.exists():
         return pcs
-    for pc in sorted(PC_DIR.iterdir()):
-        if not pc.is_dir():
+    
+    # Scan each PC's variable directory
+    for pc_dir in sorted(PC_VARS_DIR.iterdir()):
+        if not pc_dir.is_dir():
             continue
-        pcname = pc.name
+        
+        pcname = pc_dir.name
         pcs[pcname] = []
-        # scan all md files under this pc dir
-        for md in pc.rglob("*.md"):
-            t = read_text(md)
-            # find and normalize only the canonical keys
-            for line in t.splitlines():
-                key, val = normalize_key(line)
-                if key:
-                    pcs[pcname].append((key, val or "", md.relative_to(REPO_ROOT).as_posix()))
+        
+        # Scan all variable files for this PC
+        for var_file in sorted(pc_dir.glob("*.md")):
+            text = read_text(var_file)
+            value, tags = extract_first_value_and_tags_from_env(text)
+            
+            # Only include if tagged with #vitality or #defensive
+            has_vitality = any(t.lower() == '#vitality' for t in tags)
+            has_defensive = any(t.lower() == '#defensive' for t in tags)
+            
+            if has_vitality or has_defensive:
+                # Extract display name from filename: Anju_max_hp.md -> max_hp
+                display_name = var_file.stem.replace(f"{pcname}_", "")
+                rel_path = var_file.relative_to(REPO_ROOT).as_posix()
+                pcs[pcname].append((display_name, value, rel_path))
+    
     return pcs
 
 
@@ -175,50 +228,52 @@ def render_markdown(envs, pcs, extras):
         lines.append("| (none) |  |  |  |")
 
     lines.append("\n\n## Per-PC extracted stats\n")
-    # Only include the canonical keys, in a canonical order
-    desired_order = ["max_hp", "current_hp", "evasion", "general armor"]
+    lines.append("_(Only shows variables tagged with #vitality or #defensive)_\n")
+    
     if pcs:
         for pc, items in pcs.items():
             lines.append(f"\n### {pc}\n")
-            lines.append("\n| Key           | Value | Source File                            |")
-            lines.append("| ------------- | ----- | -------------------------------------- |")
-            # create a map of key->(value,src) preferring variable files
-            # scoring: higher score = more preferred
-            def source_score(src_path: str):
-                s = src_path.lower()
-                score = 0
-                # prefer files under Player Root/variable
-                if '/player root/variable/' in s:
-                    score += 100
-                # prefer filenames that include 'variables'
-                if 'variables' in s:
-                    score += 50
-                # prefer files with 'character sheet' or 'character' then smaller bonus
-                if 'character sheet' in s or 'character' in s:
-                    score += 10
-                return score
-
-            seen = {}
-            for k, v, src in items:
-                existing = seen.get(k)
-                if existing is None:
-                    seen[k] = (v, src)
-                    continue
-                # compare scores
-                prev_v, prev_src = existing
-                prev_score = source_score(prev_src)
-                new_score = source_score(src)
-                if new_score > prev_score:
-                    seen[k] = (v, src)
-            for key in desired_order:
-                if key in seen:
-                    v, src = seen[key]
-                    # normalize booleans/None to empty
-                    v2 = v if v is not None else ""
-                    lines.append(f"| {key} | {v2}    | {src} |")
-            lines.append("\n")
+            
+            # Organize stats by tag: vitality first, then defensive
+            vitality_stats = []
+            defensive_stats = []
+            
+            for display_name, value, src in items:
+                # Read the file again to get its tags for organization
+                try:
+                    text = read_text(Path(REPO_ROOT) / src)
+                    _, tags = extract_first_value_and_tags_from_env(text)
+                    has_vitality = any(t.lower() == '#vitality' for t in tags)
+                    
+                    if has_vitality:
+                        vitality_stats.append((display_name, value, src))
+                    else:
+                        defensive_stats.append((display_name, value, src))
+                except Exception:
+                    defensive_stats.append((display_name, value, src))
+            
+            # Display vitality stats if any
+            if vitality_stats:
+                lines.append("\n**Vitality**\n")
+                lines.append("\n| Key           | Value | Source File                            |")
+                lines.append("| ------------- | ----- | -------------------------------------- |")
+                for name, v, src in vitality_stats:
+                    v2 = v if v else ""
+                    lines.append(f"| {name} | {v2}    | {src} |")
+                lines.append("")
+            
+            # Display defensive stats if any
+            if defensive_stats:
+                lines.append("\n**Defensive**\n")
+                lines.append("\n| Key           | Value | Source File                            |")
+                lines.append("| ------------- | ----- | -------------------------------------- |")
+                for name, v, src in defensive_stats:
+                    v2 = v if v else ""
+                    lines.append(f"| {name} | {v2}    | {src} |")
+                lines.append("")
+            
     else:
-        lines.append("No PCs found under Player Root/PCs/\n")
+        lines.append("No PCs found under Player Root/variable/PC_variables/\n")
 
     lines.append("\n_Last generated by Mycelium/scripts/Python/generate_stat_overview.py_\n")
     return "\n".join(lines)

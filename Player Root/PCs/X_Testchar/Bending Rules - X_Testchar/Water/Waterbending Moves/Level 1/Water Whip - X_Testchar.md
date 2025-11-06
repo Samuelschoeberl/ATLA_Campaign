@@ -1,5 +1,5 @@
 #water_X_Testchar 
-- **Range:** [[Water_charge]] (51) meters
+- **Range:** [[Water_charge]] (40) meters
 - **Effect:**  
    The waterbender lashes out with a tendril of water, striking a target within range.
   - **[[Water Attack Roll]] (1d20 + 20 + 4):**
@@ -17,7 +17,7 @@
 Tags:
 
 #Level1_X_Testchar
-#player_root_X_Testchar
+
 #water_X_Testchar
 ```
 

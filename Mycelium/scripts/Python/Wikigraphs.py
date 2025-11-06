@@ -26,6 +26,7 @@ import colorsys
 import hashlib
 import re
 import fnmatch
+import json
 from typing import Dict, List, Tuple
 try:
     from config_loader import get_config
@@ -82,6 +83,97 @@ AUTOGEN_MARKER = '<!-- AUTOGEN: Wikigraphs.py -->'
 
 # Debug toggle: set PCS_DEBUG=1 in environment or pass --verbose to enable
 PCS_DEBUG: bool = bool(_os.environ.get('PCS_DEBUG'))
+
+
+def load_element_colors() -> Dict:
+    """Load element color configuration from JSON file.
+    
+    Returns dictionary with keys:
+    - element_tag_colors: dict mapping element names to hex colors
+    - element_hue_ranges: dict mapping element names to [start, end] tuples (derived)
+    - element_hues: dict mapping element names to single hue values (derived)
+    - tag_aliases: dict mapping element names to list of alternative tags
+    
+    Falls back to hardcoded values if JSON file not found.
+    """
+    # Try to find element_colors.json relative to this script
+    script_dir = Path(__file__).parent
+    # Go up two levels: Python -> scripts -> Mycelium
+    json_path = script_dir.parent.parent / "element_colors.json"
+    
+    def hex_to_hue(hex_color: str) -> float:
+        """Convert hex color to HSV hue (0.0-1.0)."""
+        hex_color = hex_color.lstrip('#')
+        r = int(hex_color[0:2], 16) / 255.0
+        g = int(hex_color[2:4], 16) / 255.0
+        b = int(hex_color[4:6], 16) / 255.0
+        h, s, v = colorsys.rgb_to_hsv(r, g, b)
+        return h
+    
+    try:
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+            
+        element_tag_colors = data.get('element_tag_colors', {})
+        tag_aliases = data.get('tag_aliases', {})
+        
+        # Derive hues and hue ranges from hex colors
+        element_hues = {}
+        element_hue_ranges = {}
+        
+        for element, hex_color in element_tag_colors.items():
+            hue = hex_to_hue(hex_color)
+            element_hues[element] = hue
+            
+            # Create a range around the hue (±0.04 for variation in folder trees)
+            range_width = 0.04
+            start_hue = (hue - range_width) % 1.0
+            end_hue = (hue + range_width) % 1.0
+            element_hue_ranges[element] = [start_hue, end_hue]
+        
+        return {
+            'element_tag_colors': element_tag_colors,
+            'element_hue_ranges': element_hue_ranges,
+            'element_hues': element_hues,
+            'tag_aliases': tag_aliases
+        }
+        
+    except Exception as e:
+        # Fallback to hardcoded values
+        return {
+            "element_tag_colors": {
+                "fire": "#ffb3b3",
+                "water": "#5f81fd",
+                "air": "#c3e8fa",
+                "spirit": "#ffcaf4",
+                "earth": "#c8f0a6"
+            },
+            "element_hue_ranges": {
+                "fire": [0.9722, 1.0],
+                "water": [0.6111, 0.6389],
+                "air": [0.5278, 0.5694],
+                "spirit": [0.8611, 0.9167],
+                "earth": [0.2222, 0.3056]
+            },
+            "element_hues": {
+                "fire": 0.0,
+                "water": 0.625,
+                "air": 0.55,
+                "spirit": 0.8889,
+                "earth": 0.2639
+            },
+            "tag_aliases": {
+                "fire": ["fire", "firebending"],
+                "water": ["water", "waterbending"],
+                "air": ["air", "airbending"],
+                "spirit": ["spirit", "spiritbending"],
+                "earth": ["earth", "earthbending"]
+            }
+        }
+
+
+# Load element colors at module level
+ELEMENT_COLORS = load_element_colors()
 
 
 def unobsidify(text: str) -> str:
@@ -1099,19 +1191,12 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
         # primary element folders fixed hue subranges so they map to the
         # requested color palettes. Only apply to directories.
         if node_id.endswith('/') and 'bending rules' in node_id.lower():
-            # element -> (start_hue, end_hue)
-            element_ranges = {
-                # air: light cyan / very light blue
-                'air': (0.50, 0.58),
-                # water: deeper blue
-                'water': (0.66, 0.75),
-                # fire: middle of dark to bright red 
-                'fire': (0.98, 0.03),
-                # earth: dark green (center ~0.30-0.33)
-                'earth': (0.25, 0.35),
-                # Avatar Spirit Bridge: pale white-grey-ish )
-                'Avatar Spirit Bridge': (0.55, 0.62),
-            }
+            # Load element hue ranges from configuration
+            element_ranges = {}
+            for key, value in ELEMENT_COLORS.get('element_hue_ranges', {}).items():
+                if isinstance(value, list) and len(value) == 2:
+                    element_ranges[key] = tuple(value)
+            
             for child in children:
                 name = Path(child).name.lower()
                 matched = False
@@ -1240,14 +1325,8 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
     # PC folder so the PC subtree uses the blended color as its base.
     try:
         if pc_name and isinstance(allowed_elements_levels, dict):
-            # element->hue mapping (midpoints used in assign_hues special-case)
-            element_hues = {
-                'air': 0.54,
-                'water': 0.705,
-                'fire': 0.005,
-                'earth': 0.30,
-                'spirit': 0.585,
-            }
+            # element->hue mapping loaded from element_colors.json
+            element_hues = ELEMENT_COLORS.get('element_hues', {})
             # collect weights from allowed_elements_levels using flexible keys
             weights = {}
             total_w = 0
@@ -1513,28 +1592,15 @@ def make_graphs(root: Path, outdir: Path, exts=DEFAULT_EXTS, excludes=DEFAULT_EX
             sz += b * w
         return (sx / total, sy / total, sz / total)
 
-    # Element tag -> desired pastel hex mapping (user-specified)
-    element_tag_colors = {
-        'fire': '#ffb3b3',   # pastel red
-        'water': "#5f81fd",  # darker pastel blue
-        'air': "#c3e8fa",    # very light blue
-        'spirit': "#ffcaf4", # light pastel yellow
-        'earth': '#c8f0a6',  # pastel green
-    }
-
-    # Accept common tag variants like '#firebending' in addition to '#fire'
-    tag_aliases = {
-        'fire': ['fire', 'firebending'],
-        'water': ['water', 'waterbending'],
-        'air': ['air', 'airbending'],
-        'spirit': ['spirit', 'spiritbending'],
-        'earth': ['earth', 'earthbending'],
-    }
+    # Load element tag colors and aliases from configuration
+    element_tag_colors = ELEMENT_COLORS.get('element_tag_colors', {})
+    tag_aliases = ELEMENT_COLORS.get('tag_aliases', {})
+    
     tag_patterns: Dict[str, re.Pattern] = {}
     for k, aliases in tag_aliases.items():
         group = '|'.join(re.escape(a) for a in aliases)
-        # word-boundary after the tag to avoid accidental mid-word matches
-        pat = rf'(?i)#(?:{group})\b'
+        # Match word-boundary or underscore after the tag to catch variants like #air_Tapioca
+        pat = rf'(?i)#(?:{group})(?:\b|_)'
         tag_patterns[k] = re.compile(pat)
 
     # First, override file (leaf) colors when their markdown contains element tags.

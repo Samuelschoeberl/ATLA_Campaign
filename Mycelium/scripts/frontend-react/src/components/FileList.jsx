@@ -9,6 +9,7 @@ const FileList = ({
   onRestore,
   onRefresh,
   isDeletedFolder,
+  fileColors = {},
 }) => {
   const [newFileName, setNewFileName] = useState("");
 
@@ -25,9 +26,48 @@ const FileList = ({
   };
 
   const handleEntryClick = (e, entry) => {
-    const isModified =
-      e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1;
+    const isCommandClick = e.metaKey || e.ctrlKey;
+    const isModified = e.shiftKey || e.altKey || e.button === 1;
 
+    // Handle command-click for new tab
+    if (isCommandClick) {
+      e.preventDefault();
+      if (entry.type === "dir") {
+        // Open folder in new tab
+        const folderPath = (entry.path || "").replace(/^Player Root\//i, "");
+        const url = `${window.location.origin}${window.location.pathname}?path=${encodeURIComponent(folderPath)}`;
+        console.log('FileList - Opening folder in new tab:', {
+          url,
+          folderPath
+        });
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else if (entry.name.toLowerCase().endsWith(".html")) {
+        // Let HTML files open normally in new tab
+        return;
+      } else if (isImageFile(entry.name)) {
+        // Let image files open normally in new tab
+        return;
+      } else {
+        // Open file in new tab
+        const fileData = {
+          name: entry.name,
+          path: entry.path,
+          type: "file",
+        };
+        const params = new URLSearchParams({
+          file: JSON.stringify(fileData)
+        });
+        const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+        console.log('FileList - Opening file in new tab:', {
+          url,
+          fileData
+        });
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+      return;
+    }
+
+    // Normal click behavior
     if (entry.type === "dir") {
       e.preventDefault();
       onNavigate(entry);
@@ -79,12 +119,34 @@ const FileList = ({
       rel = rel.replace(/^Player Root\//i, "");
     }
     return (
-      "/" +
+      "/player_root/" +
       rel
         .split("/")
         .map((s) => encodeURIComponent(s))
         .join("/")
     );
+  };
+
+  // Get the background color for a file or folder
+  const getEntryColor = (entry) => {
+    // Normalize the path to match the color keys
+    let rel = (entry.path || "").replace(/^Player Root\//i, "");
+    
+    // Try exact match first
+    if (fileColors[rel]) {
+      return fileColors[rel];
+    }
+    
+    // For directories, try with trailing slash
+    if (entry.type === "dir") {
+      const dirKey = rel.endsWith('/') ? rel : rel + '/';
+      if (fileColors[dirKey]) {
+        return fileColors[dirKey];
+      }
+    }
+    
+    // Default to transparent if no color found
+    return 'transparent';
   };
 
   return (
@@ -100,18 +162,20 @@ const FileList = ({
             ? getFileUrl(entry.path)
             : "#";
           const opensExternally = isHtmlFile || isImage;
+          const bgColor = getEntryColor(entry);
 
           return (
-            <li key={idx}>
+            <li key={idx} style={{ backgroundColor: bgColor }}>
               <a
                 href={href}
                 className={opensExternally ? "external-link" : ""}
                 title={opensExternally ? "Opens in new tab" : ""}
                 target={opensExternally ? "_blank" : undefined}
-                rel={opensExternally ? "noopener" : undefined}
+                rel={opensExternally ? "noopener noreferrer" : undefined}
                 onClick={(e) => handleEntryClick(e, entry)}
               >
                 {isImage && "🖼️ "}
+                {isHtmlFile && "🌐 "}
                 {entry.name}
               </a>
               <div className="muted">{entry.type}</div>

@@ -15,12 +15,12 @@
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]] (0)     | -3        |
-| [[Dexterity]] (0)    | 3         |
-| [[Constitution]] (0) | 1         |
-| [[Wisdom]] (0)       | 5         |
-| [[Intelligence]] (0) | 2         |
-| [[Charisma]] (0)     | 3         |
+| [[Strength]] (5)     | -3        |
+| [[Dexterity]] (3)    | 3         |
+| [[Constitution]] (3) | 1         |
+| [[Wisdom]] (7)       | 5         |
+| [[Intelligence]] (4) | 2         |
+| [[Charisma]] (5)     | 3         |
 
 
 - **Ideal for infiltration, distraction, and sensory manipulation.** Luma’tik thrives in urban or crystal-laced environments, using its shimmering form and illusions to mislead enemies and aid allies from the shadows. Though not powerful in direct combat, it’s difficult to pin down and annoying to deal with.

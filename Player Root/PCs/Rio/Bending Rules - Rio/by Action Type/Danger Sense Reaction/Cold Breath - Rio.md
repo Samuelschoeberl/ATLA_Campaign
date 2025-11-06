@@ -2,7 +2,7 @@
 #Danger_Sense_Reaction_Rio (airbender)
 
 Each Bender-decides to which pool to add their Bending slots:
-- **Y**([[Water_charge]] (15)): Yd6 [[Fire Armor]] (2). The Waterbender must be in [[Water_charge]] (15) meter of the airbender.
+- **Y**([[Water_charge]] (4)): Yd6 [[Fire Armor]] (2). The Waterbender must be in [[Water_charge]] (4) meter of the airbender.
 - **X**([[Airbending_slot]] (0)): [[Airbending_slot]] (0) meters cone range from the Airbender.
 - Duration: 1 Round
 - **Range:**  

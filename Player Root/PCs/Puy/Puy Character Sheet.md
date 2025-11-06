@@ -5,11 +5,12 @@ Name: Puy
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            48 |
-| current hp        |        48 |
+| max_hp            |                48 |
+| current_hp        |            48 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Initiative        |        1d20 + 3 |
+| Movement          |          5 |
 
 ## Core Stats
 
@@ -33,15 +34,15 @@ Total Bending Level: 3
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        13 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  2 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     0 | 0     |
-| Ice Armor      |      1 | 0     |
-| Spirit Armor   |   0 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        13 |
+| Barrier        |        0 |
+| General Armor  |  2 |
+| Physical Armor | 0 |
+| Fire Armor     |     0 |
+| Ice Armor      |      1 |
+| Spirit Armor   |   0 |
 
 
 
@@ -57,8 +58,16 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
+| Environmental water charge |  9 |
 
 
 
 #Puy #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Charisma | 4 |
+| Constitution | 5 |
+| Dexterity | 3 |
+| Intelligence | 1 |
+| Strength | 5 |
+| Wisdom | 3 |

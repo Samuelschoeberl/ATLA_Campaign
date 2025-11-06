@@ -108,19 +108,20 @@ export function convertImageEmbeds(text) {
   });
 }
 
-// Convert [[wikilinks]] to clickable spans
+// Convert [[wikilinks]] to clickable anchor elements
 export function convertWikilinks(text) {
   // Match [[link]] or [[link|display text]]
   const wikilinkPattern = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 
   return text.replace(wikilinkPattern, (match, target, displayText) => {
     const display = displayText || target;
-    // Create a span that will be made clickable
-    return `<span class="wikilink" data-wikilink="${escapeHtml(
+    // Create an anchor element with href="#" to get native link behavior (ctrl/cmd+click)
+    // The actual navigation is handled by JavaScript event listener
+    return `<a href="#" class="wikilink" data-wikilink="${escapeHtml(
       target.trim()
-    )}" style="cursor: pointer; color: #6366f1; text-decoration: underline; font-weight: 500;">${escapeHtml(
+    )}" style="color: #6366f1; text-decoration: underline; font-weight: 500;">${escapeHtml(
       display.trim()
-    )}</span>`;
+    )}</a>`;
   });
 }
 

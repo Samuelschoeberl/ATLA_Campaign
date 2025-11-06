@@ -6,11 +6,11 @@ Bending Levels:
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]] (0)     | -2        |
-| [[Dexterity]] (0)    | 7         |
-| [[Constitution]] (0) | -2        |
-| [[Wisdom]] (0)       | 2         |
-| [[Intelligence]] (0) | 2         |
+| [[Strength]] (5)     | -2        |
+| [[Dexterity]] (3)    | 7         |
+| [[Constitution]] (3) | -2        |
+| [[Wisdom]] (7)       | 2         |
+| [[Intelligence]] (4) | 2         |
 **Transformation Points cost:** 1 [[Transformation Points]] (0)
 - **Size:** Small
     
@@ -35,10 +35,10 @@ Bending Slots:
 	Air Lvl1: 4
 
 
-#spirit_Tiebeediy  #Level1_Tiebeediy #player_root_Tiebeediy
+#spirit_Tiebeediy  #Level1_Tiebeediy 
 
 #Level1_Tiebeediy
-#player_root_Tiebeediy
+
 #shapeshifting_form_Tiebeediy
 #spirit_Tiebeediy
 ```

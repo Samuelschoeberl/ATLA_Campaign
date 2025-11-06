@@ -132,3 +132,13 @@ export async function findFileByName(filename) {
   }
   return response.json();
 }
+
+// Fetch file/folder colors for the explorer
+export async function fetchFileColors() {
+  const url = `${API_BASE}/api/file-colors`;
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch file colors: ${response.status}`);
+  }
+  return response.json();
+}

@@ -4,11 +4,12 @@ Name: {{name}}
 | key               |                 value |
 | ----------------- | --------------------: |
 | max_hp            |            {{max hp}} |
-| current hp        |        {{current hp}} |
+| current_hp        |        {{current hp}} |
 | Stress Level      |      {{Stress Level}} |
 | Fire Damage Bonus | {{Fire Damage Bonus}} |
 | Chaos energy      |      {{Chaos_energy}} |
 | Initiative        |        {{Initiative}} |
+| Movement          |          {{Movement}} |
 
 ## Core Stats
 
@@ -35,15 +36,15 @@ Total Bending Level: {{cl}}
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        {{Evasion}} | 0     |
-| Barrier        |        {{Barrier}} | 0     |
-| General Armor  |  {{General Armor}} | 0     |
-| Physical Armor | {{Physical Armor}} | 0     |
-| Fire Armor     |     {{Fire Armor}} | 0     |
-| Ice Armor      |      {{Ice Armor}} | 0     |
-| Spirit Armor   |   {{Spirit Armor}} | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        {{Evasion}} |
+| Barrier        |        {{Barrier}} |
+| General Armor  |  {{General Armor}} |
+| Physical Armor | {{Physical Armor}} |
+| Fire Armor     |     {{Fire Armor}} |
+| Ice Armor      |      {{Ice Armor}} |
+| Spirit Armor   |   {{Spirit Armor}} |
 
 
 

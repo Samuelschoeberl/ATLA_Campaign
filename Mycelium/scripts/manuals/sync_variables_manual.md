@@ -2,16 +2,19 @@
 
 ## Overview
 
-The `sync_variables.py` script automatically detects changes in character sheets and writes them back to their corresponding variable files. This ensures that your character sheets and variable files stay in sync.
+The `sync_variables.py` script provides **bi-directional** synchronization between character sheets and variable files. This ensures that your character sheets and variable files stay in sync automatically.
+
+**Default behavior:** Runs in **watch mode** with bi-directional sync enabled.
 
 ## How It Works
 
 The script:
-1. Reads character sheets from `Player Root/PCs/<CharacterName>/<CharacterName> Character Sheet.md`
-2. Parses markdown tables to extract stat values
-3. Compares these values with existing variable files in `Player Root/variable/PC_variables/<CharacterName>/`
-4. Updates variable files when differences are detected
-5. Preserves the correct tags for each variable type
+1. Monitors character sheets in `Player Root/PCs/<CharacterName>/<CharacterName> Character Sheet.md`
+2. Monitors variable files in `Player Root/variable/PC_variables/<CharacterName>/`
+3. Detects changes in **either** location
+4. **Sheet → Variable:** When you edit a stat in a character sheet, it updates the corresponding variable file
+5. **Variable → Sheet:** When you edit a variable file, it updates the corresponding row in the character sheet
+6. Preserves the correct tags for each variable type
 
 ## Installation
 
@@ -24,29 +27,39 @@ Mycelium/scripts/Python/sync_variables.py
 
 ### Basic Commands
 
-**Sync all characters (one-time):**
+**Watch mode (default - continuously monitor for changes):**
 ```bash
 python3 Mycelium/scripts/Python/sync_variables.py
 ```
 
-**Sync a specific character:**
+**Run once and exit:**
+```bash
+python3 Mycelium/scripts/Python/sync_variables.py --once
+```
+
+**Sync a specific character (watch mode):**
 ```bash
 python3 Mycelium/scripts/Python/sync_variables.py --character Anju
 ```
 
+**Sync a specific character (one-time):**
+```bash
+python3 Mycelium/scripts/Python/sync_variables.py --once --character Anju
+```
+
 **Dry run (preview changes without applying them):**
 ```bash
-python3 Mycelium/scripts/Python/sync_variables.py --dry-run
+python3 Mycelium/scripts/Python/sync_variables.py --once --dry-run
 ```
 
-**Watch mode (continuously monitor for changes):**
+**Sync only from sheet to variable (one direction):**
 ```bash
-python3 Mycelium/scripts/Python/sync_variables.py --watch
+python3 Mycelium/scripts/Python/sync_variables.py --once --direction sheet-to-var
 ```
 
-**Watch a specific character:**
+**Sync only from variable to sheet (one direction):**
 ```bash
-python3 Mycelium/scripts/Python/sync_variables.py --watch --character Anju
+python3 Mycelium/scripts/Python/sync_variables.py --once --direction var-to-sheet
 ```
 
 ### Shell Wrapper
@@ -74,7 +87,7 @@ In `Anju Character Sheet.md`:
 
 **Run:**
 ```bash
-python3 Mycelium/scripts/Python/sync_variables.py --character Anju
+python3 Mycelium/scripts/Python/sync_variables.py --once --character Anju
 ```
 
 **Result:**
@@ -85,31 +98,68 @@ The file `Player Root/variable/PC_variables/Anju/Anju_current_hp.md` is updated 
 #vitality #current_variable #variable_Anju #character_stat_Anju #character_stats_Anju #secondary_stat_Anju
 ```
 
-### Example 2: Watch Mode
+### Example 2: Variable → Sheet Sync
 
-Start the script in watch mode:
-```bash
-python3 Mycelium/scripts/Python/sync_variables.py --watch --character Anju
+**Before:**
+Variable file `Anju_max_hp.md` contains:
+```markdown
+95
+
+#vitality #variable_Anju #character_stat_Anju
 ```
 
-Now whenever you save changes to `Anju Character Sheet.md`, the script will automatically detect and sync the changes to the variable files.
+**Change to:**
+```markdown
+100
+
+#vitality #variable_Anju #character_stat_Anju
+```
+
+**Run:**
+```bash
+python3 Mycelium/scripts/Python/sync_variables.py --once --character Anju
+```
+
+**Result:**
+The character sheet is updated:
+```markdown
+| max hp | 100 |
+```
+
+### Example 3: Watch Mode (Default)
+
+Start the script in default watch mode:
+```bash
+python3 Mycelium/scripts/Python/sync_variables.py --character Anju
+```
+
+Now whenever you save changes to **either** `Anju Character Sheet.md` **or** any variable file in `Anju/`, the script will automatically detect and sync the changes bi-directionally.
 
 Press `Ctrl+C` to stop watching.
 
-### Example 3: Dry Run All Characters
+### Example 4: Dry Run All Characters
 
 Preview what would change across all characters without making any changes:
 ```bash
-python3 Mycelium/scripts/Python/sync_variables.py --dry-run
+python3 Mycelium/scripts/Python/sync_variables.py --once --dry-run
 ```
 
-Output:
+Output shows what would be synced:
 ```
-[DRY RUN] Would update Anju_max_hp: '38' → '95'
-[DRY RUN] Would update Anju_Initiative: '1d20 + 1 + 1 + 1' → '1d20 + 1'
-[DRY RUN] Would update Anju_Evasion: '0' → '11'
+[DRY RUN] Sheet → Variable: Would update Anju_current_hp from 38 to 32
+[DRY RUN] Variable → Sheet: Would update Grep max hp row from 85 to 90
 ...
 ```
+
+## Command-Line Options
+
+- `--once` : Run once and exit (instead of default watch mode)
+- `--dry-run`, `-n` : Show what would be changed without making modifications
+- `--character CHARACTER`, `-c` : Only process a specific character (e.g., `--character Anju`)
+- `--direction {both,sheet-to-var,var-to-sheet}`, `-d` : Sync direction
+  - `both` (default) : Bi-directional sync
+  - `sheet-to-var` : Only sync from character sheet to variable files
+  - `var-to-sheet` : Only sync from variable files to character sheet
 
 ## Supported Variables
 

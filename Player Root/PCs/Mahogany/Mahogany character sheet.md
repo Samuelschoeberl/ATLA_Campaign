@@ -5,10 +5,11 @@ Name: Mahogany
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            20 |
-| current hp        |        20 |
+| max_hp            |                20 |
+| current_hp        |            20 |
 | Chaos energy      |      0 |
 | Initiative        |        1d20 + 0 |
+| Movement          |          8 |
 
 ## Core Stats
 
@@ -26,15 +27,15 @@ Total Bending Level: 3
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        11 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  0 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     0 | 0     |
-| Ice Armor      |      0 | 0     |
-| Spirit Armor   |   2 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        11 |
+| Barrier        |        0 |
+| General Armor  |  0 |
+| Physical Armor | 0 |
+| Fire Armor     |     0 |
+| Ice Armor      |      0 |
+| Spirit Armor   |   2 |
 
 
 
@@ -45,13 +46,13 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | ---------------------- | ------------------------: |
 | Airbending slot        |       3 |
 | Danger Sense Reactions | 1 |
-| Spiritbending slot     |    2 |
+| Spiritbending slot     |    0 |
 
 ## Water charges
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
+| Environmental water charge |  9 |
 
 
 

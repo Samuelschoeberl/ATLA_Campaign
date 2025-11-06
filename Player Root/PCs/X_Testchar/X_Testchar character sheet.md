@@ -5,12 +5,13 @@ Name: X_Testchar
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            2600 |
-| current hp        |        2600 |
+| max_hp            |                2600 |
+| current_hp        |            2600 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Chaos energy      |      0 |
 | Initiative        |        1d20 + 2 |
+| Movement          |          65 |
 
 ## Core Stats
 
@@ -37,15 +38,15 @@ Total Bending Level: 100
 
 ## Defensive
 
-| key            |               Base | Bonus |
-| -------------- | -----------------: | ----- |
-| Evasion        |        32 | 0     |
-| Barrier        |        0 | 0     |
-| General Armor  |  20 | 0     |
-| Physical Armor | 0 | 0     |
-| Fire Armor     |     20 | 0     |
-| Ice Armor      |      20 | 0     |
-| Spirit Armor   |   20 | 0     |
+| key            |               Base |
+| -------------- | -----------------: |
+| Evasion        |        32 |
+| Barrier        |        0 |
+| General Armor  |  20 |
+| Physical Armor | 0 |
+| Fire Armor     |     20 |
+| Ice Armor      |      20 |
+| Spirit Armor   |   20 |
 
 
 
@@ -58,15 +59,23 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Danger Sense Reactions | 20 |
 | Firebending slot       |      60 |
 | Earthbending slot      |     60 |
-| Spiritbending slot     |    20 |
+| Spiritbending slot     |    0 |
 
 ## Water charges
 
-| Water charge type          |                          value |
-| -------------------------- | -----------------------------: |
-| Environmental water charge | 11 |
-| Waterbottle charge         |         40 |
+| Water charge type          | value |
+| -------------------------- | ----: |
+| Environmental water charge |  9 |
+| Waterbottle charge         |    40 |
 
 
 
 #X_Testchar #Character_Sheet
+
+> WARNING: The following character stats could not be placed by context and were appended:
+| Charisma | 6 |
+| Constitution | 3 |
+| Dexterity | 2 |
+| Intelligence | 4 |
+| Strength | 1 |
+| Wisdom | 5 |

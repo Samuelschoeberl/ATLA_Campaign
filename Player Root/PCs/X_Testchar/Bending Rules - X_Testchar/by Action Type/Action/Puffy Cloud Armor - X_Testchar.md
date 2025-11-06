@@ -3,7 +3,7 @@
 
 
 Each Bender-decides to which pool to add their Bending slots:
--  **Y**([[Water_charge]] (51)): Yd6 [[Barrier]] (0) 
+-  **Y**([[Water_charge]] (40)): Yd6 [[Barrier]] (0) 
 - **X**([[Airbending_slot]] (60)): X/2 (rounded down) Targets
 - Duration: 2 Rounds
 

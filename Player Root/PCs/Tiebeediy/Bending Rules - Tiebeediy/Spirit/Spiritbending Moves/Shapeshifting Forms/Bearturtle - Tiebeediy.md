@@ -11,12 +11,12 @@ Bending Levels:
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]] (0)     | 6         |
-| [[Dexterity]] (0)    | 0         |
-| [[Constitution]] (0) | 7         |
-| [[Intelligence]] (0) | 0         |
-| [[Wisdom]] (0)       | 1         |
-| [[Charisma]] (0)     | 2         |
+| [[Strength]] (5)     | 6         |
+| [[Dexterity]] (3)    | 0         |
+| [[Constitution]] (3) | 7         |
+| [[Intelligence]] (4) | 0         |
+| [[Wisdom]] (7)       | 1         |
+| [[Charisma]] (5)     | 2         |
 
 - **Movement:**
     
@@ -30,7 +30,7 @@ Bending Levels:
 	        When an ally within 3 meter is attacked, impose Disadvantage on the [[Attack Roll]] (0) as you shift to protect them with your shell. Can be used 3 times per long rest.
 	    **Tuck in**: 
 	    - [[Reaction]] (0)
-		    When you fail a dexterity saving throw you still only take half damage. Your [[Movement]] (0) in the next round is halved.
+		    When you fail a dexterity saving throw you still only take half damage. Your [[Movement]] (5) in the next round is halved.
 
     - **Sturdy Form:**
 	    - You have Advantage on saving throws against being knocked prone or moved against your will.

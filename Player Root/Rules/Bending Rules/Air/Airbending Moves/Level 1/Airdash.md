@@ -6,16 +6,8 @@
 **Effects:**
 - You gain 5 * [[Airbending_slot]] meters movement for this turn.
 
-
-
-
-Tags:
-#Airbending #Mobility #Level_1 #Bonus_Action
-
-#Airbending
-#Bonus_Action
+#Air
 #Level1
-#Level_1
 #Mobility
-#player_root
+
 

@@ -454,7 +454,7 @@ def compute_secondaries(kv: Dict[str, Any], templates: Dict[str, str], passes: i
     return kv_local
 
 
-def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List[str], secondary_templates: Dict[str, str], out_root: Path, var_root: Optional[Path] = None, primary_tags: Optional[Dict[str, List[str]]] = None, secondary_tags: Optional[Dict[str, List[str]]] = None, verbose: bool = False, suppress_warnings: Optional[set] = None) -> None:
+def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List[str], secondary_templates: Dict[str, str], out_root: Path, var_root: Optional[Path] = None, primary_tags: Optional[Dict[str, List[str]]] = None, secondary_tags: Optional[Dict[str, List[str]]] = None, verbose: bool = False, suppress_warnings: Optional[set] = None, subfolder: Optional[str] = None) -> None:
     safe = re.sub(r"[^A-Za-z0-9_\-]", '_', name)
     tag_suffix = f"_{safe}"
     tag_suffix_lower = tag_suffix.lower()
@@ -469,7 +469,11 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
 
         return tag_pattern.sub(_replace_tag, text)
 
-    npc_dir = out_root.joinpath(safe)
+    # If subfolder is specified, create the NPC folder inside that subfolder
+    if subfolder and subfolder.strip():
+        npc_dir = out_root.joinpath(subfolder.strip(), safe)
+    else:
+        npc_dir = out_root.joinpath(safe)
     npc_dir.mkdir(parents=True, exist_ok=True)
 
     # write per-stat variable files into the global variable root (if available)
@@ -795,27 +799,10 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                             cat_file.write_text(rendered, encoding='utf-8')
                         except Exception:
                             pass
-            
-            # Always include the shared Core Rules folder, preserving structure.
-            core_rules_root_player = ROOT.joinpath('Player Root', 'Rules', 'core rules')
-            core_rules_root_dms = ROOT.joinpath('Dms Root', 'Rules', 'core rules')
-            core_rules_root = core_rules_root_dms if core_rules_root_dms.exists() else core_rules_root_player
-            
-            if core_rules_root.exists():
-                core_dest_root = br_root.joinpath('core rules')
-                try:
-                    if core_dest_root.exists():
-                        shutil.rmtree(core_dest_root)
-                except Exception:
-                    pass
-                try:
-                    shutil.copytree(core_rules_root, core_dest_root)
-                except Exception:
-                    pass
     except Exception:
         # non-fatal; don't stop sheet generation if rules rendering fails
         pass
-
+    
     # write a character sheet using the template if available
     sheet = npc_dir.joinpath(f"{safe} character sheet.md")
     tpl_path = ROOT.joinpath('Mycelium', 'data', 'template', 'template_Character_Sheet.md')
@@ -1194,7 +1181,7 @@ def main() -> None:
     except Exception:
         pass
 
-    npcs: List[Tuple[str, Dict[str, Any]]] = []
+    npcs: List[Tuple[str, Dict[str, Any], str]] = []
     propagate_var = args.propagate_variable.strip() if getattr(args, 'propagate_variable', None) else None
     affected_templates: List[str] = []
     if propagate_var:
@@ -1217,10 +1204,14 @@ def main() -> None:
         run = data.get('run update', '').strip().lower()
         if not args.npc and run not in ('yes', 'y', 'true'):
             continue
+        
+        # Extract subfolder if present
+        subfolder = data.get('subfolder', '').strip()
+        
         kv: Dict[str, Any] = {}
         for k, v in data.items():
             key = k.strip().lower()
-            if key == 'name' or key == 'run update':
+            if key == 'name' or key == 'run update' or key == 'subfolder':
                 continue
             if 'manually' in key and 'hp' in key:
                 key_out = 'rolled.hp'
@@ -1272,13 +1263,13 @@ def main() -> None:
                     is_affected = True
                     break
             if is_affected:
-                npcs.append((name, kv_all))
+                npcs.append((name, kv_all, subfolder))
         else:
-            npcs.append((name, kv_all))
+            npcs.append((name, kv_all, subfolder))
 
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
-    for name, kv_all in npcs:
-        write_character_files(name, kv_all, primary_names, secondary_templates, OUT_ROOT, var_root=variable_root, primary_tags=primary_tags, secondary_tags=secondary_tags, verbose=args.verbose, suppress_warnings=suppress_set)
+    for name, kv_all, subfolder in npcs:
+        write_character_files(name, kv_all, primary_names, secondary_templates, OUT_ROOT, var_root=variable_root, primary_tags=primary_tags, secondary_tags=secondary_tags, verbose=args.verbose, suppress_warnings=suppress_set, subfolder=subfolder)
         print('Wrote', name)
 
 

@@ -17,6 +17,6 @@
 Tags:
 
 #Level1
-#player_root
+
 #water
 ```

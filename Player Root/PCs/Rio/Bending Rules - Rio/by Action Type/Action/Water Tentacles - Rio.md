@@ -29,7 +29,7 @@
 Tags:
 
 #Level2_Rio
-#player_root_Rio
+
 #water_Rio
 ```
 

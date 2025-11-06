@@ -5,6 +5,6 @@ Earthbenders are solid and steadfast, drawing upon the Strength of their bodies 
 
 
 
-#player_root_Grep
+
 #earth_Grep
 #Level1_Grep 

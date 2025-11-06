@@ -85,49 +85,93 @@ const FileEditor = ({
       if (onOpen) {
         const wikilinkElements =
           previewRef.current.querySelectorAll(".wikilink");
+        console.log('Found wikilink elements:', wikilinkElements.length);
+        
         wikilinkElements.forEach((el) => {
-          el.onclick = async (e) => {
+          console.log('Attaching handler to:', el.getAttribute('data-wikilink'));
+          
+          const clickHandler = async (e) => {
+            // For command/ctrl-click on anchor tags, the browser will handle it naturally
+            // We just need to set the href properly
+            const isCommandClick = e.metaKey || e.ctrlKey;
+            
+            console.log('Wikilink clicked:', {
+              metaKey: e.metaKey,
+              ctrlKey: e.ctrlKey,
+              isCommandClick,
+              target: el.getAttribute("data-wikilink"),
+              tagName: el.tagName
+            });
+            
+            // Always prevent default navigation since href="#"
             e.preventDefault();
+            
             const target = el.getAttribute("data-wikilink");
-            if (target) {
-              try {
-                // Find the file or folder by name
-                const result = await findFileByName(target);
-                if (result.found && result.path) {
-                  if (result.type === "file") {
-                    // Open the found file
-                    onOpen({
-                      name: target.endsWith(".md") ? target : `${target}.md`,
-                      path: `Player Root/${result.path}`,
-                      type: "file",
-                    });
-                  } else if (result.type === "folder" && onNavigate) {
-                    // Navigate to the folder
-                    onNavigate({
-                      name: target,
-                      path: `Player Root/${result.path}`,
-                      type: "dir",
-                    });
-                    onClose(); // Close the editor when navigating to a folder
-                  }
-                } else {
-                  console.warn(`Wikilink target not found: ${target}`);
-                  if (onLog) {
-                    onLog(
-                      "warning",
-                      "Link Not Found",
-                      `File or folder not found: ${target}`
-                    );
-                  }
-                }
-              } catch (error) {
-                console.error("Failed to resolve wikilink:", error);
+            if (!target) return;
+            
+            try {
+              // Find the file or folder by name
+              const result = await findFileByName(target);
+              if (!result.found || !result.path) {
+                console.warn(`Wikilink target not found: ${target}`);
                 if (onLog) {
-                  onLog("error", "Link Error", error.message);
+                  onLog("warning", "Link Not Found", `File or folder not found: ${target}`);
                 }
+                return;
+              }
+              
+            const fileData = {
+              name: target.endsWith(".md") ? target : `${target}.md`,
+              path: `Player Root/${result.path}`,
+              type: result.type,
+            };
+            
+            // For command/ctrl-click, open in new tab
+            if (isCommandClick) {
+              // For folders, encode the path to navigate to; for files, encode the file data
+              if (result.type === "folder") {
+                // Navigate to the folder in a new tab
+                const folderPath = result.path.replace(/^Player Root\//i, '');
+                const url = `${window.location.origin}${window.location.pathname}?path=${encodeURIComponent(folderPath)}`;
+                console.log('Opening folder in new tab:', {
+                  url,
+                  folderPath
+                });
+                window.open(url, '_blank', 'noopener,noreferrer');
+              } else {
+                // Open file in new tab
+                const params = new URLSearchParams({
+                  file: JSON.stringify(fileData)
+                });
+                const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+                console.log('Opening file in new tab:', {
+                  url,
+                  fileData,
+                  serialized: JSON.stringify(fileData)
+                });
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }
+              return;
+            }              // Normal click: open in current editor or navigate to folder
+              if (result.type === "file") {
+                onOpen(fileData);
+              } else if (result.type === "folder" && onNavigate) {
+                onNavigate(fileData);
+                onClose(); // Close the editor when navigating to a folder
+              }
+            } catch (error) {
+              console.error("Failed to resolve wikilink:", error);
+              if (onLog) {
+                onLog("error", "Link Error", error.message);
               }
             }
           };
+          
+          // Use addEventListener for better event handling
+          el.addEventListener('click', clickHandler);
+          
+          // Store handler reference for potential cleanup (optional)
+          el._clickHandler = clickHandler;
         });
       }
     }

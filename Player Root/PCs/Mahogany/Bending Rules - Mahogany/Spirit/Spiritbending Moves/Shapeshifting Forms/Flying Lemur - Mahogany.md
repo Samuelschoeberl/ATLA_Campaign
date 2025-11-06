@@ -35,10 +35,10 @@ Bending Slots:
 	Air Lvl1: 4
 
 
-#spirit_Mahogany  #Level1_Mahogany #player_root_Mahogany
+#spirit_Mahogany  #Level1_Mahogany 
 
 #Level1_Mahogany
-#player_root_Mahogany
+
 #shapeshifting_form_Mahogany
 #spirit_Mahogany
 ```

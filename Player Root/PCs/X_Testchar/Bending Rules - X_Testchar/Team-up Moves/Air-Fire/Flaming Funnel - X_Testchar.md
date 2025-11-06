@@ -1,7 +1,6 @@
 #Action_X_Testchar 
 #Reaction_X_Testchar 
 
-Each Bender-decides to which pool to add their Bending slots:
 -  **Y**([[Firebending_slot]] (60)): Yd12 Fire Damage
 - **X**([[Airbending_slot]] (60)): X * 10 meter Range [[Air Attack Roll]] (1d20 + 20 + 2)
 

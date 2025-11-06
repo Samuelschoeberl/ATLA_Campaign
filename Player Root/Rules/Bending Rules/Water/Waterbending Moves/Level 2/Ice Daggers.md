@@ -8,6 +8,6 @@
 The waterbender creates small sharp daggers of ice to hurl at targets.
 
 #Level2
-#player_root
+
 #water
 

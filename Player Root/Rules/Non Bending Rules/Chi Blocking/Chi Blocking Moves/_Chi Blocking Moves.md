@@ -8,4 +8,4 @@ Chi Blockers have a range of moves categorized by levels, growing more potent as
 - **Level 3**: High-impact moves that exhaust opponents.
 [[Player Root]]
 
-#player_root
+

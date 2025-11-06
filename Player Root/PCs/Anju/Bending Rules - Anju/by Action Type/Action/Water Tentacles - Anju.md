@@ -29,7 +29,7 @@
 Tags:
 
 #Level2_Anju
-#player_root_Anju
+
 #water_Anju
 ```
 

@@ -13,6 +13,6 @@ Local legend says the **Earth Lion Turtle** left these trees here, believing the
 [[Player Root]]
 
 #earth
-#player_root
+
 #signature_move
 #Puy 

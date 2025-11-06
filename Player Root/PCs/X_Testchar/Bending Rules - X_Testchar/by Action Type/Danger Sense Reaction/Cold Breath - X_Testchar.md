@@ -2,7 +2,7 @@
 #Danger_Sense_Reaction_X_Testchar (airbender)
 
 Each Bender-decides to which pool to add their Bending slots:
-- **Y**([[Water_charge]] (51)): Yd6 [[Fire Armor]] (20). The Waterbender must be in [[Water_charge]] (51) meter of the airbender.
+- **Y**([[Water_charge]] (40)): Yd6 [[Fire Armor]] (20). The Waterbender must be in [[Water_charge]] (40) meter of the airbender.
 - **X**([[Airbending_slot]] (60)): [[Airbending_slot]] (60) meters cone range from the Airbender.
 - Duration: 1 Round
 - **Range:**  
