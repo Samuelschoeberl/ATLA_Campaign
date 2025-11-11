@@ -5,8 +5,8 @@ Name: Grep
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                50 |
-| current_hp        |            50 |
+| max_hp            |            50 |
+| current_hp        |        50 |
 | Initiative        |        1d20 + 5 |
 | Movement          |          5 |
 
@@ -27,7 +27,7 @@ Total Bending Level: 2
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Earth   |  2 | 1d20 + 2 + 7  | 11  |
+| Earth   |  2 | 1d20 + 2 + 7  | 9  |
 
 ## Defensive
 
@@ -51,10 +51,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Earthbending slot      |     6 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
-| Water charge type          | value |
-| -------------------------- | ----: |
-| Environmental water charge |  9 |
+| Water charge type          |                          value |
+| -------------------------- | -----------------------------: |
+| Environmental water charge | 9 |
 
 
 

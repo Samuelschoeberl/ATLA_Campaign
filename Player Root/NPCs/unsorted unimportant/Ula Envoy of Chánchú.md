@@ -1,3 +1,4 @@
+![[Ula.png]]
 **Character**
 
 - **Name**: Ula
@@ -24,9 +25,6 @@
 
 - [[Chánchú ]]
 - [[Undersands Village ]]
-- [[Spirit Benders ]]
-- [[Mushroom Leather Techniques ]]
-[[NPC]]
-[[Player Root]]
+#npc 
 
 

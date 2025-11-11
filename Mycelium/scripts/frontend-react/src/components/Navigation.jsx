@@ -9,11 +9,17 @@ const Navigation = ({
   onPin,
   onUnpin,
   onNavigateToPinned,
+  openedFileName,
 }) => {
+  // Display path includes the file name if a file is opened
+  const displayPath = openedFileName 
+    ? (currentPath ? `${currentPath}/${openedFileName}` : openedFileName)
+    : currentPath;
+  
   return (
     <nav>
       <div className="back">
-        <button id="up-btn" disabled={!currentPath} onClick={onNavigateUp}>
+        <button id="up-btn" disabled={!currentPath && !openedFileName} onClick={onNavigateUp}>
           Up
         </button>
       </div>
@@ -59,7 +65,7 @@ const Navigation = ({
         ))}
       </div>
       <div className="muted">
-        Current: /<span id="curpath">{currentPath}</span>
+        Current: /<span id="curpath">{displayPath}</span>
       </div>
     </nav>
   );

@@ -5,8 +5,8 @@ Name: Tai
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                50 |
-| current_hp        |            50 |
+| max_hp            |            50 |
+| current_hp        |        50 |
 | Initiative        |        1d20 + 8 |
 | Movement          |          5 |
 
@@ -27,7 +27,7 @@ Total Bending Level: 2
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Water   |  2 | 1d20 + 2 + 8  | 12  |
+| Water   |  2 | 1d20 + 2 + 8  | 10  |
 
 ## Defensive
 
@@ -50,10 +50,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | ---------------------- | ------------------------: |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge |  9 |
+| Environmental water charge | 9 |
 | Waterbottle charge         |         4 |
 
 

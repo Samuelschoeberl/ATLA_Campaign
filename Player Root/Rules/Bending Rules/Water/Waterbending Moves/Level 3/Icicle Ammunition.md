@@ -1,24 +1,14 @@
+#Bonus_Action 
+#Ammunition
 
-#Action
-
-- **Cost:** 3- 2 * CL Water Charges.
-- **Type:** [[Action]].
-- **Range:** 5 Meter.
+- **Range:** [[water]] Meter.
 - **Effect:**  
-    You create A number of Icicles equal to the used charges.
-	They swirl around the Target and grants them the [[Reaction]] to send any or all of the [[Player Root/Rules/core rules/Ammunition]] against one target within 100 Meters of them until all Icicles are used.
-	Ammunition:
-    - **HP:** 20 HP.
-    - **AC:** 12.
-    - Damage 5d12 + [[Int]] Piercing Damage
-    - **Duration:** 1 minute.
-
-
-Tags:
-#Waterbending
+    You create 2 * [[Water_charge]] 1 meter radius and 2 Meter Tall Icicles within range. They are Impassable but can be used as [[Ammunition]].
+	Icicle stats:
+    - **HP:** 20.
+    - **Evasion:** 5
+	- [[Fire Armor]]: -10
+    - Damage 1d8 Piercing and 1d6 Ice Damage
 
 #Level3
-#Waterbending
-
 #water
-```

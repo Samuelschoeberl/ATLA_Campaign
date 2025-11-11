@@ -60,6 +60,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Spiritbending slot     |    {{spiritbending slot}} |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |

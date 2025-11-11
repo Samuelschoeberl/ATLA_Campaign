@@ -1,4 +1,3 @@
-
 #Action_X_Testchar
 #Cyclic_Flow_X_Testchar
 #Concentration_X_Testchar 
@@ -9,7 +8,7 @@
 - **Effect:**  
     You channel healing energy through water, restoring health to a creature. 
 	- If the creature is unconscious the creature becomes stable immediately.
-    - **Healing:** 2d8 per charge + [[Int]] (4) modifier at the beginning of your next Turn.
+    - **Healing:** [[Water_charge]] (40) \* 2 d8  at the beginning of your next Turn.
 
 
 #Level1_X_Testchar

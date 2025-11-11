@@ -3,12 +3,12 @@ Name: Anju
 
 
 
-| key        |    value |
-| ---------- | -------: |
-| max_hp     |       38 |
-| current_hp |       39 |
-| Initiative | 1d20 + 1 |
-| Movement   |        5 |
+| key               |                 value |
+| ----------------- | --------------------: |
+| max_hp            |            38 |
+| current_hp        |        38 |
+| Initiative        |        1d20 + 1 |
+| Movement          |          5 |
 
 ## Core Stats
 
@@ -27,8 +27,8 @@ Total Bending Level: 3
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Water   |  2 | 1d20 + 2 + 5  | 10  |
-| Earth   |  1 | 1d20 + 1 + 3  | 7  |
+| Water   |  2 | 1d20 + 2 + 5  | 7  |
+| Earth   |  1 | 1d20 + 1 + 3  | 4  |
 
 ## Defensive
 
@@ -52,11 +52,12 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Earthbending slot      |     3 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
-| Water charge type          | value |
-| -------------------------- | ----: |
+| Water charge type          |                          value |
+| -------------------------- | -----------------------------: |
 | Environmental water charge | 9 |
-| Waterbottle charge         |     4 |
+| Waterbottle charge         |         4 |
 
 
 

@@ -1,3 +1,3 @@
 28
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#vitality #variable_Sheph #character_stat_Sheph #character_stats_Sheph #secondary_stat_Sheph

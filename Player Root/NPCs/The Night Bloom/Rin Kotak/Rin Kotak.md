@@ -7,16 +7,9 @@ he/him
 
 
 
-**Links**:
-- [[Night Bloom]]
-
-Tags:
-#Airbending
 
 “They call it balance. They say the Avatar brings peace. But I ask you—what peace is built upon the whims of a single soul? One person, plucked from the cycle, anointed by spirits, wielding the fury of all four elements like a god among mortals. We kneel to them. We trust them. We fear them. We wait for them to fix what we cannot. But what happens when the Avatar fails? When they vanish? When they turn tyrant? No one should bear such power. And no one should have to live under it. Balance cannot come from a single hand—it must rise from all of us, together. End the cycle. Let the world breathe free for once, without its so-called savior.”
 
-
-[[NPC]]
-[[Player Root]]
-
+#npc 
+#air 
 

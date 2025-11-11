@@ -1,3 +1,3 @@
 11
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#defensive #variable_Anju #character_stat_Anju #character_stats_Anju #secondary_stat_Anju

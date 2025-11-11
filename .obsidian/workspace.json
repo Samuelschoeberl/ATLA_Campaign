@@ -4,16 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "c23658048c0cfad6",
+        "id": "ee5ef91f29561ce1",
         "type": "tabs",
         "children": [
           {
-            "id": "1d8248157aa1eab7",
+            "id": "70dfa7022da80a7e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/PCs/Anju/Anju Character Sheet.md",
+                "file": "Player Root/Rules/core rules/Conditions/Slowed.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -28,104 +28,35 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Anju Character Sheet"
+              "title": "Slowed"
             }
-          }
-        ]
-      },
-      {
-        "id": "db2119ca077212e6",
-        "type": "split",
-        "children": [
-          {
-            "id": "7584b76ed7eb4dcf",
-            "type": "tabs",
-            "children": [
-              {
-                "id": "8500d3bce12cc8a8",
-                "type": "leaf",
-                "pinned": true,
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Mycelium/data/template/template_Character_Sheet.md",
-                    "mode": "source",
-                    "source": false,
-                    "backlinks": true,
-                    "backlinkOpts": {
-                      "collapseAll": false,
-                      "extraContext": false,
-                      "sortOrder": "alphabetical",
-                      "showSearch": false,
-                      "searchQuery": "",
-                      "backlinkCollapsed": false,
-                      "unlinkedCollapsed": true
-                    }
-                  },
-                  "pinned": true,
-                  "icon": "lucide-file",
-                  "title": "template_Character_Sheet"
-                }
-              },
-              {
-                "id": "90b204c4943c4a67",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Player Root/PCs/stat_overview.md",
-                    "mode": "source",
-                    "source": false,
-                    "backlinks": true,
-                    "backlinkOpts": {
-                      "collapseAll": false,
-                      "extraContext": false,
-                      "sortOrder": "alphabetical",
-                      "showSearch": false,
-                      "searchQuery": "",
-                      "backlinkCollapsed": false,
-                      "unlinkedCollapsed": true
-                    }
-                  },
-                  "icon": "lucide-file",
-                  "title": "stat_overview"
-                }
-              }
-            ],
-            "currentTab": 1
           },
           {
-            "id": "d2a86ea39f7e6e0f",
-            "type": "tabs",
-            "children": [
-              {
-                "id": "88a209543548ec19",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Player Root/variable/PC_variables/Anju/Anju_current_hp.md",
-                    "mode": "source",
-                    "source": false,
-                    "backlinks": true,
-                    "backlinkOpts": {
-                      "collapseAll": false,
-                      "extraContext": false,
-                      "sortOrder": "alphabetical",
-                      "showSearch": false,
-                      "searchQuery": "",
-                      "backlinkCollapsed": false,
-                      "unlinkedCollapsed": true
-                    }
-                  },
-                  "icon": "lucide-file",
-                  "title": "Anju_current_hp"
+            "id": "dfe8816e13cf4b53",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Dms Root/NPCs/Night Bloom/Isay_Trekal/Isay_Trekal character sheet.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
                 }
-              }
-            ]
+              },
+              "icon": "lucide-file",
+              "title": "Isay_Trekal character sheet"
+            }
           }
         ],
-        "direction": "horizontal"
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -157,7 +88,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "barrier",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": true,
                 "collapseAll": true,
@@ -176,6 +107,30 @@
               "state": {},
               "icon": "lucide-bookmark",
               "title": "Bookmarks"
+            }
+          },
+          {
+            "id": "18144667bfbac21f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/PCs/Mahogany/Story/Spiritual Echo - Mountain Summit Encounter.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Spiritual Echo - Mountain Summit Encounter"
             }
           },
           {
@@ -288,53 +243,53 @@
       "runjs:RunJS": false
     }
   },
-  "active": "1d8248157aa1eab7",
+  "active": "dfe8816e13cf4b53",
   "lastOpenFiles": [
-    "Player Root/PCs/stat_overview.md",
+    "Spirit Encounters.md",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Isay_Trekal character sheet.md",
     "Player Root/PCs/Anju/Anju Character Sheet.md",
-    "Player Root/PCs/Anju/Anju Notes.md",
+    "Player Root/variable/secondary_stat/Waterbending DC.md",
+    "Player Root/variable/secondary_stat/Spiritbending DC.md",
+    "Player Root/variable/secondary_stat/Firebending DC.md",
+    "Player Root/variable/secondary_stat/Earthbending DC.md",
+    "Player Root/variable/secondary_stat/Airbending DC.md",
     "Mycelium/data/template/template_Character_Sheet.md",
-    "Player Root/variable/PC_variables/Anju/Anju_current_hp.md",
-    "Player Root/deleted/deleted_testfile.md",
-    "Player Root/PCs/Anju/testfile.md",
-    "Mycelium/scripts/Python/__pycache__/sync_variables_direct_edit.cpython-313.pyc",
-    "Player Root/variable/PC_variables/Anju/Anju_general_armor.md",
-    "Player Root/deleted/deleted_X_Testchar_variables.md",
-    "Player Root/deleted",
-    "Player Root/PCs/X_Testchar/X_Testchar_variables.md",
-    "Player Root/PCs/Tiebeediy/Tiebeediy_variables.md",
-    "Player Root/PCs/Tapioca/Tapioca_variables.md",
-    "Player Root/PCs/Tai/Tai_variables.md",
-    "Player Root/PCs/Sora/Sora_variables.md",
-    "Player Root/PCs/Sheph/Sheph_variables.md",
-    "Player Root/PCs/Rio/Rio_variables.md",
-    "Player Root/PCs/Puy/Puy_variables.md",
-    "Player Root/PCs/Mahogany/Mahogany_variables.md",
-    "Player Root/PCs/Grep/Grep_variables.md",
-    "Player Root/PCs/Ash/Ash_variables.md",
-    "Player Root/PCs/Anju/Anju_variables.md",
-    "Mycelium/scripts/frontend-react/vite.config.js.timestamp-1762390245967-9b8f265c53e3f.mjs",
-    "Player Root/variable/secondary_stat/chaos_energy.md",
-    "Player Root/variable/environmental/environmental_water_charge.md",
-    "Player Root/PCs/Grep/Grep character sheet.md",
-    "Player Root/variable/PC_variables/Anju/Anju_air.md",
-    "Player Root/variable/PC_variables/Ash/Ash_air.md",
-    "Player Root/variable/PC_variables/Tai",
-    "Player Root/variable/PC_variables/Sheph",
-    "Player Root/variable/PC_variables/Grep",
-    "Player Root/variable/PC_variables/Tiebeediy",
-    "Player Root/variable/PC_variables/Mahogany",
-    "Player Root/variable/PC_variables/Sora",
-    "Player Root/variable/PC_variables/Ash",
-    "Dms Root/NPCs/Spirits/assets_task_01jqk4rq81fnsrfydwnb0gnxr1_img_1.webp",
-    "Dms Root/NPCs/Spirits/assets_task_01jqk424c7ea58gb9jdd0zmvqj_img_0.webp",
-    "Dms Root/NPCs/Spirits/Jellytee.webp",
-    "Dms Root/NPCs/DMPCs/Kaedo.png",
-    "Player Root/NPCs/The Night Bloom/Rin Kotak/meditating dark.png",
-    "Player Root/NPCs/The Night Bloom/Rin Kotak/Rin Kotak.png",
-    "Mycelium/scripts/frontend-react/public/Mycelium Logo.png",
-    "Mycelium/Mycelium Logo.png",
-    "Mycelium/Mycellium Logo.png",
-    "Dms Root/visuals/Sandkheg_-_Tyler_Walpole.png"
+    "Dms Root/NPCs/Night Bloom/Hanal_Koga/Hanal_Koga character sheet.md",
+    "Dms Root/Npc_primary_stats.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_wis.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_water.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_str.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_spirit.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_rolled_hp.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_riz.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_name.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_max_hp.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_fire.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_environmental_water_charge.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_earth.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_dex.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_current_hp.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_con.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal/Isay_Trekal_cl.md",
+    "Dms Root/variable/NPC_variables/Isay_Trekal",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Water/Waterbending Moves/Level5",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Water/Waterbending Moves/Level 4",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Water/Waterbending Moves/Level 3",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Water/Waterbending Moves/Level 1",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Water/Waterbending Moves/Level 2",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Water/Waterbending Moves/Cantrips",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Team-up Moves/Air-Water/Level4",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Team-up Moves/Air-Water/Level2",
+    "Dms Root/NPCs/Night Bloom/Isay_Trekal/Bending Rules - Isay_Trekal/Fire/Firebending Moves/Level 3",
+    "Player Root/NPCs/unsorted unimportant/Ula.png",
+    "Dms Root/NPCs/Night Bloom/Rin_Kotak/Rin Kotak tatoos.png",
+    "Dms Root/Locations/Visual References/Pasted image 20250104171805.png",
+    "Player Root/NPCs/Unsorted important/Atash/Atash.png",
+    "Player Root/NPCs/Lotus/Phot the Sandsnake/Phot the sandsnake.png",
+    "Player Root/NPCs/Lotus/Mistress Akira Meiyu/Akira Meiyu.png",
+    "Player Root/NPCs/Lotus/Grandmaster Iroh Tanaka/Iroh Tanaka.png",
+    "Player Root/NPCs/The Night Bloom/Isay Trekal/Isay Trekal.png",
+    "Player Root/NPCs/The Night Bloom/Hanal Koga/Hanal Koga.png",
+    "Player Root/NPCs/The Night Bloom/Hanal Koga/Hanal Koga.png"
   ]
 }

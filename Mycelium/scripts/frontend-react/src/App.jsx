@@ -157,6 +157,13 @@ function App() {
   };
 
   const handleNavigateUp = () => {
+    // If a file is opened, close it first (go back to directory view)
+    if (openedFile) {
+      setOpenedFile(null);
+      return;
+    }
+    
+    // Otherwise, navigate up in the directory structure
     if (pathStack.length > 1) {
       const newStack = pathStack.slice(0, -1);
       setPathStack(newStack);
@@ -356,6 +363,7 @@ function App() {
         onPin={handlePin}
         onUnpin={handleUnpin}
         onNavigateToPinned={handleNavigateToPinned}
+        openedFileName={openedFile?.name}
       />
 
       <div

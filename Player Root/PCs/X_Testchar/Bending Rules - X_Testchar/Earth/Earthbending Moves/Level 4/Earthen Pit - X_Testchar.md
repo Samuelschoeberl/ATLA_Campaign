@@ -12,7 +12,7 @@
 - Duration: 1 minute
 
 **Effect**:
-All creatures in the area must make a Dexterity save against your [[Earthbending DC]] (121) or fall into the pit, taking [[Earthbending slot]] (60)d6 bludgeoning damage from the fall. Climbing out requires an Athletics check and costs the creature's full [[Movement]] (65).
+All creatures in the area must make a Dexterity save against your [[Earthbending DC]] (21) or fall into the pit, taking [[Earthbending slot]] (60)d6 bludgeoning damage from the fall. Climbing out requires an Athletics check and costs the creature's full [[Movement]] (65).
 
 **Usage**: Excellent battlefield control for separating enemies or creating obstacles.
 

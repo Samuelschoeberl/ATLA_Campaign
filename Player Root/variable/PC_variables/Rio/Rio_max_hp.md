@@ -1,3 +1,3 @@
 36
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#vitality #variable_Rio #character_stat_Rio #character_stats_Rio #secondary_stat_Rio

@@ -5,8 +5,8 @@ Name: Sora
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                32 |
-| current_hp        |            32 |
+| max_hp            |            32 |
+| current_hp        |        32 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Initiative        |        1d20 + 2 |
@@ -29,7 +29,7 @@ Total Bending Level: 3
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Fire    |   3 | 1d20 + 3 + 6   | 12   |
+| Fire    |   3 | 1d20 + 3 + 6   | 9   |
 
 ## Defensive
 
@@ -53,10 +53,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Firebending slot       |      9 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge |  9 |
+| Environmental water charge | 9 |
 
 
 

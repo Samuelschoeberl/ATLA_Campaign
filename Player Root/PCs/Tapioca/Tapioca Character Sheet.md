@@ -5,8 +5,8 @@ Name: Tapioca
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                36 |
-| current_hp        |            36 |
+| max_hp            |            36 |
+| current_hp        |        36 |
 | Initiative        |        1d20 + 7 |
 | Movement          |          11 |
 
@@ -27,8 +27,8 @@ Total Bending Level: 3
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Air     |    2 | 1d20 + 2 + 7    | 12    |
-| Earth   |  1 | 1d20 + 1 + 1  | 5  |
+| Air     |    2 | 1d20 + 2 + 7    | 9    |
+| Earth   |  1 | 1d20 + 1 + 1  | 2  |
 
 ## Defensive
 
@@ -54,10 +54,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Earthbending slot      |     3 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge |  9 |
+| Environmental water charge | 9 |
 
 
 

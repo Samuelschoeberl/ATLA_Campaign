@@ -1,3 +1,3 @@
 20
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#vitality #variable_Mahogany #character_stat_Mahogany #character_stats_Mahogany #secondary_stat_Mahogany

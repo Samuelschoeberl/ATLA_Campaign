@@ -1,3 +1,3 @@
 50
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#vitality #current_variable #variable_Grep #character_stat_Grep #character_stats_Grep #secondary_stat_Grep

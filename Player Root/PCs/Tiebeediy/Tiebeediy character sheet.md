@@ -5,8 +5,8 @@ Name: Tiebeediy
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                32 |
-| current_hp        |            32 |
+| max_hp            |            32 |
+| current_hp        |        32 |
 | Chaos energy      |      0 |
 | Initiative        |        1d20 + 3 |
 | Movement          |          5 |
@@ -28,8 +28,8 @@ Total Bending Level: 3
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Earth   |  1 | 1d20 + 1 + 5  | 9  |
-| Spirit  | 2 | 1d20 + 2 + 3 | 12 |
+| Earth   |  1 | 1d20 + 1 + 5  | 6  |
+| Spirit  | 2 | 1d20 + 2 + 3 | 9 |
 
 ## Defensive
 
@@ -54,10 +54,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Spiritbending slot     |    0 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge |  9 |
+| Environmental water charge | 9 |
 
 
 

@@ -5,8 +5,8 @@ Name: Sheph
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                28 |
-| current_hp        |            28 |
+| max_hp            |            28 |
+| current_hp        |        28 |
 | Initiative        |        1d20 + 6 |
 | Movement          |          11 |
 
@@ -27,7 +27,7 @@ Total Bending Level: 2
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Air     |    2 | 1d20 + 2 + 6    | 10    |
+| Air     |    2 | 1d20 + 2 + 6    | 8    |
 
 ## Defensive
 
@@ -52,10 +52,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Danger Sense Reactions | 2 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge |  9 |
+| Environmental water charge | 9 |
 
 
 

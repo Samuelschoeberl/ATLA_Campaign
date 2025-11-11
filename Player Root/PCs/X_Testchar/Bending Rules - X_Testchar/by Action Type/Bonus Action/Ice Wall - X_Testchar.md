@@ -1,4 +1,3 @@
-
 #Action_X_Testchar
 
 - **Range:** [[Water_charge]] (40) meter wall

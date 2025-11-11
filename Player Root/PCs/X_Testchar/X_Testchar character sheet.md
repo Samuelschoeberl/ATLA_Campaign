@@ -5,8 +5,8 @@ Name: X_Testchar
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                2600 |
-| current_hp        |            2600 |
+| max_hp            |            2600 |
+| current_hp        |        2600 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Chaos energy      |      0 |
@@ -30,11 +30,11 @@ Total Bending Level: 100
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Air     |    20 | 1d20 + 20 + 2    | 122    |
-| Water   |  20 | 1d20 + 20 + 4  | 124  |
-| Earth   |  20 | 1d20 + 20 + 1  | 121  |
-| Fire    |   20 | 1d20 + 20 + 5   | 125   |
-| Spirit  | 20 | 1d20 + 20 + 2 | 125 |
+| Air     |    20 | 1d20 + 20 + 2    | 22    |
+| Water   |  20 | 1d20 + 20 + 4  | 24  |
+| Earth   |  20 | 1d20 + 20 + 1  | 21  |
+| Fire    |   20 | 1d20 + 20 + 5   | 25   |
+| Spirit  | 20 | 1d20 + 20 + 2 | 25 |
 
 ## Defensive
 
@@ -62,11 +62,12 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Spiritbending slot     |    0 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
-| Water charge type          | value |
-| -------------------------- | ----: |
-| Environmental water charge |  9 |
-| Waterbottle charge         |    40 |
+| Water charge type          |                          value |
+| -------------------------- | -----------------------------: |
+| Environmental water charge | 9 |
+| Waterbottle charge         |         40 |
 
 
 

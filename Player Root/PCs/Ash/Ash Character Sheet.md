@@ -5,8 +5,8 @@ Name: Ash
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                26 |
-| current_hp        |            26 |
+| max_hp            |            26 |
+| current_hp        |        26 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Chaos energy      |      0 |
@@ -30,8 +30,8 @@ Total Bending Level: 3
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Fire    |   2 | 1d20 + 2 + 8   | 13   |
-| Spirit  | 1 | 1d20 + 1 + 1 | 12 |
+| Fire    |   2 | 1d20 + 2 + 8   | 10   |
+| Spirit  | 1 | 1d20 + 1 + 1 | 9 |
 
 ## Defensive
 
@@ -56,10 +56,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Spiritbending slot     |    0 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge |  9 |
+| Environmental water charge | 9 |
 
 
 

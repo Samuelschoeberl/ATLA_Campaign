@@ -5,8 +5,8 @@ Name: Rio
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                36 |
-| current_hp        |            36 |
+| max_hp            |            36 |
+| current_hp        |        36 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Initiative        |        1d20 + 6 |
@@ -29,8 +29,8 @@ Total Bending Level: 3
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Water   |  2 | 1d20 + 2 + 8  | 13  |
-| Fire    |   1 | 1d20 + 1 + 2   | 6   |
+| Water   |  2 | 1d20 + 2 + 8  | 10  |
+| Fire    |   1 | 1d20 + 1 + 2   | 3   |
 
 ## Defensive
 
@@ -54,10 +54,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Firebending slot       |      3 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge |  9 |
+| Environmental water charge | 9 |
 | Waterbottle charge         |         4 |
 
 

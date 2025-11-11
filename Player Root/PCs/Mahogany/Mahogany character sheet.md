@@ -5,8 +5,8 @@ Name: Mahogany
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |                20 |
-| current_hp        |            20 |
+| max_hp            |            20 |
+| current_hp        |        20 |
 | Chaos energy      |      0 |
 | Initiative        |        1d20 + 0 |
 | Movement          |          8 |
@@ -22,8 +22,8 @@ Total Bending Level: 3
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Air     |    1 | 1d20 + 1 + 0    | 4    |
-| Spirit  | 2 | 1d20 + 2 + 0 | 5 |
+| Air     |    1 | 1d20 + 1 + 0    | 1    |
+| Spirit  | 2 | 1d20 + 2 + 0 | 2 |
 
 ## Defensive
 
@@ -49,10 +49,11 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Spiritbending slot     |    0 |
 
 ## Water charges
+You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge |  9 |
+| Environmental water charge | 9 |
 
 
 

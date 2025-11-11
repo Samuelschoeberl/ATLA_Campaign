@@ -1,9 +1,8 @@
 #Bonus_action
 Cost: None
-- Your steps become light as air. Until the end of your turn, ignore difficult terrain.
-- You can move through a hostile creature’s space this turn (but not end your movement there).
-- If you would take falling damage this turn, reduce it by 1d6.
-
+- Your steps become light as air. Until the end of your turn, you can run along walls and ignore difficult terrain.
+- You can move through a hostile creature’s space this turn.
+- You dont take falling Damage this turn
 
 #air
 #Level1
