@@ -1,3 +1,3 @@
-Not good :D
-
+Not good :)
+Entails [[Paralysed]]
 #condition

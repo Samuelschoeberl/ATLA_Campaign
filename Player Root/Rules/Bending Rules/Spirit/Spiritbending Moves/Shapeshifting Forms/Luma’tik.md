@@ -12,6 +12,11 @@
 ---
 ![[Luma'tik.png]]
 - **Size:** Small
+#### **Vitailty and Defense Stats:**
+
+- **Evasion:** 17
+    
+- **HP:** 18 (fragile, relies on mobility and illusions)
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
@@ -30,9 +35,11 @@
 
 ### **Movement:**
 
-- Fly 15 m (hovering, effortless, emits no sound).
+- Fly 15 m 
+	- hovering, effortless, emits no sound
     
-- Climb 10 m (can even scale smooth surfaces silently).
+-  Climb 10 m
+	- can even scale smooth surfaces silently with Gecko Feet
     
 
 ---
@@ -51,11 +58,7 @@
 
 ---
 
-### **Combat Stats:**
 
-- **Evasion:** 17
-    
-- **HP:** 18 (fragile, relies on mobility and illusions)
 
 
 ---

@@ -1,3 +1,3 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Sora or #reactions_Sora (including #Danger_Sense_Reaction_Sora). ( #[[Action]] (0) is allowed)
+A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Sora or #reactions_Sora (including #Danger_Sense_Reaction_Sora). ( #Action_Sora is allowed)
 
 #condition_Sora
