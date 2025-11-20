@@ -366,124 +366,120 @@ function App() {
         openedFileName={openedFile?.name}
       />
 
-      <div
-        style={{
-          marginTop: "12px",
-          display: "flex",
-          gap: "8px",
-          alignItems: "center",
-        }}
-      >
-        <input
-          id="search-input"
-          placeholder="Search files and contents... (type to search)"
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            handleSearch(e.target.value);
-          }}
-          style={{
-            flex: 1,
-            padding: "8px 10px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-          }}
-        />
-        <button
-          onClick={() => {
-            setSearchQuery("");
-            setSearchResults(null);
-          }}
-        >
-          Clear
-        </button>
-      </div>
+      <div className="workspace">
+        <div className="workspace-sidebar">
+          <FileList
+            entries={entries}
+            currentPath={currentPath}
+            onNavigate={handleNavigate}
+            onOpenFile={handleOpenFile}
+            onRestore={handleRestore}
+            onRefresh={() => loadDirectory(currentPath)}
+            isDeletedFolder={isDeletedFolder}
+            fileColors={fileColors}
+          />
+        </div>
+        <div className="workspace-main">
+          <div className="search-bar">
+            <input
+              id="search-input"
+              placeholder="Search files and contents... (type to search)"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                handleSearch(e.target.value);
+              }}
+              style={{
+                flex: 1,
+                padding: "8px 10px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+              }}
+            />
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSearchResults(null);
+              }}
+            >
+              Clear
+            </button>
+          </div>
 
-      {searchResults && searchResults.length > 0 && (
-        <section style={{ marginTop: "12px" }}>
-          <h3>Search Results ({searchResults.length})</h3>
-          <ul className="entries">
-            {searchResults.map((result, idx) => {
-              // Extract filename from path
-              const filename = result.path.split("/").pop();
-              return (
-                <li key={idx}>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Clear search when opening a result
-                      setSearchQuery("");
-                      setSearchResults([]);
-                      // Convert to the format handleOpenFile expects
-                      handleOpenFile({
-                        name: filename,
-                        path: result.path,
-                        type: "file",
-                      });
-                    }}
-                  >
-                    {filename}
-                    {result.score && (
-                      <span
-                        style={{
-                          marginLeft: "8px",
-                          fontSize: "0.85em",
-                          color: "#888",
+          {searchResults && searchResults.length > 0 && (
+            <section style={{ marginTop: "12px" }}>
+              <h3>Search Results ({searchResults.length})</h3>
+              <ul className="entries">
+                {searchResults.map((result, idx) => {
+                  // Extract filename from path
+                  const filename = result.path.split("/").pop();
+                  return (
+                    <li key={idx}>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          // Clear search when opening a result
+                          setSearchQuery("");
+                          setSearchResults([]);
+                          // Convert to the format handleOpenFile expects
+                          handleOpenFile({
+                            name: filename,
+                            path: result.path,
+                            type: "file",
+                          });
                         }}
                       >
-                        (score: {result.score})
-                      </span>
-                    )}
-                  </a>
-                  <div className="muted">
-                    {result.path}
-                    {result.match_count > 0 &&
-                      ` • ${result.match_count} matches`}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
+                        {filename}
+                        {result.score && (
+                          <span
+                            style={{
+                              marginLeft: "8px",
+                              fontSize: "0.85em",
+                              color: "#888",
+                            }}
+                          >
+                            (score: {result.score})
+                          </span>
+                        )}
+                      </a>
+                      <div className="muted">
+                        {result.path}
+                        {result.match_count > 0 &&
+                          ` • ${result.match_count} matches`}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
 
-      <section id="entries-wrap">
-        <FileList
-          entries={entries}
-          currentPath={currentPath}
-          onNavigate={handleNavigate}
-          onOpenFile={handleOpenFile}
-          onRestore={handleRestore}
-          onRefresh={() => loadDirectory(currentPath)}
-          isDeletedFolder={isDeletedFolder}
-          fileColors={fileColors}
-        />
-      </section>
-
-      <div className="md-container">
-        {openedFile ? (
-          <FileEditor
-            file={openedFile}
-            onClose={() => setOpenedFile(null)}
-            onLog={logEvent}
-            onRefresh={() => loadDirectory(currentPath)}
-            onDiceRoll={handleDiceRoll}
-            onOpen={handleOpenFile}
-            onNavigate={handleNavigate}
-          />
-        ) : (
-          markdownFiles.map((file, idx) => (
-            <MarkdownPreview
-              key={idx}
-              file={file}
-              onOpen={handleOpenFile}
-              onNavigate={handleNavigate}
-              onDiceRoll={handleDiceRoll}
-              fileColors={fileColors}
-            />
-          ))
-        )}
+          <div className="md-container">
+            {openedFile ? (
+              <FileEditor
+                file={openedFile}
+                onClose={() => setOpenedFile(null)}
+                onLog={logEvent}
+                onRefresh={() => loadDirectory(currentPath)}
+                onDiceRoll={handleDiceRoll}
+                onOpen={handleOpenFile}
+                onNavigate={handleNavigate}
+              />
+            ) : (
+              markdownFiles.map((file, idx) => (
+                <MarkdownPreview
+                  key={idx}
+                  file={file}
+                  onOpen={handleOpenFile}
+                  onNavigate={handleNavigate}
+                  onDiceRoll={handleDiceRoll}
+                  fileColors={fileColors}
+                />
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
       <DiceRoller onLog={logEvent} />

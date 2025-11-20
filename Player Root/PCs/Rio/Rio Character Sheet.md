@@ -6,7 +6,7 @@ Name: Rio
 | key               |                 value |
 | ----------------- | --------------------: |
 | max_hp            |            36 |
-| current_hp        |        36 |
+| current_hp        |        27 |
 | Stress Level      |      0 |
 | Fire Damage Bonus | 0 |
 | Initiative        |        1d20 + 6 |

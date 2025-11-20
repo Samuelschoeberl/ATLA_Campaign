@@ -21,7 +21,7 @@ _(Only shows variables tagged with #vitality or #defensive)_
 
 | Key        | Value | Source File                                               |
 | ---------- | ----- | --------------------------------------------------------- |
-| current_hp | 39 | Player Root/variable/PC_variables/Anju/Anju_current_hp.md |
+| current_hp | 38 | Player Root/variable/PC_variables/Anju/Anju_current_hp.md |
 | max_hp     | 38    | Player Root/variable/PC_variables/Anju/Anju_max_hp.md     |
 
 
@@ -123,10 +123,10 @@ _(Only shows variables tagged with #vitality or #defensive)_
 **Vitality**
 
 
-| Key           | Value | Source File                            |
-| ------------- | ----- | -------------------------------------- |
-| current_hp | 48    | Player Root/variable/PC_variables/Puy/Puy_current_hp.md |
-| max_hp | 48    | Player Root/variable/PC_variables/Puy/Puy_max_hp.md |
+| Key        | Value | Source File                                             |
+| ---------- | ----- | ------------------------------------------------------- |
+| current_hp | 19 | Player Root/variable/PC_variables/Puy/Puy_current_hp.md |
+| max_hp     | 48    | Player Root/variable/PC_variables/Puy/Puy_max_hp.md     |
 
 
 **Defensive**
@@ -151,7 +151,7 @@ _(Only shows variables tagged with #vitality or #defensive)_
 
 | Key           | Value | Source File                            |
 | ------------- | ----- | -------------------------------------- |
-| current_hp | 36    | Player Root/variable/PC_variables/Rio/Rio_current_hp.md |
+| current_hp | 27 | Player Root/variable/PC_variables/Rio/Rio_current_hp.md |
 | max_hp | 36    | Player Root/variable/PC_variables/Rio/Rio_max_hp.md |
 
 

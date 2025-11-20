@@ -3,14 +3,14 @@ Name: Puy
 
 
 
-| key               |                 value |
-| ----------------- | --------------------: |
-| max_hp            |            48 |
-| current_hp        |        48 |
-| Stress Level      |      0 |
-| Fire Damage Bonus | 0 |
-| Initiative        |        1d20 + 3 |
-| Movement          |          5 |
+| key               |    value |
+| ----------------- | -------: |
+| max_hp            |       48 |
+| current_hp        |       19 |
+| Stress Level      |        0 |
+| Fire Damage Bonus |        0 |
+| Initiative        | 1d20 + 3 |
+| Movement          |        5 |
 
 ## Core Stats
 
