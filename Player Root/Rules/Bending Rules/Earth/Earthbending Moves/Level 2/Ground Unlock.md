@@ -5,8 +5,6 @@
 Revert Immobilisation through [[Ground Lock]]
 
 
-Tags:
-#Earthbending #Mobility #Immobilisation
 #earth 
 #Level2 
 #Mobility

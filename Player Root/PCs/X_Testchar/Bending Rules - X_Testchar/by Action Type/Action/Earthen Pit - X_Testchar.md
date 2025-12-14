@@ -16,13 +16,7 @@ All creatures in the area must make a Dexterity save against your [[Earthbending
 
 **Usage**: Excellent battlefield control for separating enemies or creating obstacles.
 
-**Links**:
-- [[Earthbending]] (0)
 
-Tags:
-#Earthbending_X_Testchar
-[[Earthbending]] (0)
-[[Player Root]] (0)
 
 #earth_X_Testchar
 #Level4_X_Testchar

@@ -2,7 +2,6 @@
 #Cyclic_Flow_Anju
 #Concentration_Anju 
 
-- **Cost:** 1-3 Water Charges.
 - Duration: 1 round Concentration.
 - **Range:** Touch (through water).
 - **Effect:**  

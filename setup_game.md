@@ -15,6 +15,9 @@ cd /Users/samuelschoberl/projects/ATLA_Campaign/Mycelium/scripts/frontend-react
 npm run dev
 ```
 Frontend will be available at: `http://localhost:5173`
+You can now navigate directly by path, for example:
+- PCs folder: `http://localhost:5173/PCs`
+- Anju's folder: `http://localhost:5173/PCs/Anju`
 
 ### 3. Start Variable Sync (Optional)
 ```bash
@@ -44,6 +47,7 @@ To make the frontend accessible online via a temporary public URL:
 ```bash
 cloudflared tunnel --url http://localhost:5173
 ```
+The tunnel supports deep links. Share URLs like `https://<random>.trycloudflare.com/PCs/Anju` and the app will load that folder.
 
 This creates a secure tunnel to your local frontend. Cloudflare will provide a public URL that you can share with players.
 

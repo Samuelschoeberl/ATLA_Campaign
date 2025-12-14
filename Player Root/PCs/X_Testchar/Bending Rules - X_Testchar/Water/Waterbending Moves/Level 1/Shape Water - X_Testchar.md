@@ -1,4 +1,6 @@
 #Action_X_Testchar 
+#Concentration_X_Testchar 
+
 - **Cost:** None.
 - **Duration:** At Will. Concentration.
 - **Effect:**  

@@ -18,12 +18,12 @@ Bending Levels:
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]] (0)     | 6         |
-| [[Dexterity]] (0)    | 0         |
-| [[Constitution]] (0) | 7         |
-| [[Intelligence]] (0) | 0         |
-| [[Wisdom]] (0)       | 1         |
-| [[Charisma]] (0)     | 2         |
+| [[Strength]] (3)     | 6         |
+| [[Dexterity]] (4)    | 0         |
+| [[Constitution]] (1) | 7         |
+| [[Intelligence]] (2) | 0         |
+| [[Wisdom]] (3)       | 1         |
+| [[Charisma]] (2)     | 2         |
 
 - **Movement:**
     

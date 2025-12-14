@@ -2,7 +2,6 @@
 #Cyclic_Flow_Rio
 #Concentration_Rio 
 
-- **Cost:** 1-3 Water Charges.
 - Duration: 1 round Concentration.
 - **Range:** Touch (through water).
 - **Effect:**  

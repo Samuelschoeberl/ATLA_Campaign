@@ -434,7 +434,15 @@ def serve_frontend(path):
                 except Exception:
                     pass
 
-    # No candidate matched; raise a NotFound (will become 404)
+    # No candidate matched; fall back to serving the SPA index.html so
+    # client-side routing can handle deep links like /PCs/Anju
+    try:
+        index_path = FRONTEND_DIR.joinpath('index.html')
+        if index_path.exists():
+            return send_file(str(index_path))
+    except Exception:
+        pass
+    # If the frontend index cannot be served, raise a 404
     from werkzeug.exceptions import NotFound
     raise NotFound()
 

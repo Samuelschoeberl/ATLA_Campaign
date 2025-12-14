@@ -18,9 +18,6 @@ Create a dragon-like construct of stone that follows your commands. The Stone Dr
 **Links**:
 - [[Stone Dragon]]
 
-Tags:
-#Earthbending
-
 
 #earth
 #Level5

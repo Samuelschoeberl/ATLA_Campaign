@@ -2,10 +2,10 @@
 #Reaction_Mahogany 
 
 - Range: self
-- Duration: [[spiritbending slot]] (0) rounds.
+- Duration: [[spiritbending slot]] (2) rounds.
 
 **Effect**:
-Provides [[spiritbending slot]] (0)d8  [[General Armor]] (0), [[Evasion]] (11),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[spiritbending slot]] (0) rounds.
+Provides [[spiritbending slot]] (2)d8  [[General Armor]] (0), [[Evasion]] (15),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[spiritbending slot]] (2) rounds.
 
 
 Tags:

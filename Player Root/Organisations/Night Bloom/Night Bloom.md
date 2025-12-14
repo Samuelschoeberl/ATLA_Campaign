@@ -55,11 +55,4 @@ The Night Bloom is a radical faction seeking to overthrow the Avatar’s influen
 - [[Night Bloom]]
 - [[Hanal Koga]]
 
-Tags:
-#Earthbending
-#Waterbending
-#Airbending
-#Avatar
-[[Player Root]]
-
 

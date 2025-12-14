@@ -5,8 +5,6 @@
 Revert Immobilisation through [[Ground Lock]] (0)
 
 
-Tags:
-#Earthbending_Grep #Mobility_Grep #Immobilisation_Grep
 #earth_Grep 
 #Level2_Grep 
 #Mobility_Grep

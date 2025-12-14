@@ -64,6 +64,4 @@ Session end state
 
 Location: Misty Palms → setting out across the desert toward Omashu.
 
-Resources: No poop pellets left; one resonant glass pomegranate (king’s, not the party’s).
-
 Party status: Stable, cleaned up, motivated; Ash rejoined.

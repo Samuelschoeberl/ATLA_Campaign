@@ -50,15 +50,15 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Earthbending slot      |     3 |
-| Spiritbending slot     |    0 |
+| Earthbending slot      |     3/3 |
+| Spiritbending slot     |    2/2 |
 
 ## Water charges
 You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 9 |
+| Environmental water charge | 9/9 |
 
 
 

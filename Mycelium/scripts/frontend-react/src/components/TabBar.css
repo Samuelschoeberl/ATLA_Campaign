@@ -1,0 +1,144 @@
+.tab-bar {
+  display: flex;
+  background-color: #2d2d30;
+  border-bottom: 1px solid #3e3e42;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 40px;
+  max-height: 40px;
+  flex-shrink: 0;
+}
+
+.tabs-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: 40px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #2d2d30;
+  color: #cccccc;
+  border-right: 1px solid #3e3e42;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  min-width: 100px;
+  max-width: 200px;
+  position: relative;
+}
+
+.tab:hover {
+  background-color: #3e3e42;
+}
+
+.tab.active {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border-bottom: 2px solid #007acc;
+}
+
+.tab-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.tab-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  user-select: none;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: #cccccc;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 1;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.tab:hover .tab-close {
+  opacity: 1;
+}
+
+.tab-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.tab.active .tab-close {
+  opacity: 1;
+}
+
+/* Scrollbar styling for tab bar */
+.tab-bar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tab-bar::-webkit-scrollbar-track {
+  background: #2d2d30;
+}
+
+.tab-bar::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}
+
+.tab-bar::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* Light Mode Styles */
+.tab-bar.light-mode {
+  background-color: #e8e8e8;
+  border-bottom: 1px solid #ccc;
+}
+
+.tab-bar.light-mode .tab {
+  background-color: #e8e8e8;
+  color: #333333;
+  border-right: 1px solid #ccc;
+}
+
+.tab-bar.light-mode .tab:hover {
+  background-color: #d0d0d0;
+}
+
+.tab-bar.light-mode .tab.active {
+  background-color: #ffffff;
+  color: #000000;
+  border-bottom: 2px solid #007acc;
+}
+
+.tab-bar.light-mode .tab-close {
+  color: #666666;
+}
+
+.tab-bar.light-mode .tab-close:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.tab-bar.light-mode::-webkit-scrollbar-track {
+  background: #e8e8e8;
+}
+
+.tab-bar.light-mode::-webkit-scrollbar-thumb {
+  background: #aaa;
+}
+
+.tab-bar.light-mode::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}

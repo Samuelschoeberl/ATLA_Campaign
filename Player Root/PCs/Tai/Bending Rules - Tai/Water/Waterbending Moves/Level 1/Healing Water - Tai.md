@@ -2,7 +2,6 @@
 #Cyclic_Flow_Tai
 #Concentration_Tai 
 
-- **Cost:** 1-3 Water Charges.
 - Duration: 1 round Concentration.
 - **Range:** Touch (through water).
 - **Effect:**  

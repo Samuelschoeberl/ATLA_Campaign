@@ -1,7 +1,7 @@
 #Action_X_Testchar 
 
 - Range: self
-- Duration: [[spiritbending slot]] (0) rounds.
+- Duration: [[spiritbending slot]] (20) rounds.
 
 **Effect**:
 Lets you perceive spiritual energy.

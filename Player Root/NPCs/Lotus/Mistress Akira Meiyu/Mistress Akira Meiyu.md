@@ -10,9 +10,7 @@
 - [[The Lotus]]
 - [[Player Root/variable/primary_stat/Strength]]
 
-Tags:
-#Waterbending
+
 [[NPC]]
-[[Player Root]]
 
 

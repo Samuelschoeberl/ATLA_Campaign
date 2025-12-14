@@ -1128,7 +1128,20 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                 if nk in alias_map:
                     val = norm_kv.get(alias_map[nk])
             # if unknown, leave placeholder intact so special tokens like {{PC}} can be replaced later
-            return str(val) if val is not None else m.group(0)
+            if val is None:
+                return m.group(0)
+            # Format slots, charges, and reactions as "current/max" (e.g., "6/6")
+            # Check if the key contains slot, charge, or reaction
+            key_lower = key.lower()
+            if 'slot' in key_lower or 'charge' in key_lower or 'reaction' in key_lower:
+                try:
+                    # Try to convert to number to ensure it's numeric
+                    num_val = int(val) if isinstance(val, (int, float)) else int(str(val))
+                    return f"{num_val}/{num_val}"
+                except (ValueError, TypeError):
+                    # If not numeric, return as-is
+                    return str(val)
+            return str(val)
 
         tpl_sub = re.sub(r'{{\s*([^}]+)\s*}}', repl_placeholder, tpl_raw_inner)
 

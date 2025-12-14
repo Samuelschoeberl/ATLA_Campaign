@@ -5,8 +5,6 @@
 Revert Immobilisation through [[Ground Lock]] (0)
 
 
-Tags:
-#Earthbending_X_Testchar #Mobility_X_Testchar #Immobilisation_X_Testchar
 #earth_X_Testchar 
 #Level2_X_Testchar 
 #Mobility_X_Testchar

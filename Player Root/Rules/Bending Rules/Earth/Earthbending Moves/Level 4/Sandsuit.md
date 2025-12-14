@@ -17,11 +17,3 @@ Provides 10 * [[Earthbending slot]]  [[Barrier]]
 - [[Player Root/Rules/core rules/Armor definition]]
 - [[Earthbending slot]]
 
-Tags:
-#Earthbending
-[[Earthbending]]
-[[Player Root]]
-
-#Earthbending
-
-```

@@ -1,4 +1,6 @@
 #Action_Tai 
+#Concentration_Tai 
+
 - **Cost:** None.
 - **Duration:** At Will. Concentration.
 - **Effect:**  

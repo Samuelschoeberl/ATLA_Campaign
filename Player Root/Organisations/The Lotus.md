@@ -29,10 +29,5 @@ The Lotus is a venerable organization dedicated to the balance of the world, act
 - [[Grandmaster Iroh Tanaka]]
 - [[The Lotus]]
 
-Tags:
-#Earthbending
-#Firebending
-#Waterbending
-[[Player Root]]
 
 

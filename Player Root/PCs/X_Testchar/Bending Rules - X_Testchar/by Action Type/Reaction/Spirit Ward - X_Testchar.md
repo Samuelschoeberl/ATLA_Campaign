@@ -2,10 +2,10 @@
 #Reaction_X_Testchar 
 
 - Range: self
-- Duration: [[spiritbending slot]] (0) rounds.
+- Duration: [[spiritbending slot]] (20) rounds.
 
 **Effect**:
-Provides [[spiritbending slot]] (0)d8  [[General Armor]] (20), [[Evasion]] (32),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[spiritbending slot]] (0) rounds.
+Provides [[spiritbending slot]] (20)d8  [[General Armor]] (20), [[Evasion]] (32),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[spiritbending slot]] (20) rounds.
 
 
 Tags:

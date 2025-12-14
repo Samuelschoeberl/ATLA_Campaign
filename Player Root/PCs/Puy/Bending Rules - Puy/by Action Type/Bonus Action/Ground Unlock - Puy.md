@@ -5,8 +5,6 @@
 Revert Immobilisation through [[Ground Lock]] (0)
 
 
-Tags:
-#Earthbending_Puy #Mobility_Puy #Immobilisation_Puy
 #earth_Puy 
 #Level2_Puy 
 #Mobility_Puy

@@ -20,12 +20,12 @@
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]] (0)     | -3        |
-| [[Dexterity]] (0)    | 3         |
-| [[Constitution]] (0) | 1         |
-| [[Wisdom]] (0)       | 5         |
-| [[Intelligence]] (0) | 2         |
-| [[Charisma]] (0)     | 3         |
+| [[Strength]] (3)     | -3        |
+| [[Dexterity]] (4)    | 3         |
+| [[Constitution]] (1) | 1         |
+| [[Wisdom]] (3)       | 5         |
+| [[Intelligence]] (2) | 2         |
+| [[Charisma]] (2)     | 3         |
 
 
 - **Ideal for infiltration, distraction, and sensory manipulation.** Luma’tik thrives in urban or crystal-laced environments, using its shimmering form and illusions to mislead enemies and aid allies from the shadows. Though not powerful in direct combat, it’s difficult to pin down and annoying to deal with.
@@ -65,9 +65,9 @@
 
 [[Special Attacks]] (0):
 
-- **Sparkbite:** Melee Weapon Attack, [[Fire Attack Roll]] (1d20 + 0 + 0)to hit, 1d6 piercing damage. If attacking from stealth, deals an extra 1d4 spirit damage.
+- **Sparkbite:** Melee Weapon Attack, [[Fire Attack Roll]] (1d20 + 0 + 3)to hit, 1d6 piercing damage. If attacking from stealth, deals an extra 1d4 spirit damage.
 
-- **Lightshard Dart:** Ranged Attack, [[Spirit Attack Roll]] (1d20 + 2 + 0) to hit, 1d4 spirit damage. On hit, target has disadvantage on Perception checks for 1 minute.
+- **Lightshard Dart:** Ranged Attack, [[Spirit Attack Roll]] (1d20 + 2 + 4) to hit, 1d4 spirit damage. On hit, target has disadvantage on Perception checks for 1 minute.
 
 ---
 

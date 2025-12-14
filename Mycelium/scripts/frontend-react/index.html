@@ -6,6 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0f13" />
     <title>Mycelium — Repo Browser</title>
+      <script>
+        // Configure backend base for dev server so API calls hit Flask on 9002
+        // Overrideable if window.MYCELIUM_BACKEND_BASE is already set elsewhere
+        (function(){
+          try {
+            if (!window.MYCELIUM_BACKEND_BASE) {
+              window.MYCELIUM_BACKEND_BASE = 'http://localhost:9002';
+            }
+          } catch (e) {}
+        })();
+
+        // Suppress browser extension-related errors
+        window.addEventListener('error', (e) => {
+          if (e.filename?.includes('content_script.js') || 
+              e.message?.includes('message channel closed')) {
+            e.preventDefault();
+            return true;
+          }
+        });
+
+        // Suppress unhandled promise rejections from extensions
+        window.addEventListener('unhandledrejection', (e) => {
+          if (e.reason?.message?.includes('message channel closed') ||
+              e.reason?.stack?.includes('content_script.js')) {
+            e.preventDefault();
+            return true;
+          }
+        });
+
+        // Filter console errors from browser extensions
+        (function() {
+          const originalError = console.error;
+          console.error = function(...args) {
+            const errorString = args.join(' ');
+            // Filter out extension-related errors
+            if (errorString.includes('content_script.js') ||
+                errorString.includes('message channel closed')) {
+              return;
+            }
+            originalError.apply(console, args);
+          };
+        })();
+      </script>
   </head>
   <body>
     <div id="root"></div>

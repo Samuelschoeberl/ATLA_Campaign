@@ -1,0 +1,115 @@
+.file-explorer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.file-explorer-sidebar {
+  width: 300px;
+  min-width: 250px;
+  max-width: 500px;
+  background-color: #1e1e1e;
+  border-right: 1px solid #333;
+  overflow-y: auto;
+  resize: horizontal;
+}
+
+.file-explorer-main {
+  flex: 1;
+  background-color: #252526;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-explorer-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: #2d2d30;
+  border-bottom: 1px solid #3e3e42;
+}
+
+.theme-toggle {
+  background: #3e3e42;
+  border: 1px solid #555;
+  color: #e8e8e8;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+}
+
+.theme-toggle:hover {
+  background: #4e4e52;
+  transform: scale(1.05);
+}
+
+.advanced-toggle {
+  background: #3e3e42;
+  border: 1px solid #555;
+  color: #e8e8e8;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.advanced-toggle:hover {
+  background: #4e4e52;
+  transform: scale(1.05);
+}
+
+.file-explorer-content {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;  /* Critical for flex children to respect parent constraints */
+}
+
+/* Light Mode Styles */
+.file-explorer.light-mode .file-explorer-sidebar {
+  background-color: #f5f5f5;
+  border-right: 1px solid #ddd;
+}
+
+.file-explorer.light-mode .file-explorer-main {
+  background-color: #ffffff;
+}
+
+.file-explorer.light-mode .file-explorer-header {
+  background-color: #e8e8e8;
+  border-bottom: 1px solid #ccc;
+}
+
+.file-explorer.light-mode .theme-toggle {
+  background: #d0d0d0;
+  border: 1px solid #999;
+  color: #333;
+}
+
+.file-explorer.light-mode .theme-toggle:hover {
+  background: #c0c0c0;
+}
+
+.file-explorer.light-mode .advanced-toggle {
+  background: #d0d0d0;
+  border: 1px solid #999;
+  color: #333;
+}
+
+.file-explorer.light-mode .advanced-toggle:hover {
+  background: #c0c0c0;
+}
