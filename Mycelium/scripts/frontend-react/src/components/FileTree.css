@@ -3,6 +3,12 @@
   flex-direction: column;
   height: 100%;
   color: #cccccc;
+  transition: all 0.3s ease;
+}
+
+.file-tree.collapsed {
+  max-width: 50px;
+  min-width: 50px;
 }
 
 .file-tree-header {
@@ -12,6 +18,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.file-tree-header:hover {
+  background-color: #2d2d30;
 }
 
 .file-tree-header h3 {
@@ -19,6 +32,26 @@
   font-size: 14px;
   font-weight: 600;
   color: #cccccc;
+}
+
+.file-tree.collapsed .file-tree-header h3 {
+  display: none;
+}
+
+.collapse-btn {
+  background: transparent;
+  border: 1px solid #555;
+  color: #ccc;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.collapse-btn:hover {
+  background: #555;
+  color: #fff;
 }
 
 .btn-back {

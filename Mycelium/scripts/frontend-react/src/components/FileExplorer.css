@@ -6,13 +6,13 @@
 }
 
 .file-explorer-sidebar {
-  width: 300px;
-  min-width: 250px;
-  max-width: 500px;
+  width: auto;
+  min-width: auto;
+  max-width: none;
   background-color: #1e1e1e;
   border-right: 1px solid #333;
   overflow-y: auto;
-  resize: horizontal;
+  transition: all 0.3s ease;
 }
 
 .file-explorer-main {

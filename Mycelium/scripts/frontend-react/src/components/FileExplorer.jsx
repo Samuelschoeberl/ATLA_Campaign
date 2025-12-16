@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import FileTree from './FileTree';
 import FileViewer from './FileViewer';
 import SearchBar from './SearchBar';
@@ -10,6 +10,7 @@ const FileExplorer = ({ lightMode, onToggleTheme }) => {
   const [openTabs, setOpenTabs] = useState([]);
   const [advancedMode, setAdvancedMode] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
+  const fileTreeRef = useRef(null);
 
   // Automatically open Quicklinks.md on initial load
   useEffect(() => {
@@ -33,6 +34,11 @@ const FileExplorer = ({ lightMode, onToggleTheme }) => {
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
+    
+    // Expand folders in the file tree to show the selected file
+    if (fileTreeRef.current && file.path) {
+      fileTreeRef.current.expandToFile(file.path);
+    }
     
     // Add file to tabs if not already open
     const isAlreadyOpen = openTabs.some(tab => tab.path === file.path);
@@ -71,6 +77,7 @@ const FileExplorer = ({ lightMode, onToggleTheme }) => {
     <div className={`file-explorer ${lightMode ? 'light-mode' : ''}`}>
       <div className="file-explorer-sidebar">
         <FileTree 
+          ref={fileTreeRef}
           onFileSelect={handleFileSelect}
           lightMode={lightMode}
           advancedMode={advancedMode}

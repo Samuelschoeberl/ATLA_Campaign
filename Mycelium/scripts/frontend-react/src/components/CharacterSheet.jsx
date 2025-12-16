@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { hexToRgba } from '../utils/colorUtils';
 import './CharacterSheet.css';
+import { API_BASE_URL } from '../config/api';
 
 const ELEMENT_COLORS = {
   fire: '#ffb3b3',
@@ -172,6 +173,132 @@ const DiceRollText = ({ text }) => {
   const saveTimeoutRef = useRef(null);
   const initialLoadRef = useRef(true);
 
+  // Stat calculation tooltips - based on game mechanics from recreate_pcs.py and rule definitions
+  const statTooltips = {
+    // Vitals
+    current_hp:
+      "Current hit points - editable during play. Restore to max on short rest.",
+    max_hp: "Maximum HP = (Rolled HP + (CON × Character Level)) × 2",
+    rolled_hp: "HP from rolling hit dice during character creation",
+    "rolled.hp": "HP from rolling hit dice during character creation",
+    Initiative:
+      "Initiative roll = 1d20 + DEX (determines turn order in combat)",
+    Evasion: "Evasion AC = 10 + DEX + Air level (defense against attacks)",
+    Movement: "Movement per round = 5 meters + (Air level × 3)",
+    cl: "Character Level = Air + Water + Earth + Fire + Spirit levels",
+
+    // Core Stats
+    Strength: "Physical power - affects Earth bending and melee attacks",
+    Dexterity:
+      "Agility and reflexes - affects Air/Fire bending, Initiative, and Evasion",
+    Constitution: "Endurance - affects HP and concentration saves",
+    Intelligence:
+      "Mental acuity - affects Water bending and tactical abilities",
+    Wisdom: "Awareness and insight - affects Fire/Spirit bending",
+    Charisma: "Force of personality - affects social interactions",
+    Str: "Physical power - affects Earth bending and melee attacks",
+    Dex: "Agility and reflexes - affects Air/Fire bending, Initiative, and Evasion",
+    Con: "Endurance - affects HP and concentration saves",
+    Int: "Mental acuity - affects Water bending and tactical abilities",
+    Wis: "Awareness and insight - affects Fire/Spirit bending",
+    Cha: "Force of personality - affects social interactions",
+
+    // Defensive Stats
+    "Physical Armor": "Reduces piercing, slashing, and bludgeoning damage",
+    "General Armor":
+      "Base = Earth level. Reduces ALL damage except Spirit damage",
+    "Spirit Armor": "Spirit Armor = Spirit level (reduces spirit damage)",
+    "Fire Armor": "Fire Armor = Water level (reduces fire damage)",
+    "Ice Armor": "Ice Armor = Fire level + Stress level (reduces ice damage)",
+    "Barrier":
+      "Armor that halves at first unblocked damage, destroyed on second. Applied before other armor.",
+
+    // Bending Stats (Attack Rolls)
+    "Air Attack Roll": "1d20 + Air level + DEX",
+    "Water Attack Roll": "1d20 + Water level + INT",
+    "Earth Attack Roll": "1d20 + Earth level + STR",
+    "Fire Attack Roll": "1d20 + Fire level + WIS",
+    "Spirit Attack Roll": "1d20 + Spirit level + WIS",
+
+    // Bending Stats (DCs)
+    "Airbending DC": "Air level + DEX (target must beat this to resist)",
+    "Waterbending DC": "Water level + INT (target must beat this to resist)",
+    "Earthbending DC": "Earth level + STR (target must beat this to resist)",
+    "Firebending DC": "Fire level + WIS (target must beat this to resist)",
+    "Spiritbending DC": "Spirit level + WIS (target must beat this to resist)",
+
+    // Slots and Charges
+    "Airbending slot":
+      "3 × Air level. Restored on short rest. Max half can be spent per move.",
+    "Waterbending slot":
+      "3 × Water level. Restored on short rest. Max half can be spent per move.",
+    "Earthbending slot":
+      "3 × Earth level. Restored on short rest. Max half can be spent per move.",
+    Firebending_slot:
+      "3 × Fire level. Restored on short rest. Max half can be spent per move.",
+    "Firebending slot":
+      "3 × Fire level. Restored on short rest. Max half can be spent per move.",
+    "Spirit bending slot":
+      "Spirit level. Restored on short rest. Max half can be spent per move.",
+    "spiritbending slot":
+      "Spirit level. Restored on short rest. Max half can be spent per move.",
+    Water_charge:
+      "Total = Waterbottle Charge + Environmental Water Charge. Max 2× Water level per move.",
+    "Waterbottle Charge": "2 × Water level (personal water supply, refillable)",
+    "Environmental water charge":
+      "Environmental water available - varies by location and context",
+    "Danger Sense Reaction":
+      "Special danger sense reactions available. Restored on rest.",
+    "Danger Sense Reaction Slot":
+      "Special danger sense reactions available. Restored on rest.",
+    "stress level":
+      "Per level: -1 Fire Attack Roll, -1 Firebending DC, +2 fire damage, +1 Ice Armor. \nGain 1: taking damage or using firebending slot on damaging move. \nLose 1: each turn end or certain moves.",
+    chaos_energy:
+      "Chaos energy points (base 0). Tell DM if exceeds Spirit level.",
+    "Fire Damage Bonus":
+      "Fire Damage Bonus = Stress level (added to fire attacks)",
+
+    // Element Levels
+    air: "Air bending level - affects Air moves, movement speed, and Evasion",
+    water: "Water bending level - affects Water moves and Fire Armor",
+    earth: "Earth bending level - affects Earth moves and General Armor",
+    fire: "Fire bending level - affects Fire moves and Ice Armor",
+    spirit: "Spirit bending level - affects Spirit moves and abilities",
+    Air: "Air bending level - affects Air moves, movement speed, and Evasion",
+    Water: "Water bending level - affects Water moves and Fire Armor",
+    Earth: "Earth bending level - affects Earth moves and General Armor",
+    Fire: "Fire bending level - affects Fire moves and Ice Armor",
+    Spirit: "Spirit bending level - affects Spirit moves and abilities",
+
+    // Concentration
+    Concentration:
+      "CON save DC = max(10, Damage Taken ÷ 2) to maintain concentration when damaged",
+  };
+
+  // Helper function to get tooltip for a stat
+  const getStatTooltip = (statName) => {
+    // First try exact match
+    if (statTooltips[statName]) {
+      return statTooltips[statName];
+    }
+    
+    // Try normalized whitespace
+    const normalized = statName.replace(/\s+/g, ' ').trim();
+    if (statTooltips[normalized]) {
+      return statTooltips[normalized];
+    }
+    
+    // Try case-insensitive match
+    const lowerStat = statName.toLowerCase();
+    for (const [key, value] of Object.entries(statTooltips)) {
+      if (key.toLowerCase() === lowerStat) {
+        return value;
+      }
+    }
+    
+    return null;
+  };
+
   // Helper function to detect element from consumable name
   const getElementFromName = (name) => {
     const lowerName = name.toLowerCase();
@@ -229,7 +356,7 @@ const DiceRollText = ({ text }) => {
       // Remove "Player Root/" prefix if present
       const normalizedPath = (file.path || '').replace(/^Player Root\//i, '');
       const segments = normalizedPath.split('/').map(s => encodeURIComponent(s)).join('/');
-      const url = `http://localhost:9002/player_root/${segments}`;
+      const url = `${API_BASE_URL}/player_root/${segments}`;
       
       const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) {
@@ -238,7 +365,38 @@ const DiceRollText = ({ text }) => {
       
       const data = await response.json();
       setContent(data.content || '');
-      setCharacterData(parseCharacterSheet(data.content || ''));
+      
+      // Parse character sheet
+      const parsedData = parseCharacterSheet(data.content || '');
+      
+      // Fetch environmental water charge from global file
+      try {
+        const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable/environmental_water_charge`);
+        if (envResponse.ok) {
+          const envData = await envResponse.json();
+          
+          // Remove any existing environmental water charge from consumables
+          parsedData.consumables = parsedData.consumables.filter(
+            c => c.name !== 'Environmental water charge'
+          );
+          
+          // Add the global environmental water charge
+          parsedData.consumables.push({
+            name: 'Environmental water charge',
+            max: envData.max,
+            current: envData.current,
+            type: 'environmental',
+            isGlobal: true // Mark as global so we know to save it differently
+          });
+          
+          // Also update waterCharges for serialization compatibility
+          parsedData.waterCharges['Environmental water charge'] = `${envData.current}/${envData.max}`;
+        }
+      } catch (envErr) {
+        console.error('Error loading environmental water charge:', envErr);
+      }
+      
+      setCharacterData(parsedData);
     } catch (err) {
       setError(err.message);
       console.error('Error loading character sheet:', err);
@@ -380,8 +538,13 @@ const DiceRollText = ({ text }) => {
       }
     });
 
-    // Add water charges as consumables too
+    // Add water charges as consumables too (except Environmental water charge - loaded globally)
     Object.entries(data.waterCharges).forEach(([key, value]) => {
+      // Skip Environmental water charge - it will be loaded from global file
+      if (key === 'Environmental water charge') {
+        return;
+      }
+      
       // Check if value is in "current/max" format
       const slashMatch = String(value).match(/^(\d+)\s*\/\s*(\d+)$/);
       if (slashMatch) {
@@ -453,8 +616,11 @@ const DiceRollText = ({ text }) => {
     markdown += `You can use maximum of 2 \\* water level water charges for any Move.\n\n`;
     markdown += `| Water charge type          |                          value |\n`;
     markdown += `| -------------------------- | -----------------------------: |\n`;
+    // Filter out Environmental water charge from serialization - it's stored globally
     Object.entries(data.waterCharges).forEach(([key, value]) => {
-      markdown += `| ${key.padEnd(26)} | ${String(value).padStart(30)} |\n`;
+      if (key !== 'Environmental water charge') {
+        markdown += `| ${key.padEnd(26)} | ${String(value).padStart(30)} |\n`;
+      }
     });
 
     markdown += `\n\n\n#${data.name.replace(/\s+/g, '_')} #Character_Sheet\n`;
@@ -471,7 +637,7 @@ const DiceRollText = ({ text }) => {
       
       const normalizedPath = (file.path || '').replace(/^Player Root\//i, '');
       const segments = normalizedPath.split('/').map(s => encodeURIComponent(s)).join('/');
-      const url = `http://localhost:9002/player_root/${segments}`;
+      const url = `${API_BASE_URL}/player_root/${segments}`;
 
       const response = await fetch(url, {
         method: 'PUT',
@@ -481,6 +647,28 @@ const DiceRollText = ({ text }) => {
 
       if (!response.ok) {
         throw new Error(`Failed to save file: ${response.status}`);
+      }
+
+      // Also save environmental water charge if it changed
+      const envWaterCharge = characterData.consumables.find(c => c.name === 'Environmental water charge' && c.isGlobal);
+      if (envWaterCharge) {
+        try {
+          const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: 'environmental_water_charge',
+              current: envWaterCharge.current,
+              max: envWaterCharge.max
+            })
+          });
+          
+          if (!envResponse.ok) {
+            console.error('Failed to save environmental water charge');
+          }
+        } catch (envErr) {
+          console.error('Error saving environmental water charge:', envErr);
+        }
       }
 
       setContent(markdown);
@@ -519,11 +707,18 @@ const DiceRollText = ({ text }) => {
         }
       });
 
+      // Reset current_hp to max_hp
+      const vitals = { ...prev.vitals };
+      if (vitals.max_hp) {
+        vitals.current_hp = vitals.max_hp;
+      }
+
       return {
         ...prev,
         consumables,
         slots,
-        waterCharges
+        waterCharges,
+        vitals
       };
     });
 
@@ -593,6 +788,39 @@ const DiceRollText = ({ text }) => {
     });
   };
 
+  const refreshEnvironmentalWaterCharge = async () => {
+    try {
+      const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable/environmental_water_charge`);
+      if (envResponse.ok) {
+        const envData = await envResponse.json();
+        
+        // Update the environmental water charge in consumables
+        setCharacterData(prev => {
+          const consumables = [...prev.consumables];
+          const envIndex = consumables.findIndex(c => c.name === 'Environmental water charge' && c.isGlobal);
+          
+          if (envIndex !== -1) {
+            consumables[envIndex] = {
+              ...consumables[envIndex],
+              current: envData.current,
+              max: envData.max
+            };
+            
+            // Also update waterCharges
+            const waterCharges = { ...prev.waterCharges };
+            waterCharges['Environmental water charge'] = `${envData.current}/${envData.max}`;
+            
+            return { ...prev, consumables, waterCharges };
+          }
+          
+          return prev;
+        });
+      }
+    } catch (err) {
+      console.error('Error refreshing environmental water charge:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="character-sheet">
@@ -633,34 +861,115 @@ const DiceRollText = ({ text }) => {
         </div>
       </div>
 
-      {/* Vitals Section - Only current_hp is editable */}
+      {/* Vitals Section - All fields editable except max_hp */}
       <section className="character-section">
         <h2>Vitals</h2>
-        <div className="stat-grid">
-          {Object.entries(characterData.vitals).map(([key, value]) => (
-            <div key={key} className="stat-card">
-              <label>{key}</label>
-              {key === 'Initiative' ? (
-                <div style={{ 
-                  padding: '8px', 
-                  backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a',
-                  borderRadius: '4px',
-                  textAlign: 'center'
-                }}>
-                  <DiceRollText text={value} />
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  value={value}
-                  onChange={(e) => updateVital(key, e.target.value)}
-                  className="stat-input"
-                  readOnly={key !== 'current_hp'}
-                  style={key !== 'current_hp' ? { cursor: 'not-allowed', backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a' } : {}}
-                />
-              )}
+        
+        {/* Large HP Bar Display */}
+        {characterData.vitals.current_hp !== undefined && characterData.vitals.max_hp !== undefined && (
+          <div style={{
+            marginBottom: '20px',
+            padding: '12px',
+            backgroundColor: lightMode ? '#f8f8f8' : 'rgba(0, 0, 0, 0.2)',
+            borderRadius: '10px',
+            border: lightMode ? '2px solid #ddd' : '2px solid #3e3e42'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: lightMode ? '#333' : '#4ec9b0'
+            }}>
+              <span>Hit Points</span>
+              <span>{characterData.vitals.current_hp} / {characterData.vitals.max_hp}</span>
             </div>
-          ))}
+            <div style={{
+              width: '100%',
+              height: '24px',
+              backgroundColor: lightMode ? '#e0e0e0' : '#2d2d30',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: lightMode ? '2px solid #ccc' : '2px solid #444',
+              position: 'relative',
+              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3)'
+            }}>
+              {(() => {
+                const currentHp = parseFloat(characterData.vitals.current_hp) || 0;
+                const maxHp = parseFloat(characterData.vitals.max_hp) || 0;
+                const hpPercentage = maxHp > 0 ? Math.max(0, Math.min(100, (currentHp / maxHp) * 100)) : 0;
+                
+                const getHpColor = (percent) => {
+                  if (percent > 75) return '#4ec9b0'; // Healthy green-cyan
+                  if (percent > 50) return '#dcdcaa'; // Yellow
+                  if (percent > 25) return '#ce9178'; // Orange
+                  return '#f48771'; // Critical red
+                };
+                const hpColor = getHpColor(hpPercentage);
+                
+                return (
+                  <>
+                    <div style={{
+                      width: `${hpPercentage}%`,
+                      height: '100%',
+                      backgroundColor: hpColor,
+                      transition: 'width 0.5s ease, background-color 0.5s ease',
+                      boxShadow: `0 0 12px ${hpColor}, inset 0 1px 3px rgba(255, 255, 255, 0.3)`,
+                      borderRadius: '10px'
+                    }} />
+                    <span style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                      color: '#fff',
+                      textShadow: '0 1px 4px rgba(0, 0, 0, 0.9)',
+                      pointerEvents: 'none',
+                      letterSpacing: '0.5px'
+                    }}>
+                      {Math.round(hpPercentage)}%
+                    </span>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+        
+        <div className="stat-grid">
+          {Object.entries(characterData.vitals).map(([key, value]) => {
+            const tooltip = getStatTooltip(key);
+            return (
+              <div key={key} className="stat-card">
+                <label title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                  {key}
+                </label>
+                {key === 'Initiative' ? (
+                  <div style={{ 
+                    padding: '8px', 
+                    backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a',
+                    borderRadius: '4px',
+                    textAlign: 'center'
+                  }}>
+                    <DiceRollText text={value} />
+                  </div>
+                ) : (
+                  <input
+                    type="number"
+                    value={value}
+                    onChange={(e) => updateVital(key, e.target.value)}
+                    className="stat-input"
+                    readOnly={key === 'max_hp'}
+                    style={key === 'max_hp' ? { cursor: 'not-allowed', backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a' } : {}}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -668,42 +977,53 @@ const DiceRollText = ({ text }) => {
       <section className="character-section">
         <h2>Core Stats</h2>
         <div className="stat-grid stat-grid-6">
-          {Object.entries(characterData.coreStats).map(([key, value]) => (
-            <div key={key} className="stat-card">
-              <label>{key}</label>
-              <input
-                type="number"
-                value={value}
-                onChange={(e) => updateCoreStat(key, e.target.value)}
-                className="stat-input"
-                readOnly
-                style={{ cursor: 'not-allowed', backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a' }}
-              />
-            </div>
-          ))}
+          {Object.entries(characterData.coreStats).map(([key, value]) => {
+            const tooltip = getStatTooltip(key);
+            return (
+              <div key={key} className="stat-card">
+                <label title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                  {key}
+                </label>
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) => updateCoreStat(key, e.target.value)}
+                  className="stat-input"
+                  readOnly
+                  style={{ cursor: 'not-allowed', backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a' }}
+                />
+              </div>
+            );
+          })}
         </div>
       </section>
 
       {/* Bending Levels Section */}
       <section className="character-section">
         <h2>Bending Levels</h2>
-        <div className="bending-total">
-          <span>Total Bending Level: {characterData.bending.totalLevel}</span>
-        </div>
         <div className="bending-table">
           <table>
             <thead>
               <tr>
                 <th>Element</th>
                 <th>Level</th>
-                <th>Attack Roll</th>
-                <th>DC</th>
+                <th title="Attack Roll = 1d20 + Element Level + Relevant Stat" style={{ cursor: 'help', textDecoration: 'underline dotted' }}>
+                  Attack Roll
+                </th>
+                <th title="DC = Element Level + Relevant Stat" style={{ cursor: 'help', textDecoration: 'underline dotted' }}>
+                  DC
+                </th>
               </tr>
             </thead>
             <tbody>
               {characterData.bending.elements.map((el, idx) => {
                 const elementName = el.element.toLowerCase();
                 const bgColor = ELEMENT_COLORS[elementName] || '#e0e0e0';
+                
+                // Get specific tooltip for this element's attack roll and DC
+                const attackRollTooltip = getStatTooltip(`${el.element} Attack Roll`);
+                const dcTooltip = getStatTooltip(`${el.element}bending DC`);
+                
                 return (
                   <tr 
                     key={idx}
@@ -714,8 +1034,12 @@ const DiceRollText = ({ text }) => {
                   >
                     <td style={{ fontWeight: '600' }}>{el.element}</td>
                     <td>{el.level}</td>
-                    <td><DiceRollText text={el.attackRoll} /></td>
-                    <td>{el.dc}</td>
+                    <td title={attackRollTooltip || undefined} style={attackRollTooltip ? { cursor: 'help' } : {}}>
+                      <DiceRollText text={el.attackRoll} />
+                    </td>
+                    <td title={dcTooltip || undefined} style={dcTooltip ? { cursor: 'help' } : {}}>
+                      {el.dc}
+                    </td>
                   </tr>
                 );
               })}
@@ -728,17 +1052,22 @@ const DiceRollText = ({ text }) => {
       <section className="character-section">
         <h2>Defensive Stats</h2>
         <div className="stat-grid stat-grid-4">
-          {Object.entries(characterData.defense).map(([key, value]) => (
-            <div key={key} className="stat-card">
-              <label>{key}</label>
-              <input
-                type="number"
-                value={value}
-                onChange={(e) => updateDefense(key, e.target.value)}
-                className="stat-input"
-              />
-            </div>
-          ))}
+          {Object.entries(characterData.defense).map(([key, value]) => {
+            const tooltip = getStatTooltip(key);
+            return (
+              <div key={key} className="stat-card">
+                <label title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                  {key}
+                </label>
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) => updateDefense(key, e.target.value)}
+                  className="stat-input"
+                />
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -756,19 +1085,91 @@ const DiceRollText = ({ text }) => {
           {characterData.consumables.map((consumable, idx) => {
             const element = getElementFromName(consumable.name);
             const elementColor = element ? ELEMENT_COLORS[element] : '#3498db';
+            const tooltip = getStatTooltip(consumable.name);
             
             return (
               <div key={idx} className="consumable-card" style={{
                 borderColor: elementColor
               }}>
-                <h3>{consumable.name}</h3>
+                <h3 title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                  {consumable.name}
+                  {consumable.name === 'Environmental water charge' && (
+                    <button
+                      onClick={refreshEnvironmentalWaterCharge}
+                      style={{
+                        marginLeft: '8px',
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        backgroundColor: elementColor,
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        transition: 'opacity 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+                      onMouseLeave={(e) => e.target.style.opacity = '1'}
+                      title="Refresh from global source"
+                    >
+                      ↻
+                    </button>
+                  )}
+                </h3>
                 <div className="consumable-counter">
-                  <span className="counter-display" style={{
-                    backgroundColor: hexToRgba(elementColor, 0.15),
-                    color: elementColor
-                  }}>
-                    {consumable.current} / {consumable.max}
-                  </span>
+                  {consumable.name === 'Environmental water charge' ? (
+                    <>
+                      <span className="counter-display" style={{
+                        backgroundColor: hexToRgba(elementColor, 0.15),
+                        color: elementColor
+                      }}>
+                        {consumable.current} / 
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={consumable.max}
+                        onChange={(e) => {
+                          const newMax = Math.max(0, parseInt(e.target.value) || 0);
+                          setCharacterData(prev => {
+                            const consumables = [...prev.consumables];
+                            const newCurrent = Math.min(consumables[idx].current, newMax);
+                            consumables[idx] = { ...consumables[idx], max: newMax, current: newCurrent };
+                            const slots = { ...prev.slots };
+                            const waterCharges = { ...prev.waterCharges };
+                            
+                            // Update in "current/max" format
+                            if (consumable.type === 'water') {
+                              waterCharges[consumable.name] = `${newCurrent}/${newMax}`;
+                            } else {
+                              slots[consumable.name] = `${newCurrent}/${newMax}`;
+                            }
+                            
+                            return { ...prev, consumables, slots, waterCharges };
+                          });
+                        }}
+                        className="max-input"
+                        style={{
+                          width: '50px',
+                          padding: '2px 6px',
+                          fontSize: '14px',
+                          border: `1px solid ${elementColor}`,
+                          borderRadius: '4px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          color: '#2c3e50',
+                          textAlign: 'center',
+                          marginLeft: '4px'
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <span className="counter-display" style={{
+                      backgroundColor: hexToRgba(elementColor, 0.15),
+                      color: elementColor
+                    }}>
+                      {consumable.current} / {consumable.max}
+                    </span>
+                  )}
                 </div>
                 <div className="checkbox-grid">
                   {Array.from({ length: consumable.max }, (_, i) => (
@@ -829,17 +1230,22 @@ const DiceRollText = ({ text }) => {
                 const numValue = parseInt(value);
                 return isNaN(numValue) || numValue <= 0 || value === '';
               })
-              .map(([key, value]) => (
-                <div key={key} className="stat-card">
-                  <label>{key}</label>
-                  <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => updateSlot(key, e.target.value)}
-                    className="stat-input"
-                  />
-                </div>
-              ))}
+              .map(([key, value]) => {
+                const tooltip = getStatTooltip(key);
+                return (
+                  <div key={key} className="stat-card">
+                    <label title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                      {key}
+                    </label>
+                    <input
+                      type="text"
+                      value={value}
+                      onChange={(e) => updateSlot(key, e.target.value)}
+                      className="stat-input"
+                    />
+                  </div>
+                );
+              })}
           </div>
         )}
       </section>

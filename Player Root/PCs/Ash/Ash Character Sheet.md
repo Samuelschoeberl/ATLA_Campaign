@@ -31,7 +31,7 @@ Total Bending Level: 3
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
 | Fire    |   2 | 1d20 + 2 + 8   | 10   |
-| Spirit  | 1 | 1d20 + 1 + 1 | 9 |
+| Spirit  | 1 | 1d20 + 1 + 8 | 9 |
 
 ## Defensive
 

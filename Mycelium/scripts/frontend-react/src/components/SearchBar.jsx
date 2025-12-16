@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './SearchBar.css';
+import { API_BASE_URL } from '../config/api';
 
 const SearchBar = ({ onFileSelect, lightMode }) => {
   const [query, setQuery] = useState('');
@@ -39,7 +40,7 @@ const SearchBar = ({ onFileSelect, lightMode }) => {
     setIsSearching(true);
     try {
       const response = await fetch(
-        `http://localhost:9002/player_root/search?q=${encodeURIComponent(searchQuery)}`
+        `${API_BASE_URL}/player_root/search?q=${encodeURIComponent(searchQuery)}`
       );
       if (response.ok) {
         const data = await response.json();

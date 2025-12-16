@@ -135,7 +135,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/Story/Session Transcript Summaries/Session 8.md",
+                "file": "Player Root/PCs/Mahogany/Bending Rules - Mahogany/Spirit/Spiritbending Moves/Shapeshifting Forms/Luma’tik - Mahogany.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -150,16 +150,16 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Session 8"
+              "title": "Luma’tik - Mahogany"
             }
           },
           {
-            "id": "27d0fa0ea80d28ae",
+            "id": "d1da4a896660fd07",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/Rules/Bending Rules/Water/Waterbending Moves/Level 2/Ice Daggers.md",
+                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms/Bearturtle.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -174,11 +174,35 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Ice Daggers"
+              "title": "Bearturtle"
+            }
+          },
+          {
+            "id": "094051350f53d1be",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms/Bearturtle.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Bearturtle"
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 6
       }
     ],
     "direction": "vertical"
@@ -389,44 +413,44 @@
       "runjs:RunJS": false
     }
   },
-  "active": "6e6f4bf58d22705a",
+  "active": "bf97f7a300bd33a1",
   "lastOpenFiles": [
-    "Player Root/Story/Session Transcript Summaries/Session 7.md",
-    "Player Root/Story/Session Transcript Summaries/Session 8.md",
-    "Player Root/Story/Session Transcript Summaries/Session 6.md",
-    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/Water/Waterbending Moves/Level5/Frozen Armor - X_Testchar.md",
-    "Player Root/variable/PC_variables/Puy/Puy_general_armor.md",
-    "Player Root/PCs/Anju/Bending Rules - Anju/by Action Type/Action/Action_wikigraph_treemap.html",
-    "Player Root/PCs/Anju/Bending Rules - Anju/by Action Type/Action/Action_wikigraph_sunburst.html",
+    "logs/client_activity_20251216.log",
+    "Player Root/PCs/stat_overview.md",
+    "Player Root/PCs/Anju/Bending Rules - Anju/Bending Rules - Anju_wikigraph_treemap.html",
+    "Player Root/PCs/Anju/Bending Rules - Anju/Bending Rules - Anju_wikigraph_sunburst.html",
+    "Player Root/variable/PC_variables/X_Testchar/X_Testchar_general_armor.md",
     "Player Root/variable/PC_variables/Anju/Anju_general_armor.md",
-    "Mycelium/scripts/frontend-react/src/components/TabBar.css",
-    "Mycelium/scripts/frontend-react/src/components/TabBar.jsx",
-    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/by Action Type/Reaction/Octopus Form - X_Testchar.md",
-    "Player Root/Rules/Bending Rules/Water/Waterbending Moves/Level5/Octopus Form.md",
-    "Player Root/PCs/Anju/Bending Rules - Anju/by Action Type/Action/Rock Hurl - Anju.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Rock Hurl.md",
-    "Player Root/Rules/Bending Rules/Water/Waterbending Moves/Level 1/Shape Water.md",
-    "Player Root/PCs/Anju/Bending Rules - Anju/by Action Type/Action/Freeze - Anju.md",
-    "Mycelium/scripts/frontend-react/src/components/BendingMove.README.md",
-    "Mycelium/scripts/frontend-react/src/components/BendingMove.css",
-    "Mycelium/scripts/frontend-react/src/components/BendingMove.jsx",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Earthen Anchor.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 1/Earth Shift.md",
-    "Player Root/Organisations/The Lotus.md",
-    "Player Root/deleted/deleted_PCs_wikigraph_treemap.html",
-    "Player Root/deleted/deleted_PCs_wikigraph_sunburst.html",
-    "Player Root/deleted/deleted_Player Root_wikigraph_treemap.html",
-    "Player Root/deleted/deleted_Player Root_wikigraph_sunburst.html",
-    "Player Root/PCs/Anju/test.md",
-    "Dms Root/NPCs/Night Bloom/The Night Blooms Lore.md",
-    "Dms Root/Locations/Patola_Mountain_Cities/City_of_Murmura.md",
-    "Player Root/Rules/Bending Rules/Water/Waterbending Moves/Level 1/Freeze.md",
-    "Player Root/NPCs/Lotus/Mistress Akira Meiyu/Mistress Akira Meiyu.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 5/Stone Dragon.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Level 4/Sandsuit.md",
-    "Dms Root/Locations/Tribe of Mahzeen.md",
-    "Player Root/Organisations/Night Bloom/Night Bloom.md",
-    "Player Root/Rules/Bending Rules/Earth/Earthbending Moves/Puy_Sandveil_Style.md",
+    "Player Root/pc_primary_stats.md",
+    "Player Root/variable/secondary_stat/Initiative.md",
+    "logs/client_activity_20251215.log",
+    "Mycelium/scripts/frontend-react/src/components/StatOverview.css",
+    "Mycelium/scripts/frontend-react/src/components/StatOverview.jsx",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/useSensors.d.ts",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/useSensor.d.ts",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/types.d.ts",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/pointer/PointerSensor.d.ts",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/pointer/index.d.ts",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/sortable/README.md",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/sortable/CHANGELOG.md",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/README.md",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/CHANGELOG.md",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/utilities/README.md",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/utilities/CHANGELOG.md",
+    "Mycelium/scripts/frontend-react/node_modules/tslib/SECURITY.md",
+    "Mycelium/scripts/frontend-react/node_modules/tslib/README.md",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/accessibility/README.md",
+    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/accessibility/CHANGELOG.md",
+    "Player Root/Rules/Bending Rules/Fire/Mechanics/Stress Level Mechanic.md",
+    "Player Root/Rules/Evasion.md",
+    "Player Root/variable/PC_variables/Ash/Ash_general_armor.md",
+    "Player Root/variable/secondary_stat/Evasion.md",
+    "Mycelium/data/template/template_Character_Sheet.md",
+    "Player Root/variable/secondary_stat/Spirit Attack Roll.md",
+    "Player Root/deleted/deleted_test.md",
+    "Player Root/variable/PC_variables/Tapioca/Tapioca_general_armor.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_general_armor.md",
+    "Player Root/variable/PC_variables/Rio/Rio_general_armor.md",
     "Mycelium/scripts/frontend-react/dist/Mycelium Logo.png",
     "Dms Root/Battlemaps/crystal tample.webp",
     "Player Root/Maps/Avatar World.jpg",

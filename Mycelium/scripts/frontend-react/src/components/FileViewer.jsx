@@ -3,7 +3,11 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import CharacterSheet from './CharacterSheet';
 import BendingMove from './BendingMove';
+import ShapeshiftingForm from './ShapeshiftingForm';
+import InitiativeTracker from './InitiativeTracker';
+import StatOverview from './StatOverview';
 import './FileViewer.css';
+import { API_BASE_URL } from '../config/api';
 
 const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
   const [content, setContent] = useState('');
@@ -13,12 +17,18 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
   const [renderedHtml, setRenderedHtml] = useState('');
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkModalData, setLinkModalData] = useState({ searchTerm: '', matches: [] });
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Determine file type
   const isMarkdown = file?.name.endsWith('.md');
   const isImage = file ? /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(file.name) : false;
   const isHtml = file ? /\.(html|htm)$/i.test(file.name) : false;
   const isCharacterSheet = file ? file.name.toLowerCase().includes('character sheet') : false;
+  const isInitiativeTracker = file ? file.name === 'Initiative Tracker.md' : false;
+  const isStatOverview = file ? file.name === 'stat_overview.md' : false;
+  // Check if content contains #shapeshifting_form tag
+  const isShapeshiftingForm = isMarkdown && content && content.includes('#shapeshifting_form');
   const isBendingMove = file ? 
     (file.path && file.path.includes('Bending Rules -') && 
      !file.name.toLowerCase().includes('utility') &&
@@ -26,15 +36,21 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
      !file.name.toLowerCase().includes('progression') &&
      !file.name.toLowerCase().includes('rules') &&
      !file.name.toLowerCase().includes('slot') &&
+     !isShapeshiftingForm && // Exclude shapeshifting forms from bending moves
      isMarkdown) : false;
 
   useEffect(() => {
     if (file) {
       loadFileContent();
+      // Reset image states when file changes
+      setImageLoading(false);
+      setImageError(false);
     } else {
       // Clear content when no file is selected
       setContent('');
       setRenderedHtml('');
+      setImageLoading(false);
+      setImageError(false);
     }
   }, [file]);
 
@@ -63,14 +79,15 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
       return DOMPurify.sanitize(rawHtml);
     };
 
-    if (isMarkdown) {
+    // Only render markdown if it's a markdown file AND it's not being handled by a special component
+    if (isMarkdown && !isCharacterSheet && !isBendingMove && !isShapeshiftingForm && !isInitiativeTracker && !isStatOverview) {
       renderMarkdown().then(html => {
         if (html !== undefined) {
           setRenderedHtml(html);
         }
       });
     }
-  }, [content, isMarkdown]);
+  }, [content, isMarkdown, isCharacterSheet, isBendingMove, isShapeshiftingForm, isInitiativeTracker, isStatOverview]);
 
   // Function to resolve image paths by trying multiple locations
   const resolveImagePath = async (imageName) => {
@@ -108,7 +125,7 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
     // Try each path until one works
     for (const path of possiblePaths) {
       try {
-        const testUrl = `http://localhost:9002/player_root/${encodeURIComponent(path)}`;
+        const testUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(path)}`;
         console.log(`Trying image path: ${path}`);
         const response = await fetch(testUrl, { method: 'HEAD' });
         if (response.ok) {
@@ -123,7 +140,7 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
     
     // Fallback: return the first attempt (even if it might 404)
     console.warn(`Could not resolve image: ${imageName}, using fallback: ${possiblePaths[0]}`);
-    const fallbackUrl = `http://localhost:9002/player_root/${encodeURIComponent(possiblePaths[0])}`;
+    const fallbackUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(possiblePaths[0])}`;
     return fallbackUrl;
   };
 
@@ -156,6 +173,14 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
   const loadFileContent = async () => {
     if (!file) return;
 
+    // Skip loading content for images and HTML files - they're displayed directly
+    if (isImage || isHtml) {
+      setLoading(false);
+      setContent('');
+      setRenderedHtml('');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setContent(''); // Clear content immediately when loading starts
@@ -163,7 +188,7 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
 
     try {
       // Use the player_root endpoint - it returns JSON with {content, hash} for text files
-      const response = await fetch(`http://localhost:9002/player_root/${encodeURIComponent(file.path)}`);
+      const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(file.path)}`);
       if (response.ok) {
         const contentType = response.headers.get('content-type');
         
@@ -172,7 +197,7 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
           const data = await response.json();
           setContent(data.content || '');
         } else {
-          // For images and other files, just get the text
+          // For other files, just get the text
           const text = await response.text();
           setContent(text);
         }
@@ -189,11 +214,46 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
   // Function to search for a file or folder by name
   const searchFileByName = async (fileName) => {
     try {
-      // First, try to find it as a folder path
+      // First, search for exact filename match in any folder
+      const searchResponse = await fetch(
+        `${API_BASE_URL}/player_root/search?q=${encodeURIComponent(fileName)}`
+      );
+      
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        const results = searchData.results || [];
+        
+        // Look for exact filename match (case-insensitive)
+        // Priority: 1) exact name match, 2) exact name.md match
+        const fileNameLower = fileName.toLowerCase();
+        const exactMatch = results.find(result => {
+          const pathParts = result.path.split('/');
+          const resultFileName = pathParts[pathParts.length - 1];
+          const resultFileNameLower = resultFileName.toLowerCase();
+          
+          // Check for exact match or exact match with .md extension
+          return resultFileNameLower === fileNameLower || 
+                 resultFileNameLower === `${fileNameLower}.md`;
+        });
+        
+        if (exactMatch) {
+          // Extract the relative path (remove "Player Root/" prefix)
+          const relativePath = exactMatch.path.replace(/^Player Root\//, '');
+          const fileName = relativePath.split('/').pop();
+          
+          onFileSelect({
+            name: fileName,
+            path: relativePath
+          });
+          return;
+        }
+      }
+      
+      // If no exact match found, try to find it as a folder path
       const tryFolder = async (folderPath) => {
         try {
           const folderResponse = await fetch(
-            `http://localhost:9002/player_root/${encodeURIComponent(folderPath)}`
+            `${API_BASE_URL}/player_root/${encodeURIComponent(folderPath)}`
           );
           
           if (folderResponse.ok) {
@@ -228,6 +288,15 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
                   }
                 }
               }
+            } else {
+              // It's a file response (not JSON), so we found a direct file
+              // Extract filename from the path
+              const fileName = folderPath.split('/').pop();
+              onFileSelect({
+                name: fileName,
+                path: folderPath
+              });
+              return true;
             }
           }
         } catch (err) {
@@ -239,7 +308,9 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
       // Try common folder patterns for the name
       const folderPatterns = [
         fileName, // Direct folder name
+        `${fileName}.md`, // Direct file with .md extension
         `PCs/${fileName}`, // PCs folder
+        `PCs/${fileName}.md`, // PCs file with .md extension
         `NPCs/${fileName}`, // NPCs folder
         `Lotus/${fileName}`, // Lotus subfolder
         `NPCs/Lotus/${fileName}`, // Lotus in NPCs
@@ -251,9 +322,9 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
         }
       }
 
-      // If not found as folder, search for files and folders
+      // If not found as folder, do a broader search for files and folders
       const response = await fetch(
-        `http://localhost:9002/player_root/search?q=${encodeURIComponent(fileName)}`
+        `${API_BASE_URL}/player_root/search?q=${encodeURIComponent(fileName)}`
       );
       
       if (response.ok) {
@@ -377,9 +448,24 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
     return <CharacterSheet file={file} lightMode={lightMode} />;
   }
 
+  // Render initiative tracker component if it's the initiative tracker file
+  if (isInitiativeTracker) {
+    return <InitiativeTracker filePath={file.path} lightMode={lightMode} />;
+  }
+
+  // Render shapeshifting form component if it's a shapeshifting form file
+  if (isShapeshiftingForm) {
+    return <ShapeshiftingForm file={file} lightMode={lightMode} />;
+  }
+
   // Render bending move component if it's a bending move file
   if (isBendingMove) {
     return <BendingMove file={file} lightMode={lightMode} />;
+  }
+
+  // Render stat overview component if it's the stat_overview.md file
+  if (isStatOverview) {
+    return <StatOverview lightMode={lightMode} />;
   }
 
   return (
@@ -391,10 +477,61 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
         </div>
         <div className="file-viewer-content">
           {isImage ? (
-            <img src={`http://localhost:9002/player_root/${encodeURIComponent(file.path)}`} alt={file.name} />
+            <div style={{ position: 'relative', minHeight: '200px' }}>
+              {imageLoading && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '50%', 
+                  left: '50%', 
+                  transform: 'translate(-50%, -50%)',
+                  fontSize: '14px',
+                  color: lightMode ? '#666' : '#aaa'
+                }}>
+                  Loading image...
+                </div>
+              )}
+              {imageError && (
+                <div style={{ 
+                  padding: '20px', 
+                  textAlign: 'center',
+                  color: lightMode ? '#d32f2f' : '#f44336'
+                }}>
+                  Failed to load image: {file.name}
+                </div>
+              )}
+              <img 
+                key={file.path} // Force re-mount on file change
+                src={`${API_BASE_URL}/player_root/${encodeURIComponent(file.path)}`} 
+                alt={file.name}
+                loading="lazy"
+                decoding="async"
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  display: imageError ? 'none' : 'block',
+                  margin: '0 auto',
+                  opacity: imageLoading ? 0 : 1,
+                  transition: 'opacity 0.3s ease-in-out'
+                }}
+                onLoadStart={() => {
+                  setImageLoading(true);
+                  setImageError(false);
+                }}
+                onLoad={() => {
+                  setImageLoading(false);
+                  setImageError(false);
+                }}
+                onError={(e) => {
+                  console.error('Failed to load image:', file.path);
+                  setImageLoading(false);
+                  setImageError(true);
+                  e.target.onerror = null; // Prevent infinite loop
+                }}
+              />
+            </div>
           ) : isHtml ? (
             <iframe 
-              src={`http://localhost:9002/player_root/${encodeURIComponent(file.path)}`}
+              src={`${API_BASE_URL}/player_root/${encodeURIComponent(file.path)}`}
               title={file.name}
               style={{
                 width: '100%',

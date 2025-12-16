@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import './FileTree.css';
 import { getLighterColor, hexToRgba } from '../utils/colorUtils';
+import { API_BASE_URL } from '../config/api';
 
-const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, advancedMode = false, onFileUpdate }) => {
+const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode = false, advancedMode = false, onFileUpdate }, ref) => {
   const [rootItems, setRootItems] = useState([]);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [folderContents, setFolderContents] = useState({});
@@ -14,6 +15,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
   const [editingFile, setEditingFile] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [savingFile, setSavingFile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     loadRootDirectory();
@@ -22,7 +24,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
 
   const loadFileColors = async () => {
     try {
-      const response = await fetch('http://localhost:9002/api/file-colors');
+      const response = await fetch(`${API_BASE_URL}/api/file-colors`);
       if (response.ok) {
         const data = await response.json();
         setFileColors(data.colors || {});
@@ -35,7 +37,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
   const loadRootDirectory = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:9002/player_root');
+      const response = await fetch(`${API_BASE_URL}/player_root`);
       
       if (response.ok) {
         const data = await response.json();
@@ -50,7 +52,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
 
   const loadFolderContents = async (folderPath) => {
     try {
-      const response = await fetch(`http://localhost:9002/player_root/${encodeURIComponent(folderPath)}`);
+      const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(folderPath)}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -82,6 +84,38 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
     setExpandedFolders(newExpandedFolders);
   };
 
+  // Expose method to expand folders for a given file path
+  const expandToFile = async (filePath) => {
+    // Split the path into parts
+    const pathParts = filePath.split('/');
+    
+    // Remove the file name (last part) to get folder parts
+    const folderParts = pathParts.slice(0, -1);
+    
+    // Build and expand each folder in the path
+    const newExpandedFolders = new Set(expandedFolders);
+    let currentPath = '';
+    
+    for (const part of folderParts) {
+      currentPath = currentPath ? `${currentPath}/${part}` : part;
+      
+      // Add to expanded set
+      newExpandedFolders.add(currentPath);
+      
+      // Load contents if not already loaded
+      if (!folderContents[currentPath]) {
+        await loadFolderContents(currentPath);
+      }
+    }
+    
+    setExpandedFolders(newExpandedFolders);
+  };
+
+  // Expose the expandToFile method to parent components via ref
+  useImperativeHandle(ref, () => ({
+    expandToFile
+  }));
+
   const handleItemClick = (item, parentPath = '') => {
     const itemPath = parentPath ? `${parentPath}/${item.name}` : item.name;
     const isDirectory = item.type === 'dir' || item.type === 'directory';
@@ -109,7 +143,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
       // Backend expects paths relative to Player Root or prefixed with "Player Root/"
       const backendPath = `Player Root/${folderPath}`;
       
-      const response = await fetch('http://localhost:9002/api/generate-graphs', {
+      const response = await fetch(`${API_BASE_URL}/api/generate-graphs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +193,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
       const sourcePath = `Player Root/${filePath}`;
       const destPath = `Player Root/deleted/deleted_${fileName}`;
       
-      const response = await fetch('http://localhost:9002/player_root/move', {
+      const response = await fetch(`${API_BASE_URL}/player_root/move`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -226,7 +260,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
       // Construct folder path for the backend
       const backendPath = `Player Root/${folderPath}`;
       
-      const response = await fetch('http://localhost:9002/api/create-md-file', {
+      const response = await fetch(`${API_BASE_URL}/api/create-md-file`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -269,7 +303,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
     
     try {
       // Fetch the file content
-      const response = await fetch(`http://localhost:9002/player_root/${encodeURIComponent(filePath)}`);
+      const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(filePath)}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -292,7 +326,7 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
     setSavingFile(true);
     
     try {
-      const response = await fetch(`http://localhost:9002/player_root/${encodeURIComponent(editingFile)}`, {
+      const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(editingFile)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -497,13 +531,16 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
   };
 
   return (
-    <div className={`file-tree ${lightMode ? 'light-mode' : ''}`} style={{ 
+    <div className={`file-tree ${isCollapsed ? 'collapsed' : ''} ${lightMode ? 'light-mode' : ''}`} style={{ 
       background: lightMode ? '#f5f5f5' : '#252526', 
       color: lightMode ? '#333' : '#ccc', 
       height: '100%',
-      width: '100%',
+      width: isCollapsed ? '50px' : '300px',
+      minWidth: isCollapsed ? '50px' : '250px',
+      maxWidth: isCollapsed ? '50px' : '500px',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      transition: 'all 0.3s ease'
     }}>
       <div className="file-tree-header" style={{
         padding: '16px',
@@ -511,25 +548,51 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
         borderBottom: lightMode ? '1px solid #ccc' : '1px solid #444',
         fontSize: '16px',
         fontWeight: 'bold',
-        color: '#fff'
-      }}>
+        color: '#fff',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        cursor: 'pointer'
+      }}
+      onClick={() => setIsCollapsed(!isCollapsed)}
+      >
         <h3 style={{ margin: 0, fontSize: '16px' }}>Files</h3>
+        <button 
+          className="collapse-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsCollapsed(!isCollapsed);
+          }}
+          aria-label={isCollapsed ? "Expand" : "Collapse"}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#fff',
+            fontSize: '16px',
+            cursor: 'pointer',
+            padding: '4px 8px'
+          }}
+        >
+          {isCollapsed ? '▶' : '◀'}
+        </button>
       </div>
-      <div className="file-tree-content" style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '8px 0'
-      }}>
-        {loading ? (
-          <div className="loading" style={{ padding: '16px', color: '#888' }}>Loading...</div>
-        ) : rootItems.length === 0 ? (
-          <div className="loading" style={{ padding: '16px', color: '#888' }}>No items found</div>
-        ) : (
-          <div className="file-tree-items">
-            {rootItems.map(item => renderItem(item, '', 0))}
-          </div>
-        )}
-      </div>
+      {!isCollapsed && (
+        <div className="file-tree-content" style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '8px 0'
+        }}>
+          {loading ? (
+            <div className="loading" style={{ padding: '16px', color: '#888' }}>Loading...</div>
+          ) : rootItems.length === 0 ? (
+            <div className="loading" style={{ padding: '16px', color: '#888' }}>No items found</div>
+          ) : (
+            <div className="file-tree-items">
+              {rootItems.map(item => renderItem(item, '', 0))}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* File Editor Modal */}
       {editingFile && (
@@ -646,6 +709,6 @@ const FileTree = ({ onFileSelect, onNavigate, currentPath, lightMode = false, ad
       )}
     </div>
   );
-};
+});
 
 export default FileTree;

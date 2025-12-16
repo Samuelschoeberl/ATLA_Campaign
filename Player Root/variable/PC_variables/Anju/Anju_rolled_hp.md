@@ -1,3 +1,3 @@
-0
+13
 
-#variable_Anju #character_stat_Anju #character_stats_Anju #primary_stat_Anju
+#vitality #variable_Anju #character_stat_Anju #character_stats_Anju #primary_stat_Anju

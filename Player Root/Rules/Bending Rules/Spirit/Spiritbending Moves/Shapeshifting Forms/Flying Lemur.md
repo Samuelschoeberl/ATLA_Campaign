@@ -1,17 +1,17 @@
 #shapeshifting_form
-**Transformation Points cost:** 1 [[Transformation Points]]
+**Transformation Points:** 1 
 
 Bending Levels:
-	[[Air]]: Level 1
+	Air: Level 1
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]]     | -2        |
-| [[Dexterity]]    | 7         |
-| [[Constitution]] | -2        |
-| [[Wisdom]]       | 2         |
-| [[Intelligence]] | 2         |
-**Transformation Points cost:** 1 [[Transformation Points]]
+| Strength     | -2        |
+| Dexterity    | 7         |
+| Constitution | -2        |
+| Wisdom       | 2         |
+| Intelligence | 2         |
+
 - **Size:** Small
     
 - **Movement:**
@@ -21,24 +21,16 @@ Bending Levels:
 
     - **Silent Glide:** Advantage on Stealth checks while flying.
     - **Acute Senses:** Advantage on Perception checks that rely on sight or hearing.
-    - **Quick Escape:** Disengage or dash as a [[Bonus Action]].
-- **Combat Stats (Flying Lemur):**
+    - **Quick Escape:** Disengage or dash as a Bonus Action.
     
-    - [[Evasion]]: 20
+- **Combat Stats (Flying Lemur):**
+    - Evasion: 20
     - HP: 6 (fragile but evasive).
     - Attacks:
-        - **Razor Claws:** Melee Weapon Attack, d20 + [[Dex]] to hit, 1d4 slashing damage.
+        - **Razor Claws:** Melee Weapon Attack, d20 + Dex to hit, 1d4 slashing damage.
 - **Uses:**  
-    Perfect for scouting, infiltration, or swift movement through difficult terrain. The form allows quick evasion and small-scale reconnaissance.
-
-Bending Slots:
-	Air Lvl1: 4
+    - Perfect for scouting, infiltration, or swift movement through difficult terrain. The form allows quick evasion and small-scale reconnaissance.
 
 
 #spirit  #Level1 
-
-#Level1
-
 #shapeshifting_form
-#spirit
-```

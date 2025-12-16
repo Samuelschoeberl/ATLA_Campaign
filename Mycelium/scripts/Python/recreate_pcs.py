@@ -1627,6 +1627,10 @@ def main() -> None:
             value = to_number(v)
             kv[key_out] = value
             
+            # Store rolled.hp also as rolled_hp (for primary stat file compatibility)
+            if key_out == 'rolled.hp':
+                kv['rolled_hp'] = value
+            
             # Store under both short and full names for primary stats
             if key in stat_mappings:
                 for stat_name in stat_mappings[key]:

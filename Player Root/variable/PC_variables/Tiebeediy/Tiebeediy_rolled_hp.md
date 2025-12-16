@@ -1,3 +1,3 @@
-0
+7
 
-#variable_Tiebeediy #character_stat_Tiebeediy #character_stats_Tiebeediy #primary_stat_Tiebeediy
+#vitality #variable_Tiebeediy #character_stat_Tiebeediy #character_stats_Tiebeediy #primary_stat_Tiebeediy

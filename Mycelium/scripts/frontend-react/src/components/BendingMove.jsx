@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { hexToRgba } from '../utils/colorUtils';
 import './BendingMove.css';
+import { API_BASE_URL } from '../config/api';
 
 const ELEMENT_COLORS = {
   fire: '#ffb3b3',
@@ -177,7 +178,7 @@ const BendingMove = ({ file, lightMode = false }) => {
       
       const normalizedPath = (file.path || '').replace(/^Player Root\//i, '');
       const segments = normalizedPath.split('/').map(s => encodeURIComponent(s)).join('/');
-      const url = `http://localhost:9002/player_root/${segments}`;
+      const url = `${API_BASE_URL}/player_root/${segments}`;
       
       const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) {

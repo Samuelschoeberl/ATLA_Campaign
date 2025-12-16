@@ -421,8 +421,16 @@ def find_file_by_name(filename):
 
 
 @bp.route("/player_root", defaults={"subpath": ""})
-@bp.route("/player_root/<path:subpath>", methods=["GET", "POST", "PUT", "DELETE"])
+@bp.route("/player_root/<path:subpath>", methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"])
 def player_root(subpath):
+    # Handle OPTIONS preflight requests for CORS
+    if request.method == "OPTIONS":
+        response = jsonify(success=True)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, HEAD, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+    
     # Accept requests for repo root or subpaths. Frontend sends paths without
     # the leading "Player Root/" prefix in most calls; normalize both forms.
     sp = (subpath or "").strip()
@@ -464,6 +472,7 @@ def player_root(subpath):
             return jsonify(error="Not found"), 404
 
     # DELETE: remove a file
+    # DELETE: remove a file
     if request.method == "DELETE":
         if not target.exists():
             return jsonify(error="Not found"), 404
@@ -475,8 +484,32 @@ def player_root(subpath):
         except Exception as e:
             return jsonify(error=str(e)), 500
 
-    if request.method == "GET":
+    # HEAD and GET: retrieve file or directory
+    if request.method in ("GET", "HEAD"):
+        # Auto-regenerate stat_overview.md before serving it
+        rel_path = target.relative_to(REPO_ROOT).as_posix()
+        if rel_path == 'Player Root/PCs/stat_overview.md' or rel_path.endswith('/stat_overview.md'):
+            try:
+                generator_script = REPO_ROOT / 'Mycelium' / 'scripts' / 'Python' / 'generate_stat_overview.py'
+                if generator_script.exists():
+                    # Run generator silently
+                    subprocess.run(
+                        [sys.executable, str(generator_script)],
+                        cwd=str(REPO_ROOT),
+                        capture_output=True,
+                        timeout=10
+                    )
+            except Exception:
+                # If generation fails, just serve the existing file
+                pass
+        
         if target.is_dir():
+            # For HEAD requests on directories, just return success
+            if request.method == "HEAD":
+                response = jsonify(success=True)
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                return response
+            
             entries = []
             for child in sorted(target.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower())):
                 rel = child.relative_to(REPO_ROOT).as_posix()
@@ -509,11 +542,31 @@ def player_root(subpath):
                     '.htm': 'text/html',
                 }
                 mimetype = mimetype_map.get(file_ext, 'application/octet-stream')
-                return send_file(str(target), mimetype=mimetype)
+                # Use conditional_get and as_attachment=False for proper streaming
+                response = send_file(
+                    str(target), 
+                    mimetype=mimetype,
+                    conditional=True,  # Enable conditional GET (304 responses)
+                    download_name=target.name,
+                    max_age=3600  # Cache for 1 hour
+                )
+                # Add CORS headers explicitly
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+                # Add cache control for better performance
+                response.headers['Cache-Control'] = 'public, max-age=3600'
+                return response
             except Exception as e:
                 return jsonify(error=str(e)), 500
 
-        # Text file: return content + hash
+        # Text file: return content + hash (or just headers for HEAD)
+        if request.method == "HEAD":
+            # For HEAD requests on text files, return minimal response with CORS headers
+            response = jsonify(success=True)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
+            
         try:
             text = target.read_text(encoding="utf-8")
         except Exception as e:
@@ -1554,3 +1607,312 @@ def get_file_colors():
         return jsonify({'colors': colors})
     except Exception as e:
         return jsonify({'error': f'Failed to compute colors: {e}'}), 500
+
+
+@bp.route('/api/stat_overview', methods=['GET'])
+def get_stat_overview():
+    """
+    Return parsed stat overview data in JSON format.
+    Automatically regenerates the stat overview file before reading.
+    """
+    try:
+        # Run the stat overview generator
+        generator_script = REPO_ROOT / 'Mycelium' / 'scripts' / 'Python' / 'generate_stat_overview.py'
+        if not generator_script.exists():
+            return jsonify({'error': 'Stat overview generator script not found'}), 404
+        
+        # Execute the generator
+        result = subprocess.run(
+            [sys.executable, str(generator_script)],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if result.returncode != 0:
+            return jsonify({
+                'error': 'Failed to generate stat overview',
+                'stderr': result.stderr
+            }), 500
+        
+        # Read the generated file
+        stat_file = REPO_ROOT / 'Player Root' / 'PCs' / 'stat_overview.md'
+        if not stat_file.exists():
+            return jsonify({'error': 'Stat overview file not found after generation'}), 404
+        
+        content = stat_file.read_text(encoding='utf-8')
+        
+        # Parse the markdown content into structured JSON
+        parsed = parse_stat_overview_content(content)
+        
+        # Add metadata
+        parsed['last_generated'] = stat_file.stat().st_mtime
+        parsed['file_path'] = str(stat_file.relative_to(REPO_ROOT))
+        
+        return jsonify(parsed)
+        
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Stat overview generation timed out'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Failed to get stat overview: {str(e)}'}), 500
+
+
+@bp.route('/api/stat_overview/regenerate', methods=['POST'])
+def regenerate_stat_overview():
+    """
+    Explicitly regenerate the stat overview file.
+    """
+    try:
+        generator_script = REPO_ROOT / 'Mycelium' / 'scripts' / 'Python' / 'generate_stat_overview.py'
+        if not generator_script.exists():
+            return jsonify({'error': 'Stat overview generator script not found'}), 404
+        
+        result = subprocess.run(
+            [sys.executable, str(generator_script)],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if result.returncode != 0:
+            return jsonify({
+                'error': 'Failed to regenerate stat overview',
+                'stderr': result.stderr
+            }), 500
+        
+        return jsonify({
+            'success': True,
+            'message': 'Stat overview regenerated successfully',
+            'stdout': result.stdout
+        })
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Stat overview generation timed out'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Failed to regenerate stat overview: {str(e)}'}), 500
+
+
+@bp.route('/api/environmental_variable', methods=['POST'])
+def update_environmental_variable():
+    """
+    Update an environmental variable (like environmental_water_charge).
+    Expects JSON: { "name": "environmental_water_charge", "current": 5, "max": 10 }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        name = data.get('name', '')
+        current = data.get('current', 0)
+        max_value = data.get('max', 0)
+        
+        if not name:
+            return jsonify({'error': 'Missing "name" field'}), 400
+        
+        # Construct the file path - assumes environmental variables are in Player Root/variable/environmental/
+        env_var_path = get_player_root_base() / 'variable' / 'environmental' / f'{name}.md'
+        
+        if not env_var_path.exists():
+            return jsonify({'error': f'Environmental variable file not found: {env_var_path}'}), 404
+        
+        # Read the existing file to preserve tags and structure
+        content = env_var_path.read_text(encoding='utf-8')
+        
+        # Parse content - typically: value on first line, then blank, then tags
+        lines = content.split('\n')
+        new_lines = []
+        
+        # Add the new value as the first line
+        new_lines.append(f'{current}/{max_value}')
+        
+        # Preserve blank lines and tags
+        found_tags = False
+        for line in lines:
+            stripped = line.strip()
+            # Skip the old value line (first non-tag, non-empty line)
+            if not found_tags and not stripped.startswith('#') and stripped:
+                continue
+            # Keep blank lines and tag lines
+            if not stripped or stripped.startswith('#'):
+                new_lines.append(line)
+                if stripped.startswith('#'):
+                    found_tags = True
+        
+        # Write back to file
+        env_var_path.write_text('\n'.join(new_lines), encoding='utf-8')
+        
+        return jsonify({
+            'success': True,
+            'message': f'Updated {name}',
+            'value': f'{current}/{max_value}'
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/environmental_variable/<variable_name>', methods=['GET'])
+def get_environmental_variable(variable_name):
+    """
+    Get an environmental variable value.
+    Returns JSON: { "name": "environmental_water_charge", "current": 5, "max": 10 }
+    """
+    try:
+        # Construct the file path
+        env_var_path = get_player_root_base() / 'variable' / 'environmental' / f'{variable_name}.md'
+        
+        if not env_var_path.exists():
+            return jsonify({'error': f'Environmental variable file not found: {variable_name}'}), 404
+        
+        # Read the file content
+        content = env_var_path.read_text(encoding='utf-8')
+        
+        # Parse content - typically: value on first line, then blank, then tags
+        lines = content.split('\n')
+        value_line = ''
+        
+        for line in lines:
+            stripped = line.strip()
+            # Find the first non-tag, non-empty line
+            if stripped and not stripped.startswith('#'):
+                value_line = stripped
+                break
+        
+        # Parse current/max format
+        current = 0
+        max_value = 0
+        
+        if value_line:
+            slashMatch = re.match(r'^(\d+)\s*\/\s*(\d+)$', value_line)
+            if slashMatch:
+                current = int(slashMatch.group(1))
+                max_value = int(slashMatch.group(2))
+            else:
+                # Single number format
+                try:
+                    num = int(value_line)
+                    current = num
+                    max_value = num
+                except ValueError:
+                    pass
+        
+        return jsonify({
+            'name': variable_name,
+            'current': current,
+            'max': max_value
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def parse_stat_overview_content(content: str):
+    """
+    Parse the markdown stat overview content into structured JSON.
+    
+    Returns:
+        {
+            'environmental': [{'name': str, 'value': str, 'tags': str, 'file': str}, ...],
+            'pcs': {
+                'PCName': {
+                    'vitality': [{'key': str, 'value': str, 'source': str}, ...],
+                    'defensive': [{'key': str, 'value': str, 'source': str}, ...]
+                },
+                ...
+            }
+        }
+    """
+    result = {
+        'environmental': [],
+        'pcs': {}
+    }
+    
+    lines = content.splitlines()
+    current_section = None
+    current_pc = None
+    current_category = None
+    in_table = False
+    
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        
+        # Detect sections
+        if stripped == '## Global environmental variables' or stripped == '## Global Environmental Variables':
+            current_section = 'environmental'
+            current_pc = None
+            current_category = None
+            continue
+        elif stripped == '## Per-PC extracted stats' or stripped == '## Per-PC Extracted Stats':
+            current_section = 'pcs'
+            current_pc = None
+            current_category = None
+            continue
+        
+        # Detect PC names (### heading)
+        if stripped.startswith('### '):
+            current_pc = stripped[4:].strip()
+            if current_pc not in result['pcs']:
+                result['pcs'][current_pc] = {
+                    'vitality': [],
+                    'defensive': [],
+                    'bending_slots': []
+                }
+            current_category = None
+            continue
+        
+        # Detect category (#### or **category**)
+        if stripped.startswith('#### '):
+            category = stripped[5:].strip().lower()
+            if category == 'vitality':
+                current_category = 'vitality'
+            elif category == 'defensive':
+                current_category = 'defensive'
+            elif category in ['bending slots', 'consumable resources']:
+                current_category = 'bending_slots'
+            continue
+        
+        if stripped.startswith('**') and stripped.endswith('**'):
+            category = stripped.strip('*').strip().lower()
+            if category == 'vitality':
+                current_category = 'vitality'
+            elif category == 'defensive':
+                current_category = 'defensive'
+            elif category in ['bending slots', 'consumable resources']:
+                current_category = 'bending_slots'
+            continue
+        
+        # Parse table rows
+        if '|' in stripped and not stripped.startswith('|--'):
+            parts = [p.strip() for p in stripped.split('|') if p.strip()]
+            
+            # Skip header rows and separator rows (rows with only dashes)
+            if parts:
+                first_col = parts[0]
+                # Skip if header row
+                if first_col.lower() in ['name', 'key', 'resource name', 'slot type']:
+                    continue
+                # Skip if separator row (contains only dashes and spaces)
+                if all(c in '- ' for c in first_col) and '-' in first_col:
+                    continue
+            
+            # Environmental table row
+            if current_section == 'environmental' and not current_pc and len(parts) >= 4:
+                name = parts[0].replace('[[', '').replace(']]', '')
+                result['environmental'].append({
+                    'name': name,
+                    'value': parts[1],
+                    'tags': parts[2],
+                    'file': parts[3]
+                })
+            
+            # PC stats table row
+            elif current_pc and current_category and len(parts) >= 3:
+                result['pcs'][current_pc][current_category].append({
+                    'key': parts[0],
+                    'value': parts[1],
+                    'source': parts[2]
+                })
+    
+    return result

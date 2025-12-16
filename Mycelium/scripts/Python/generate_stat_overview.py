@@ -158,15 +158,145 @@ def gather_environmentals():
     return out
 
 
+def parse_bending_slots_from_character_sheet(text: str):
+    """Parse bending slots and water charges from a character sheet markdown.
+    
+    Looks for the "## Bending Slots" and "## Water charges" sections and extracts values.
+    Returns list of (slot_name, value) tuples.
+    Excludes environmental water charge (handled as global variable).
+    
+    This matches the logic in CharacterSheet.jsx's parseCharacterSheet function.
+    """
+    slots = []
+    
+    # Parse Bending Slots section
+    in_bending_section = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        
+        # Stop parsing if we hit the tags line or WARNING section
+        if stripped.startswith('#') and not stripped.startswith('##'):
+            break
+        if 'WARNING' in stripped and stripped.startswith('>'):
+            break
+        
+        if stripped.startswith('## Bending Slots'):
+            in_bending_section = True
+            continue
+        
+        if in_bending_section and stripped.startswith('##') and 'Bending Slots' not in stripped:
+            in_bending_section = False
+        
+        if in_bending_section and '|' in line and not line.startswith('|---'):
+            parts = [p.strip() for p in line.split('|') if p.strip()]
+            
+            # Skip header row and rows with only dashes
+            if len(parts) >= 2:
+                # Skip rows that are clearly headers or separators
+                if parts[0].lower() in ['slot', 'slot type', 'bending slot'] or '---' in parts[0] or parts[0].replace('-', '').strip() == '':
+                    continue
+                
+                slot_name = parts[0]
+                slot_value = parts[1] if len(parts) > 1 else ''
+                
+                # Skip environmental water charge (it's a global variable)
+                if 'environmental' in slot_name.lower():
+                    continue
+                
+                slots.append((slot_name, slot_value))
+    
+    # Parse Water charges section
+    in_water_section = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        
+        # Stop parsing if we hit the tags line or WARNING section
+        if stripped.startswith('#') and not stripped.startswith('##'):
+            break
+        if 'WARNING' in stripped and stripped.startswith('>'):
+            break
+        
+        if stripped.startswith('## Water charges'):
+            in_water_section = True
+            continue
+        
+        if in_water_section and stripped.startswith('##') and 'Water charges' not in stripped:
+            in_water_section = False
+        
+        if in_water_section and '|' in line and not line.startswith('|---'):
+            parts = [p.strip() for p in line.split('|') if p.strip()]
+            
+            # Skip header row and rows with only dashes
+            if len(parts) >= 2:
+                # Skip rows that are clearly headers or separators
+                if parts[0].lower() in ['water charge type', 'water charge'] or '---' in parts[0] or parts[0].replace('-', '').strip() == '':
+                    continue
+                
+                charge_name = parts[0]
+                charge_value = parts[1] if len(parts) > 1 else ''
+                
+                # Skip environmental water charge (it's a global variable)
+                if 'environmental' in charge_name.lower():
+                    continue
+                
+                slots.append((charge_name, charge_value))
+    
+    return slots
+
+
+def get_active_pcs():
+    """Read pc_primary_stats.md and return set of PC names with 'yes' in Run Update column."""
+    active_pcs = set()
+    primary_stats_file = PLAYER_ROOT / "pc_primary_stats.md"
+    
+    if not primary_stats_file.exists():
+        # If the file doesn't exist, include all PCs
+        return None
+    
+    try:
+        text = read_text(primary_stats_file)
+        for line in text.splitlines():
+            # Skip header and separator lines
+            if not line.strip() or line.startswith('|---') or 'Name' in line and 'STR' in line:
+                continue
+            
+            # Parse table row
+            if '|' in line:
+                parts = [p.strip() for p in line.split('|')]
+                if len(parts) >= 14:  # Ensure we have enough columns
+                    # Extract PC name (remove [[ ]] if present)
+                    pc_name = parts[1].replace('[[', '').replace(']]', '').strip()
+                    # Check Run Update column (last column)
+                    run_update = parts[-2].strip().lower()  # -2 because split creates empty at end
+                    
+                    if run_update == 'yes':
+                        active_pcs.add(pc_name)
+    except Exception as e:
+        print(f"Warning: Failed to parse pc_primary_stats.md: {e}", file=sys.stderr)
+        return None
+    
+    return active_pcs
+
+
 def gather_pc_stats():
     """Gather PC stats from Player Root/variable/PC_variables/<Name>/ directories.
     
-    Only includes stats tagged with #vitality or #defensive.
+    Includes stats tagged with #vitality or #defensive, OR stats that match
+    vitality/defensive patterns by filename.
+    Bending slots are parsed directly from character sheets.
+    Only includes PCs with 'yes' in the Run Update column of pc_primary_stats.md.
     """
     pcs = {}
     
     if not PC_VARS_DIR.exists():
         return pcs
+    
+    # Get list of active PCs (those with "yes" in Run Update)
+    active_pcs = get_active_pcs()
+    
+    # Define vitality and defensive stat patterns
+    vitality_patterns = ['hp', 'health']
+    defensive_patterns = ['armor', 'barrier', 'evasion', 'defense', 'defence']
     
     # Scan each PC's variable directory
     for pc_dir in sorted(PC_VARS_DIR.iterdir()):
@@ -174,22 +304,79 @@ def gather_pc_stats():
             continue
         
         pcname = pc_dir.name
-        pcs[pcname] = []
         
-        # Scan all variable files for this PC
+        # Skip PCs that don't have "yes" in Run Update column
+        if active_pcs is not None and pcname not in active_pcs:
+            continue
+        
+        pcs[pcname] = {'vitality': [], 'defensive': [], 'bending_slots': []}
+        
+        # Scan all variable files for this PC for vitality and defensive stats
         for var_file in sorted(pc_dir.glob("*.md")):
             text = read_text(var_file)
             value, tags = extract_first_value_and_tags_from_env(text)
             
-            # Only include if tagged with #vitality or #defensive
+            # Check if tagged with #vitality or #defensive
             has_vitality = any(t.lower() == '#vitality' for t in tags)
             has_defensive = any(t.lower() == '#defensive' for t in tags)
             
-            if has_vitality or has_defensive:
-                # Extract display name from filename: Anju_max_hp.md -> max_hp
-                display_name = var_file.stem.replace(f"{pcname}_", "")
-                rel_path = var_file.relative_to(REPO_ROOT).as_posix()
-                pcs[pcname].append((display_name, value, rel_path))
+            # If not tagged, use filename heuristics
+            if not has_vitality and not has_defensive:
+                filename_lower = var_file.stem.lower()
+                
+                # Check if filename matches vitality patterns
+                for pattern in vitality_patterns:
+                    if pattern in filename_lower:
+                        has_vitality = True
+                        break
+                
+                # Check if filename matches defensive patterns
+                if not has_vitality:
+                    for pattern in defensive_patterns:
+                        if pattern in filename_lower:
+                            has_defensive = True
+                            break
+            
+            # Extract display name from filename: Anju_max_hp.md -> max_hp
+            display_name = var_file.stem.replace(f"{pcname}_", "")
+            
+            # Skip rolled_hp
+            if display_name.lower() == 'rolled_hp':
+                continue
+            
+            rel_path = var_file.relative_to(REPO_ROOT).as_posix()
+            
+            if has_vitality:
+                pcs[pcname]['vitality'].append((display_name, value, rel_path))
+            elif has_defensive:
+                pcs[pcname]['defensive'].append((display_name, value, rel_path))
+        
+        # Now parse bending slots from the character sheet
+        # Look for character sheet file in the PC directory
+        char_sheet_path = None
+        pc_folder = PC_DIR / pcname
+        
+        if pc_folder.exists() and pc_folder.is_dir():
+            # Look for files containing "character sheet" (case-insensitive)
+            for file in pc_folder.glob("*.md"):
+                if "character sheet" in file.name.lower():
+                    char_sheet_path = file
+                    break
+        
+        # Fallback: look directly in PC_DIR
+        if not char_sheet_path:
+            for file in PC_DIR.glob("*.md"):
+                if pcname.lower() in file.name.lower() and "character sheet" in file.name.lower():
+                    char_sheet_path = file
+                    break
+        
+        if char_sheet_path:
+            char_sheet_text = read_text(char_sheet_path)
+            bending_slots = parse_bending_slots_from_character_sheet(char_sheet_text)
+            
+            for slot_name, slot_value in bending_slots:
+                rel_path = char_sheet_path.relative_to(REPO_ROOT).as_posix()
+                pcs[pcname]['bending_slots'].append((slot_name, slot_value, rel_path))
     
     return pcs
 
@@ -217,7 +404,6 @@ def render_markdown(envs, pcs, extras):
     lines.append("## Global environmental variables\n")
     lines.append("")
     lines.append("| Name                           | Value | Tags                                                         | File                                                 |")
-    lines.append("| ------------------------------ | ----: | ------------------------------------------------------------ | ---------------------------------------------------- |")
     if envs:
         for name, val, tags, p in envs:
             # Name shown as wiki link [[name]] per user's edited format
@@ -228,35 +414,20 @@ def render_markdown(envs, pcs, extras):
         lines.append("| (none) |  |  |  |")
 
     lines.append("\n\n## Per-PC extracted stats\n")
-    lines.append("_(Only shows variables tagged with #vitality or #defensive)_\n")
+    lines.append("_(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or matching patterns)_\n")
     
     if pcs:
-        for pc, items in pcs.items():
+        for pc, data in pcs.items():
             lines.append(f"\n### {pc}\n")
             
-            # Organize stats by tag: vitality first, then defensive
-            vitality_stats = []
-            defensive_stats = []
-            
-            for display_name, value, src in items:
-                # Read the file again to get its tags for organization
-                try:
-                    text = read_text(Path(REPO_ROOT) / src)
-                    _, tags = extract_first_value_and_tags_from_env(text)
-                    has_vitality = any(t.lower() == '#vitality' for t in tags)
-                    
-                    if has_vitality:
-                        vitality_stats.append((display_name, value, src))
-                    else:
-                        defensive_stats.append((display_name, value, src))
-                except Exception:
-                    defensive_stats.append((display_name, value, src))
+            vitality_stats = data.get('vitality', [])
+            defensive_stats = data.get('defensive', [])
+            bending_slots = data.get('bending_slots', [])
             
             # Display vitality stats if any
             if vitality_stats:
                 lines.append("\n**Vitality**\n")
                 lines.append("\n| Key           | Value | Source File                            |")
-                lines.append("| ------------- | ----- | -------------------------------------- |")
                 for name, v, src in vitality_stats:
                     v2 = v if v else ""
                     lines.append(f"| {name} | {v2}    | {src} |")
@@ -266,10 +437,24 @@ def render_markdown(envs, pcs, extras):
             if defensive_stats:
                 lines.append("\n**Defensive**\n")
                 lines.append("\n| Key           | Value | Source File                            |")
-                lines.append("| ------------- | ----- | -------------------------------------- |")
                 for name, v, src in defensive_stats:
                     v2 = v if v else ""
                     lines.append(f"| {name} | {v2}    | {src} |")
+                lines.append("")
+            
+            # Display bending slots if any
+            if bending_slots:
+                lines.append("\n**Consumable Resources**\n")
+                lines.append("")
+                lines.append("| Resource Name            | Current/Max | Source File                                       |")
+                lines.append("| ------------------------ | ----------- | ------------------------------------------------- |")
+                for name, v, src in bending_slots:
+                    v2 = v if v else ""
+                    # Pad columns for proper alignment
+                    name_padded = name[:24].ljust(24)
+                    value_padded = v2[:11].ljust(11)
+                    src_padded = src[:49].ljust(49)
+                    lines.append(f"| {name_padded} | {value_padded} | {src_padded} |")
                 lines.append("")
             
     else:

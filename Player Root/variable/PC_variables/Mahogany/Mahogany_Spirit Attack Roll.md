@@ -1,3 +1,3 @@
-1d20 + 2 + 4
+1d20 + 2 + 3
 
 #spirit #show_if_spirit_ge_1 #roll #rollable #variable_Mahogany #character_stat_Mahogany #character_stats_Mahogany #secondary_stat_Mahogany

@@ -1,32 +1,31 @@
 #shapeshifting_form
-**Transformation Points cost:** 2 
+**Transformation Points:** 2 
 
 Bending Levels:
-	[[Earth]]: Level 1
+	Earth: Level 1
 
 ![[Bearturtle.webp]]
 
 - **Size:** 2x2 meters
-- On Transform:
-	- **Defensive Presence:** Allies within 5 meter gain 3 [[General Armor]] until your Form Drops.
+- **On Transformation**:
+	- Allies within 5 meter gain 3 General Armor until your Form Drops.
 - **Vitality and Defense Stats:**
     - Evasion: 15
     - Armor: 
-	    - 3 [[General Armor]]
-	    - 5 [[Physical Armor]]
+	    - 3 General Armor
+	    - 5 Physical Armor
     - HP: 50.
 
 | **Stat**         | **Value** |
 | ---------------- | --------- |
-| [[Strength]]     | 6         |
-| [[Dexterity]]    | 0         |
-| [[Constitution]] | 7         |
-| [[Intelligence]] | 0         |
-| [[Wisdom]]       | 1         |
-| [[Charisma]]     | 2         |
+| Strength     | 6         |
+| Dexterity    | 0         |
+| Constitution | 7         |
+| Intelligence | 0         |
+| Wisdom       | 1         |
+| Charisma     | 2         |
 
 - **Movement:**
-    
     - Walk 5 meter.
     - Swim 3 meter
 
@@ -34,10 +33,10 @@ Bending Levels:
 - **Special Abilities in Bearturtle Form:**
     - **Shell Shield:**
 	    - #Reaction
-	        When an ally within 3 meter is attacked, impose Disadvantage on the [[Attack Roll]] as you shift to protect them with your shell. Can be used 3 times per long rest.
-	    **Tuck in**: 
+	        When an ally within 3 meter is attacked, impose Disadvantage on the Attack Roll as you shift to protect them with your shell. Can be used 3 times per long rest.
+	- **Tuck in**: 
 	    - #Reaction
-		    When you fail a dexterity saving throw you still only take half damage. Your [[Movement]] in the next round is halved.
+		    When you fail a dexterity saving throw you still only take half damage. Your Movement in the next round is halved.
 
     - **Sturdy Form:**
 	    - You have Advantage on saving throws against being knocked prone or moved against your will.
