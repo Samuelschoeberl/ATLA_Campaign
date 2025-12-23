@@ -22,7 +22,7 @@ You can expand any number of Tentacles to do any of the following:
 	- On the end of their Turn they get to roll a Str Saving throw against you [[Waterbending DC]] (24). 
 
 #Reaction_X_Testchar 
-- You gain Tentacle d6 [[Player Root/variable/secondary_stat/Evasion|Evasion]] (0) until the start of your turn
+- You gain Tentacle d6 [[Evasion]] (32) until the start of your turn
 
 #Level5_X_Testchar
 #water_X_Testchar 

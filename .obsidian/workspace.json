@@ -157,9 +157,21 @@
             "id": "d1da4a896660fd07",
             "type": "leaf",
             "state": {
+              "type": "image",
+              "state": {
+                "file": "Dms Root/Dnd stuff/05ee1c62-cd5d-4866-90c6-a99adfb672db.png"
+              },
+              "icon": "lucide-image",
+              "title": "05ee1c62-cd5d-4866-90c6-a99adfb672db"
+            }
+          },
+          {
+            "id": "3c3fab98d57b9a33",
+            "type": "leaf",
+            "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms/Bearturtle.md",
+                "file": "Player Root/variable/secondary_stat/Spiritbending slot.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -174,7 +186,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Bearturtle"
+              "title": "Spiritbending slot"
             }
           },
           {
@@ -200,9 +212,81 @@
               "icon": "lucide-file",
               "title": "Bearturtle"
             }
+          },
+          {
+            "id": "ed54181b75448c93",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Dms Root/Dnd stuff/Mushroom of the Shining Cave.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Mushroom of the Shining Cave"
+            }
+          },
+          {
+            "id": "0ee8e1877386a578",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Gather Chi.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Gather Chi"
+            }
+          },
+          {
+            "id": "bc042d41bdc7a42d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms/Bearturtle.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Bearturtle"
+            }
           }
         ],
-        "currentTab": 6
+        "currentTab": 11
       }
     ],
     "direction": "vertical"
@@ -234,7 +318,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#waterbending",
+                "query": "tag:#Shapeshifting",
                 "matchingCase": false,
                 "explainSearch": true,
                 "collapseAll": true,
@@ -309,11 +393,12 @@
             "state": {
               "type": "runjs-codelist-view",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "runjs-codelist-view"
+              "icon": "js-dark-icon",
+              "title": "RunJS Codelist"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -413,53 +498,53 @@
       "runjs:RunJS": false
     }
   },
-  "active": "bf97f7a300bd33a1",
+  "active": "bc042d41bdc7a42d",
   "lastOpenFiles": [
-    "logs/client_activity_20251216.log",
-    "Player Root/PCs/stat_overview.md",
-    "Player Root/PCs/Anju/Bending Rules - Anju/Bending Rules - Anju_wikigraph_treemap.html",
-    "Player Root/PCs/Anju/Bending Rules - Anju/Bending Rules - Anju_wikigraph_sunburst.html",
-    "Player Root/variable/PC_variables/X_Testchar/X_Testchar_general_armor.md",
-    "Player Root/variable/PC_variables/Anju/Anju_general_armor.md",
-    "Player Root/pc_primary_stats.md",
-    "Player Root/variable/secondary_stat/Initiative.md",
-    "logs/client_activity_20251215.log",
-    "Mycelium/scripts/frontend-react/src/components/StatOverview.css",
-    "Mycelium/scripts/frontend-react/src/components/StatOverview.jsx",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/useSensors.d.ts",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/useSensor.d.ts",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/types.d.ts",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/pointer/PointerSensor.d.ts",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/dist/sensors/pointer/index.d.ts",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/sortable/README.md",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/sortable/CHANGELOG.md",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/README.md",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/core/CHANGELOG.md",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/utilities/README.md",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/utilities/CHANGELOG.md",
-    "Mycelium/scripts/frontend-react/node_modules/tslib/SECURITY.md",
-    "Mycelium/scripts/frontend-react/node_modules/tslib/README.md",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/accessibility/README.md",
-    "Mycelium/scripts/frontend-react/node_modules/@dnd-kit/accessibility/CHANGELOG.md",
-    "Player Root/Rules/Bending Rules/Fire/Mechanics/Stress Level Mechanic.md",
-    "Player Root/Rules/Evasion.md",
-    "Player Root/variable/PC_variables/Ash/Ash_general_armor.md",
-    "Player Root/variable/secondary_stat/Evasion.md",
-    "Mycelium/data/template/template_Character_Sheet.md",
-    "Player Root/variable/secondary_stat/Spirit Attack Roll.md",
-    "Player Root/deleted/deleted_test.md",
-    "Player Root/variable/PC_variables/Tapioca/Tapioca_general_armor.md",
-    "Player Root/variable/PC_variables/Mahogany/Mahogany_general_armor.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
+    "Player Root/variable/PC_variables/Tiebeediy/Tiebeediy_general_armor.md",
+    "Player Root/variable/PC_variables/Puy/Puy_general_armor.md",
+    "Mycelium/scripts/frontend-react/src/components/Quicklinks.README.md",
+    "Mycelium/scripts/frontend-react/src/components/Quicklinks.css",
+    "Mycelium/scripts/frontend-react/src/components/Quicklinks.jsx",
     "Player Root/variable/PC_variables/Rio/Rio_general_armor.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_ready.md",
+    "logs/client_activity_20251223.log",
+    "Mycelium/scripts/frontend-react/src/context/ReadyStateContext.jsx",
+    "Mycelium/scripts/frontend-react/src/context",
+    "Player Root/variable/PC_variables/Tapioca/Tapioca_general_armor.md",
+    "Player Root/variable/PC_variables/X_Testchar/X_Testchar_general_armor.md",
+    "Player Root/variable/PC_variables/Mahogany/Mahogany_general_armor.md",
+    "Player Root/variable/PC_variables/Anju/Anju_general_armor.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Flying Lemur.md",
+    "Player Root/Rules/Bending Rules/Spirit/Shapeshifting Pics/Flying Lemur.webp",
+    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Luma’tik - Tiebeediy.md",
+    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Bearturtle - Tiebeediy.md",
+    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Flying Lemur - Tiebeediy.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Luma’tik - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Bearturtle - Mahogany.md",
+    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Flying Lemur - Mahogany.md",
+    "Player Root/PCs/Ash/Bending Rules - Ash/by Action Type/Action/Flying Lemur - Ash.md",
+    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/by Action Type/Action/Luma’tik - X_Testchar.md",
+    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/by Action Type/Action/Bearturtle - X_Testchar.md",
+    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/by Action Type/Action/Flying Lemur - X_Testchar.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Human Form.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Luma’tik.md",
+    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Bearturtle.md",
+    "Player Root/variable/primary_stat/spirit.md",
+    "Player Root/Rules/Bending Rules/Spirit/Mechanics/Spiritbending Slot Progression.md",
+    "logs/client_activity_20251222.log",
+    "Dms Root/Dnd stuff/Plulp",
+    "Dms Root/Dnd stuff/ChatGPT Image Dec 22, 2025, 03_02_59 PM.png",
+    "Dms Root/Dnd stuff/ChatGPT Image Dec 22, 2025, 04_25_07 AM.png",
+    "Dms Root/Dnd stuff/ChatGPT Image Dec 22, 2025, 04_15_40 AM.png",
+    "Dms Root/Dnd stuff/05ee1c62-cd5d-4866-90c6-a99adfb672db.png",
+    "Mycelium/scripts/frontend-react/src/components/StressLevel.css",
+    "Mycelium/scripts/frontend-react/src/components/StressLevel.jsx",
+    "logs/client_activity_20251221.log",
     "Mycelium/scripts/frontend-react/dist/Mycelium Logo.png",
     "Dms Root/Battlemaps/crystal tample.webp",
     "Player Root/Maps/Avatar World.jpg",
     "Dms Root/Battlemaps/IMG_0412.JPG",
-    "Dms Root/Battlemaps/IMG_0393.JPG",
-    "IMG_0412.JPG",
-    "IMG_0393.JPG",
-    "Dms Root/Battlemaps/IMG_0328.JPG",
-    "Dms Root/Battlemaps/IMG_0326.JPG",
-    "Dms Root/Battlemaps/IMG_0325.JPG"
+    "Dms Root/Battlemaps/IMG_0393.JPG"
   ]
 }

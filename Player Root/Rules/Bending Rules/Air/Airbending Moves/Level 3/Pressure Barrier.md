@@ -6,7 +6,7 @@
 - Duration: until the start of your next turn. 
 
 **Effect**:
-Provides  [[Airbending_slot]] d4 [[Barrier]] and immunity to movement as long as the Barrier is unbroken.
+Provides  [[Airbending_slot]] d4 [[Barrier]] and immunity to forced movement as long as the Barrier is unbroken.
 The effect ends when the target leaves the radius. 
 
 

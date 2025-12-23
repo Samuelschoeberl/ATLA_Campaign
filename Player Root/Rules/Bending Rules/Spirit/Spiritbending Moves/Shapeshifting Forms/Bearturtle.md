@@ -1,5 +1,6 @@
-#shapeshifting_form
-**Transformation Points:** 2 
+#Shapeshifting
+
+**Spiritbending Slot:** Level 2
 
 Bending Levels:
 	Earth: Level 1
@@ -7,8 +8,8 @@ Bending Levels:
 ![[Bearturtle.webp]]
 
 - **Size:** 2x2 meters
-- **On Transformation**:
-	- Allies within 5 meter gain 3 General Armor until your Form Drops.
+- **Aura**:
+	- Allies within 5 meter gain 3 General Armor.
 - **Vitality and Defense Stats:**
     - Evasion: 15
     - Armor: 
@@ -32,10 +33,10 @@ Bending Levels:
 
 - **Special Abilities in Bearturtle Form:**
     - **Shell Shield:**
-	    - #Reaction
+	    - Reaction
 	        When an ally within 3 meter is attacked, impose Disadvantage on the Attack Roll as you shift to protect them with your shell. Can be used 3 times per long rest.
 	- **Tuck in**: 
-	    - #Reaction
+	    - Reaction
 		    When you fail a dexterity saving throw you still only take half damage. Your Movement in the next round is halved.
 
     - **Sturdy Form:**
@@ -51,7 +52,7 @@ Bending Levels:
 
 
 #Level2
-#shapeshifting_form
+#Shapeshifting
 #spirit
 #transformation
 

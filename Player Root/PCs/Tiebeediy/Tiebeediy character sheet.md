@@ -50,21 +50,27 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
+| <details><summary>Bonus air slots</summary>0/0</details> | |
+| <details><summary>Bonus fire slots</summary>0/0</details> | |
 | Earthbending slot      |     3/3 |
+| <details><summary>Bonus earth slots</summary>0/0</details> | |
 | Spiritbending slot     |    2/2 |
+| <details><summary>Bonus spirit slots</summary>0/0</details> | |
 
 ## Water charges
 You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 9/9 |
+| Environmental water charge | 4/4 |
+| <details><summary>Bonus water charges</summary>0/0</details> | |
 
 
 
 #Tiebeediy #Character_Sheet
 
 > WARNING: The following character stats could not be placed by context and were appended:
+| Bonus bending slots | 0 |
 | Charisma | 5 |
 | Constitution | 3 |
 | Dexterity | 3 |

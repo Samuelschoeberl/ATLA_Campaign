@@ -1,5 +1,6 @@
-#shapeshifting_form_Tiebeediy
-**Transformation Points:** 1 
+#Shapeshifting_Tiebeediy
+
+**Spiritbending Slot:** Level 1
 
 Bending Levels:
 	Air: Level 1
@@ -33,4 +34,4 @@ Bending Levels:
 
 
 #spirit_Tiebeediy  #Level1_Tiebeediy 
-#shapeshifting_form_Tiebeediy
+#Shapeshifting_Tiebeediy

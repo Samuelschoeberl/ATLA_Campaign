@@ -3,7 +3,7 @@ import './StatOverview.css';
 import { getLighterColor, hexToRgba } from '../utils/colorUtils';
 import { API_BASE_URL } from '../config/api';
 
-const StatOverview = () => {
+const StatOverview = ({ onFileSelect }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -366,7 +366,33 @@ const StatOverview = () => {
                     borderColor: borderColor,
                   }}
                 >
-                  <h3 style={{ color: headerColor, borderBottomColor: borderColor }}>{pcName}</h3>
+                  <h3 
+                    style={{ 
+                      color: headerColor, 
+                      borderBottomColor: borderColor,
+                      cursor: onFileSelect ? 'pointer' : 'default',
+                      transition: 'opacity 0.2s'
+                    }}
+                    onClick={() => {
+                      if (onFileSelect) {
+                        // Use the same method as [[]] links - just pass the character name
+                        onFileSelect(pcName);
+                      }
+                    }}
+                    onMouseEnter={(e) => {
+                      if (onFileSelect) {
+                        e.currentTarget.style.opacity = '0.7';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (onFileSelect) {
+                        e.currentTarget.style.opacity = '1';
+                      }
+                    }}
+                    title={onFileSelect ? `Open ${pcName}` : pcName}
+                  >
+                    {pcName}
+                  </h3>
                   
                   {/* Large Life Bar Display */}
                   {maxHp > 0 && (

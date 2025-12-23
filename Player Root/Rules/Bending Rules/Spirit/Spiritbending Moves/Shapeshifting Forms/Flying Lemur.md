@@ -1,5 +1,6 @@
-#shapeshifting_form
-**Transformation Points:** 1 
+#Shapeshifting
+
+**Spiritbending Slot:** Level 1
 
 Bending Levels:
 	Air: Level 1
@@ -33,4 +34,4 @@ Bending Levels:
 
 
 #spirit  #Level1 
-#shapeshifting_form
+#Shapeshifting

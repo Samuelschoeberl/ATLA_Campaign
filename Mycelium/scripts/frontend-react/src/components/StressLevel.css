@@ -1,0 +1,106 @@
+.stress-level-container {
+  padding: 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 179, 179, 0.05) 0%, rgba(215, 38, 61, 0.05) 100%);
+  border: 1px solid rgba(255, 179, 179, 0.3);
+  box-shadow: 0 2px 8px rgba(215, 38, 61, 0.1);
+}
+
+.stress-level-header h3 {
+  color: inherit;
+}
+
+.stress-level-header input[type="number"] {
+  transition: all 0.2s ease;
+}
+
+.stress-level-header input[type="number"]:hover {
+  border-color: #ffb3b3;
+  box-shadow: 0 0 0 2px rgba(255, 179, 179, 0.2);
+}
+
+.stress-level-header input[type="number"]:focus {
+  outline: none;
+  border-color: #d7263d;
+  box-shadow: 0 0 0 3px rgba(215, 38, 61, 0.2);
+}
+
+/* Remove spinner arrows in webkit browsers */
+.stress-level-header input[type="number"]::-webkit-inner-spin-button,
+.stress-level-header input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.5;
+  margin-left: 4px;
+}
+
+.stress-meter {
+  display: block;
+}
+
+.stress-meter .checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 8px;
+}
+
+.stress-meter .checkbox-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.stress-meter .checkbox-label:hover .checkbox-mark {
+  transform: scale(1.08);
+  filter: brightness(1.15);
+}
+
+.stress-meter .checkbox-label:active .checkbox-mark {
+  transform: scale(0.95);
+}
+
+.stress-effects {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.effect-item {
+  transition: transform 0.2s ease;
+}
+
+.effect-item:hover {
+  transform: scale(1.02);
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 600px) {
+  .effect-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .stress-meter .checkbox-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .stress-meter .checkbox-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .stress-meter .checkbox-mark {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}

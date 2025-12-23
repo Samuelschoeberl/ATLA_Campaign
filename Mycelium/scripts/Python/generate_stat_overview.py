@@ -88,6 +88,7 @@ CANONICAL_KEYS = [
     (re.compile(r"current[_ ]?hp|current\s+hp", re.I), "current_hp"),
     (re.compile(r"evasion", re.I), "evasion"),
     (re.compile(r"general\s*armor", re.I), "general armor"),
+    (re.compile(r"ready", re.I), "ready"),
 ]
 
 ENV_HINT = re.compile(r"environmental[_\.\s]?water[_\.\s]?charge", re.I)
@@ -156,6 +157,50 @@ def gather_environmentals():
         seen.add(name)
         out.append((name, val, tags, p))
     return out
+
+
+def parse_vitals_from_character_sheet(text: str):
+    """Parse vitals from a character sheet markdown Vitals section.
+    
+    Looks for the "## Vitals" section and extracts key-value pairs from the table.
+    Returns list of (key, value) tuples.
+    Only extracts fields that match CANONICAL_KEYS patterns.
+    """
+    vitals = []
+    
+    # Parse Vitals section
+    in_vitals_section = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        
+        # Stop parsing if we hit another section
+        if stripped.startswith('##'):
+            if 'Vitals' in stripped:
+                in_vitals_section = True
+                continue
+            elif in_vitals_section:
+                # We've moved past vitals
+                break
+        
+        if in_vitals_section and '|' in line and not line.startswith('|---'):
+            parts = [p.strip() for p in line.split('|') if p.strip()]
+            
+            # Skip header row and rows with only dashes
+            if len(parts) >= 2:
+                # Skip rows that are clearly headers or separators
+                if parts[0].lower() in ['key', 'stat', 'name'] or '---' in parts[0] or parts[0].replace('-', '').strip() == '':
+                    continue
+                
+                key = parts[0]
+                value = parts[1] if len(parts) > 1 else ''
+                
+                # Check if this key matches any CANONICAL_KEYS pattern
+                for pat, canonical in CANONICAL_KEYS:
+                    if pat.search(key):
+                        vitals.append((canonical, value))
+                        break
+    
+    return vitals
 
 
 def parse_bending_slots_from_character_sheet(text: str):
@@ -372,10 +417,16 @@ def gather_pc_stats():
         
         if char_sheet_path:
             char_sheet_text = read_text(char_sheet_path)
-            bending_slots = parse_bending_slots_from_character_sheet(char_sheet_text)
+            rel_path = char_sheet_path.relative_to(REPO_ROOT).as_posix()
             
+            # Parse vitals from character sheet Vitals section
+            char_sheet_vitals = parse_vitals_from_character_sheet(char_sheet_text)
+            for vital_name, vital_value in char_sheet_vitals:
+                pcs[pcname]['vitality'].append((vital_name, vital_value, rel_path))
+            
+            # Parse bending slots from character sheet
+            bending_slots = parse_bending_slots_from_character_sheet(char_sheet_text)
             for slot_name, slot_value in bending_slots:
-                rel_path = char_sheet_path.relative_to(REPO_ROOT).as_posix()
                 pcs[pcname]['bending_slots'].append((slot_name, slot_value, rel_path))
     
     return pcs

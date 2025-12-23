@@ -4,7 +4,7 @@
 [[Spiritbending Slot Progression]] (0)
 [[Water Charges]] (0)
 [[Waterbottle Charge]] (4)
-[[environmental_water_charge]] (9)
+[[environmental_water_charge]] (4)
 
 
 

@@ -1916,3 +1916,62 @@ def parse_stat_overview_content(content: str):
                 })
     
     return result
+
+@bp.route('/api/clear_ready/<character_name>', methods=['POST'])
+def clear_ready_state(character_name):
+    """
+    Clear the ready state for a character by setting it to 'no' in their character sheet.
+    """
+    try:
+        # Find the character sheet file
+        player_root = get_player_root_base()
+        pc_file = player_root / 'PCs' / character_name / f'{character_name} character sheet.md'
+        
+        if not pc_file.exists():
+            return jsonify({'error': f'Character sheet not found for {character_name}'}), 404
+        
+        # Read the file
+        content = pc_file.read_text(encoding='utf-8')
+        lines = content.split('\n')
+        
+        # Find and update the ready line in the vitals section
+        in_vitals = False
+        ready_found = False
+        
+        for i, line in enumerate(lines):
+            if '## Vitals' in line:
+                in_vitals = True
+                continue
+            elif line.startswith('## ') and in_vitals:
+                # We've moved past vitals without finding ready
+                break
+            
+            if in_vitals and '| ready' in line.lower():
+                # Update the ready line
+                parts = line.split('|')
+                if len(parts) >= 3:
+                    parts[2] = '                    no '
+                    lines[i] = '|'.join(parts)
+                    ready_found = True
+                break
+        
+        if not ready_found:
+            # If ready wasn't found, we need to add it
+            # Find the end of the vitals table
+            for i, line in enumerate(lines):
+                if '## Vitals' in line:
+                    in_vitals = True
+                    continue
+                elif in_vitals and line.startswith('## '):
+                    # Insert before this line
+                    lines.insert(i, '| ready             |                    no |')
+                    break
+        
+        # Write the file back
+        new_content = '\n'.join(lines)
+        pc_file.write_text(new_content, encoding='utf-8')
+        
+        return jsonify({'success': True, 'character': character_name})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

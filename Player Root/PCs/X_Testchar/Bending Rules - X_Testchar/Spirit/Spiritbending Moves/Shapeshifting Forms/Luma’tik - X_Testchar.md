@@ -1,6 +1,7 @@
-#shapeshifting_form_X_Testchar
-**Transformation Points:** 2
+#Shapeshifting_X_Testchar
 
+
+**Spiritbending Slot:** Level 2
 
 Bending Levels:
 	Earth: Level 1
@@ -50,4 +51,4 @@ Bending Levels:
 
 >_Luma'tik is a playful, capricious entity—often found dancing between fractured crystal surfaces or taunting intruders with flickers of light and laughter. Bonding with this spirit gives a bender or spiritualist access to stealth, misdirection, and flash-based utility, ideal for scouts or cunning tacticians._
 
-#Level2_X_Testchar #shapeshifting_form_X_Testchar #spirit_X_Testchar
+#Level2_X_Testchar #Shapeshifting_X_Testchar #spirit_X_Testchar

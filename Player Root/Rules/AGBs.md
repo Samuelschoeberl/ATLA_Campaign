@@ -6,7 +6,4 @@
 §2 I will try my best to nerve and buff bending moves how i think fits best. 
 	2.1 This may also include giving them more roleplaying opportunities to find bending teachers or similar to acquire new skills and bending Moves.
 
-§3 I'm trying some more experimental mechanics that may be fun for me but not so fun for others. So always accept constructive feedback and 
-[[Player Root]]
-
-
+§3 I'm trying some more experimental mechanics that may be fun for me but not so fun for others. So always open for constructive feedback. 

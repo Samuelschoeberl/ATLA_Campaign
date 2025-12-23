@@ -1,7 +1,7 @@
 #Action_X_Testchar 
 #Concentration_X_Testchar 
 
-- **Scorching Aura**
+- **Scorching [[Aura]] (0)**
   - **Target Range:** Self.
   - **Effect Range**: [[Firebending_slot]] (60) meters
   - **Duration:** [[Firebending_slot]] (60) rounds.
@@ -9,4 +9,5 @@
 
 
 #fire_X_Testchar 
-#level4_X_Testchar
+#Level4_X_Testchar 
+#aura_X_Testchar 

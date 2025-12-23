@@ -12,7 +12,7 @@ const DiceRoller = ({ lightMode = false }) => {
     d12: 1,
     d20: 1,
   });
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [rollHistory, setRollHistory] = useState([]);
 
   const diceTypes = ["d4", "d6", "d8", "d10", "d12", "d20"];
@@ -97,20 +97,28 @@ const DiceRoller = ({ lightMode = false }) => {
   return (
     <div className={`dice-roller-container ${isCollapsed ? 'collapsed' : ''} ${lightMode ? 'light-mode' : ''}`}>
       <div className="dice-roller-header" onClick={() => setIsCollapsed(!isCollapsed)}>
-        <h3>
-          <span className="dice-icon">🎲</span>
-          Dice Roller
-        </h3>
-        <button 
-          className="collapse-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsCollapsed(!isCollapsed);
-          }}
-          aria-label={isCollapsed ? "Expand" : "Collapse"}
-        >
-          {isCollapsed ? '▼' : '▲'}
-        </button>
+        {isCollapsed ? (
+          <div className="collapsed-dice-icon" title="Click to expand Dice Roller">
+            🎲
+          </div>
+        ) : (
+          <>
+            <h3>
+              <span className="dice-icon">🎲</span>
+              Dice Roller
+            </h3>
+            <button 
+              className="collapse-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCollapsed(!isCollapsed);
+              }}
+              aria-label="Collapse"
+            >
+              ▲
+            </button>
+          </>
+        )}
       </div>
 
       {!isCollapsed && (

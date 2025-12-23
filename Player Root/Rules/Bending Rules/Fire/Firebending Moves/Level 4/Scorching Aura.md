@@ -1,7 +1,7 @@
 #Action 
 #Concentration 
 
-- **Scorching Aura**
+- **Scorching [[Aura]]**
   - **Target Range:** Self.
   - **Effect Range**: [[Firebending_slot]] meters
   - **Duration:** [[Firebending_slot]] rounds.
@@ -9,4 +9,5 @@
 
 
 #fire 
-#level4
+#Level4 
+#aura 

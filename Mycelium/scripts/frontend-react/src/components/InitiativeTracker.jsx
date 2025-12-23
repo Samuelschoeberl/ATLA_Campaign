@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { API_BASE_URL } from '../config/api';
+import { hexToRgba } from '../utils/colorUtils';
+import { useReadyState } from '../context/ReadyStateContext';
 import './InitiativeTracker.css';
 
 // Draggable Sidebar Character Component
@@ -48,7 +50,7 @@ function DraggableSidebarCharacter({ character, isInInitiative, onClick }) {
 }
 
 // Sortable Initiative Item Component
-function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onRemove, showDropIndicatorBefore, showDropIndicatorAfter, characters }) {
+function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onRemove, showDropIndicatorBefore, showDropIndicatorAfter, characters, pcStats, onToggleEnemy, onUpdateManualHp, isReady }) {
   const {
     attributes,
     listeners,
@@ -81,6 +83,35 @@ function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onR
     onUpdate(character.id, character.name, character.initiative - 1);
   };
 
+  // Get HP data for this character if they're a PC
+  const characterStats = pcStats[character.name];
+  const currentHpStat = characterStats?.vitality?.find(s => s.key === 'current_hp');
+  const maxHpStat = characterStats?.vitality?.find(s => s.key === 'max_hp');
+  const currentHp = currentHpStat ? parseFloat(currentHpStat.value) : null;
+  const maxHp = maxHpStat ? parseFloat(maxHpStat.value) : null;
+  
+  // Use manual HP if no PC stats found
+  const hasManualHp = character.manualCurrentHp !== undefined && character.manualMaxHp !== undefined && 
+                      character.manualMaxHp > 0;
+  const displayCurrentHp = currentHp !== null ? currentHp : (hasManualHp ? character.manualCurrentHp : null);
+  const displayMaxHp = maxHp !== null ? maxHp : (hasManualHp ? character.manualMaxHp : null);
+  
+  const hpPercentage = (displayCurrentHp !== null && displayMaxHp !== null && displayMaxHp > 0) 
+    ? Math.max(0, Math.min(100, (displayCurrentHp / displayMaxHp) * 100)) 
+    : null;
+  
+  // Determine life bar color based on HP percentage
+  const getHpColor = (percent) => {
+    if (percent > 75) return '#4ec9b0'; // Healthy green-cyan
+    if (percent > 50) return '#dcdcaa'; // Yellow
+    if (percent > 25) return '#ce9178'; // Orange
+    return '#f48771'; // Critical red
+  };
+  const hpColor = hpPercentage !== null ? getHpColor(hpPercentage) : null;
+  
+  // Show manual HP input if no PC stats and no valid manual HP set yet
+  const showManualHpInput = currentHp === null && maxHp === null && !hasManualHp;
+
   // Calculate what initiative will be assigned if dropped here
   let dropInitiativeBefore = null;
   
@@ -112,11 +143,19 @@ function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onR
       <div
         ref={setNodeRef}
         style={style}
-        className={`initiative-item ${isCurrentTurn ? 'current-turn' : ''} ${isDragging ? 'dragging' : ''}`}
+        className={`initiative-item ${isCurrentTurn ? 'current-turn' : ''} ${isDragging ? 'dragging' : ''} ${character.isEnemy ? 'enemy' : ''}`}
       >
       <div className="drag-handle" {...attributes} {...listeners}>
         ⋮⋮
       </div>
+      
+      <button 
+        onClick={() => onToggleEnemy(character.id)} 
+        className={`btn-enemy-toggle ${character.isEnemy ? 'active' : ''}`}
+        title={character.isEnemy ? 'Mark as ally' : 'Mark as enemy'}
+      >
+        {character.isEnemy ? '👹' : '👤'}
+      </button>
       
       <div className="character-fields">
         <input
@@ -125,7 +164,31 @@ function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onR
           onChange={handleNameChange}
           className="editable-field name-field"
           placeholder="Character name"
+          style={{ flex: (isReady || character.isEnemy) ? '0 1 auto' : 1 }}
         />
+        {(isReady || character.isEnemy) && (
+          <span 
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              backgroundColor: '#2ecc71',
+              color: '#fff',
+              fontWeight: 'bold',
+              fontSize: '16px',
+              flexShrink: 0,
+              boxShadow: '0 2px 4px rgba(46, 204, 113, 0.4)',
+              animation: 'pulse 2s infinite',
+              marginLeft: '-4px'
+            }}
+            title={character.isEnemy ? "Enemy (always ready)" : "Turn planned and ready"}
+          >
+            ✓
+          </span>
+        )}
         <div className="initiative-control">
           <input
             type="number"
@@ -140,6 +203,165 @@ function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onR
           </div>
         </div>
       </div>
+      
+      {/* Health Bar for Player Characters */}
+      {hpPercentage !== null && (
+        <div style={{
+          marginTop: '8px',
+          width: '100%',
+          padding: '4px 8px',
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          borderRadius: '4px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '4px',
+            fontSize: '10px',
+            fontWeight: '600',
+            color: '#cccccc'
+          }}>
+            <span>HP</span>
+            {hasManualHp ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <input
+                  type="number"
+                  value={character.manualCurrentHp ?? 0}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    onUpdateManualHp(character.id, value, character.manualMaxHp);
+                  }}
+                  style={{
+                    width: '40px',
+                    padding: '2px 4px',
+                    fontSize: '10px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: '3px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    color: '#fff',
+                    textAlign: 'center'
+                  }}
+                />
+                <span>/</span>
+                <input
+                  type="number"
+                  value={character.manualMaxHp ?? 0}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    onUpdateManualHp(character.id, character.manualCurrentHp, value);
+                  }}
+                  style={{
+                    width: '40px',
+                    padding: '2px 4px',
+                    fontSize: '10px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: '3px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    color: '#fff',
+                    textAlign: 'center'
+                  }}
+                />
+              </div>
+            ) : (
+              <span>{displayCurrentHp} / {displayMaxHp}</span>
+            )}
+          </div>
+          <div style={{
+            width: '100%',
+            height: '12px',
+            backgroundColor: '#2d2d30',
+            borderRadius: '6px',
+            overflow: 'hidden',
+            border: '1px solid #444',
+            position: 'relative',
+            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+          }}>
+            <div style={{
+              width: `${hpPercentage}%`,
+              height: '100%',
+              backgroundColor: hpColor,
+              transition: 'width 0.5s ease, background-color 0.5s ease',
+              boxShadow: `0 0 8px ${hpColor}, inset 0 1px 2px rgba(255, 255, 255, 0.3)`,
+              borderRadius: '5px'
+            }} />
+            <span style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: '9px',
+              fontWeight: 'bold',
+              color: '#fff',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
+              pointerEvents: 'none'
+            }}>
+              {Math.round(hpPercentage)}%
+            </span>
+          </div>
+        </div>
+      )}
+      
+      {/* Manual HP Input for non-PC characters */}
+      {showManualHpInput && (
+        <div style={{
+          marginTop: '8px',
+          width: '100%',
+          padding: '6px 8px',
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          borderRadius: '4px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '11px'
+          }}>
+            <span style={{ color: '#cccccc', fontWeight: '600', minWidth: '25px' }}>HP:</span>
+            <input
+              type="number"
+              value={character.manualCurrentHp ?? ''}
+              onChange={(e) => {
+                const value = e.target.value === '' ? undefined : parseInt(e.target.value) || 0;
+                onUpdateManualHp(character.id, value, character.manualMaxHp);
+              }}
+              placeholder="Current"
+              style={{
+                width: '60px',
+                padding: '4px 6px',
+                fontSize: '11px',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                color: '#fff',
+                textAlign: 'center'
+              }}
+            />
+            <span style={{ color: '#888' }}>/</span>
+            <input
+              type="number"
+              value={character.manualMaxHp ?? ''}
+              onChange={(e) => {
+                const value = e.target.value === '' ? undefined : parseInt(e.target.value) || 0;
+                onUpdateManualHp(character.id, character.manualCurrentHp, value);
+              }}
+              placeholder="Max"
+              style={{
+                width: '60px',
+                padding: '4px 6px',
+                fontSize: '11px',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                color: '#fff',
+                textAlign: 'center'
+              }}
+            />
+          </div>
+        </div>
+      )}
       
       <button onClick={() => onRemove(character.id)} className="btn-remove">✕</button>
       
@@ -205,7 +427,7 @@ function EndOfRoundMarker({ showDropIndicatorBefore, characters }) {
 }
 
 // Main Initiative Tracker Component
-function InitiativeTracker({ filePath, lightMode = false }) {
+function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }) {
   const [characters, setCharacters] = useState([]);
   const [currentTurnIndex, setCurrentTurnIndex] = useState(0);
   const [newCharName, setNewCharName] = useState('');
@@ -215,7 +437,18 @@ function InitiativeTracker({ filePath, lightMode = false }) {
   const [availableCharacters, setAvailableCharacters] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [overId, setOverId] = useState(null);
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [pcStats, setPcStats] = useState({});
+  
+  // Get ready state from context
+  const { isReady, clearReady, setReady } = useReadyState();
+  
+  // Track last ready state update to prevent race conditions
+  const lastReadyUpdateRef = useRef({});
+  
+  // Track last initiative update time to prevent race conditions
+  const lastInitiativeUpdateRef = useRef(0);
+  const isSavingRef = useRef(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -232,7 +465,96 @@ function InitiativeTracker({ filePath, lightMode = false }) {
   useEffect(() => {
     loadInitiativeData();
     loadAvailableCharacters();
+    loadPcStats();
   }, [filePath]);
+
+  // Load ready states after characters are loaded
+  useEffect(() => {
+    if (characters.length > 0) {
+      loadReadyStates();
+    }
+  }, [characters.length]);
+
+  // Save initiative data whenever current turn or round changes
+  useEffect(() => {
+    // Don't save on initial load
+    if (characters.length > 0 && !isLoading) {
+      saveInitiativeData(characters, currentTurnIndex, roundNumber);
+    }
+  }, [currentTurnIndex, roundNumber]);
+
+  // Periodically refresh PC stats for HP updates and initiative state
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadPcStats();
+      loadReadyStates();
+      // Reload initiative data to sync current turn across devices
+      loadInitiativeDataSilently();
+    }, 5000); // Refresh every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [characters]); // Re-create interval when characters change
+
+  const loadPcStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stat_overview`);
+      if (response.ok) {
+        const data = await response.json();
+        setPcStats(data.pcs || {});
+      }
+    } catch (error) {
+      console.error('Error loading PC stats:', error);
+    }
+  };
+
+  const loadReadyStates = async () => {
+    try {
+      // Load ready states for all characters in the initiative
+      for (const character of characters) {
+        if (!character.isEnemy) {
+          // Skip if we recently updated this character's ready state (within last 3 seconds)
+          const lastUpdate = lastReadyUpdateRef.current[character.name];
+          const timeSinceUpdate = lastUpdate ? Date.now() - lastUpdate : Infinity;
+          
+          if (lastUpdate && timeSinceUpdate < 3000) {
+            continue;
+          }
+          
+          // Fetch the character sheet
+          const response = await fetch(`${API_BASE_URL}/player_root/PCs/${encodeURIComponent(character.name)}/${encodeURIComponent(character.name)}%20character%20sheet.md`);
+          if (response.ok) {
+            const data = await response.json();
+            const content = data.content || '';
+            
+            // Parse the Vitals section for ready state
+            const lines = content.split('\n');
+            let inVitals = false;
+            for (const line of lines) {
+              if (line.includes('## Vitals')) {
+                inVitals = true;
+                continue;
+              }
+              if (inVitals && line.startsWith('##')) {
+                break;
+              }
+              if (inVitals && line.includes('| ready')) {
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length >= 3) {
+                  const readyValue = parts[2].toLowerCase();
+                  const isReadyFromFile = readyValue === 'yes';
+                  const currentState = isReady(character.name);
+                  setReady(character.name, isReadyFromFile);
+                }
+                break;
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading ready states:', error);
+    }
+  };
 
   const loadAvailableCharacters = async () => {
     try {
@@ -273,26 +595,59 @@ function InitiativeTracker({ filePath, lightMode = false }) {
       const data = await response.json();
       const content = data.content || '';
       
+      // Parse metadata for current turn and round
+      let loadedTurnIndex = 0;
+      let loadedRound = 1;
+      
+      const turnMatch = content.match(/\*\*Current Turn:\*\*.*\(Index:\s*(\d+)\)/);
+      if (turnMatch) {
+        loadedTurnIndex = parseInt(turnMatch[1]) || 0;
+      }
+      
+      const roundMatch = content.match(/\*\*Round:\*\*\s*(\d+)/);
+      if (roundMatch) {
+        loadedRound = parseInt(roundMatch[1]) || 1;
+      }
+      
       // Parse markdown table
       const lines = content.split('\n').filter(line => line.trim());
       const dataLines = lines.slice(2); // Skip header and separator
       
       const parsedCharacters = dataLines
-        .filter(line => line.includes('|') && !line.includes('Last generated'))
+        .filter(line => line.includes('|') && !line.includes('Last generated') && !line.includes('Current Turn'))
         .map((line, index) => {
           const parts = line.split('|').map(p => p.trim()).filter(p => p);
           if (parts.length >= 2 && parts[0] !== 'End of Round') {
-            return {
+            const character = {
               id: `char-${index}-${Date.now()}`,
               name: parts[0],
               initiative: parseInt(parts[1]) || 0,
+              isEnemy: false,
             };
+            
+            // Parse enemy status (column 3, if it exists)
+            if (parts.length >= 3 && parts[2] === '👹') {
+              character.isEnemy = true;
+            }
+            
+            // Parse manual HP (column 4, if it exists)
+            if (parts.length >= 4 && parts[3]) {
+              const hpMatch = parts[3].match(/(\d+)\/(\d+)/);
+              if (hpMatch) {
+                character.manualCurrentHp = parseInt(hpMatch[1]);
+                character.manualMaxHp = parseInt(hpMatch[2]);
+              }
+            }
+            
+            return character;
           }
           return null;
         })
         .filter(char => char !== null);
 
       setCharacters(parsedCharacters);
+      setCurrentTurnIndex(Math.min(loadedTurnIndex, parsedCharacters.length - 1));
+      setRoundNumber(loadedRound);
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading initiative data:', error);
@@ -300,15 +655,113 @@ function InitiativeTracker({ filePath, lightMode = false }) {
     }
   };
 
+  // Silently reload initiative data to sync across devices (don't show loading)
+  const loadInitiativeDataSilently = async () => {
+    // Don't reload if we just saved (within last 2 seconds) to prevent overwriting our own changes
+    const timeSinceLastUpdate = Date.now() - lastInitiativeUpdateRef.current;
+    if (timeSinceLastUpdate < 2000 || isSavingRef.current) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(filePath)}`);
+      const data = await response.json();
+      const content = data.content || '';
+      
+      // Parse metadata for current turn and round
+      let loadedTurnIndex = 0;
+      let loadedRound = 1;
+      
+      const turnMatch = content.match(/\*\*Current Turn:\*\*.*\(Index:\s*(\d+)\)/);
+      if (turnMatch) {
+        loadedTurnIndex = parseInt(turnMatch[1]) || 0;
+      }
+      
+      const roundMatch = content.match(/\*\*Round:\*\*\s*(\d+)/);
+      if (roundMatch) {
+        loadedRound = parseInt(roundMatch[1]) || 1;
+      }
+      
+      // Parse markdown table
+      const lines = content.split('\n').filter(line => line.trim());
+      const dataLines = lines.slice(2); // Skip header and separator
+      
+      const parsedCharacters = dataLines
+        .filter(line => line.includes('|') && !line.includes('Last generated') && !line.includes('Current Turn'))
+        .map((line, index) => {
+          const parts = line.split('|').map(p => p.trim()).filter(p => p);
+          if (parts.length >= 2 && parts[0] !== 'End of Round') {
+            const character = {
+              id: `char-${index}-${Date.now()}`,
+              name: parts[0],
+              initiative: parseInt(parts[1]) || 0,
+              isEnemy: false,
+            };
+            
+            // Parse enemy status (column 3, if it exists)
+            if (parts.length >= 3 && parts[2] === '👹') {
+              character.isEnemy = true;
+            }
+            
+            // Parse manual HP (column 4, if it exists)
+            if (parts.length >= 4 && parts[3]) {
+              const hpMatch = parts[3].match(/(\d+)\/(\d+)/);
+              if (hpMatch) {
+                character.manualCurrentHp = parseInt(hpMatch[1]);
+                character.manualMaxHp = parseInt(hpMatch[2]);
+              }
+            }
+            
+            return character;
+          }
+          return null;
+        })
+        .filter(char => char !== null);
+
+      // Only update if data has actually changed
+      const hasCharacterChanges = JSON.stringify(characters.map(c => ({ name: c.name, initiative: c.initiative, isEnemy: c.isEnemy, manualCurrentHp: c.manualCurrentHp, manualMaxHp: c.manualMaxHp }))) 
+        !== JSON.stringify(parsedCharacters.map(c => ({ name: c.name, initiative: c.initiative, isEnemy: c.isEnemy, manualCurrentHp: c.manualCurrentHp, manualMaxHp: c.manualMaxHp })));
+      const hasTurnChange = loadedTurnIndex !== currentTurnIndex;
+      const hasRoundChange = loadedRound !== roundNumber;
+
+      if (hasCharacterChanges) {
+        setCharacters(parsedCharacters);
+      }
+      if (hasTurnChange) {
+        setCurrentTurnIndex(Math.min(loadedTurnIndex, parsedCharacters.length - 1));
+      }
+      if (hasRoundChange) {
+        setRoundNumber(loadedRound);
+      }
+    } catch (error) {
+      console.error('Error silently reloading initiative data:', error);
+    }
+  };
+
   // Save initiative data to file
-  const saveInitiativeData = async (updatedCharacters) => {
-    const tableHeader = '| Character | Initiative |\n| --------- | ---------: |';
+  const saveInitiativeData = async (updatedCharacters, turnIndex = currentTurnIndex, round = roundNumber) => {
+    // Mark that we're saving and update the timestamp
+    isSavingRef.current = true;
+    lastInitiativeUpdateRef.current = Date.now();
+
+    const tableHeader = '| Character | Initiative | Enemy | Manual HP |\n| --------- | ---------: | :---: | :-------: |';
     const tableRows = updatedCharacters
-      .map(char => `| ${char.name} | ${char.initiative} |`)
+      .map(char => {
+        const enemyStatus = char.isEnemy ? '👹' : '';
+        const manualHp = (char.manualCurrentHp !== undefined && char.manualMaxHp !== undefined) 
+          ? `${char.manualCurrentHp}/${char.manualMaxHp}` 
+          : '';
+        return `| ${char.name} | ${char.initiative} | ${enemyStatus} | ${manualHp} |`;
+      })
       .join('\n');
-    const endMarker = '\n| End of Round | 0 |';
+    const endMarker = '\n| End of Round | 0 | | |';
+    
+    // Add metadata about current turn and round
+    const currentCharName = updatedCharacters[turnIndex]?.name || '';
+    const metadata = `\n\n**Current Turn:** ${currentCharName} (Index: ${turnIndex})\n**Round:** ${round}`;
+    
     const footer = '\n\n_Last generated by Mycelium/scripts/Python/generate_initiative.py_';
-    const content = `${tableHeader}\n${tableRows}${endMarker}${footer}`;
+    const content = `${tableHeader}\n${tableRows}${endMarker}${metadata}${footer}`;
 
     try {
       await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(filePath)}`, {
@@ -318,6 +771,8 @@ function InitiativeTracker({ filePath, lightMode = false }) {
       });
     } catch (error) {
       console.error('Error saving initiative data:', error);
+    } finally {
+      isSavingRef.current = false;
     }
   };
 
@@ -389,6 +844,7 @@ function InitiativeTracker({ filePath, lightMode = false }) {
         id: `char-${character.name}-${Date.now()}`,
         name: character.name,
         initiative: newInitiative,
+        isEnemy: false,
       };
 
       // Insert at the correct position
@@ -443,6 +899,24 @@ function InitiativeTracker({ filePath, lightMode = false }) {
     }
   };
 
+  // Toggle enemy status
+  const handleToggleEnemy = (id) => {
+    const updatedCharacters = characters.map(char =>
+      char.id === id ? { ...char, isEnemy: !char.isEnemy } : char
+    );
+    setCharacters(updatedCharacters);
+    saveInitiativeData(updatedCharacters);
+  };
+
+  // Update manual HP for non-PC characters
+  const handleUpdateManualHp = (id, currentHp, maxHp) => {
+    const updatedCharacters = characters.map(char =>
+      char.id === id ? { ...char, manualCurrentHp: currentHp, manualMaxHp: maxHp } : char
+    );
+    setCharacters(updatedCharacters);
+    saveInitiativeData(updatedCharacters);
+  };
+
   // Toggle character from available list (add or remove)
   const handleToggleFromAvailable = (characterName) => {
     // Check if character is already in initiative
@@ -457,6 +931,7 @@ function InitiativeTracker({ filePath, lightMode = false }) {
         id: `char-${characterName}-${Date.now()}`,
         name: characterName,
         initiative: 10, // Default initiative
+        isEnemy: false,
       };
       
       // Insert in sorted position by initiative (descending)
@@ -473,6 +948,7 @@ function InitiativeTracker({ filePath, lightMode = false }) {
         id: `char-new-${Date.now()}`,
         name: newCharName.trim(),
         initiative: parseInt(newCharInitiative),
+        isEnemy: false,
       };
       
       // Insert in sorted position by initiative (descending)
@@ -486,16 +962,44 @@ function InitiativeTracker({ filePath, lightMode = false }) {
   };
 
   // Navigate turns
-  const handleNextTurn = () => {
+  // Navigate turns
+  const handleNextTurn = async () => {
     if (characters.length === 0) return;
+    
+    // Clear the ready state for the character whose turn is ending
+    const currentCharacter = characters[currentTurnIndex];
+    
+    if (currentCharacter && !currentCharacter.isEnemy) {
+      // Only clear ready state for non-enemies
+      
+      // Record that we're updating this character's ready state
+      lastReadyUpdateRef.current[currentCharacter.name] = Date.now();
+      
+      // First update the character sheet file with explicit "no" state
+      try {
+        await fetch(`${API_BASE_URL}/api/clear_ready/${encodeURIComponent(currentCharacter.name)}`, {
+          method: 'POST'
+        });
+        
+        // After file is updated, update context to match
+        clearReady(currentCharacter.name);
+      } catch (error) {
+        console.error(`Error clearing ready state in file for ${currentCharacter.name}:`, error);
+        // Still update context even if file update fails
+        clearReady(currentCharacter.name);
+      }
+    }
     
     const nextIndex = (currentTurnIndex + 1) % characters.length;
     setCurrentTurnIndex(nextIndex);
     
     // Increment round when we loop back to the first character
+    const newRound = nextIndex === 0 ? roundNumber + 1 : roundNumber;
     if (nextIndex === 0) {
-      setRoundNumber(roundNumber + 1);
+      setRoundNumber(newRound);
     }
+    
+    // Save is triggered automatically by useEffect
   };
 
   const handlePreviousTurn = () => {
@@ -505,20 +1009,24 @@ function InitiativeTracker({ filePath, lightMode = false }) {
     setCurrentTurnIndex(prevIndex);
     
     // Decrement round when we loop back from the first character
+    const newRound = (currentTurnIndex === 0 && roundNumber > 1) ? roundNumber - 1 : roundNumber;
     if (currentTurnIndex === 0 && roundNumber > 1) {
-      setRoundNumber(roundNumber - 1);
+      setRoundNumber(newRound);
     }
+    
+    // Save is triggered automatically by useEffect
   };
 
   const handleResetInitiative = () => {
     setCurrentTurnIndex(0);
     setRoundNumber(1);
+    // Save is triggered automatically by useEffect
   };
 
   const handleSortInitiative = () => {
     const sortedCharacters = [...characters].sort((a, b) => b.initiative - a.initiative);
     setCharacters(sortedCharacters);
-    saveInitiativeData(sortedCharacters);
+    saveInitiativeData(sortedCharacters, 0, roundNumber);
     // Reset to first turn after sorting
     setCurrentTurnIndex(0);
   };
@@ -615,6 +1123,9 @@ function InitiativeTracker({ filePath, lightMode = false }) {
               const isFromSidebar = activeId && availableCharacters.some(c => c.id === activeId);
               const showDropIndicatorBefore = isFromSidebar && overId === character.id;
               
+              // Check if character is ready from context
+              const isCharacterReady = isReady(character.name);
+              
               return (
                 <SortableInitiativeItem
                   key={character.id}
@@ -623,9 +1134,13 @@ function InitiativeTracker({ filePath, lightMode = false }) {
                   isCurrentTurn={index === currentTurnIndex}
                   onUpdate={handleUpdate}
                   onRemove={handleRemove}
+                  onToggleEnemy={handleToggleEnemy}
+                  onUpdateManualHp={handleUpdateManualHp}
                   showDropIndicatorBefore={showDropIndicatorBefore}
                   showDropIndicatorAfter={false}
                   characters={characters}
+                  pcStats={pcStats}
+                  isReady={isCharacterReady}
                 />
               );
             })}

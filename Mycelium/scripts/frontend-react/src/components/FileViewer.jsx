@@ -3,13 +3,13 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import CharacterSheet from './CharacterSheet';
 import BendingMove from './BendingMove';
-import ShapeshiftingForm from './ShapeshiftingForm';
 import InitiativeTracker from './InitiativeTracker';
 import StatOverview from './StatOverview';
+import Quicklinks from './Quicklinks';
 import './FileViewer.css';
 import { API_BASE_URL } from '../config/api';
 
-const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
+const FileViewer = ({ file, lightMode = false, onFileSelect, advancedMode = false }) => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -27,17 +27,22 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
   const isCharacterSheet = file ? file.name.toLowerCase().includes('character sheet') : false;
   const isInitiativeTracker = file ? file.name === 'Initiative Tracker.md' : false;
   const isStatOverview = file ? file.name === 'stat_overview.md' : false;
-  // Check if content contains #shapeshifting_form tag
-  const isShapeshiftingForm = isMarkdown && content && content.includes('#shapeshifting_form');
+  const isQuicklinks = file ? file.name === 'Quicklinks.md' : false;
+  const hasShapeshiftingTag = isMarkdown && content && /#shapeshifting(?:\b|_)/i.test(content);
   const isBendingMove = file ? 
-    (file.path && file.path.includes('Bending Rules -') && 
-     !file.name.toLowerCase().includes('utility') &&
-     !file.name.toLowerCase().includes('mechanics') &&
-     !file.name.toLowerCase().includes('progression') &&
-     !file.name.toLowerCase().includes('rules') &&
-     !file.name.toLowerCase().includes('slot') &&
-     !isShapeshiftingForm && // Exclude shapeshifting forms from bending moves
-     isMarkdown) : false;
+    (
+      (
+        file.path && file.path.includes('Bending Rules -') && 
+        !file.name.toLowerCase().includes('utility') &&
+        !file.name.toLowerCase().includes('mechanics') &&
+        !file.name.toLowerCase().includes('progression') &&
+        !file.name.toLowerCase().includes('rules') &&
+        !file.name.toLowerCase().includes('slot') &&
+        isMarkdown
+      ) ||
+      hasShapeshiftingTag ||
+      (file.path && file.path.includes('Shapeshifting Forms'))
+    ) : false;
 
   useEffect(() => {
     if (file) {
@@ -80,14 +85,14 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
     };
 
     // Only render markdown if it's a markdown file AND it's not being handled by a special component
-    if (isMarkdown && !isCharacterSheet && !isBendingMove && !isShapeshiftingForm && !isInitiativeTracker && !isStatOverview) {
+    if (isMarkdown && !isCharacterSheet && !isBendingMove && !isInitiativeTracker && !isStatOverview && !isQuicklinks) {
       renderMarkdown().then(html => {
         if (html !== undefined) {
           setRenderedHtml(html);
         }
       });
     }
-  }, [content, isMarkdown, isCharacterSheet, isBendingMove, isShapeshiftingForm, isInitiativeTracker, isStatOverview]);
+  }, [content, isMarkdown, isCharacterSheet, isBendingMove, isInitiativeTracker, isStatOverview, isQuicklinks]);
 
   // Function to resolve image paths by trying multiple locations
   const resolveImagePath = async (imageName) => {
@@ -450,12 +455,7 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
 
   // Render initiative tracker component if it's the initiative tracker file
   if (isInitiativeTracker) {
-    return <InitiativeTracker filePath={file.path} lightMode={lightMode} />;
-  }
-
-  // Render shapeshifting form component if it's a shapeshifting form file
-  if (isShapeshiftingForm) {
-    return <ShapeshiftingForm file={file} lightMode={lightMode} />;
+    return <InitiativeTracker filePath={file.path} lightMode={lightMode} advancedMode={advancedMode} />;
   }
 
   // Render bending move component if it's a bending move file
@@ -465,7 +465,12 @@ const FileViewer = ({ file, lightMode = false, onFileSelect }) => {
 
   // Render stat overview component if it's the stat_overview.md file
   if (isStatOverview) {
-    return <StatOverview lightMode={lightMode} />;
+    return <StatOverview lightMode={lightMode} onFileSelect={searchFileByName} />;
+  }
+
+  // Render quicklinks component if it's the Quicklinks.md file
+  if (isQuicklinks) {
+    return <Quicklinks lightMode={lightMode} onFileSelect={onFileSelect} />;
   }
 
   return (

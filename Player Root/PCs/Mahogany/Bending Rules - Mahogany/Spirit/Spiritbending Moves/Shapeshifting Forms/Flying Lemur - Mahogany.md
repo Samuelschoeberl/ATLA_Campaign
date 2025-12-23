@@ -1,5 +1,6 @@
-#shapeshifting_form_Mahogany
-**Transformation Points:** 1 
+#Shapeshifting_Mahogany
+
+**Spiritbending Slot:** Level 1
 
 Bending Levels:
 	Air: Level 1
@@ -33,4 +34,4 @@ Bending Levels:
 
 
 #spirit_Mahogany  #Level1_Mahogany 
-#shapeshifting_form_Mahogany
+#Shapeshifting_Mahogany

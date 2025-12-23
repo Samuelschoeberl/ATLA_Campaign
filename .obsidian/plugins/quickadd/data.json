@@ -2,7 +2,7 @@
   "choices": [],
   "inputPrompt": "single-line",
   "devMode": false,
-  "templateFolderPath": "",
+  "templateFolderPath": "Mycelium/data/template",
   "announceUpdates": true,
   "version": "2.2.1",
   "globalVariables": {},

@@ -1,7 +1,7 @@
 #Action 
 
 - Range: self
-- Duration: [[spiritbending slot]] rounds.
+- Duration: [[Spiritbending slot]] rounds.
 
 **Effect**:
 Lets you perceive spiritual energy.

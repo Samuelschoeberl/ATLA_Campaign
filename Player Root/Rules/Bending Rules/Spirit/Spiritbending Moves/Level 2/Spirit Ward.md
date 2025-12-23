@@ -2,10 +2,10 @@
 #Reaction 
 
 - Range: self
-- Duration: [[spiritbending slot]] rounds.
+- Duration: [[Spiritbending slot]] rounds.
 
 **Effect**:
-Provides [[spiritbending slot]]d8  [[General Armor]], [[Player Root/Rules/Evasion]],  [[Barrier]] and [[Fire Damage Bonus]] for [[spiritbending slot]] rounds.
+Provides [[Spiritbending slot]]d8  [[General Armor]], [[Player Root/Rules/Evasion]],  [[Barrier]] and [[Fire Damage Bonus]] for [[Spiritbending slot]] rounds.
 
 
 Tags:

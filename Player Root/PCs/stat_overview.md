@@ -4,7 +4,7 @@
 
 
 | Name                           | Value | Tags                                                         | File                                                 |
-| [[environmental_water_charge]] | 12/12 | #variable #secondary_stat #template #environmental_variables | Player Root/variable/environmental/environmental_water_charge.md |
+| [[environmental_water_charge]] | 4/4 | #variable #secondary_stat #template #environmental_variables | Player Root/variable/environmental/environmental_water_charge.md |
 
 
 ## Per-PC extracted stats
@@ -21,6 +21,8 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Key           | Value | Source File                            |
 | current_hp | 38    | Player Root/variable/PC_variables/Anju/Anju_current_hp.md |
 | max_hp | 38    | Player Root/variable/PC_variables/Anju/Anju_max_hp.md |
+| max_hp | 38    | Player Root/PCs/Anju/Anju Character Sheet.md |
+| current_hp | 38    | Player Root/PCs/Anju/Anju Character Sheet.md |
 
 
 **Defensive**
@@ -34,7 +36,6 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Ice Armor | 0    | Player Root/variable/PC_variables/Anju/Anju_Ice Armor.md |
 | Physical Armor | 0    | Player Root/variable/PC_variables/Anju/Anju_Physical Armor.md |
 | Spirit Armor | 0    | Player Root/variable/PC_variables/Anju/Anju_Spirit Armor.md |
-| general_armor | 1    | Player Root/variable/PC_variables/Anju/Anju_general_armor.md |
 
 
 **Consumable Resources**
@@ -55,6 +56,8 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Key           | Value | Source File                            |
 | current_hp | 26    | Player Root/variable/PC_variables/Ash/Ash_current_hp.md |
 | max_hp | 26    | Player Root/variable/PC_variables/Ash/Ash_max_hp.md |
+| max_hp | 26    | Player Root/PCs/Ash/Ash Character Sheet.md |
+| current_hp | 26    | Player Root/PCs/Ash/Ash Character Sheet.md |
 
 
 **Defensive**
@@ -88,6 +91,8 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Key           | Value | Source File                            |
 | current_hp | 26    | Player Root/variable/PC_variables/Mahogany/Mahogany_current_hp.md |
 | max_hp | 26    | Player Root/variable/PC_variables/Mahogany/Mahogany_max_hp.md |
+| max_hp | 26    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
+| current_hp | 26    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
 
 
 **Defensive**
@@ -122,6 +127,8 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Key           | Value | Source File                            |
 | current_hp | 48    | Player Root/variable/PC_variables/Puy/Puy_current_hp.md |
 | max_hp | 48    | Player Root/variable/PC_variables/Puy/Puy_max_hp.md |
+| max_hp | 48    | Player Root/PCs/Puy/Puy Character Sheet.md |
+| current_hp | 48    | Player Root/PCs/Puy/Puy Character Sheet.md |
 
 
 **Defensive**
@@ -155,6 +162,8 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Key           | Value | Source File                            |
 | current_hp | 36    | Player Root/variable/PC_variables/Rio/Rio_current_hp.md |
 | max_hp | 36    | Player Root/variable/PC_variables/Rio/Rio_max_hp.md |
+| max_hp | 36    | Player Root/PCs/Rio/Rio Character Sheet.md |
+| current_hp | 36    | Player Root/PCs/Rio/Rio Character Sheet.md |
 
 
 **Defensive**
@@ -188,6 +197,8 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Key           | Value | Source File                            |
 | current_hp | 32    | Player Root/variable/PC_variables/Sora/Sora_current_hp.md |
 | max_hp | 32    | Player Root/variable/PC_variables/Sora/Sora_max_hp.md |
+| max_hp | 32    | Player Root/PCs/Sora/Sora Character Sheet.md |
+| current_hp | 32    | Player Root/PCs/Sora/Sora Character Sheet.md |
 
 
 **Defensive**
@@ -220,6 +231,8 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Key           | Value | Source File                            |
 | current_hp | 36    | Player Root/variable/PC_variables/Tapioca/Tapioca_current_hp.md |
 | max_hp | 36    | Player Root/variable/PC_variables/Tapioca/Tapioca_max_hp.md |
+| max_hp | 36    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
+| current_hp | 36    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
 
 
 **Defensive**
@@ -254,6 +267,8 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Key           | Value | Source File                            |
 | current_hp | 32    | Player Root/variable/PC_variables/Tiebeediy/Tiebeediy_current_hp.md |
 | max_hp | 32    | Player Root/variable/PC_variables/Tiebeediy/Tiebeediy_max_hp.md |
+| max_hp | 32    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
+| current_hp | 32    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
 
 
 **Defensive**
@@ -285,8 +300,10 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 
 
 | Key           | Value | Source File                            |
-| current_hp | 0    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_current_hp.md |
+| current_hp | 2600    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_current_hp.md |
 | max_hp | 2600    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_max_hp.md |
+| max_hp | 2600    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
+| current_hp | 2600    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
 
 
 **Defensive**
@@ -300,7 +317,6 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Ice Armor | 20    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_Ice Armor.md |
 | Physical Armor | 0    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_Physical Armor.md |
 | Spirit Armor | 20    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_Spirit Armor.md |
-| general_armor | 20    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_general_armor.md |
 
 
 **Consumable Resources**
@@ -308,12 +324,12 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 
 | Resource Name            | Current/Max | Source File                                       |
 | ------------------------ | ----------- | ------------------------------------------------- |
-| Airbending slot          | 27/60       | Player Root/PCs/X_Testchar/X_Testchar character s |
-| Danger Sense Reactions   | 0/20        | Player Root/PCs/X_Testchar/X_Testchar character s |
-| Firebending slot         | 17/60       | Player Root/PCs/X_Testchar/X_Testchar character s |
-| Earthbending slot        | 57/60       | Player Root/PCs/X_Testchar/X_Testchar character s |
-| Spiritbending slot       | 14/20       | Player Root/PCs/X_Testchar/X_Testchar character s |
-| Waterbottle charge       | 11/40       | Player Root/PCs/X_Testchar/X_Testchar character s |
+| Airbending slot          | 60/60       | Player Root/PCs/X_Testchar/X_Testchar character s |
+| Danger Sense Reactions   | 20/20       | Player Root/PCs/X_Testchar/X_Testchar character s |
+| Firebending slot         | 60/60       | Player Root/PCs/X_Testchar/X_Testchar character s |
+| Earthbending slot        | 60/60       | Player Root/PCs/X_Testchar/X_Testchar character s |
+| Spiritbending slot       | 20/20       | Player Root/PCs/X_Testchar/X_Testchar character s |
+| Waterbottle charge       | 40/40       | Player Root/PCs/X_Testchar/X_Testchar character s |
 
 
 _Last generated by Mycelium/scripts/Python/generate_stat_overview.py_

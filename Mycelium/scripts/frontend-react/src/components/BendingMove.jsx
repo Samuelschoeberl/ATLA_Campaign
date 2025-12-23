@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { hexToRgba } from '../utils/colorUtils';
 import './BendingMove.css';
 import { API_BASE_URL } from '../config/api';
+import ShapeshiftingForm from './ShapeshiftingForm';
 
 const ELEMENT_COLORS = {
   fire: '#ffb3b3',
@@ -534,6 +535,15 @@ const BendingMove = ({ file, lightMode = false }) => {
         <div className="no-data">No bending move data available</div>
       </div>
     );
+  }
+
+  const isShapeshiftingMove =
+    (moveData.tags || []).some(tag => tag.toLowerCase().startsWith('shapeshifting')) ||
+    (content && /#shapeshifting(?:\b|_)/i.test(content)) ||
+    (file.path && file.path.toLowerCase().includes('shapeshifting forms'));
+
+  if (isShapeshiftingMove) {
+    return <ShapeshiftingForm file={file} lightMode={lightMode} />;
   }
 
   const elementColor = getElementColor(moveData.tags);

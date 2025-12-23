@@ -1220,12 +1220,14 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
             return ' '.join(out_words)
 
         # build a set of secondary templates that are tagged with #vitality,
-        # #defensive or #environmental_variable so those are still shown even
-        # when their numeric value is zero
+        # #defensive, #environmental_variable, or #bonus_resource/#keep_zero so those are
+        # still shown even when their numeric value is zero
         vitality_set: set = set()
+        keep_zero_tags = {'#vitality', '#defensive', '#environmental_variable', '#bonus_resource', '#keep_zero'}
         if secondary_tags:
             for stem, tags in secondary_tags.items():
-                if '#vitality' in tags or '#defensive' in tags or '#environmental_variable' in tags:
+                tag_lowers = [t.lower() for t in tags]
+                if any(t in keep_zero_tags for t in tag_lowers):
                     vitality_set.add(normalize_name(stem))
 
         # force-show rules: parse tags of the form #show_if_<var>_<op>_<n>
@@ -1353,7 +1355,8 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
 
         out_text = '\n'.join(lines) + '\n'
         # Remove any table rows where the value is numeric zero for secondary
-        # stats that are not tagged #vitality, #defensive, or #environmental_variable.
+        # stats that are not tagged #vitality, #defensive, #environmental_variable,
+        # or marked with bonus/keep_zero tags.
         # This handles placeholders that were
         # directly replaced in the template (e.g. | Foo | 0 |) so those
         # rows don't appear in the final sheet unless the stat carries one of
@@ -1361,9 +1364,11 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
         try:
             # build vitality/defensive set from secondary_tags (normalized names)
             vitality_set: set = set()
+            keep_zero_tags = {'#vitality', '#defensive', '#environmental_variable', '#bonus_resource', '#keep_zero'}
             if secondary_tags:
                 for stem, tags in secondary_tags.items():
-                    if '#vitality' in tags or '#defensive' in tags or '#environmental_variable' in tags:
+                    tag_lowers = [t.lower() for t in tags]
+                    if any(t in keep_zero_tags for t in tag_lowers):
                         vitality_set.add(normalize_name(stem))
 
             for nk, v in sorted(norm_kv.items()):
