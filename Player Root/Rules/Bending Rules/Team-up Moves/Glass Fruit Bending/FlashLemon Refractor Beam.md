@@ -1,5 +1,5 @@
-#Action
-#Reaction 
+#Action (earthbender)
+#Reaction (firebender)
 
 Reaction: Must be initiated by a Firebender in line of sight 
 

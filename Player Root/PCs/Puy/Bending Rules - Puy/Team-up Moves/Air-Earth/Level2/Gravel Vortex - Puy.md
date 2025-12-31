@@ -1,6 +1,6 @@
-#Action_Puy Earth
-#Reaction_Puy Air
-#Concentration_Puy Air
+#Action_Puy (earthbender)
+#Reaction_Puy (airbender)
+#Concentration_Puy (airbender)
 
 -  **Y**([[Earthbending slot]] (6)): Yd10  [[Barrier]] (0)
 - **X**([[Airbending_slot]] (0)): Duration: X rounds

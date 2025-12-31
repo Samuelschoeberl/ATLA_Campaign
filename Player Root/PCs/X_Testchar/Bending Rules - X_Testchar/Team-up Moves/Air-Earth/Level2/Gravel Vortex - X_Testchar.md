@@ -1,6 +1,6 @@
-#Action_X_Testchar Earth
-#Reaction_X_Testchar Air
-#Concentration_X_Testchar Air
+#Action_X_Testchar (earthbender)
+#Reaction_X_Testchar (airbender)
+#Concentration_X_Testchar (airbender)
 
 -  **Y**([[Earthbending slot]] (60)): Yd10  [[Barrier]] (0)
 - **X**([[Airbending_slot]] (60)): Duration: X rounds

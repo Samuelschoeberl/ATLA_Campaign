@@ -1,5 +1,5 @@
-#Action_Rio
-#Reaction_Rio 
+#Action_Rio (waterbender)
+#Reaction_Rio (waterbender)
  
 You may use Levels from **Water only**.
 Each Bender-decides to which pool to add their Bending slots (min 1 in each):

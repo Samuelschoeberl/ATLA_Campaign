@@ -1,5 +1,5 @@
-#Action_X_Testchar 
-#Reaction_X_Testchar 
+#Action_X_Testchar (earthbender)
+#Reaction_X_Testchar (firebender)
 
 - **X**([[Earthbending slot]] (60)): X / 2 meter Radius Effect Range
 -  **Y**([[Firebending_slot]] (60)): Y * 6d6 Fire Damage

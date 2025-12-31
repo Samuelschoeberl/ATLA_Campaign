@@ -126,7 +126,9 @@
 }
 
 .character-icon {
-  font-size: 1.5em;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
 }
 
 .available-character .character-name {
@@ -522,13 +524,17 @@
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.2);
   color: #fff;
-  font-size: 1.3em;
-  padding: 8px 12px;
+  font-size: 1.1em;
+  padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-right: 10px;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .btn-enemy-toggle:hover {
@@ -546,6 +552,13 @@
 .btn-enemy-toggle.active:hover {
   background: rgba(231, 76, 60, 0.4);
   transform: scale(1.15);
+}
+
+.enemy-toggle-avatar {
+  width: 24px;
+  height: 24px;
+  box-shadow: none;
+  border-width: 1px;
 }
 
 .drag-handle {
@@ -971,7 +984,8 @@ input[type="number"] {
 }
 
 .drag-overlay-item .character-icon {
-  font-size: 1.5em;
+  width: 32px;
+  height: 32px;
 }
 
 .drag-overlay-item .character-name {

@@ -1,4 +1,4 @@
-
+#Action_Mahogany 
 **Spiritbending Slot:** Level 1
 
 #Action_Mahogany
@@ -11,3 +11,4 @@ Mahogany's unique ability to take on a human-like form. Other spirits or spiritu
 #spirit_Mahogany
 #signature_move_Mahogany 
 #Mahogany_Mahogany 
+

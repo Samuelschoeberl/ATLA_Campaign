@@ -1,6 +1,6 @@
-#Action_Tapioca Earth
-#Reaction_Tapioca Air
-#Concentration_Tapioca Air
+#Action_Tapioca (earthbender)
+#Reaction_Tapioca (airbender)
+#Concentration_Tapioca (airbender)
 
 -  **Y**([[Earthbending slot]] (3)): Yd10  [[Barrier]] (0)
 - **X**([[Airbending_slot]] (6)): Duration: X rounds

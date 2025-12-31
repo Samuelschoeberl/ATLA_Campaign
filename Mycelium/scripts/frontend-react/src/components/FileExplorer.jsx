@@ -5,7 +5,7 @@ import SearchBar from './SearchBar';
 import TabBar from './TabBar';
 import './FileExplorer.css';
 
-const FileExplorer = ({ lightMode, onToggleTheme }) => {
+const FileExplorer = ({ lightMode, onToggleTheme, gmMode, onToggleGmMode }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [openTabs, setOpenTabs] = useState([]);
   const [advancedMode, setAdvancedMode] = useState(false);
@@ -155,11 +155,35 @@ const FileExplorer = ({ lightMode, onToggleTheme }) => {
           lightMode={lightMode}
           advancedMode={advancedMode}
           onFileUpdate={handleFileUpdate}
+          selectedFile={selectedFile}
         />
       </div>
       <div className="file-explorer-main">
         <div className="file-explorer-header">
           <SearchBar onFileSelect={handleFileSelect} lightMode={lightMode} />
+          {advancedMode && (
+            <button 
+              onClick={onToggleGmMode}
+              title={gmMode ? "Switch to Player Mode" : "Switch to GM Mode"}
+              style={{
+                padding: '8px 16px',
+                marginRight: '8px',
+                background: gmMode 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                  : (lightMode ? '#ddd' : '#3c3c3c'),
+                color: gmMode ? '#fff' : (lightMode ? '#333' : '#ccc'),
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: gmMode ? 'bold' : 'normal',
+                transition: 'all 0.2s',
+                boxShadow: gmMode ? '0 2px 8px rgba(102, 126, 234, 0.4)' : 'none'
+              }}
+            >
+              {gmMode ? '🎲 Player' : '🎯 GM'}
+            </button>
+          )}
           <button 
             className="advanced-toggle"
             onClick={() => setAdvancedMode(!advancedMode)}

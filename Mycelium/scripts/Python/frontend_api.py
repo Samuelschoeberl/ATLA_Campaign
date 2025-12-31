@@ -6,8 +6,34 @@ import os
 import shutil
 import sys
 import subprocess
+import json
+from datetime import datetime
 
 from flask import Response, stream_with_context
+
+# Import balance scorer
+try:
+    from .balance_scorer import get_scorer
+    BALANCE_SCORER_AVAILABLE = True
+except (ImportError, Exception) as e:
+    print(f"Balance scorer not available: {e}")
+    BALANCE_SCORER_AVAILABLE = False
+
+# Import simplicity scorer
+try:
+    from .simplicity_scorer import get_scorer as get_simplicity_scorer
+    SIMPLICITY_SCORER_AVAILABLE = True
+except (ImportError, Exception) as e:
+    print(f"Simplicity scorer not available: {e}")
+    SIMPLICITY_SCORER_AVAILABLE = False
+
+# Import full analysis scorer
+try:
+    from .full_analysis_scorer import get_scorer as get_full_analysis_scorer
+    FULL_ANALYSIS_SCORER_AVAILABLE = True
+except (ImportError, Exception) as e:
+    print(f"Full analysis scorer not available: {e}")
+    FULL_ANALYSIS_SCORER_AVAILABLE = False
 
 bp = Blueprint("frontend_api", __name__)
 
@@ -36,6 +62,121 @@ def get_player_root_base() -> Path:
     except Exception:
         pass
     return REPO_ROOT
+
+
+# ---- Character customization helpers (folder color + 100×100 avatars) ----
+AVATAR_SIZE = 100
+
+
+def _safe_character_slug(name: str) -> str:
+    slug = re.sub(r'[^A-Za-z0-9_-]+', '_', str(name or 'character')).strip('_')
+    return slug or 'character'
+
+
+def _clamp_byte(val):
+    try:
+        num = float(val)
+    except Exception:
+        return 0
+    if not (num == num and num != float('inf') and num != float('-inf')):
+        return 0
+    return max(0, min(255, int(round(num))))
+
+
+def _normalize_pixel(pixel):
+    if isinstance(pixel, (list, tuple)):
+        vals = list(pixel)[:4] + [0, 0, 0, 0]
+        return [_clamp_byte(v) for v in vals[:4]]
+    if isinstance(pixel, dict):
+        return [
+            _clamp_byte(pixel.get('r', 0)),
+            _clamp_byte(pixel.get('g', 0)),
+            _clamp_byte(pixel.get('b', 0)),
+            _clamp_byte(pixel.get('a', 0)),
+        ]
+    return [0, 0, 0, 0]
+
+
+def default_avatar_matrix():
+    return [
+        [[0, 0, 0, 0] for _ in range(AVATAR_SIZE)]
+        for _ in range(AVATAR_SIZE)
+    ]
+
+
+def normalize_avatar_matrix(matrix):
+    rows = []
+    src = matrix if isinstance(matrix, (list, tuple)) else []
+    for r in range(AVATAR_SIZE):
+        row_src = src[r] if r < len(src) and isinstance(src[r], (list, tuple)) else []
+        row = []
+        for c in range(AVATAR_SIZE):
+            pix = row_src[c] if c < len(row_src) else [0, 0, 0, 0]
+            row.append(_normalize_pixel(pix))
+        rows.append(row)
+    return rows
+
+
+def _is_valid_hex_color(value: str) -> bool:
+    return bool(re.match(r'^#(?:[0-9a-fA-F]{6})$', str(value or '').strip()))
+
+
+def get_customization_dir() -> Path:
+    base = get_player_root_base()
+    target = base.joinpath('character_customizations')
+    target.mkdir(parents=True, exist_ok=True)
+    return target
+
+
+def load_character_customization(name: str):
+    slug = _safe_character_slug(name)
+    path = get_customization_dir().joinpath(f"{slug}.json")
+    if not path.exists():
+        return None
+    try:
+        raw = json.loads(path.read_text(encoding='utf-8'))
+        folder_color = raw.get('folderColor') or raw.get('folder_color')
+        if folder_color and not _is_valid_hex_color(folder_color):
+            folder_color = None
+        avatar = normalize_avatar_matrix(raw.get('avatar') or default_avatar_matrix())
+        return {
+            'name': raw.get('name') or name,
+            'folderColor': folder_color,
+            'avatar': avatar,
+            'updated_at': raw.get('updated_at') or datetime.utcnow().isoformat() + 'Z'
+        }
+    except Exception:
+        return None
+
+
+def load_all_customizations():
+    out = {}
+    custom_dir = get_customization_dir()
+    if not custom_dir.exists():
+        return out
+    for path in custom_dir.glob('*.json'):
+        try:
+            raw = json.loads(path.read_text(encoding='utf-8'))
+        except Exception:
+            continue
+        name = raw.get('name') or path.stem
+        data = load_character_customization(name)
+        if data:
+            out[data.get('name') or name] = data
+    return out
+
+
+def save_character_customization(name: str, folder_color, avatar):
+    slug = _safe_character_slug(name)
+    payload = {
+        'name': name,
+        'folderColor': folder_color if folder_color else None,
+        'avatar': normalize_avatar_matrix(avatar),
+        'updated_at': datetime.utcnow().isoformat() + 'Z'
+    }
+    target = get_customization_dir().joinpath(f"{slug}.json")
+    target.write_text(json.dumps(payload, indent=2), encoding='utf-8')
+    return payload
 
 
 # Helper: parse canonical stats from free-form markdown content
@@ -1585,6 +1726,44 @@ def update_sheet(pcname):
     return resp
 
 
+@bp.route('/api/characters/customizations', methods=['GET'])
+def get_character_customizations():
+    """Return all stored character customization files (folder color + avatar matrices)."""
+    try:
+        customizations = load_all_customizations()
+        return jsonify({'customizations': customizations})
+    except Exception as e:
+        return jsonify({'error': f'Failed to read customizations: {e}'}), 500
+
+
+@bp.route('/api/characters/<name>/customization', methods=['GET', 'POST'])
+def character_customization(name):
+    """Read or persist customization for a specific character."""
+    if request.method == 'GET':
+        data = load_character_customization(name)
+        if not data:
+            data = {
+                'name': name,
+                'folderColor': None,
+                'avatar': default_avatar_matrix(),
+                'updated_at': None
+            }
+        return jsonify(data)
+
+    body = request.get_json() or {}
+    folder_color = body.get('folderColor') or body.get('folder_color')
+    avatar = body.get('avatar')
+
+    if folder_color and not _is_valid_hex_color(folder_color):
+        return jsonify({'error': 'folderColor must be a hex string like #aabbcc'}), 400
+
+    try:
+        payload = save_character_customization(name, folder_color, avatar or default_avatar_matrix())
+        return jsonify({'success': True, 'customization': payload})
+    except Exception as e:
+        return jsonify({'error': f'Failed to save customization: {e}'}), 500
+
+
 @bp.route('/api/file-colors', methods=['GET'])
 def get_file_colors():
     """
@@ -1604,7 +1783,18 @@ def get_file_colors():
     # Compute colors for all files/folders
     try:
         colors = compute_file_colors(base, exts=['.md'], excludes=['.git', '__pycache__', 'node_modules'])
-        return jsonify({'colors': colors})
+        custom_folder_colors = {}
+        try:
+            customizations = load_all_customizations()
+            for cname, cdata in customizations.items():
+                col = cdata.get('folderColor')
+                if col:
+                    # Player Root relative paths use PCs/<Name>/
+                    colors[f"PCs/{cname}/"] = col
+                    custom_folder_colors[cname] = col
+        except Exception:
+            pass
+        return jsonify({'colors': colors, 'custom_folder_colors': custom_folder_colors})
     except Exception as e:
         return jsonify({'error': f'Failed to compute colors: {e}'}), 500
 
@@ -1972,6 +2162,544 @@ def clear_ready_state(character_name):
         pc_file.write_text(new_content, encoding='utf-8')
         
         return jsonify({'success': True, 'character': character_name})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/analyze-moves', methods=['POST'])
+def analyze_moves():
+    """Analyze bending moves for specific elements and levels.
+    
+    Expected JSON body:
+    {
+        "elements": ["air", "water"],
+        "levels": [1, 2],
+        "mode": "balance" | "uniqueness" | "simplicity" | "full"
+    }
+    
+    Returns:
+    {
+        "moves": [
+            {
+                "name": "Air Blade",
+                "level": 1,
+                "element": "air",
+                "actionType": "Action",
+                "range": "...",
+                "damage": "...",
+                "effects": "...",
+                "description": "...",
+                "filePath": "...",
+                "mlBalanceScore": ...,
+                "mlSimplicityScore": ...,
+                "mlFullScore": ...
+            },
+            ...
+        ]
+    }
+    """
+    try:
+        data = request.get_json()
+        elements = data.get('elements', ['air'])
+        if isinstance(elements, str):
+            elements = [elements]
+        levels = data.get('levels', [1, 2])
+        mode = data.get('mode', 'balance')  # balance, uniqueness, simplicity, full
+        
+        # Build paths to bending moves
+        player_root = get_player_root_base()
+        
+        moves = []
+        
+        for element in elements:
+            element_lower = element.lower()
+            element_path = player_root / 'Rules' / 'Bending Rules' / element_lower.capitalize() / f'{element_lower.capitalize()}bending Moves'
+            
+            if not element_path.exists():
+                print(f'Warning: Element path not found: {element_path}')
+                continue
+            
+            for level in levels:
+                level_path = element_path / f'Level {level}'
+                if not level_path.exists():
+                    continue
+                
+                # Find all .md files in this level
+                for move_file in level_path.glob('*.md'):
+                    try:
+                        content = move_file.read_text(encoding='utf-8')
+                        move_info = parse_move_content(content, move_file.stem, level, element_lower)
+                        move_info['filePath'] = str(move_file.relative_to(REPO_ROOT))
+                        
+                        # Add scoring based on mode
+                        if mode in ['balance', 'full'] and BALANCE_SCORER_AVAILABLE:
+                            try:
+                                balance_scorer = get_scorer()
+                                balance_result = balance_scorer.score_move(move_info)
+                                balance_feedback = balance_scorer.generate_feedback(move_info, balance_result)
+                                
+                                move_info['mlBalanceScore'] = balance_result['score']
+                                move_info['mlBalanceScoringMethod'] = balance_result['method']
+                                move_info['mlBalanceFeedback'] = balance_feedback
+                            except Exception as e:
+                                print(f"Balance scoring error for {move_info['name']}: {e}")
+                        
+                        if mode in ['simplicity', 'full'] and SIMPLICITY_SCORER_AVAILABLE:
+                            try:
+                                simplicity_scorer = get_simplicity_scorer()
+                                simplicity_score = simplicity_scorer.calculate_score(move_info)
+                                simplicity_feedback = simplicity_scorer.generate_feedback(move_info)
+                                
+                                move_info['mlSimplicityScore'] = simplicity_score
+                                move_info['mlSimplicityFeedback'] = simplicity_feedback
+                            except Exception as e:
+                                print(f"Simplicity scoring error for {move_info['name']}: {e}")
+                        
+                        # Calculate uniqueness score (for uniqueness or full mode)
+                        if mode in ['uniqueness', 'full']:
+                            try:
+                                uniqueness_score = calculate_uniqueness_score(move_info)
+                                move_info['uniquenessScore'] = uniqueness_score
+                            except Exception as e:
+                                print(f"Uniqueness scoring error for {move_info['name']}: {e}")
+                                move_info['uniquenessScore'] = 5.0
+                        
+                        # Full analysis mode combines all three
+                        if mode == 'full' and FULL_ANALYSIS_SCORER_AVAILABLE:
+                            try:
+                                # Need all three scores
+                                balance_score = move_info.get('mlBalanceScore', 5.0)
+                                simplicity_score = move_info.get('mlSimplicityScore', 5.0)
+                                uniqueness_score = move_info.get('uniquenessScore', 5.0)
+                                
+                                full_scorer = get_full_analysis_scorer()
+                                full_result = full_scorer.calculate_score(
+                                    uniqueness_score,
+                                    balance_score,
+                                    simplicity_score,
+                                    uniqueness_data=move_info.get('uniquenessData'),
+                                    balance_data=move_info.get('mlBalanceFeedback'),
+                                    simplicity_data=move_info.get('mlSimplicityFeedback')
+                                )
+                                full_feedback = full_scorer.generate_feedback(
+                                    uniqueness_score,
+                                    balance_score,
+                                    simplicity_score,
+                                    uniqueness_data=move_info.get('uniquenessData'),
+                                    balance_data=move_info.get('mlBalanceFeedback'),
+                                    simplicity_data=move_info.get('mlSimplicityFeedback')
+                                )
+                                
+                                move_info['mlFullScore'] = full_result['score']
+                                move_info['mlFullMethod'] = full_result['method']
+                                move_info['mlFullBreakdown'] = full_result['breakdown']
+                                move_info['mlFullFeedback'] = full_feedback
+                            except Exception as e:
+                                print(f"Full analysis error for {move_info['name']}: {e}")
+                        
+                        moves.append(move_info)
+                    except Exception as e:
+                        print(f"Error parsing {move_file}: {e}")
+                        continue
+        
+        return jsonify({'moves': moves, 'elements': elements, 'levels': levels, 'mode': mode})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/balance-visualization', methods=['POST'])
+def balance_visualization():
+    """Generate visualization data for balance score distributions.
+    
+    Expected JSON body:
+    {
+        "moves": [array of move objects with mlBalanceScore]
+    }
+    
+    Returns:
+    {
+        "histogram": {...},
+        "boxplot": {...},
+        "scatterplot": {...},
+        "statistics": {...}
+    }
+    """
+    try:
+        data = request.get_json()
+        moves = data.get('moves', [])
+        
+        if not moves:
+            return jsonify({'error': 'No moves provided'}), 400
+        
+        # Extract scores
+        scores = []
+        move_names = []
+        elements = []
+        levels = []
+        action_types = []
+        
+        for move in moves:
+            score = move.get('mlBalanceScore') or move.get('balanceScore')
+            if score is not None:
+                scores.append(float(score))
+                move_names.append(move.get('name', 'Unknown'))
+                elements.append(move.get('element', 'unknown'))
+                levels.append(move.get('level', 1))
+                action_types.append(move.get('actionType', 'Action'))
+        
+        if not scores:
+            return jsonify({'error': 'No balance scores found in moves'}), 400
+        
+        import numpy as np
+        scores_array = np.array(scores)
+        
+        # Calculate statistics
+        statistics = {
+            'mean': float(np.mean(scores_array)),
+            'median': float(np.median(scores_array)),
+            'std': float(np.std(scores_array)),
+            'min': float(np.min(scores_array)),
+            'max': float(np.max(scores_array)),
+            'q25': float(np.percentile(scores_array, 25)),
+            'q75': float(np.percentile(scores_array, 75)),
+            'total': len(scores),
+            'severely_underpowered': int(np.sum(scores_array <= 3.5)),
+            'underpowered': int(np.sum((scores_array > 3.5) & (scores_array <= 4.5))),
+            'slightly_below': int(np.sum((scores_array > 4.5) & (scores_array <= 5.5))),
+            'balanced': int(np.sum((scores_array > 5.5) & (scores_array <= 7.0))),
+            'slightly_above': int(np.sum((scores_array > 7.0) & (scores_array <= 8.0))),
+            'overpowered': int(np.sum((scores_array > 8.0) & (scores_array <= 9.0))),
+            'severely_overpowered': int(np.sum(scores_array > 9.0))
+        }
+        
+        # Histogram data
+        hist_counts, hist_edges = np.histogram(scores_array, bins=20, range=(0, 10))
+        histogram = {
+            'counts': hist_counts.tolist(),
+            'edges': hist_edges.tolist(),
+            'bin_centers': [(hist_edges[i] + hist_edges[i+1]) / 2 for i in range(len(hist_edges)-1)]
+        }
+        
+        # Box plot data by element
+        boxplot_by_element = {}
+        for element in set(elements):
+            element_scores = [scores[i] for i in range(len(scores)) if elements[i] == element]
+            if element_scores:
+                boxplot_by_element[element] = {
+                    'scores': element_scores,
+                    'min': float(np.min(element_scores)),
+                    'q25': float(np.percentile(element_scores, 25)),
+                    'median': float(np.median(element_scores)),
+                    'q75': float(np.percentile(element_scores, 75)),
+                    'max': float(np.max(element_scores)),
+                    'mean': float(np.mean(element_scores))
+                }
+        
+        # Box plot data by level
+        boxplot_by_level = {}
+        for level in set(levels):
+            level_scores = [scores[i] for i in range(len(scores)) if levels[i] == level]
+            if level_scores:
+                boxplot_by_level[str(level)] = {
+                    'scores': level_scores,
+                    'min': float(np.min(level_scores)),
+                    'q25': float(np.percentile(level_scores, 25)),
+                    'median': float(np.median(level_scores)),
+                    'q75': float(np.percentile(level_scores, 75)),
+                    'max': float(np.max(level_scores)),
+                    'mean': float(np.mean(level_scores))
+                }
+        
+        # Scatter plot data
+        scatterplot = {
+            'scores': scores,
+            'names': move_names,
+            'elements': elements,
+            'levels': levels,
+            'action_types': action_types
+        }
+        
+        # Category distribution for pie chart
+        categories = {
+            'Severely Underpowered': statistics['severely_underpowered'],
+            'Underpowered': statistics['underpowered'],
+            'Slightly Below Avg': statistics['slightly_below'],
+            'Well Balanced': statistics['balanced'],
+            'Slightly Above Avg': statistics['slightly_above'],
+            'Overpowered': statistics['overpowered'],
+            'Severely Overpowered': statistics['severely_overpowered']
+        }
+        
+        return jsonify({
+            'histogram': histogram,
+            'boxplot_by_element': boxplot_by_element,
+            'boxplot_by_level': boxplot_by_level,
+            'scatterplot': scatterplot,
+            'statistics': statistics,
+            'categories': categories
+        })
+    
+    except Exception as e:
+        import traceback
+        print(f"Visualization error: {e}")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+def calculate_uniqueness_score(move_info):
+    """Calculate a uniqueness score for a move based on its properties.
+    
+    Score ranges from 0-10, with higher scores indicating more unique/creative moves.
+    Uses finer granularity (0.1 increments) for more varied scores.
+    """
+    score = 5.0  # Base score
+    
+    effects = (move_info.get('effects') or '') + ' ' + (move_info.get('description') or '')
+    effects_lower = effects.lower()
+    action_type = move_info.get('actionType', 'Action')
+    range_text = (move_info.get('range') or '').lower()
+    
+    # Action type variety (+0 to +1.2)
+    if 'danger sense' in action_type.lower():
+        score += 1.2  # Very rare action type
+    elif 'reaction' in action_type.lower():
+        score += 0.9  # Reactions are more unique
+    elif 'bonus action' in action_type.lower():
+        score += 0.4
+    
+    # Range creativity (+0 to +1.8)
+    if 'cone' in range_text:
+        score += 1.7
+    elif 'line' in range_text:
+        score += 1.5
+    elif 'radius' in range_text or 'aoe' in range_text or 'area' in range_text:
+        score += 1.2
+    elif 'self' in range_text and 'radius' not in range_text:
+        score += 0.6
+    elif any(num in range_text for num in ['5', '10', '15', '25']):
+        score += 0.3  # Non-standard range numbers
+    
+    # Effect complexity and variety (+0 to +4.5)
+    complexity_score = 0
+    
+    # Special mechanics
+    if 'concentration' in effects_lower:
+        complexity_score += 1.8
+    if 'lingering' in effects_lower or 'persistent' in effects_lower or 'ongoing' in effects_lower:
+        complexity_score += 2.2
+    if 'charge' in effects_lower or 'stack' in effects_lower:
+        complexity_score += 1.5
+    
+    # Status effects (more varied scoring)
+    status_effects = {
+        'stunned': 1.5, 'paralyzed': 1.5, 'petrified': 1.8,
+        'prone': 0.8, 'dazed': 1.0, 'blinded': 1.2,
+        'disadvantage': 0.7, 'advantage': 0.6, 'restrained': 1.1
+    }
+    for status, value in status_effects.items():
+        if status in effects_lower:
+            complexity_score += value
+            break  # Only count one status effect
+    
+    # Movement effects
+    movement_effects = {
+        'pull': 0.7, 'push': 0.6, 'knock': 0.8, 'shove': 0.6,
+        'teleport': 1.8, 'swap': 1.6, 'slide': 0.9
+    }
+    for movement, value in movement_effects.items():
+        if movement in effects_lower:
+            complexity_score += value
+            break
+    
+    score += min(4.5, complexity_score)
+    
+    # Utility features (+0 to +2.8)
+    utility_score = 0
+    
+    if any(word in effects_lower for word in ['dash', 'disengage', 'dodge']):
+        utility_score += 0.7
+    if any(word in effects_lower for word in ['move', 'movement', 'speed']):
+        utility_score += 0.4
+    if any(word in effects_lower for word in ['wall', 'barrier', 'shield', 'dome']):
+        utility_score += 1.7
+    if any(word in effects_lower for word in ['terrain', 'environment', 'create', 'shape']):
+        utility_score += 1.3
+    if any(word in effects_lower for word in ['ally', 'willing', 'friendly']):
+        utility_score += 0.8
+    if any(word in effects_lower for word in ['support', 'buff', 'enhance']):
+        utility_score += 0.9
+    if any(word in effects_lower for word in ['heal', 'restore', 'recover']):
+        utility_score += 1.1
+    
+    score += min(2.8, utility_score)
+    
+    # Damage variety (+0 to +1.5)
+    damage_variety = 0
+    if 'slashing' in effects_lower:
+        damage_variety += 0.6
+    if 'piercing' in effects_lower:
+        damage_variety += 0.6
+    if any(word in effects_lower for word in ['multi', 'multiple', 'several']):
+        damage_variety += 0.5
+    if any(word in effects_lower for word in ['projectile', 'volley', 'barrage']):
+        damage_variety += 0.7
+    
+    score += min(1.5, damage_variety)
+    
+    # Resource generation (+0 to +2.0)
+    if any(word in effects_lower for word in ['temporary slot', 'bonus slot', 'gain slot']):
+        score += 2.0
+    elif 'generate' in effects_lower or 'create slot' in effects_lower:
+        score += 1.6
+    
+    # Interaction with other moves (+0 to +1.0)
+    if 'combo' in effects_lower or 'synerg' in effects_lower:
+        score += 1.0
+    elif 'combine' in effects_lower or 'enhance another' in effects_lower:
+        score += 0.8
+    
+    # Cap at 10 and round to 1 decimal place
+    score = min(10.0, score)
+    
+    return round(score, 1)
+
+
+def parse_move_content(content: str, name: str, level: int, element: str):
+    """Parse a move markdown file and extract key information."""
+    move_info = {
+        'name': name,
+        'level': level,
+        'element': element,
+        'actionType': 'Unknown',
+        'range': None,
+        'damage': None,
+        'effects': None,
+        'description': None,
+        'duration': None,
+        'cost': None
+    }
+    
+    # Extract action type from hashtags
+    action_tags = ['#Action', '#Bonus_Action', '#Bonus_action', '#Reaction', '#Danger_Sense_Reaction']
+    for tag in action_tags:
+        if tag in content:
+            if 'Danger_Sense' in tag:
+                move_info['actionType'] = 'Danger Sense Reaction'
+            elif 'Bonus' in tag:
+                move_info['actionType'] = 'Bonus Action'
+            elif 'Reaction' in tag:
+                move_info['actionType'] = 'Reaction'
+            elif 'Action' in tag:
+                move_info['actionType'] = 'Action'
+            break
+    
+    # Extract range
+    range_match = re.search(r'\*\*Range:?\*\*\s*(.+?)(?:\n|$)', content, re.IGNORECASE)
+    if range_match:
+        move_info['range'] = range_match.group(1).strip()
+    else:
+        # Try alternative formats
+        range_match = re.search(r'-\s*Range:\s*(.+?)(?:\n|$)', content, re.IGNORECASE)
+        if range_match:
+            move_info['range'] = range_match.group(1).strip()
+        # Check for radius
+        radius_match = re.search(r'Radius:\s*(.+?)(?:\n|$)', content, re.IGNORECASE)
+        if radius_match:
+            move_info['range'] = f"Radius: {radius_match.group(1).strip()}"
+    
+    # Extract damage
+    damage_match = re.search(r'\*\*Damage:?\*\*\s*(.+?)(?:\n|$)', content, re.IGNORECASE)
+    if damage_match:
+        move_info['damage'] = damage_match.group(1).strip()
+    else:
+        damage_match = re.search(r'-\s*Damage:\s*(.+?)(?:\n|$)', content, re.IGNORECASE)
+        if damage_match:
+            move_info['damage'] = damage_match.group(1).strip()
+    
+    # Extract duration
+    duration_match = re.search(r'\*\*Duration:?\*\*\s*(.+?)(?:\n|$)', content, re.IGNORECASE)
+    if duration_match:
+        move_info['duration'] = duration_match.group(1).strip()
+    
+    # Extract cost
+    cost_match = re.search(r'Cost:\s*(.+?)(?:\n|$)', content, re.IGNORECASE)
+    if cost_match:
+        move_info['cost'] = cost_match.group(1).strip()
+    
+    # Extract effects section
+    effects_match = re.search(r'\*\*Effect[s]?:?\*\*\s*(.+?)(?:\n\n|$)', content, re.IGNORECASE | re.DOTALL)
+    if effects_match:
+        move_info['effects'] = effects_match.group(1).strip()
+    else:
+        # Try to get bullet points as effects
+        effect_lines = []
+        for line in content.split('\n'):
+            if line.strip().startswith('-') and not any(x in line for x in ['Range:', 'Damage:', 'Duration:', 'Cost:']):
+                effect_lines.append(line.strip().lstrip('- ').strip())
+        if effect_lines:
+            move_info['effects'] = ' '.join(effect_lines)
+    
+    # If no effects found, use entire content as description
+    if not move_info['effects']:
+        # Remove hashtags and extract text
+        clean_content = re.sub(r'#\w+', '', content)
+        clean_content = re.sub(r'\*\*[^*]+\*\*:?', '', clean_content)
+        clean_content = ' '.join([line.strip() for line in clean_content.split('\n') if line.strip() and not line.strip().startswith('-')])
+        move_info['description'] = clean_content.strip()[:200]  # Limit to 200 chars
+    
+    return move_info
+
+
+@bp.route('/api/list_directory', methods=['GET'])
+def list_directory():
+    """
+    List contents of a directory within the campaign workspace.
+    
+    Query params:
+      path (str): Relative path from REPO_ROOT (e.g., "Dms Root/NPCs")
+    
+    Returns:
+      {
+        "items": [
+          {"name": "...", "type": "file|directory"},
+          ...
+        ]
+      }
+    """
+    try:
+        path_param = request.args.get('path', '')
+        
+        # Resolve the path
+        target_path = REPO_ROOT / path_param
+        
+        # Security check: ensure the resolved path is within REPO_ROOT
+        try:
+            target_path = target_path.resolve()
+            if not str(target_path).startswith(str(REPO_ROOT)):
+                return jsonify({'error': 'Access denied: path outside repository'}), 403
+        except Exception:
+            return jsonify({'error': 'Invalid path'}), 400
+        
+        if not target_path.exists():
+            return jsonify({'error': f'Path not found: {path_param}'}), 404
+        
+        if not target_path.is_dir():
+            return jsonify({'error': 'Path is not a directory'}), 400
+        
+        items = []
+        for item in sorted(target_path.iterdir()):
+            # Skip hidden files and system files
+            if item.name.startswith('.'):
+                continue
+            
+            items.append({
+                'name': item.name,
+                'type': 'directory' if item.is_dir() else 'file'
+            })
+        
+        return jsonify({'items': items, 'path': path_param})
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500

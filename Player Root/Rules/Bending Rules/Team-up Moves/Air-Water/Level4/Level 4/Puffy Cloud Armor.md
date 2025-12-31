@@ -1,5 +1,5 @@
-#Action 
-#Reaction 
+#Action (waterbender)
+#Reaction (airbender)
 
 
 Each Bender-decides to which pool to add their Bending slots:

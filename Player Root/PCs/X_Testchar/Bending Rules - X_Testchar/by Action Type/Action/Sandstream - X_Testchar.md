@@ -1,5 +1,5 @@
-#Action_X_Testchar 
-#Reaction_X_Testchar 
+#Action_X_Testchar (earthbender)
+#Reaction_X_Testchar (airbender)
 
 -  **Y**([[Earthbending slot]] (60)): Yd12 Damage per projectile
 - **X**([[Airbending_slot]] (60)): X Projectiles [[Air Attack Roll]] (1d20 + 20 + 2)

@@ -23,6 +23,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | max_hp | 38    | Player Root/variable/PC_variables/Anju/Anju_max_hp.md |
 | max_hp | 38    | Player Root/PCs/Anju/Anju Character Sheet.md |
 | current_hp | 38    | Player Root/PCs/Anju/Anju Character Sheet.md |
+| ready | no    | Player Root/PCs/Anju/Anju Character Sheet.md |
 
 
 **Defensive**
@@ -36,6 +37,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Ice Armor | 0    | Player Root/variable/PC_variables/Anju/Anju_Ice Armor.md |
 | Physical Armor | 0    | Player Root/variable/PC_variables/Anju/Anju_Physical Armor.md |
 | Spirit Armor | 0    | Player Root/variable/PC_variables/Anju/Anju_Spirit Armor.md |
+| general_armor | 1    | Player Root/variable/PC_variables/Anju/Anju_general_armor.md |
 
 
 **Consumable Resources**
@@ -58,6 +60,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | max_hp | 26    | Player Root/variable/PC_variables/Ash/Ash_max_hp.md |
 | max_hp | 26    | Player Root/PCs/Ash/Ash Character Sheet.md |
 | current_hp | 26    | Player Root/PCs/Ash/Ash Character Sheet.md |
+| ready | no    | Player Root/PCs/Ash/Ash Character Sheet.md |
 
 
 **Defensive**
@@ -71,6 +74,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Ice Armor | 2    | Player Root/variable/PC_variables/Ash/Ash_Ice Armor.md |
 | Physical Armor | 0    | Player Root/variable/PC_variables/Ash/Ash_Physical Armor.md |
 | Spirit Armor | 1    | Player Root/variable/PC_variables/Ash/Ash_Spirit Armor.md |
+| general_armor | 0    | Player Root/variable/PC_variables/Ash/Ash_general_armor.md |
 
 
 **Consumable Resources**
@@ -93,6 +97,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | max_hp | 26    | Player Root/variable/PC_variables/Mahogany/Mahogany_max_hp.md |
 | max_hp | 26    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
 | current_hp | 26    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
+| ready | no    | Player Root/PCs/Mahogany/Mahogany character sheet.md |
 
 
 **Defensive**
@@ -199,6 +204,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | max_hp | 32    | Player Root/variable/PC_variables/Sora/Sora_max_hp.md |
 | max_hp | 32    | Player Root/PCs/Sora/Sora Character Sheet.md |
 | current_hp | 32    | Player Root/PCs/Sora/Sora Character Sheet.md |
+| ready | no    | Player Root/PCs/Sora/Sora Character Sheet.md |
 
 
 **Defensive**
@@ -212,6 +218,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Ice Armor | 3    | Player Root/variable/PC_variables/Sora/Sora_Ice Armor.md |
 | Physical Armor | 0    | Player Root/variable/PC_variables/Sora/Sora_Physical Armor.md |
 | Spirit Armor | 0    | Player Root/variable/PC_variables/Sora/Sora_Spirit Armor.md |
+| general_armor | 0    | Player Root/variable/PC_variables/Sora/Sora_general_armor.md |
 
 
 **Consumable Resources**
@@ -233,6 +240,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | max_hp | 36    | Player Root/variable/PC_variables/Tapioca/Tapioca_max_hp.md |
 | max_hp | 36    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
 | current_hp | 36    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
+| ready | no    | Player Root/PCs/Tapioca/Tapioca Character Sheet.md |
 
 
 **Defensive**
@@ -304,6 +312,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | max_hp | 2600    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_max_hp.md |
 | max_hp | 2600    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
 | current_hp | 2600    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
+| ready | no    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
 
 
 **Defensive**
@@ -317,6 +326,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | Ice Armor | 20    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_Ice Armor.md |
 | Physical Armor | 0    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_Physical Armor.md |
 | Spirit Armor | 20    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_Spirit Armor.md |
+| general_armor | 20    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_general_armor.md |
 
 
 **Consumable Resources**

@@ -1,6 +1,6 @@
 
-#Action
-#Reaction 
+#Action (earthbender)
+#Reaction (waterbender)
 
 Reaction: Must be initiated by a Waterbender in line of sight 
 

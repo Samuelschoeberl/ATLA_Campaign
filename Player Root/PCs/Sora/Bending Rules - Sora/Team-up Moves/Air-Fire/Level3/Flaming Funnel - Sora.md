@@ -1,5 +1,5 @@
-#Action_Sora 
-#Reaction_Sora 
+#Action_Sora (firebender)
+#Reaction_Sora (airbender)
 
 -  **Y**([[Firebending_slot]] (9)): Yd12 Fire Damage
 - **X**([[Airbending_slot]] (0)): X * 10 meter Range [[Air Attack Roll]] (1d20 + 0 + 2) (so no malus for [[stress level]] (0) for the Firebender)

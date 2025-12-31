@@ -1,5 +1,5 @@
-#Action_Puy
-#Reaction_Puy 
+#Action_Puy (earthbender)
+#Reaction_Puy (firebender)
 #lingering_effect_Puy 
 
 Reaction: Must be initiated by a Firebender in line of sight 

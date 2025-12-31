@@ -1,6 +1,6 @@
-#Action Earth
-#Reaction Air
-#Concentration Air
+#Action (earthbender)
+#Reaction (airbender)
+#Concentration (airbender)
 
 -  **Y**([[Earthbending slot]]): Yd10  [[Barrier]]
 - **X**([[Airbending_slot]]): Duration: X rounds

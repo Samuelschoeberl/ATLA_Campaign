@@ -1,6 +1,6 @@
 
-#Action_Puy
-#Reaction_Puy 
+#Action_Puy (earthbender)
+#Reaction_Puy (airbender)
 
 Reaction: Must be initiated by a Airbender in line of sight 
 

@@ -10,6 +10,7 @@ Name: Tapioca
 | Initiative        |        1d20 + 7 |
 | Movement          |          11 |
 
+| ready             |                    no |
 ## Core Stats
 
 | Stat         |   Value |

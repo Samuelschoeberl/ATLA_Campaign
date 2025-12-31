@@ -6,6 +6,7 @@ import BendingMove from './BendingMove';
 import InitiativeTracker from './InitiativeTracker';
 import StatOverview from './StatOverview';
 import Quicklinks from './Quicklinks';
+import BattlemapViewer from './BattlemapViewer';
 import './FileViewer.css';
 import { API_BASE_URL } from '../config/api';
 
@@ -28,6 +29,7 @@ const FileViewer = ({ file, lightMode = false, onFileSelect, advancedMode = fals
   const isInitiativeTracker = file ? file.name === 'Initiative Tracker.md' : false;
   const isStatOverview = file ? file.name === 'stat_overview.md' : false;
   const isQuicklinks = file ? file.name === 'Quicklinks.md' : false;
+  const isBattlemap = file ? file.name.toLowerCase() === 'battlemap.json' : false;
   const hasShapeshiftingTag = isMarkdown && content && /#shapeshifting(?:\b|_)/i.test(content);
   const isBendingMove = file ? 
     (
@@ -471,6 +473,15 @@ const FileViewer = ({ file, lightMode = false, onFileSelect, advancedMode = fals
   // Render quicklinks component if it's the Quicklinks.md file
   if (isQuicklinks) {
     return <Quicklinks lightMode={lightMode} onFileSelect={onFileSelect} />;
+  }
+
+  // Render battlemap component
+  if (isBattlemap) {
+    return (
+      <div className={`file-viewer ${lightMode ? 'light-mode' : ''}`}>
+        <BattlemapViewer filePath={file.path} content={content} />
+      </div>
+    );
   }
 
   return (

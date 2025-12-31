@@ -3,7 +3,7 @@ import './FileTree.css';
 import { getLighterColor, hexToRgba } from '../utils/colorUtils';
 import { API_BASE_URL } from '../config/api';
 
-const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode = false, advancedMode = false, onFileUpdate }, ref) => {
+const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode = false, advancedMode = false, onFileUpdate, selectedFile = null }, ref) => {
   const [rootItems, setRootItems] = useState([]);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [folderContents, setFolderContents] = useState({});
@@ -27,7 +27,21 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
       const response = await fetch(`${API_BASE_URL}/api/file-colors`);
       if (response.ok) {
         const data = await response.json();
-        setFileColors(data.colors || {});
+        const baseColors = data.colors || {};
+        const overrides = data.custom_folder_colors || {};
+
+        // Apply custom folder color overrides to the folder itself and all descendants
+        const derivedColors = { ...baseColors };
+        Object.entries(overrides).forEach(([characterName, color]) => {
+          const prefix = `PCs/${characterName}/`;
+          Object.keys(baseColors).forEach((key) => {
+            if (key === prefix || key.startsWith(prefix)) {
+              derivedColors[key] = color;
+            }
+          });
+        });
+
+        setFileColors(derivedColors);
       }
     } catch (error) {
       console.error('Error loading file colors:', error);
@@ -371,18 +385,27 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
     const isFolder = item.type === 'dir' || item.type === 'directory';
     const children = isFolder ? folderContents[itemPath] : null;
     
+    // Check if this is the currently selected file
+    const isSelected = !isFolder && selectedFile && selectedFile.path === itemPath;
+    
     // Get color from the file colors map
     // For folders, look up with trailing slash
     const colorKey = isFolder ? `${itemPath}/` : itemPath;
     const itemColor = fileColors[colorKey] || '#e6e6e6'; // default to light grey
     const isUncolored = itemColor === '#e6e6e6';
-    const backgroundColor = isUncolored ? 'transparent' : hexToRgba(itemColor, 0.35);
-    const hoverColor = isUncolored ? 'rgba(255, 255, 255, 0.1)' : hexToRgba(getLighterColor(itemColor), 0.5);
+    
+    // Adjust background color for selected file
+    const backgroundColor = isSelected 
+      ? (lightMode ? 'rgba(52, 152, 219, 0.4)' : 'rgba(52, 152, 219, 0.3)')
+      : (isUncolored ? 'transparent' : hexToRgba(itemColor, 0.35));
+    const hoverColor = isSelected
+      ? (lightMode ? 'rgba(52, 152, 219, 0.6)' : 'rgba(52, 152, 219, 0.5)')
+      : (isUncolored ? 'rgba(255, 255, 255, 0.1)' : hexToRgba(getLighterColor(itemColor), 0.5));
 
     return (
       <div key={itemPath} className="file-tree-item">
         <div 
-          className={`file-tree-item-content ${isFolder ? 'folder' : 'file'}`}
+          className={`file-tree-item-content ${isFolder ? 'folder' : 'file'} ${isSelected ? 'selected' : ''}`}
           onClick={() => handleItemClick(item, parentPath)}
           style={{ 
             display: 'flex', 
@@ -394,7 +417,11 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
             color: '#fff',
             fontSize: '14px',
             transition: 'background 0.2s',
-            borderLeft: isUncolored ? 'none' : `3px solid ${itemColor}`
+            borderLeft: isSelected 
+              ? '3px solid #3498db' 
+              : (isUncolored ? 'none' : `3px solid ${itemColor}`),
+            fontWeight: isSelected ? '600' : (isFolder ? '500' : '400'),
+            boxShadow: isSelected ? 'inset 0 0 8px rgba(52, 152, 219, 0.3)' : 'none'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = hoverColor;

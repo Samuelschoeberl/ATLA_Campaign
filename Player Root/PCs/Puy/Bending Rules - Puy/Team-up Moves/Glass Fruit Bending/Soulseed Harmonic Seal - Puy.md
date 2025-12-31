@@ -1,7 +1,7 @@
 
-#Action_Puy
-#Reaction_Puy 
-#Concentration_Puy 
+#Action_Puy (airbender)
+#Reaction_Puy (earthbender)
+#Concentration_Puy (airbender)
 
 Reaction: Must be initiated by a Earthbender in line of sight 
 

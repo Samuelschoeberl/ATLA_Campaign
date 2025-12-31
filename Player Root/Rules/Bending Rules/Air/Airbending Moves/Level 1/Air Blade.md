@@ -2,7 +2,7 @@
 
 - **Range:**  [[Airbending_slot]] meters
 - **Duration:** Instantaneous.
-- **Damage**: 1d4 bludgeoning per [[Airbending_slot]]
+- **Damage**: 1d6 bludgeoning per [[Airbending_slot]]
 - [[Air Attack Roll]]
 -  Send a blade of Air hurling at a creature within range
 

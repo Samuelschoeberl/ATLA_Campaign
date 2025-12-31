@@ -1,5 +1,5 @@
-#Action_Anju
-#Reaction_Anju 
+#Action_Anju (waterbender)
+#Reaction_Anju (waterbender)
  
 You may use Levels from **Water only**.
 Each Bender-decides to which pool to add their Bending slots (min 1 in each):

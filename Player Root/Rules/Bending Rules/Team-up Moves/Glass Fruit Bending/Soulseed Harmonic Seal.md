@@ -1,7 +1,7 @@
 
-#Action
-#Reaction 
-#Concentration 
+#Action (airbender)
+#Reaction (earthbender)
+#Concentration (airbender)
 
 Reaction: Must be initiated by a Earthbender in line of sight 
 

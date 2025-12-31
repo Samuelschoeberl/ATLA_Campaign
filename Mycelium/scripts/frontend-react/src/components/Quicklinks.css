@@ -2,13 +2,11 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   min-height: 100vh;
   color: #e0e0e0;
 }
 
 .quicklinks-container.light-mode {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
   color: #2c3e50;
 }
 
@@ -16,28 +14,22 @@
   text-align: center;
   margin-bottom: 3rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.08);
 }
 
 .quicklinks-container.light-mode .quicklinks-header {
-  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
 }
 
 .quicklinks-header h1 {
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #e0e0e0;
 }
 
 .quicklinks-container.light-mode .quicklinks-header h1 {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #2c3e50;
 }
 
 .quicklinks-section {
@@ -48,14 +40,14 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
-  color: #667eea;
+  color: #a0a0a0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .quicklinks-container.light-mode .quicklinks-section h2 {
-  color: #5a67d8;
+  color: #6b7280;
 }
 
 .quicklinks-grid {
@@ -69,22 +61,22 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(102, 126, 234, 0.3);
-  border-radius: 12px;
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
   color: #e0e0e0;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   text-align: left;
   position: relative;
   overflow: hidden;
 }
 
 .quicklinks-container.light-mode .quicklink-button {
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  background: transparent;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
   color: #2c3e50;
 }
 
@@ -92,66 +84,61 @@
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
-  transition: left 0.5s ease;
-  pointer-events: none; /* Ensure the pseudo-element doesn't block clicks */
+  background: rgba(255, 255, 255, 0.03);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
   z-index: 0;
 }
 
 .quicklink-button:hover::before {
-  left: 100%;
+  opacity: 1;
 }
 
 .quicklink-button:hover {
-  transform: translateY(-2px);
-  border-color: rgba(102, 126, 234, 0.6);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-  background: rgba(102, 126, 234, 0.15);
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .quicklinks-container.light-mode .quicklink-button:hover {
-  background: rgba(102, 126, 234, 0.15);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.quicklinks-container.light-mode .quicklink-button::before {
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .quicklink-button:active {
   transform: translateY(0);
 }
 
-.quicklink-button.primary {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border-color: rgba(102, 126, 234, 0.5);
-}
-
-.quicklinks-container.light-mode .quicklink-button.primary {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
-}
-
-.quicklink-button.primary:hover {
-  border-color: rgba(102, 126, 234, 0.8);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-}
-
 .quicklink-button.character {
   /* Background and border colors are set inline via JavaScript */
   /* This allows dynamic colors from the file-colors API */
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .quicklink-button.character:hover {
   /* Hover colors are set inline via JavaScript */
-  box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .quicklink-icon {
   font-size: 1.5rem;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  filter: none;
   position: relative;
-  z-index: 1; /* Ensure icons are above the pseudo-element */
+  z-index: 1;
+  opacity: 0.85;
+}
+
+.quicklink-avatar {
+  flex-shrink: 0;
 }
 
 .quicklink-text {

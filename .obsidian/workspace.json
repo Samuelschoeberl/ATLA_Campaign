@@ -243,7 +243,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Gather Chi.md",
+                "file": "Player Root/Rules/Bending Rules/Air/Airbending Moves/Level 4/Sprinting Strike.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -258,7 +258,79 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Gather Chi"
+              "title": "Sprinting Strike"
+            }
+          },
+          {
+            "id": "5066e4ff2053435c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/Rules/Bending Rules/Water/Waterbending Moves/Level 5/Frozen Armor.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Frozen Armor"
+            }
+          },
+          {
+            "id": "f17d5f728a74e39e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Mycelium/data/template/template_BendingMove.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "template_BendingMove"
+            }
+          },
+          {
+            "id": "6da6f6054ce98b4a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Player Root/Rules/core rules/Conditions/Dazed.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "Dazed"
             }
           },
           {
@@ -267,7 +339,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Shapeshifting Forms/Bearturtle.md",
+                "file": "Mycelium/data/template/template_BendingMove.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -282,11 +354,11 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "Bearturtle"
+              "title": "template_BendingMove"
             }
           }
         ],
-        "currentTab": 11
+        "currentTab": 12
       }
     ],
     "direction": "vertical"
@@ -318,7 +390,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#Shapeshifting",
+                "query": "harmonic",
                 "matchingCase": false,
                 "explainSearch": true,
                 "collapseAll": true,
@@ -397,8 +469,7 @@
               "title": "RunJS Codelist"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -498,53 +569,53 @@
       "runjs:RunJS": false
     }
   },
-  "active": "bc042d41bdc7a42d",
+  "active": "bf97f7a300bd33a1",
   "lastOpenFiles": [
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Shapeshifting.md",
-    "Player Root/variable/PC_variables/Tiebeediy/Tiebeediy_general_armor.md",
-    "Player Root/variable/PC_variables/Puy/Puy_general_armor.md",
-    "Mycelium/scripts/frontend-react/src/components/Quicklinks.README.md",
-    "Mycelium/scripts/frontend-react/src/components/Quicklinks.css",
-    "Mycelium/scripts/frontend-react/src/components/Quicklinks.jsx",
-    "Player Root/variable/PC_variables/Rio/Rio_general_armor.md",
-    "Player Root/variable/PC_variables/Mahogany/Mahogany_ready.md",
-    "logs/client_activity_20251223.log",
-    "Mycelium/scripts/frontend-react/src/context/ReadyStateContext.jsx",
-    "Mycelium/scripts/frontend-react/src/context",
-    "Player Root/variable/PC_variables/Tapioca/Tapioca_general_armor.md",
-    "Player Root/variable/PC_variables/X_Testchar/X_Testchar_general_armor.md",
-    "Player Root/variable/PC_variables/Mahogany/Mahogany_general_armor.md",
-    "Player Root/variable/PC_variables/Anju/Anju_general_armor.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Flying Lemur.md",
-    "Player Root/Rules/Bending Rules/Spirit/Shapeshifting Pics/Flying Lemur.webp",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Luma’tik - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Bearturtle - Tiebeediy.md",
-    "Player Root/PCs/Tiebeediy/Bending Rules - Tiebeediy/by Action Type/Action/Flying Lemur - Tiebeediy.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Luma’tik - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Bearturtle - Mahogany.md",
-    "Player Root/PCs/Mahogany/Bending Rules - Mahogany/by Action Type/Action/Flying Lemur - Mahogany.md",
-    "Player Root/PCs/Ash/Bending Rules - Ash/by Action Type/Action/Flying Lemur - Ash.md",
-    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/by Action Type/Action/Luma’tik - X_Testchar.md",
-    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/by Action Type/Action/Bearturtle - X_Testchar.md",
-    "Player Root/PCs/X_Testchar/Bending Rules - X_Testchar/by Action Type/Action/Flying Lemur - X_Testchar.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 1/Human Form.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Luma’tik.md",
-    "Player Root/Rules/Bending Rules/Spirit/Spiritbending Moves/Level 2/Bearturtle.md",
-    "Player Root/variable/primary_stat/spirit.md",
-    "Player Root/Rules/Bending Rules/Spirit/Mechanics/Spiritbending Slot Progression.md",
-    "logs/client_activity_20251222.log",
-    "Dms Root/Dnd stuff/Plulp",
-    "Dms Root/Dnd stuff/ChatGPT Image Dec 22, 2025, 03_02_59 PM.png",
-    "Dms Root/Dnd stuff/ChatGPT Image Dec 22, 2025, 04_25_07 AM.png",
+    "Mycelium/scripts/frontend-react/src/components/PinnedMoveSlimBar.jsx",
+    "node_modules/three-stdlib/loaders/XYZLoader.d.ts",
+    "node_modules/three-stdlib/loaders/XLoader.d.ts",
+    "node_modules/three-stdlib/loaders/VTKLoader.d.ts",
+    "node_modules/three-stdlib/loaders/VRMLoader.d.ts",
+    "node_modules/three-stdlib/loaders/VRMLLoader.d.ts",
+    "node_modules/three-stdlib/loaders/VOXLoader.d.ts",
+    "node_modules/three-stdlib/loaders/TTFLoader.d.ts",
+    "node_modules/three-stdlib/loaders/TiltLoader.d.ts",
+    "node_modules/three-stdlib/loaders/TGALoader.d.ts",
+    "node_modules/three-stdlib/loaders/TDSLoader.d.ts",
+    "node_modules/three-stdlib/README.md",
+    "node_modules/stats-gl/node_modules/three/README.md",
+    "node_modules/hls.js/README.md",
+    "node_modules/@react-three/drei/README.md",
+    "node_modules/@dimforge/rapier3d-compat/README.md",
+    "node_modules/three-mesh-bvh/README.md",
+    "node_modules/maath/CHANGELOG.md",
+    "node_modules/@mediapipe/tasks-vision/README.md",
+    "node_modules/@monogrid/gainmap-js/README.md",
+    "node_modules/@monogrid/gainmap-js/CONTRIBUTING.md",
+    "node_modules/@monogrid/gainmap-js/CODE_OF_CONDUCT.md",
+    "node_modules/@monogrid/gainmap-js/CHANGELOG.md",
+    "node_modules/stats-gl/node_modules/three/src/nodes/materialx/DISCLAIMER.md",
+    "node_modules/detect-gpu/README.md",
+    "node_modules/tunnel-rat/node_modules/zustand/readme.md",
+    "node_modules/troika-three-text/README.md",
+    "node_modules/troika-three-text/CHANGELOG.md",
+    "node_modules/@use-gesture/core/CHANGELOG.md",
+    "node_modules/three-stdlib/node_modules/fflate/README.md",
+    "node_modules/three-stdlib/node_modules/fflate/CHANGELOG.md",
+    "node_modules/@use-gesture/react/README.md",
+    "node_modules/fflate/CHANGELOG.md",
+    "node_modules/fflate/README.md",
+    "node_modules/@use-gesture/react/CHANGELOG.md",
+    "node_modules/camera-controls/readme.md",
+    "Dms Root/Dnd stuff/Screenshot 2025-12-31 at 06.38.22.png",
+    "Dms Root/Dnd stuff/Plulp.png",
     "Dms Root/Dnd stuff/ChatGPT Image Dec 22, 2025, 04_15_40 AM.png",
     "Dms Root/Dnd stuff/05ee1c62-cd5d-4866-90c6-a99adfb672db.png",
-    "Mycelium/scripts/frontend-react/src/components/StressLevel.css",
-    "Mycelium/scripts/frontend-react/src/components/StressLevel.jsx",
-    "logs/client_activity_20251221.log",
+    "Dms Root/Dnd stuff/ChatGPT Image Dec 22, 2025, 04_25_07 AM.png",
+    "Mycelium/scripts/frontend-react/node_modules/bitmap-sdf/preview.png",
+    "logs/balance_distribution.png",
+    "Player Root/Rules/Bending Rules/Spirit/Shapeshifting Pics/Flying Lemur.webp",
     "Mycelium/scripts/frontend-react/dist/Mycelium Logo.png",
-    "Dms Root/Battlemaps/crystal tample.webp",
-    "Player Root/Maps/Avatar World.jpg",
-    "Dms Root/Battlemaps/IMG_0412.JPG",
-    "Dms Root/Battlemaps/IMG_0393.JPG"
+    "Dms Root/Battlemaps/crystal tample.webp"
   ]
 }

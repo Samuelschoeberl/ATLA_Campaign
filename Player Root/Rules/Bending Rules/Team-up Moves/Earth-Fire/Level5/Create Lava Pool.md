@@ -1,5 +1,5 @@
-#Action 
-#Reaction 
+#Action (earthbender)
+#Reaction (firebender)
 
 - **X**([[Earthbending slot]]): X / 2 meter Radius Effect Range
 -  **Y**([[Firebending_slot]]): Y * 6d6 Fire Damage

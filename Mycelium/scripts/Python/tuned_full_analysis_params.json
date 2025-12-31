@@ -1,0 +1,12 @@
+{
+  "balance_weight": 0.3846153846153847,
+  "uniqueness_weight": 0.3461538461538462,
+  "simplicity_weight": 0.2692307692307693,
+  "balance_target": 5.288659148721592,
+  "uniqueness_target": 6.4882361449365575,
+  "simplicity_target": 6.64790463126401,
+  "balance_deviation_penalty": 0.2,
+  "synergy_bonus": 0.759312808717775,
+  "consistency_bonus": 0.5,
+  "low_score_penalty": 0.2
+}

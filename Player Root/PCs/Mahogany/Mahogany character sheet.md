@@ -11,6 +11,7 @@ Name: Mahogany
 | Initiative        |        1d20 + 4 |
 | Movement          |          8 |
 
+| ready             |                    no |
 ## Core Stats
 
 | Stat         |   Value |

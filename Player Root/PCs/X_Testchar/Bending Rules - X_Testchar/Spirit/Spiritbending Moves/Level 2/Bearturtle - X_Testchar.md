@@ -1,18 +1,17 @@
 #Shapeshifting_X_Testchar
-#Action_X_Testchar 
+#Action_X_Testchar
 
 **Spiritbending Slot:** Level 2
 
 Bending Levels:
 	Earth: Level 1
 
-![[Bearturtle.webp]] (0)
+![[Bearturtle.webp]] (0) 
 
 - **Size:** 2x2 meters
-- **On Transformation**:
-	- Allies within 5 meter gain 3 General Armor until your Form Drops.
+- **Aura:** Allies within 5 meter gain 3 General Armor.
 - **Vitality and Defense Stats:**
-    - Evasion: 15
+    - Evasion: 5
     - Armor: 
 	    - 3 General Armor
 	    - 5 Physical Armor
@@ -56,4 +55,3 @@ Bending Levels:
 #Shapeshifting_X_Testchar
 #spirit_X_Testchar
 #transformation_X_Testchar
-

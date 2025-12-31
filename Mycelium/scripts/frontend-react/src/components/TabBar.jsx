@@ -19,27 +19,36 @@ const TabBar = ({ tabs, activeTab, onTabSelect, onTabClose, lightMode }) => {
   return (
     <div className={`tab-bar ${lightMode ? 'light-mode' : ''}`}>
       <div className="tabs-container">
-        {tabs.map((tab) => (
-          <div
-            key={tab.path}
-            className={`tab ${activeTab?.path === tab.path ? 'active' : ''}`}
-            onClick={() => onTabSelect(tab)}
-            title={tab.path}
-          >
-            <span className="tab-icon">{getFileIcon(tab.name)}</span>
-            <span className="tab-name">{truncateFilename(tab.name)}</span>
-            <button
-              className="tab-close"
-              onClick={(e) => {
-                e.stopPropagation();
-                onTabClose(tab);
-              }}
-              title="Close tab"
+        {tabs.map((tab) => {
+          const isActive = activeTab?.path === tab.path;
+          return (
+            <div
+              key={tab.path}
+              className={`tab ${isActive ? 'active' : ''}`}
+              onClick={() => onTabSelect(tab)}
+              title={tab.path}
             >
-              ✕
-            </button>
-          </div>
-        ))}
+              <span className="tab-icon" style={{ 
+                filter: isActive ? 'brightness(1.3)' : 'none',
+                transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                transition: 'all 0.2s'
+              }}>
+                {getFileIcon(tab.name)}
+              </span>
+              <span className="tab-name">{truncateFilename(tab.name)}</span>
+              <button
+                className="tab-close"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTabClose(tab);
+                }}
+                title="Close tab"
+              >
+                ✕
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 
-#Action
-#Reaction 
+#Action (earthbender)
+#Reaction (airbender)
 
 Reaction: Must be initiated by a Airbender in line of sight 
 

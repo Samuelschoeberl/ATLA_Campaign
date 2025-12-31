@@ -5,15 +5,33 @@ import { API_BASE_URL } from '../config/api';
 import StressLevel from './StressLevel';
 import BendingMove from './BendingMove';
 import ShapeshiftingForm from './ShapeshiftingForm';
+import BendingMoveWrapper from './BendingMoveWrapper';
+import PinnedMoveSlimBar from './PinnedMoveSlimBar';
+import ActionPanel from './ActionPanel';
+import PlanTurnModal from './PlanTurnModal';
+import ReactionsModal from './ReactionsModal';
 import { useReadyState } from '../context/ReadyStateContext';
+import PixelAvatar from './PixelAvatar';
+import {
+  AVATAR_SIZE,
+  createEmptyAvatar,
+  normalizeAvatarMatrix,
+  rgbaArrayFromHex,
+  pixelToCssRgba
+} from '../utils/avatarUtils';
 
 const CONDITION_NAMES = [
   'Bleeding out',
   'Blinded',
+  'Dazed',
   'Immobilised',
   'Paralysed',
   'Prone',
-  'Slowed'];
+  'Slowed',
+  'Empowered',
+  'Armor Surge',
+  'Barrier Surge',
+  'Harmonic Flow'];
 
 const ELEMENT_COLORS = {
   fire: '#ffb3b3',
@@ -218,7 +236,10 @@ const DiceRollText = ({ text }) => {
   const [resourcesCollapsed, setResourcesCollapsed] = useState(false);
   const [bonusResourcesCollapsed, setBonusResourcesCollapsed] = useState(true);
   const [pinnedMovesCollapsed, setPinnedMovesCollapsed] = useState(true);
+  const [expandedPinnedMoveInSlim, setExpandedPinnedMoveInSlim] = useState(null); // Track which move is expanded in slim view
   const [conditionDescriptions, setConditionDescriptions] = useState({});
+  const [conditionMetadata, setConditionMetadata] = useState({});
+  const [conditionFilter, setConditionFilter] = useState({ boon: true, curse: true, general: true, specific: true });
   const [movesByType, setMovesByType] = useState({ action: [], bonus: [], reaction: [], danger: [] });
   const [movesLoading, setMovesLoading] = useState(false);
   const [movesError, setMovesError] = useState(null);
@@ -227,6 +248,29 @@ const DiceRollText = ({ text }) => {
   const [pinnedMoves, setPinnedMoves] = useState([]);
   const [movesLoadedFor, setMovesLoadedFor] = useState(null);
   const [expandedMoves, setExpandedMoves] = useState(new Set());
+  const [usedMoves, setUsedMoves] = useState([]); // Track moves used this turn with their costs
+  const [customization, setCustomization] = useState(null);
+  const [customizationLoadedFor, setCustomizationLoadedFor] = useState(null);
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [workingAvatar, setWorkingAvatar] = useState(createEmptyAvatar());
+  const [workingFolderColor, setWorkingFolderColor] = useState('');
+  const [brushColor, setBrushColor] = useState('#000000');
+  const [brushAlpha, setBrushAlpha] = useState(1);
+  const [customizeSaving, setCustomizeSaving] = useState(false);
+  const [customizeError, setCustomizeError] = useState(null);
+  const [isPaintingAvatar, setIsPaintingAvatar] = useState(false);
+  const [avatarEraseMode, setAvatarEraseMode] = useState(false);
+  const [recentColors, setRecentColors] = useState([]);
+  const [customizeTab, setCustomizeTab] = useState('general'); // general | avatar
+  const [deathSaveSuccesses, setDeathSaveSuccesses] = useState(0);
+  const [deathSaveFailures, setDeathSaveFailures] = useState(0);
+
+  const STANDARD_COLORS = [
+    '#ff6b6b', '#ffb347', '#ffd166', '#9b59b6', '#6c5ce7', '#3498db',
+    '#5f81fd', '#2ecc71', '#1abc9c', '#16a085', '#e67e22', '#e74c3c',
+    '#c0392b', '#f1c40f', '#f39c12', '#95a5a6', '#7f8c8d', '#ecf0f1',
+    '#2d3436'
+  ];
   const saveTimeoutRef = useRef(null);
   const initialLoadRef = useRef(true);
   const lastReadyUpdateRef = useRef(0); // Track last ready update timestamp
@@ -558,16 +602,23 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
   useEffect(() => {
     const loadConditionDescriptions = async () => {
       const descriptions = {};
+      const metadata = {};
       const conditionFiles = {
         'Bleeding out': 'Bleeding_out.md',
         'Blinded': 'Blinded.md',
+        'Dazed': 'Dazed.md',
         'Immobilised': 'Immobilised.md',
         'Paralysed': 'Paralysed.md',
         'Prone': 'Prone.md',
         'Slowed': 'Slowed.md',
+        'Empowered': 'Empowered.md',
+        'Armor Surge': 'Armor_Surge.md',
+        'Barrier Surge': 'Barrier_Surge.md',
+        'Harmonic Flow': 'Harmonic_Flow.md',
       };
 
       for (const [conditionName, fileName] of Object.entries(conditionFiles)) {
+        let tags = [];
         try {
           const url = `${API_BASE_URL}/player_root/Rules/core%20rules/Conditions/${fileName}`;
           const response = await fetch(url, { cache: 'no-store' });
@@ -579,20 +630,49 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             if (descriptionMatch) {
               descriptions[conditionName] = descriptionMatch[1].trim();
             }
+            if (/#boon\b/i.test(content)) tags.push('Boon');
+            if (/#curse\b/i.test(content)) tags.push('Curse');
+            if (/#general\b/i.test(content)) tags.push('General');
+            if (/#specific\b/i.test(content)) tags.push('Specific');
           }
         } catch (err) {
           console.error(`Error loading condition ${conditionName}:`, err);
         }
+        metadata[conditionName] = {
+          tags: tags.length > 0 ? tags : ['Curse', 'General']
+        };
+        if (!descriptions[conditionName]) {
+          descriptions[conditionName] = '';
+        }
       }
       setConditionDescriptions(descriptions);
+      setConditionMetadata(metadata);
     };
 
     loadConditionDescriptions();
   }, []);
 
+  // Reset death saves when character is no longer bleeding out
+  useEffect(() => {
+    if (characterData) {
+      const currentHp = parseFloat(characterData.vitals?.current_hp) || 0;
+      const maxHp = parseFloat(characterData.vitals?.max_hp) || 0;
+      const isBleeding = maxHp > 0 && currentHp <= 0;
+      
+      if (!isBleeding) {
+        setDeathSaveSuccesses(0);
+        setDeathSaveFailures(0);
+      }
+    }
+  }, [characterData?.vitals?.current_hp, characterData?.vitals?.max_hp]);
+
   useEffect(() => {
     if (file) {
       initialLoadRef.current = true;
+      setCustomization(null);
+      setCustomizationLoadedFor(null);
+      setWorkingAvatar(createEmptyAvatar());
+      setWorkingFolderColor('');
       loadCharacterSheet();
     }
   }, [file]);
@@ -608,7 +688,14 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     if (characterName !== movesLoadedFor) {
       loadBendingMoves(characterName);
     }
-  }, [file]);
+  }, [file, movesLoadedFor]);
+
+  useEffect(() => {
+    const name = characterData?.name || getCharacterNameFromPath(file?.path);
+    if (!name) return;
+    if (customizationLoadedFor === name) return;
+    loadCustomization(name);
+  }, [characterData?.name, file]);
 
   // Periodic check for ready state updates every 10 seconds
   useEffect(() => {
@@ -674,6 +761,17 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
 
     return () => clearInterval(intervalId);
   }, [file, characterData?.name, isReady, setReady, saving]);
+
+  // Stop avatar painting when mouse is released outside the grid
+  useEffect(() => {
+    const stopPainting = () => setIsPaintingAvatar(false);
+    const clearFlags = () => {
+      setIsPaintingAvatar(false);
+      setAvatarEraseMode(false);
+    };
+    window.addEventListener('mouseup', clearFlags);
+    return () => window.removeEventListener('mouseup', clearFlags);
+  }, []);
 
   // Auto-save effect with debouncing
   useEffect(() => {
@@ -771,6 +869,225 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }
   };
 
+  const loadCustomization = async (characterName) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterName)}/customization`);
+      if (response.ok) {
+        const data = await response.json();
+        const normalizedAvatar = normalizeAvatarMatrix(data.avatar || createEmptyAvatar());
+        const record = {
+          ...data,
+          avatar: normalizedAvatar,
+          folderColor: data.folderColor || ''
+        };
+        setCustomization(record);
+        setCustomizationLoadedFor(characterName);
+        if (!showCustomizeModal) {
+          setWorkingAvatar(normalizedAvatar);
+          setWorkingFolderColor(record.folderColor || '');
+        }
+        if (record.folderColor) {
+          addRecentColor(record.folderColor);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading customization:', err);
+      setCustomizeError('Could not load customization');
+    }
+  };
+
+  const handleAvatarPaint = (row, col, erase = false) => {
+    setWorkingAvatar(prev => {
+      const base = normalizeAvatarMatrix(prev);
+      const updated = base.map(r => r.map(px => [...px]));
+      updated[row][col] = erase ? [0, 0, 0, 0] : rgbaArrayFromHex(brushColor, brushAlpha);
+      return updated;
+    });
+  };
+
+  const handleClearAvatar = () => {
+    setWorkingAvatar(createEmptyAvatar());
+  };
+
+  const handleImportPNG = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Create a canvas to read pixel data
+        const canvas = document.createElement('canvas');
+        canvas.width = AVATAR_SIZE;
+        canvas.height = AVATAR_SIZE;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the image scaled to fit the canvas
+        ctx.imageSmoothingEnabled = false; // Preserve pixel art style
+        ctx.drawImage(img, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+        
+        // Extract pixel data
+        const imageData = ctx.getImageData(0, 0, AVATAR_SIZE, AVATAR_SIZE);
+        const newAvatar = [];
+        
+        for (let row = 0; row < AVATAR_SIZE; row++) {
+          const rowData = [];
+          for (let col = 0; col < AVATAR_SIZE; col++) {
+            const idx = (row * AVATAR_SIZE + col) * 4;
+            rowData.push([
+              imageData.data[idx],     // R
+              imageData.data[idx + 1], // G
+              imageData.data[idx + 2], // B
+              imageData.data[idx + 3]  // A
+            ]);
+          }
+          newAvatar.push(rowData);
+        }
+        
+        setWorkingAvatar(newAvatar);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleExportPNG = () => {
+    // Create a canvas and draw the pixel avatar
+    const canvas = document.createElement('canvas');
+    const scale = 2; // Export at 2x size (200x200) - smaller scale since base is already 100x100
+    canvas.width = AVATAR_SIZE * scale;
+    canvas.height = AVATAR_SIZE * scale;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw each pixel as a scaled rectangle
+    ctx.imageSmoothingEnabled = false;
+    for (let row = 0; row < AVATAR_SIZE; row++) {
+      for (let col = 0; col < AVATAR_SIZE; col++) {
+        const pixel = workingAvatar[row][col];
+        ctx.fillStyle = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3] / 255})`;
+        ctx.fillRect(col * scale, row * scale, scale, scale);
+      }
+    }
+    
+    // Convert to blob and download
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${characterData?.name || 'character'}_avatar.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+
+  const openCustomizeModal = () => {
+    const avatar = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : workingAvatar;
+    setWorkingAvatar(avatar);
+    setWorkingFolderColor(customization?.folderColor || workingFolderColor || '');
+    const baseColor = customization?.folderColor || workingFolderColor || brushColor || '#000000';
+    setBrushColor(baseColor);
+    addRecentColor(baseColor);
+    setCustomizeError(null);
+    setCustomizeTab('general');
+    setShowCustomizeModal(true);
+  };
+
+  const addRecentColor = (color) => {
+    if (!color) return;
+    setRecentColors(prev => {
+      const existing = prev.filter(c => c.toLowerCase() !== color.toLowerCase());
+      return [color, ...existing].slice(0, 8);
+    });
+  };
+
+  const renderColorPickers = ({ title, selectedColor, onSelect }) => (
+    <div className="palette-stack">
+      <div className="palette-section">
+        <div className="palette-title">{title}</div>
+        <div className="palette-grid">
+          {STANDARD_COLORS.map(color => (
+            <button
+              key={color}
+              className="palette-swatch"
+              style={{ backgroundColor: color, borderColor: color === selectedColor ? '#fff' : 'transparent' }}
+              onClick={() => {
+                onSelect(color);
+                addRecentColor(color);
+              }}
+              title={`Use ${color}`}
+            />
+          ))}
+        </div>
+      </div>
+      {recentColors.length > 0 && (
+        <div className="palette-section">
+          <div className="palette-title">Recent</div>
+          <div className="palette-grid">
+            {recentColors.map(color => (
+              <button
+                key={`recent-${color}`}
+                className="palette-swatch"
+                style={{ backgroundColor: color, borderColor: color === selectedColor ? '#fff' : 'transparent' }}
+                onClick={() => {
+                  onSelect(color);
+                  addRecentColor(color);
+                }}
+                title={`Use ${color}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const handleSaveCustomization = async () => {
+    if (!characterData?.name) return;
+    setCustomizeSaving(true);
+    setCustomizeError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterData.name)}/customization`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          folderColor: workingFolderColor || null,
+          avatar: normalizeAvatarMatrix(workingAvatar)
+        })
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || 'Failed to save customization');
+      }
+
+      const data = await response.json();
+      const saved = data?.customization || {};
+      const normalizedAvatar = normalizeAvatarMatrix(saved.avatar || workingAvatar);
+      const record = {
+        ...saved,
+        folderColor: saved.folderColor || workingFolderColor || '',
+        avatar: normalizedAvatar
+      };
+
+      setCustomization(record);
+      setCustomizationLoadedFor(characterData.name);
+      setWorkingAvatar(normalizedAvatar);
+      setWorkingFolderColor(record.folderColor || '');
+      addRecentColor(record.folderColor || workingFolderColor);
+      setShowCustomizeModal(false);
+    } catch (err) {
+      console.error('Error saving customization:', err);
+      setCustomizeError(err.message || 'Failed to save customization');
+    } finally {
+      setCustomizeSaving(false);
+    }
+  };
+
   const loadBendingMoves = async (characterName) => {
     if (!characterName) {
       setMovesByType({ action: [], bonus: [], reaction: [], danger: [] });
@@ -824,10 +1141,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         }
       }
       
-      setMovesByType(aggregated);
-      setMovesLoadedFor(characterName);
-      
-      // Sort by level then name for each bucket
+      // Sort by level then name for each bucket BEFORE setting state
       Object.keys(aggregated).forEach(key => {
         aggregated[key].sort((a, b) => {
           const levelA = a.level ?? 999;
@@ -836,6 +1150,9 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           return a.name.localeCompare(b.name);
         });
       });
+      
+      setMovesByType(aggregated);
+      setMovesLoadedFor(characterName);
     } catch (err) {
       setMovesError('Could not load bending moves');
     } finally {
@@ -1305,6 +1622,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       };
     });
 
+    // Clear used moves log on rest
+    clearUsedMoves();
     alert('All consumable resources have been reset to maximum!');
   };
 
@@ -1378,6 +1697,17 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }));
   };
 
+  const toggleConditionFilter = (type) => {
+    setConditionFilter(prev => {
+      const next = { ...prev, [type]: !prev[type] };
+      const isBoonCurse = type === 'boon' || type === 'curse';
+      const isGeneralSpecific = type === 'general' || type === 'specific';
+      if (isBoonCurse && !next.boon && !next.curse) return prev;
+      if (isGeneralSpecific && !next.general && !next.specific) return prev;
+      return next;
+    });
+  };
+
   const refreshEnvironmentalWaterCharge = async () => {
     try {
       const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable/environmental_water_charge`);
@@ -1443,101 +1773,147 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     return false;
   };
 
-  const renderMoveGroup = (title, moves) => {
-    // Sort moves by element first, then by level
-    const sortedMoves = [...moves].sort((a, b) => {
-      // Define element order
-      const elementOrder = { fire: 0, water: 1, earth: 2, air: 3, spirit: 4 };
-      
-      // Get element values, treating null/undefined as coming last
-      const elementA = a.element ? elementOrder[a.element.toLowerCase()] : 999;
-      const elementB = b.element ? elementOrder[b.element.toLowerCase()] : 999;
-      
-      // Sort by element first
-      if (elementA !== elementB) {
-        return elementA - elementB;
+  // Extract teamup action types for each element from tags
+  const getTeamupInfo = (tags) => {
+    if (!tags || !tags.some(tag => tag.toLowerCase().startsWith('teamup'))) {
+      return null;
+    }
+    
+    // Pattern to match tags like "Reaction (waterbender)" or "Danger_Sense_Reaction (airbender)"
+    const actionTypePattern = /^(action|bonus_action|reaction|danger_sense_reaction)\s*\((\w+)(?:bender)?\)/i;
+    const teamupDetails = [];
+    
+    tags.forEach(tag => {
+      const match = tag.match(actionTypePattern);
+      if (match) {
+        const actionType = match[1].replace(/_/g, ' ');
+        const element = match[2];
+        teamupDetails.push({ actionType, element });
       }
-      
-      // If same element, sort by level
-      const levelA = a.level ?? 999;
-      const levelB = b.level ?? 999;
-      if (levelA !== levelB) {
-        return levelA - levelB;
-      }
-      
-      // If same element and level, sort by name
-      return a.name.localeCompare(b.name);
     });
     
-    return (
-      <div className="move-group">
-        <div className="move-group-header">
-          <span>{title}</span>
-          <span className="move-count">{sortedMoves.length}</span>
-        </div>
-        {sortedMoves.length === 0 ? (
-          <p className="muted-text">No moves found.</p>
-        ) : (
-          <div className="move-card-grid">
-            {sortedMoves.map(move => {
-              const { actionColor, elementColor } = getMoveColors(move);
-              const isExpanded = expandedMoves.has(move.path);
-              const isPinned = pinnedMoves.find(m => m.path === move.path);
-              return (
-                <div key={move.path} className={`move-card ${isExpanded ? 'expanded' : ''}`} style={{ borderColor: elementColor }}>
-                  <div 
-                    className="move-card-header" 
-                    onClick={() => toggleMoveExpanded(move.path)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className="move-card-title">
-                      <h4>{move.name}</h4>
-                      <span className="pill" style={{ backgroundColor: hexToRgba(actionColor, 0.2), color: actionColor }}>
-                        {move.actionType || 'Move'}
-                      </span>
-                      {move.level && (
-                        <span className="level-badge">Lvl {move.level}</span>
-                      )}
-                      <span style={{
-                        marginLeft: '8px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        color: actionColor,
-                        transition: 'transform 0.3s ease'
-                      }}>
-                        {isExpanded ? '▼' : '▶'}
-                      </span>
-                    </div>
-                    <button 
-                      className="pin-button" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isPinned) {
-                          handleUnpinMove(move.path);
-                        } else {
-                          handlePinMove(move);
-                        }
-                      }}
-                    >
-                      {isPinned ? 'Unpin' : 'Pin'}
-                    </button>
-                  </div>
-                  {isExpanded && (
-                    <div className="move-card-expanded-content">
-                      {isShapeshiftingMove(move) ? (
-                        <ShapeshiftingForm file={{ path: move.path, name: move.name }} lightMode={lightMode} />
-                      ) : (
-                        <BendingMove file={{ path: move.path, name: move.name }} lightMode={lightMode} />
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    );
+    return teamupDetails.length > 0 ? teamupDetails : null;
+  };
+
+  // Extract cost information from move slots
+  const getMoveCosts = (move) => {
+    if (!move.slots || move.slots.length === 0) return [];
+    
+    const costs = [];
+    move.slots.forEach(slotStr => {
+      // Parse patterns like "Airbending slot (3)" or "Spiritbending slot"
+      const match = slotStr.match(/(.+?)\s*(?:\((\d+)\))?$/);
+      if (match) {
+        const slotName = match[1].trim();
+        const amount = match[2] ? parseInt(match[2]) : 1;
+        costs.push({ name: slotName, amount, original: slotStr });
+      }
+    });
+    return costs;
+  };
+
+  // Consume resources for a move
+  const consumeMoveResources = (move, customAmounts = null) => {
+    const costs = getMoveCosts(move);
+    if (costs.length === 0) return;
+
+    setCharacterData(prev => {
+      const consumables = [...prev.consumables];
+      const slots = { ...prev.slots };
+      const waterCharges = { ...prev.waterCharges };
+      
+      costs.forEach(cost => {
+        const amount = customAmounts?.[cost.name] || cost.amount;
+        
+        // Find matching consumable
+        const consumableIndex = consumables.findIndex(c => 
+          c.name.toLowerCase().includes(cost.name.toLowerCase()) ||
+          cost.name.toLowerCase().includes(c.name.toLowerCase())
+        );
+        
+        if (consumableIndex !== -1) {
+          const consumable = consumables[consumableIndex];
+          const newCurrent = Math.max(0, consumable.current - amount);
+          consumables[consumableIndex] = {
+            ...consumable,
+            current: newCurrent
+          };
+          
+          // Update the corresponding slot or water charge
+          if (consumable.type === 'water') {
+            waterCharges[consumable.name] = `${newCurrent}/${consumable.max}`;
+          } else {
+            slots[consumable.name] = `${newCurrent}/${consumable.max}`;
+          }
+        }
+      });
+      
+      return {
+        ...prev,
+        consumables,
+        slots,
+        waterCharges
+      };
+    });
+  };
+
+  // Handle using a move (with prompt for amount if needed)
+  const handleUseMove = (move) => {
+    const costs = getMoveCosts(move);
+    
+    if (costs.length === 0) {
+      // No cost, just log it
+      setUsedMoves(prev => [...prev, { 
+        move, 
+        costs: [], 
+        timestamp: Date.now() 
+      }]);
+      return;
+    }
+
+    // Check if move has multiple costs or if user might want to customize
+    if (costs.length === 1 && costs[0].amount === 1) {
+      // Simple single cost - consume directly
+      consumeMoveResources(move);
+      setUsedMoves(prev => [...prev, { 
+        move, 
+        costs: costs.map(c => ({ ...c, consumed: c.amount })), 
+        timestamp: Date.now() 
+      }]);
+    } else {
+      // Ask user for amounts
+      const customAmounts = {};
+      let shouldConsume = true;
+      
+      for (const cost of costs) {
+        const prompt = `${move.name} uses "${cost.original}". How many to consume? (default: ${cost.amount})`;
+        const input = window.prompt(prompt, cost.amount);
+        
+        if (input === null) {
+          // User cancelled
+          shouldConsume = false;
+          break;
+        }
+        
+        const amount = parseInt(input) || cost.amount;
+        customAmounts[cost.name] = amount;
+        cost.consumed = amount;
+      }
+      
+      if (shouldConsume) {
+        consumeMoveResources(move, customAmounts);
+        setUsedMoves(prev => [...prev, { 
+          move, 
+          costs, 
+          timestamp: Date.now() 
+        }]);
+      }
+    }
+  };
+
+  // Clear used moves log (e.g., when taking rest or new turn)
+  const clearUsedMoves = () => {
+    setUsedMoves([]);
   };
 
   if (loading) {
@@ -1576,11 +1952,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
   };
   const hpColor = getHpColor(hpPercentage);
   const isBleedingOut = maxHp > 0 && currentHp <= 0;
+  const matchesConditionFilter = (conditionName) => {
+    const tags = conditionMetadata[conditionName]?.tags || ['Curse'];
+    const normalized = tags.map(tag => tag.toLowerCase());
+    const showBoon = conditionFilter.boon && normalized.includes('boon');
+    const showCurse = conditionFilter.curse && normalized.includes('curse');
+    const showGeneral = conditionFilter.general && normalized.includes('general');
+    const showSpecific = conditionFilter.specific && normalized.includes('specific');
+    return (showBoon || showCurse) && (showGeneral || showSpecific);
+  };
   const activeConditions = CONDITION_NAMES.filter(name =>
     name === 'Bleeding out'
       ? isBleedingOut
       : characterData.conditions?.[name]
   );
+  const visibleActiveConditions = activeConditions.filter(matchesConditionFilter);
+  const filteredConditionNames = CONDITION_NAMES.filter(matchesConditionFilter);
   const bonusResources = [
     {
       label: 'Bonus air slots',
@@ -1620,11 +2007,36 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
   const waterChargeConsumables = characterData.consumables.filter(c => 
     c.name.toLowerCase().includes('water') && c.name.toLowerCase().includes('charge')
   );
+  const accentColor = workingFolderColor || customization?.folderColor || '#888888';
+  const avatarForHeader = customization?.avatar || workingAvatar;
 
   return (
     <div className={`character-sheet ${lightMode ? 'light-mode' : ''}`}>
       <div className="character-header">
-        <h1>{characterData.name || 'Character Sheet'}</h1>
+        <div className="character-title">
+          <PixelAvatar
+            className="character-avatar-preview"
+            pixels={avatarForHeader}
+            size={64}
+            borderColor={accentColor}
+            placeholderLabel={characterData.name?.[0] || 'C'}
+            background={lightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}
+          />
+          <h1>{characterData.name || 'Character Sheet'}</h1>
+          <button
+            onClick={openCustomizeModal}
+            className="ghost-button"
+            title="Set folder colour and 15×15 avatar"
+            style={{
+              background: hexToRgba(accentColor || '#888888', 0.25),
+              color: '#fff',
+              borderColor: accentColor,
+              marginLeft: '12px'
+            }}
+          >
+            Customise
+          </button>
+        </div>
         <div className="header-buttons">
           <button 
             onClick={() => setShowReactionsModal(true)} 
@@ -1643,7 +2055,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           <button 
             onClick={() => setShowPlanModal(true)} 
             className="ghost-button"
-            title="Plan your turn with actions and bonus actions"
+            title={isBleedingOut ? "Plan your turn with actions (no bonus actions while bleeding out)" : "Plan your turn with actions and bonus actions"}
             style={{
               background: `linear-gradient(135deg, ${ACTION_COLORS['Action']} 0%, ${ACTION_COLORS['Bonus Action']} 100%)`,
               color: '#fff',
@@ -1691,102 +2103,246 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </div>
       </div>
 
-      {showReactionsModal && (
-        <div className="modal-overlay" onClick={() => setShowReactionsModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+      {showCustomizeModal && (
+        <div className="modal-overlay" onClick={() => setShowCustomizeModal(false)}>
+          <div className="modal customize-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Reactions</h3>
-              <button className="ghost-button" onClick={() => setShowReactionsModal(false)}>Close</button>
+              <h3>Customise Appearance</h3>
+              <button className="ghost-button" onClick={() => setShowCustomizeModal(false)}>Close</button>
             </div>
-            <div className="slot-summary-row">
-              {bendingSlotConsumables.length === 0 ? (
-                <span className="muted-text">No bending slot counters found.</span>
-              ) : (
-                bendingSlotConsumables.map(slot => {
-                  const slotElement = getElementFromName(slot.name);
-                  const color = slotElement ? ELEMENT_COLORS[slotElement] : '#3498db';
-                  return (
-                    <div key={slot.name} className="slot-summary-card" style={{ borderColor: color }}>
-                      <span className="meta-label">{slot.name}</span>
-                      <span className="meta-value">{slot.current} / {slot.max}</span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-            {waterChargeConsumables.length > 0 && (
-              <div className="slot-summary-row" style={{ marginTop: '12px' }}>
-                {waterChargeConsumables.map(charge => {
-                  return (
-                    <div key={charge.name} className="slot-summary-card" style={{ borderColor: ELEMENT_COLORS.water }}>
-                      <span className="meta-label">{charge.name}</span>
-                      <span className="meta-value">{charge.current} / {charge.max}</span>
-                    </div>
-                  );
-                })}
+            {customizeError && (
+              <div className="error-text" style={{ marginBottom: '12px' }}>
+                {customizeError}
               </div>
             )}
-            {movesLoading ? (
-              <p className="muted-text">Loading moves...</p>
-            ) : movesError ? (
-              <p className="error-text">{movesError}</p>
-            ) : (
-              <>
-                {renderMoveGroup('Reactions', movesByType.reaction || [])}
-                {renderMoveGroup('Danger Sense Reactions', movesByType.danger || [])}
-              </>
+            <div className="customize-tabs">
+              <button
+                className={`customize-tab ${customizeTab === 'general' ? 'active' : ''}`}
+                onClick={() => setCustomizeTab('general')}
+              >
+                General
+              </button>
+              <button
+                className={`customize-tab ${customizeTab === 'avatar' ? 'active' : ''}`}
+                onClick={() => setCustomizeTab('avatar')}
+              >
+                Avatar Painter
+              </button>
+            </div>
+
+            {customizeTab === 'general' && (
+              <div className="customize-grid">
+                <div className="customize-column">
+                  <h4>Folder colour</h4>
+                  <div className="customize-row">
+                    <input
+                      type="color"
+                      value={workingFolderColor || '#888888'}
+                      onChange={(e) => {
+                        setWorkingFolderColor(e.target.value);
+                        addRecentColor(e.target.value);
+                      }}
+                    />
+                    <button className="ghost-button" onClick={() => setWorkingFolderColor('')}>
+                      Reset to auto
+                    </button>
+                  </div>
+                  {renderColorPickers({
+                    title: 'Standard palette',
+                    selectedColor: workingFolderColor,
+                    onSelect: setWorkingFolderColor
+                  })}
+                  <div className="folder-preview" style={{ borderColor: accentColor }}>
+                    <div className="folder-color-swatch" style={{ backgroundColor: accentColor }} />
+                    <div className="folder-preview-text">
+                      <div className="meta-label">Preview</div>
+                      <div className="meta-value">PCs/{characterData.name || 'Character'}/</div>
+                    </div>
+                  </div>
+
+                  <h4>Avatar preview</h4>
+                  <div className="avatar-preview-row">
+                    <PixelAvatar
+                      pixels={workingAvatar}
+                      size={100}
+                      borderColor={accentColor}
+                      placeholderLabel={characterData.name?.[0] || 'C'}
+                      background={hexToRgba(accentColor || '#888888', 0.2)}
+                    />
+                    <div className="avatar-preview-meta">
+                      <div className="meta-label">{AVATAR_SIZE} × {AVATAR_SIZE} pixels</div>
+                      <div className="meta-value">Click and drag in the grid to paint. Right-click or hold Alt to erase.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
+
+            {customizeTab === 'avatar' && (
+              <div className="customize-grid">
+                <div className="customize-column">
+                  <h4>Import or paint</h4>
+                  <div className="brush-controls">
+                    <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>
+                      Import PNG Image
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/gif"
+                      onChange={handleImportPNG}
+                      style={{
+                        marginBottom: '16px',
+                        padding: '8px',
+                        border: lightMode ? '1px solid #d6d6d6' : '1px solid #3e3e42',
+                        borderRadius: '6px',
+                        backgroundColor: lightMode ? '#fff' : 'rgba(255,255,255,0.05)',
+                        color: lightMode ? '#2c3e50' : '#ecf0f1',
+                        width: '100%',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <div style={{ 
+                      fontSize: '11px', 
+                      opacity: 0.7, 
+                      marginBottom: '16px',
+                      padding: '8px',
+                      backgroundColor: lightMode ? '#e3f2fd' : 'rgba(78, 201, 176, 0.1)',
+                      borderRadius: '4px',
+                      border: lightMode ? '1px solid #90caf9' : '1px solid rgba(78, 201, 176, 0.3)'
+                    }}>
+                      💡 Tip: Images will be scaled to {AVATAR_SIZE}×{AVATAR_SIZE} pixels. For best results, use small square images.
+                    </div>
+                    
+                    <h4 style={{ marginTop: '20px', marginBottom: '12px' }}>Brush & palette</h4>
+                    <label>Brush</label>
+                    <input
+                      type="color"
+                      value={brushColor}
+                      onChange={(e) => {
+                        setBrushColor(e.target.value);
+                        addRecentColor(e.target.value);
+                      }}
+                    />
+                    <label>Opacity {Math.round(brushAlpha * 100)}%</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={brushAlpha}
+                      onChange={(e) => setBrushAlpha(parseFloat(e.target.value))}
+                    />
+                    {renderColorPickers({
+                      title: 'Standard palette',
+                      selectedColor: brushColor,
+                      onSelect: (c) => {
+                        setBrushColor(c);
+                        addRecentColor(c);
+                      }
+                    })}
+                    <button className="ghost-button" onClick={handleClearAvatar}>
+                      Clear avatar
+                    </button>
+                    <button 
+                      className="ghost-button" 
+                      onClick={handleExportPNG}
+                      style={{
+                        background: '#2ecc71',
+                        color: '#fff',
+                        fontWeight: '600',
+                        border: 'none'
+                      }}
+                    >
+                      ⬇️ Export as PNG
+                    </button>
+                  </div>
+                </div>
+                <div className="customize-column">
+                  <h4>Avatar painter</h4>
+                  <div
+                    className="avatar-editor-grid"
+                    onContextMenu={(e) => e.preventDefault()}
+                  >
+                    {workingAvatar.map((row, rIdx) => (
+                      <div key={`row-${rIdx}`} className="avatar-editor-row">
+                        {row.map((pixel, cIdx) => (
+                          <div
+                            key={`pix-${rIdx}-${cIdx}`}
+                            className="avatar-editor-cell"
+                            style={{ backgroundColor: pixelToCssRgba(pixel) }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setIsPaintingAvatar(true);
+                              const erase = e.altKey || e.button === 2;
+                              setAvatarEraseMode(erase);
+                              handleAvatarPaint(rIdx, cIdx, erase);
+                            }}
+                            onMouseEnter={() => {
+                              if (isPaintingAvatar) {
+                                handleAvatarPaint(rIdx, cIdx, avatarEraseMode);
+                              }
+                            }}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="avatar-editor-hint">
+                    Tip: Hold Alt or right-click to erase pixels. Use the slider to add transparency.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="modal-footer" style={{ marginTop: '12px' }}>
+              <button className="ghost-button" onClick={() => setShowCustomizeModal(false)} disabled={customizeSaving}>
+                Cancel
+              </button>
+              <button className="rest-button" onClick={handleSaveCustomization} disabled={customizeSaving}>
+                {customizeSaving ? 'Saving...' : 'Save customisation'}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {showPlanModal && (
-        <div className="modal-overlay" onClick={() => setShowPlanModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Plan Turn</h3>
-              <button className="ghost-button" onClick={() => setShowPlanModal(false)}>Close</button>
-            </div>
-            <div className="slot-summary-row">{bendingSlotConsumables.length === 0 ? (
-                <span className="muted-text">No bending slot counters found.</span>
-              ) : (
-                bendingSlotConsumables.map(slot => {
-                  const slotElement = getElementFromName(slot.name);
-                  const color = slotElement ? ELEMENT_COLORS[slotElement] : '#3498db';
-                  return (
-                    <div key={slot.name} className="slot-summary-card" style={{ borderColor: color }}>
-                      <span className="meta-label">{slot.name}</span>
-                      <span className="meta-value">{slot.current} / {slot.max}</span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-            {waterChargeConsumables.length > 0 && (
-              <div className="slot-summary-row" style={{ marginTop: '12px' }}>
-                {waterChargeConsumables.map(charge => {
-                  return (
-                    <div key={charge.name} className="slot-summary-card" style={{ borderColor: ELEMENT_COLORS.water }}>
-                      <span className="meta-label">{charge.name}</span>
-                      <span className="meta-value">{charge.current} / {charge.max}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            {movesLoading ? (
-              <p className="muted-text">Loading moves...</p>
-            ) : movesError ? (
-              <p className="error-text">{movesError}</p>
-            ) : (
-              <>
-                {renderMoveGroup('Actions', movesByType.action || [])}
-                {renderMoveGroup('Bonus Actions', movesByType.bonus || [])}
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Reactions Modal */}
+      <ReactionsModal
+        isOpen={showReactionsModal}
+        onClose={() => setShowReactionsModal(false)}
+        movesByType={movesByType}
+        bendingSlotConsumables={bendingSlotConsumables}
+        waterChargeConsumables={waterChargeConsumables}
+        expandedMoves={expandedMoves}
+        onToggleExpand={toggleMoveExpanded}
+        onPinMove={handlePinMove}
+        pinnedMoves={pinnedMoves}
+        movesLoading={movesLoading}
+        movesError={movesError}
+        lightMode={lightMode}
+        characterData={{ pixels: avatarForHeader }}
+      />
+
+      {/* Plan Turn Modal */}
+      <PlanTurnModal
+        isOpen={showPlanModal}
+        onClose={() => setShowPlanModal(false)}
+        movesByType={movesByType}
+        bendingSlotConsumables={bendingSlotConsumables}
+        waterChargeConsumables={waterChargeConsumables}
+        usedMoves={usedMoves}
+        onClearUsedMoves={clearUsedMoves}
+        expandedMoves={expandedMoves}
+        onToggleExpand={toggleMoveExpanded}
+        onPinMove={handlePinMove}
+        pinnedMoves={pinnedMoves}
+        onUseMove={handleUseMove}
+        movesLoading={movesLoading}
+        movesError={movesError}
+        lightMode={lightMode}
+        characterData={{ pixels: avatarForHeader }}
+        isBleedingOut={isBleedingOut}
+      />
 
       <div className={`character-layout ${pinnedMovesCollapsed ? 'pinned-collapsed' : ''}`}>
         <div className="character-main">
@@ -1831,7 +2387,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
               <div
                 style={{
                   marginBottom: '12px',
-                  padding: '10px 12px',
+                  padding: '12px',
                   borderRadius: '8px',
                   background: lightMode ? '#ffe1e1' : 'rgba(122, 11, 11, 0.6)',
                   border: lightMode ? '2px solid #d7263d' : '2px solid #f25f5c',
@@ -1839,14 +2395,128 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   fontWeight: 700,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '4px'
+                  gap: '8px'
                 }}
-                title="Bleeding out: roll death saves each turn; move only 1m; max 1 bending slot per move."
+                title="Bleeding out: Roll death saves • 1m movement max • 1 slot max per move • No bonus actions"
               >
-                <span>Bleeding out</span>
-                <span style={{ fontWeight: 500 }}>
-                  Roll death saves each turn; movement capped at 1m; spend max 1 bending slot per move.
-                </span>
+                <span style={{ fontSize: '15px', letterSpacing: '0.3px' }}>⚠️ Bleeding Out</span>
+                
+                {/* Death Save Tracker */}
+                <div style={{
+                  backgroundColor: lightMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.3)',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}>
+                  {/* Successes */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, minWidth: '70px' }}>Successes:</span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {[1, 2, 3].map(i => (
+                        <button
+                          key={`success-${i}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeathSaveSuccesses(prev => prev === i ? i - 1 : i);
+                          }}
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '4px',
+                            border: `2px solid ${lightMode ? '#2e7d32' : '#4caf50'}`,
+                            backgroundColor: deathSaveSuccesses >= i 
+                              ? (lightMode ? '#4caf50' : '#66bb6a')
+                              : 'transparent',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            color: deathSaveSuccesses >= i ? '#fff' : (lightMode ? '#2e7d32' : '#4caf50'),
+                            transition: 'all 0.2s'
+                          }}
+                          title={`Success ${i}`}
+                        >
+                          {deathSaveSuccesses >= i ? '✓' : ''}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Failures */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, minWidth: '70px' }}>Failures:</span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {[1, 2, 3].map(i => (
+                        <button
+                          key={`failure-${i}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeathSaveFailures(prev => prev === i ? i - 1 : i);
+                          }}
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '4px',
+                            border: `2px solid ${lightMode ? '#c62828' : '#ef5350'}`,
+                            backgroundColor: deathSaveFailures >= i 
+                              ? (lightMode ? '#e53935' : '#ef5350')
+                              : 'transparent',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            color: deathSaveFailures >= i ? '#fff' : (lightMode ? '#c62828' : '#ef5350'),
+                            transition: 'all 0.2s'
+                          }}
+                          title={`Failure ${i}`}
+                        >
+                          {deathSaveFailures >= i ? '✗' : ''}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Clear button */}
+                  {(deathSaveSuccesses > 0 || deathSaveFailures > 0) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeathSaveSuccesses(0);
+                        setDeathSaveFailures(0);
+                      }}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        backgroundColor: lightMode ? '#f0f0f0' : 'rgba(0, 0, 0, 0.3)',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        color: lightMode ? '#7a0b0b' : '#ffdede',
+                        fontWeight: 600,
+                        alignSelf: 'flex-start'
+                      }}
+                    >
+                      Clear saves
+                    </button>
+                  )}
+                </div>
+                
+                <ul style={{ 
+                  fontWeight: 500, 
+                  fontSize: '13px',
+                  margin: 0,
+                  paddingLeft: '20px',
+                  lineHeight: '1.6'
+                }}>
+                  <li>Roll death saves at start of each turn</li>
+                  <li>Movement capped at 1 meter/round</li>
+                  <li>Max 1 bending slot per move</li>
+                  <li>No bonus actions available</li>
+                </ul>
               </div>
             )}
             <div style={{
@@ -1908,35 +2578,110 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         )}
         
         <div className="stat-grid">
-          {Object.entries(characterData.vitals).map(([key, value]) => {
-            const tooltip = getStatTooltip(key);
-            return (
-              <div key={key} className="stat-card">
-                <label title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
-                  {key}
-                </label>
-                {key === 'Initiative' ? (
-                  <div style={{ 
-                    padding: '8px', 
-                    backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a',
-                    borderRadius: '4px',
-                    textAlign: 'center'
-                  }}>
-                    <DiceRollText text={value} />
-                  </div>
-                ) : (
-                  <input
-                    type="number"
-                    value={value}
-                    onChange={(e) => updateVital(key, e.target.value)}
-                    className="stat-input"
-                    readOnly={key === 'max_hp'}
-                    style={key === 'max_hp' ? { cursor: 'not-allowed', backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a' } : {}}
-                  />
-                )}
-              </div>
-            );
-          })}
+          {Object.entries(characterData.vitals)
+            .filter(([key]) => {
+              // Filter out stress level related fields as they're shown in the Stress Level panel
+              const lowerKey = key.toLowerCase();
+              return !lowerKey.includes('stress') && 
+                     lowerKey !== 'fire damage bonus';
+            })
+            .map(([key, value]) => {
+              const tooltip = getStatTooltip(key);
+              return (
+                <div key={key} className="stat-card" style={key === 'current_hp' ? { minWidth: '200px' } : {}}>
+                  <label title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                    {key}
+                  </label>
+                  {key === 'Initiative' ? (
+                    <div style={{ 
+                      padding: '8px', 
+                      backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a',
+                      borderRadius: '4px',
+                      textAlign: 'center'
+                    }}>
+                      <DiceRollText text={value} />
+                    </div>
+                  ) : key === 'current_hp' ? (
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'stretch', 
+                      gap: '4px',
+                      width: '100%'
+                    }}>
+                      <button
+                        onClick={() => updateVital(key, Math.max(0, parseFloat(value || 0) - 1))}
+                        className="hp-button"
+                        style={{
+                          padding: '8px',
+                          fontSize: '16px',
+                          fontWeight: 'bold',
+                          backgroundColor: lightMode ? '#ff6b6b' : '#c92a2a',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          minWidth: '36px',
+                          flexShrink: 0,
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = lightMode ? '#ff5252' : '#a61e1e'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = lightMode ? '#ff6b6b' : '#c92a2a'}
+                        title="Decrease HP by 1"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        value={value}
+                        onChange={(e) => updateVital(key, e.target.value)}
+                        className="stat-input"
+                        style={{ 
+                          flex: 1, 
+                          textAlign: 'center',
+                          minWidth: '0',
+                          padding: '8px 4px'
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          const currentVal = parseFloat(value || 0);
+                          const maxVal = parseFloat(characterData.vitals.max_hp || currentVal + 1);
+                          updateVital(key, Math.min(maxVal, currentVal + 1));
+                        }}
+                        className="hp-button"
+                        style={{
+                          padding: '8px',
+                          fontSize: '16px',
+                          fontWeight: 'bold',
+                          backgroundColor: lightMode ? '#51cf66' : '#2b8a3e',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          minWidth: '36px',
+                          flexShrink: 0,
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = lightMode ? '#40c057' : '#237a33'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = lightMode ? '#51cf66' : '#2b8a3e'}
+                        title="Increase HP by 1"
+                      >
+                        +
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="number"
+                      value={value}
+                      onChange={(e) => updateVital(key, e.target.value)}
+                      className="stat-input"
+                      readOnly={key === 'max_hp'}
+                      style={key === 'max_hp' ? { cursor: 'not-allowed', backgroundColor: lightMode ? '#f0f0f0' : '#2a2a2a' } : {}}
+                    />
+                  )}
+                </div>
+              );
+            })}
         </div>
           </>
         )}
@@ -2037,27 +2782,115 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           </span>
         </h2>
 
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+          <span style={{ fontSize: '12px', opacity: 0.8 }}>Show:</span>
+          <button
+            className="ghost-button"
+            onClick={() => toggleConditionFilter('boon')}
+            style={{
+              padding: '4px 10px',
+              fontSize: '12px',
+              borderRadius: '6px',
+              border: conditionFilter.boon ? '2px solid #4ec9b0' : '1px solid #bdc3c7',
+              backgroundColor: conditionFilter.boon ? 'rgba(78, 201, 176, 0.1)' : 'transparent',
+              color: conditionFilter.boon ? '#4ec9b0' : (lightMode ? '#2c3e50' : '#ecf0f1'),
+              fontWeight: conditionFilter.boon ? 700 : 500,
+              boxShadow: conditionFilter.boon ? '0 1px 4px rgba(78, 201, 176, 0.4)' : 'none'
+            }}
+          >
+            Boon
+          </button>
+          <button
+            className="ghost-button"
+            onClick={() => toggleConditionFilter('curse')}
+            style={{
+              padding: '4px 10px',
+              fontSize: '12px',
+              borderRadius: '6px',
+              border: conditionFilter.curse ? '2px solid #c9944e' : '1px solid #bdc3c7',
+              backgroundColor: conditionFilter.curse ? 'rgba(201, 148, 78, 0.12)' : 'transparent',
+              color: conditionFilter.curse ? '#c9944e' : (lightMode ? '#2c3e50' : '#ecf0f1'),
+              fontWeight: conditionFilter.curse ? 700 : 500,
+              boxShadow: conditionFilter.curse ? '0 1px 4px rgba(201, 148, 78, 0.4)' : 'none'
+            }}
+          >
+            Curse
+          </button>
+          <span style={{ fontSize: '12px', opacity: 0.8, marginLeft: '12px' }}>Type:</span>
+          <button
+            className="ghost-button"
+            onClick={() => toggleConditionFilter('general')}
+            style={{
+              padding: '4px 10px',
+              fontSize: '12px',
+              borderRadius: '6px',
+              border: conditionFilter.general ? '2px solid #5dade2' : '1px solid #bdc3c7',
+              backgroundColor: conditionFilter.general ? 'rgba(93, 173, 226, 0.12)' : 'transparent',
+              color: conditionFilter.general ? '#2e86c1' : (lightMode ? '#2c3e50' : '#ecf0f1'),
+              fontWeight: conditionFilter.general ? 700 : 500,
+              boxShadow: conditionFilter.general ? '0 1px 4px rgba(93, 173, 226, 0.4)' : 'none'
+            }}
+          >
+            General
+          </button>
+          <button
+            className="ghost-button"
+            onClick={() => toggleConditionFilter('specific')}
+            style={{
+              padding: '4px 10px',
+              fontSize: '12px',
+              borderRadius: '6px',
+              border: conditionFilter.specific ? '2px solid #af7ac5' : '1px solid #bdc3c7',
+              backgroundColor: conditionFilter.specific ? 'rgba(175, 122, 197, 0.12)' : 'transparent',
+              color: conditionFilter.specific ? '#884ea0' : (lightMode ? '#2c3e50' : '#ecf0f1'),
+              fontWeight: conditionFilter.specific ? 700 : 500,
+              boxShadow: conditionFilter.specific ? '0 1px 4px rgba(175, 122, 197, 0.4)' : 'none'
+            }}
+          >
+            Specific
+          </button>
+        </div>
+
         {/* Active conditions badges - always visible */}
         <div style={{ marginBottom: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap', minHeight: '24px' }}>
-          {activeConditions.length === 0 ? (
+          {visibleActiveConditions.length === 0 ? (
             <span style={{ opacity: 0.5, fontSize: '12px' }}>No active conditions</span>
           ) : (
-            activeConditions.map((cond) => (
-              <span
-                key={`active-${cond}`}
-                style={{
-                  padding: '3px 8px',
-                  borderRadius: '4px',
-                  backgroundColor: cond === 'Bleeding out' ? '#d7263d' : '#c9944eff',
-                  color: '#fff',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                }}
-              >
-                {cond}
-              </span>
-            ))
+            visibleActiveConditions.map((cond) => {
+              // Determine if condition is a boon or curse based on metadata
+              const tags = conditionMetadata[cond]?.tags || [];
+              const isBoon = tags.some(tag => tag.toLowerCase() === 'boon');
+              const isCurse = tags.some(tag => tag.toLowerCase() === 'curse');
+              
+              // Choose color based on condition type
+              let bgColor;
+              if (cond === 'Bleeding out') {
+                bgColor = '#d7263d'; // Critical red for bleeding out
+              } else if (isBoon) {
+                bgColor = '#4ec9b0'; // Teal/cyan for boons
+              } else if (isCurse) {
+                bgColor = '#c9944eff'; // Orange for curses
+              } else {
+                bgColor = '#95a5a6'; // Gray for neutral/unknown
+              }
+              
+              return (
+                <span
+                  key={`active-${cond}`}
+                  style={{
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    backgroundColor: bgColor,
+                    color: '#fff',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  {cond}
+                </span>
+              );
+            })
           )}
         </div>
 
@@ -2066,18 +2899,47 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           <>
 
             <div className="consumables-grid">
-              {CONDITION_NAMES.map((cond) => {
+              {filteredConditionNames.length === 0 && (
+                <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                  No conditions match this filter.
+                </div>
+              )}
+              {filteredConditionNames.map((cond) => {
                 const isBleed = cond === 'Bleeding out';
                 const isActive = isBleed ? isBleedingOut : !!characterData.conditions?.[cond];
+                
+                // Determine if condition is a boon or curse based on metadata
+                const tags = conditionMetadata[cond]?.tags || [];
+                const isBoon = tags.some(tag => tag.toLowerCase() === 'boon');
+                const isCurse = tags.some(tag => tag.toLowerCase() === 'curse');
+                
+                // Choose colors based on condition type
+                let borderColor, backgroundColor;
+                if (isBleed) {
+                  // Critical red for bleeding out
+                  borderColor = isActive ? '#d7263d' : 'rgba(215, 38, 61, 0.4)';
+                  backgroundColor = isActive ? 'rgba(215, 38, 61, 0.08)' : 'rgba(215, 38, 61, 0.05)';
+                } else if (isBoon) {
+                  // Teal/cyan for boons
+                  borderColor = isActive ? '#4ec9b0' : 'rgba(78, 201, 176, 0.4)';
+                  backgroundColor = isActive ? 'rgba(78, 201, 176, 0.08)' : 'rgba(78, 201, 176, 0.05)';
+                } else if (isCurse) {
+                  // Orange for curses
+                  borderColor = isActive ? '#c9944eff' : 'rgba(201, 148, 78, 0.4)';
+                  backgroundColor = isActive ? 'rgba(201, 148, 78, 0.08)' : 'rgba(201, 148, 78, 0.05)';
+                } else {
+                  // Gray for neutral/unknown
+                  borderColor = isActive ? '#95a5a6' : '#bdc3c7';
+                  backgroundColor = isActive ? 'rgba(149, 165, 166, 0.08)' : undefined;
+                }
+                
                 return (
                   <div
                     key={`cond-${cond}`}
                     className="consumable-card"
                     style={{
-                      borderColor: isActive ? "#4ec9b0" : "#bdc3c7",
-                      backgroundColor: isActive
-                        ? "rgba(78, 201, 176, 0.08)"
-                        : undefined,
+                      borderColor: borderColor,
+                      backgroundColor: backgroundColor,
                       padding: "8px",
                     }}
                   >
@@ -2120,7 +2982,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                       }}
                     >
                       {isBleed
-                        ? "Movement capped at 1m.\nMax 1 bending slot per move.\nDeath saves each turn:\n- 3 success = stable for 3 rounds \n- 3 fails = dead"
+                        ? "Movement capped at 1m.\nMax 1 bending slot per move.\nNo bonus actions.\nDeath saves each turn:\n- 3 success = stable for 3 rounds \n- 3 fails = dead"
                         : conditionDescriptions[cond] ||
                           "Manually toggle to track this condition."}
                     </p>
@@ -2621,7 +3483,10 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     <aside className={`pinned-panel ${pinnedMovesCollapsed ? 'collapsed' : ''}`}>
       <div 
         className="pinned-header"
-        onClick={() => setPinnedMovesCollapsed(!pinnedMovesCollapsed)}
+        onClick={() => {
+          setPinnedMovesCollapsed(!pinnedMovesCollapsed);
+          setExpandedPinnedMoveInSlim(null); // Reset expanded move when toggling panel
+        }}
         style={{ 
           cursor: 'pointer',
           userSelect: 'none'
@@ -2650,74 +3515,126 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           </>
         ) : (
           <>
-            <h3 style={{ margin: 0 }}>Pinned moves</h3>
-            {pinnedMoves.length > 0 && (
-              <span style={{
-                fontSize: '12px',
-                fontWeight: 'normal',
-                opacity: 0.7
-              }}>
-                ({pinnedMoves.length})
-              </span>
-            )}
+            <h3 style={{ margin: 0, writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Pinned</h3>
             <span style={{ fontSize: '14px', opacity: 0.7 }}>◀</span>
           </>
         )}
       </div>
-      {!pinnedMovesCollapsed && (
-        <>
-          {pinnedMoves.length === 0 ? (
-        <p className="muted-text">Pin moves from the popups to keep their range and costs handy.</p>
-      ) : (
-        <div className="pinned-list">
-          {pinnedMoves.map(move => {
-            const { actionColor, elementColor } = getMoveColors(move);
-            const isExpanded = expandedMoves.has(move.path);
-            return (
-              <div key={move.path} className={`pinned-card ${isExpanded ? 'expanded' : ''}`} style={{ borderColor: elementColor }}>
-                <div 
-                  className="pinned-card-header"
-                  onClick={() => toggleMoveExpanded(move.path)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="pinned-title">
-                    <h4>{move.name}</h4>
-                    <span className="pill" style={{ backgroundColor: hexToRgba(actionColor, 0.2), color: actionColor }}>
-                      {move.actionType || 'Move'}
-                    </span>
-                    {move.level && (
-                      <span className="level-badge">Lvl {move.level}</span>
-                    )}
-                    <span style={{
-                      marginLeft: '8px',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      color: actionColor,
-                      transition: 'transform 0.3s ease'
-                    }}>
-                      {isExpanded ? '▼' : '▶'}
-                    </span>
-                  </div>
-                  <button 
-                    className="close-button" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleUnpinMove(move.path);
+      
+      {/* Collapsed View - Slim Vertical Bar with Action Type Circles */}
+      {pinnedMovesCollapsed && pinnedMoves.length > 0 && (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          padding: '8px 0',
+          alignItems: 'center',
+          width: '100%'
+        }}>
+          {pinnedMoves.map(move => (
+            <div key={move.path} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {/* Slim circle view */}
+              {expandedPinnedMoveInSlim !== move.path ? (
+                <PinnedMoveSlimBar
+                  move={move}
+                  onClick={() => setExpandedPinnedMoveInSlim(move.path)}
+                  lightMode={lightMode}
+                />
+              ) : (
+                /* Expanded view within slim bar */
+                <div style={{
+                  width: 'calc(100% - 8px)',
+                  maxWidth: '300px',
+                  border: `2px solid ${move.element ? ELEMENT_COLORS[move.element.toLowerCase()] || '#3498db' : '#3498db'}`,
+                  borderRadius: '12px',
+                  padding: '8px',
+                  backgroundColor: lightMode 
+                    ? hexToRgba(move.element ? ELEMENT_COLORS[move.element.toLowerCase()] || '#3498db' : '#3498db', 0.1)
+                    : hexToRgba(move.element ? ELEMENT_COLORS[move.element.toLowerCase()] || '#3498db' : '#3498db', 0.15),
+                  position: 'relative'
+                }}>
+                  {/* Close button */}
+                  <button
+                    onClick={() => setExpandedPinnedMoveInSlim(null)}
+                    style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      padding: '2px 6px',
+                      fontSize: '12px',
+                      backgroundColor: lightMode ? '#f0f0f0' : '#3e3e42',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      color: lightMode ? '#333' : '#e0e0e0',
+                      zIndex: 10
                     }}
                   >
                     ✕
                   </button>
+                  
+                  {/* Full move details */}
+                  <BendingMoveWrapper
+                    move={move}
+                    isExpanded={true}
+                    onToggleExpand={() => {}}
+                    onPin={null}
+                    isPinned={true}
+                    lightMode={lightMode}
+                    characterData={{ pixels: avatarForHeader }}
+                  />
                 </div>
-                {isExpanded && (
-                  <div className="pinned-card-expanded-content">
-                    <BendingMove file={{ path: move.path, name: move.name }} lightMode={lightMode} />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              )}
+            </div>
+          ))}
         </div>
       )}
+
+      {!pinnedMovesCollapsed && (
+        <>
+          {pinnedMoves.length === 0 ? (
+            <p className="muted-text">Pin moves from the popups to keep their range and costs handy.</p>
+          ) : (
+            <div className="pinned-list" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px'
+            }}>
+              {pinnedMoves.map(move => (
+                <div key={move.path} style={{ position: 'relative' }}>
+                  <BendingMoveWrapper
+                    move={move}
+                    isExpanded={expandedMoves.has(move.path)}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPin={null} // No pin button on already pinned moves
+                    isPinned={true}
+                    lightMode={lightMode}
+                    characterData={{ pixels: avatarForHeader }}
+                  />
+                  <button 
+                    className="close-button" 
+                    onClick={() => handleUnpinMove(move.path)}
+                    style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      padding: '4px 8px',
+                      fontSize: '12px',
+                      backgroundColor: lightMode ? '#f0f0f0' : '#3e3e42',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      color: lightMode ? '#333' : '#e0e0e0',
+                      zIndex: 10
+                    }}
+                    title="Unpin this move"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
     </aside>

@@ -1,5 +1,5 @@
-#Action_Tiebeediy 
-#Reaction_Tiebeediy 
+#Action_Tiebeediy (earthbender)
+#Reaction_Tiebeediy (airbender)
 
 -  **Y**([[Earthbending slot]] (3)): Yd12 Damage per projectile
 - **X**([[Airbending_slot]] (0)): X Projectiles [[Air Attack Roll]] (1d20 + 0 + 3)

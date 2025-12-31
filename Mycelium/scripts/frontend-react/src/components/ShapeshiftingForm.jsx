@@ -274,7 +274,9 @@ const ShapeshiftingForm = ({ file, lightMode = false }) => {
       bendingLevels: [],
       image: null,
       size: null,
+      spiritbendingSlot: null,
       onTransform: [],
+      aura: [],
       vitalityStats: {
         evasion: null,
         armor: [],
@@ -371,8 +373,28 @@ const ShapeshiftingForm = ({ file, lightMode = false }) => {
     if (sizeLine) {
       const sizeMatch = sizeLine.match(/\*\*Size:\*\*\s*(.+)/i);
       if (sizeMatch) {
-        data.size = sizeMatch[1].trim();
+        // Remove markdown formatting
+        data.size = sizeMatch[1].trim()
+          .replace(/\*\*/g, '')
+          .replace(/\*/g, '')
+          .replace(/__/g, '')
+          .replace(/_/g, '');
         processedLines.add(sizeLine);
+      }
+    }
+
+    // Parse Spiritbending Slot
+    const spiritSlotLine = lines.find(line => line.trim().toLowerCase().includes('spiritbending slot:'));
+    if (spiritSlotLine) {
+      const slotMatch = spiritSlotLine.match(/Spiritbending Slot:\s*(.+)/i);
+      if (slotMatch) {
+        // Remove markdown formatting (asterisks, underscores, etc.)
+        data.spiritbendingSlot = slotMatch[1].trim()
+          .replace(/\*\*/g, '')
+          .replace(/\*/g, '')
+          .replace(/__/g, '')
+          .replace(/_/g, '');
+        processedLines.add(spiritSlotLine);
       }
     }
 
@@ -402,6 +424,7 @@ const ShapeshiftingForm = ({ file, lightMode = false }) => {
         // Check if this is a new section header
         const isNewSection = (trimmed.includes('vitality and defense stats:') || 
                              trimmed.includes('**movement:**') ||
+                             trimmed.includes('aura:') ||
                              (trimmed.match(/^-\s*\*\*[^*]+\*\*:/) && 
                               !cleanedForCheck.includes('on transform') && 
                               !cleanedForCheck.includes('on transformation')));
@@ -435,6 +458,89 @@ const ShapeshiftingForm = ({ file, lightMode = false }) => {
                 onTransformItemCount++;
               }
             }
+          }
+        }
+      }
+    }
+
+    // Parse Aura effects
+    let inAura = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim().toLowerCase();
+      
+      // Check if this line contains "Aura:" as a list item (like "- Aura:", "- **Aura:**", or "- Aura: content")
+      // Need to account for markdown bold markers
+      if (trimmed.match(/^-\s*\*?\*?aura:\*?\*?\s*/)) {
+        console.log('Matched Aura header (list style)');
+        inAura = true;
+        processedLines.add(line);
+        
+        // Check if there's content on the same line after "Aura:" (accounting for markdown)
+        const inlineContent = line.match(/^-\s*\*?\*?aura:\*?\*?\s*(.+)/i);
+        if (inlineContent && inlineContent[1].trim()) {
+          console.log('Found inline content:', inlineContent[1]);
+          // There's content on the same line, process it
+          const cleanedEffect = inlineContent[1].trim()
+            .replace(/\*\*\*([^\*]+?)\*\*\*/g, '$1')
+            .replace(/\*\*([^\*]+?)\*\*/g, '$1')
+            .replace(/\*([^\*\s][^\*]*?[^\*\s])\*/g, '$1')
+            .replace(/__(.+?)__/g, '$1')
+            .replace(/_([^_\s][^_]*?[^_\s])_/g, '$1');
+          data.aura.push(cleanedEffect);
+        }
+        continue;
+      }
+      
+      // Also check for standalone "Aura:" (not in a list, with or without markdown)
+      if (trimmed.match(/^\*?\*?aura:\*?\*?\s*/)) {
+        console.log('Matched Aura header (standalone)');
+        inAura = true;
+        processedLines.add(line);
+        
+        // Check if there's content on the same line
+        const inlineContent = line.match(/\*?\*?aura:\*?\*?\s*(.+)/i);
+        if (inlineContent && inlineContent[1].trim()) {
+          const cleanedEffect = inlineContent[1].trim()
+            .replace(/\*\*\*([^\*]+?)\*\*\*/g, '$1')
+            .replace(/\*\*([^\*]+?)\*\*/g, '$1')
+            .replace(/\*([^\*\s][^\*]*?[^\*\s])\*/g, '$1')
+            .replace(/__(.+?)__/g, '$1')
+            .replace(/_([^_\s][^_]*?[^_\s])_/g, '$1');
+          data.aura.push(cleanedEffect);
+        }
+        continue;
+      }
+      
+      if (inAura) {
+        // Empty lines are ok, just skip them
+        if (line.trim() === '') {
+          continue;
+        }
+        
+        // Check if this is a new section header
+        const isNewSection = (trimmed.includes('vitality and defense stats:') || 
+                             trimmed.includes('**movement:**') ||
+                             trimmed.includes('special abilities') ||
+                             (trimmed.match(/^-\s*\*\*[^*]+\*\*:/) && !trimmed.includes('aura')));
+        
+        // End the section if we hit a new section
+        if (isNewSection) {
+          inAura = false;
+          // Don't continue - let other parsers handle this line
+        } else if (line.trim().startsWith('-')) {
+          // This is a content line within Aura
+          const auraEffect = line.match(/^\s*-\s*(.+)/);
+          if (auraEffect) {
+            // Remove markdown formatting from aura effects
+            const cleanedEffect = auraEffect[1].trim()
+              .replace(/\*\*\*([^\*]+?)\*\*\*/g, '$1')
+              .replace(/\*\*([^\*]+?)\*\*/g, '$1')
+              .replace(/\*([^\*\s][^\*]*?[^\*\s])\*/g, '$1')
+              .replace(/__(.+?)__/g, '$1')
+              .replace(/_([^_\s][^_]*?[^_\s])_/g, '$1');
+            data.aura.push(cleanedEffect);
+            processedLines.add(line);
           }
         }
       }
@@ -563,7 +669,15 @@ const ShapeshiftingForm = ({ file, lightMode = false }) => {
         if (line.trim().startsWith('-')) {
           const movementMatch = line.match(/^\s*-\s*(.+)/);
           if (movementMatch) {
-            data.movement.push(movementMatch[1].trim().replace(/\.$/, ''));
+            // Remove markdown formatting and trailing period
+            const cleanedMovement = movementMatch[1].trim()
+              .replace(/\*\*\*([^\*]+?)\*\*\*/g, '$1')
+              .replace(/\*\*([^\*]+?)\*\*/g, '$1')
+              .replace(/\*([^\*\s][^\*]*?[^\*\s])\*/g, '$1')
+              .replace(/__(.+?)__/g, '$1')
+              .replace(/_([^_\s][^_]*?[^_\s])_/g, '$1')
+              .replace(/\.$/, '');
+            data.movement.push(cleanedMovement);
             processedLines.add(line);
           }
         }
@@ -1043,6 +1157,31 @@ const ShapeshiftingForm = ({ file, lightMode = false }) => {
         </section>
       )}
 
+      {/* Spiritbending Slot */}
+      {formData.spiritbendingSlot && (
+        <section className="form-section" style={{ marginBottom: '20px' }}>
+          <h2 style={{ 
+            borderBottom: `2px solid ${elementColor}`,
+            paddingBottom: '10px',
+            marginBottom: '15px'
+          }}>
+            Spiritbending Slot
+          </h2>
+          <div style={{
+            padding: '15px',
+            backgroundColor: lightMode ? '#f8f9fa' : '#2a2a2a',
+            borderRadius: '8px',
+            borderLeft: `4px solid ${elementColor}`,
+            textAlign: 'center',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: elementColor
+          }}>
+            {formData.spiritbendingSlot}
+          </div>
+        </section>
+      )}
+
       {/* Size and On Transform */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '20px' }}>
         {/* Size */}
@@ -1098,6 +1237,38 @@ const ShapeshiftingForm = ({ file, lightMode = false }) => {
                   }}>
                     {effect.name ? '' : '• '}{processText(effect.description)}
                   </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Aura */}
+        {formData.aura.length > 0 && (
+          <section className="form-section">
+            <h2 style={{ 
+              borderBottom: `2px solid ${elementColor}`,
+              paddingBottom: '10px',
+              marginBottom: '15px'
+            }}>
+              Aura
+            </h2>
+            <div style={{
+              padding: '15px',
+              backgroundColor: lightMode ? '#f8f9fa' : '#2a2a2a',
+              borderRadius: '8px',
+              borderLeft: `4px solid ${elementColor}`
+            }}>
+              {formData.aura.map((effect, idx) => (
+                <div 
+                  key={idx}
+                  style={{
+                    marginBottom: idx < formData.aura.length - 1 ? '8px' : '0',
+                    fontSize: '15px',
+                    lineHeight: '1.6'
+                  }}
+                >
+                  • {processText(effect)}
                 </div>
               ))}
             </div>

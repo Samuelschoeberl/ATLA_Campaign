@@ -1,5 +1,5 @@
-#Action 
-#Reaction 
+#Action (earthbender)
+#Reaction (airbender)
 
 -  **Y**([[Earthbending slot]]): Yd12 Damage per projectile
 - **X**([[Airbending_slot]]): X Projectiles [[Air Attack Roll]]

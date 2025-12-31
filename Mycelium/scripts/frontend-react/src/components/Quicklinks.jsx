@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './Quicklinks.css';
 import { API_BASE_URL } from '../config/api';
-import { hexToRgba, getLighterColor } from '../utils/colorUtils';
+import PixelAvatar from './PixelAvatar';
+import { normalizeAvatarMatrix } from '../utils/avatarUtils';
 
 const Quicklinks = ({ lightMode = false, onFileSelect }) => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fileColors, setFileColors] = useState({});
+  const [customizations, setCustomizations] = useState({});
 
   useEffect(() => {
     loadQuicklinks();
     loadFileColors();
+    loadCustomizations();
   }, []);
 
   const loadQuicklinks = async () => {
@@ -41,6 +44,18 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
       }
     } catch (error) {
       console.error('Error loading file colors:', error);
+    }
+  };
+
+  const loadCustomizations = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/characters/customizations`);
+      if (response.ok) {
+        const data = await response.json();
+        setCustomizations(data.customizations || {});
+      }
+    } catch (err) {
+      console.error('Error loading character customizations:', err);
     }
   };
 
@@ -172,6 +187,26 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
 
   const { topLinks, characters } = parseQuicklinks();
 
+  // Get custom emoji for a link based on its name
+  const getEmojiForLink = (linkName) => {
+    const lowerName = linkName.toLowerCase();
+    
+    // Custom emoji mappings
+    if (lowerName.includes('stat') || lowerName.includes('overview')) return '📊';
+    if (lowerName.includes('initiative') || lowerName.includes('tracker')) return '⚔️';
+    if (lowerName.includes('inventory')) return '🎒';
+    if (lowerName.includes('quest') || lowerName.includes('mission')) return '📜';
+    if (lowerName.includes('map')) return '🗺️';
+    if (lowerName.includes('rule')) return '📖';
+    if (lowerName.includes('note')) return '📝';
+    if (lowerName.includes('lore') || lowerName.includes('story')) return '📚';
+    if (lowerName.includes('combat')) return '⚔️';
+    if (lowerName.includes('spell') || lowerName.includes('bending')) return '✨';
+    
+    // Default
+    return '🔗';
+  };
+
   return (
     <div className={`quicklinks-container ${lightMode ? 'light-mode' : ''}`}>
       <div className="quicklinks-header">
@@ -188,7 +223,7 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
                 className="quicklink-button primary"
                 onClick={() => handleLinkClick(link)}
               >
-                <span className="quicklink-icon">🔗</span>
+                <span className="quicklink-icon">{getEmojiForLink(link)}</span>
                 <span className="quicklink-text">{link}</span>
               </button>
             ))}
@@ -203,22 +238,17 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
             {characters.map((character, index) => {
               // Get the character folder color (format: PCs/CharacterName/)
               const folderPath = `PCs/${character}/`;
-              const characterColor = fileColors[folderPath] || '#3498db'; // default blue if not found
+              const customization = customizations?.[character];
+              const avatarPixels = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : null;
+              const characterColor = customization?.folderColor || fileColors[folderPath] || '#888888';
               const isUncolored = characterColor === '#e6e6e6';
               
-              // Use the character color for background
-              const backgroundColor = isUncolored 
-                ? 'rgba(52, 152, 219, 0.2)' 
-                : hexToRgba(characterColor, 0.35);
-              const borderColor = isUncolored 
-                ? 'rgba(52, 152, 219, 0.5)' 
-                : `${characterColor}80`; // 50% opacity
-              const hoverBackground = isUncolored
-                ? 'rgba(52, 152, 219, 0.4)'
-                : hexToRgba(getLighterColor(characterColor), 0.5);
-              const hoverBorder = isUncolored
-                ? 'rgba(52, 152, 219, 0.8)'
-                : characterColor;
+              // Use minimal styling with just a subtle border accent
+              const borderColor = lightMode 
+                ? 'rgba(0, 0, 0, 0.12)' 
+                : 'rgba(255, 255, 255, 0.15)';
+              
+              const accentColor = isUncolored ? '#888888' : characterColor;
               
               return (
                 <button
@@ -226,22 +256,19 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
                   className="quicklink-button character"
                   onClick={() => handleLinkClick(character)}
                   style={{
-                    background: backgroundColor,
                     borderColor: borderColor,
-                    '--hover-bg': hoverBackground,
-                    '--hover-border': hoverBorder,
-                    '--character-color': characterColor,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = hoverBackground;
-                    e.currentTarget.style.borderColor = hoverBorder;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = backgroundColor;
-                    e.currentTarget.style.borderColor = borderColor;
+                    borderLeftColor: accentColor,
+                    borderLeftWidth: '3px',
                   }}
                 >
-                  <span className="quicklink-icon">👤</span>
+                  <PixelAvatar
+                    className="quicklink-avatar"
+                    pixels={avatarPixels}
+                    size={48}
+                    borderColor={accentColor}
+                    placeholderLabel={character?.[0] || 'C'}
+                    background={lightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}
+                  />
                   <span className="quicklink-text">{character}</span>
                 </button>
               );

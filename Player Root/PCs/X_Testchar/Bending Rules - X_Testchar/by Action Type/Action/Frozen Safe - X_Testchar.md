@@ -1,5 +1,5 @@
-#Action_X_Testchar
-#Reaction_X_Testchar 
+#Action_X_Testchar (waterbender)
+#Reaction_X_Testchar (waterbender)
  
 You may use Levels from **Water only**.
 Each Bender-decides to which pool to add their Bending slots (min 1 in each):

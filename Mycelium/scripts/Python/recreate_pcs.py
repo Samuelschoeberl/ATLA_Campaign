@@ -920,7 +920,11 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                         rel = Path(p.name)
                     txt = p.read_text(encoding='utf-8')
                     # parse tags to decide if this move is learnable by the character
-                    tags_in_file = {t.lower() for t in re.findall(r"#[-\w]+", txt)}
+                    # Updated pattern to capture tags with optional element specification in parentheses
+                    # e.g., #Action, #Reaction (waterbender), #Danger_Sense_Reaction (airbender)
+                    tags_in_file = set()
+                    for match in re.finditer(r"#[-\w]+(?:\s*\([^)]+\))?", txt):
+                        tags_in_file.add(match.group(0).lower())
                     # Normalize element tags so variants like #spiritbending, #spirit-bending,
                     # or #spirit_bending are recognised as the 'spirit' element (same for others).
                     def _normalize_element_tag(tag: str) -> Optional[str]:
@@ -981,7 +985,57 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                         continue
 
                     rendered = render_rule_content(txt)
-                    matched_categories = [category_tags[t] for t in category_tags.keys() if t in tags_in_file]
+                    
+                    # Determine which elements this character can bend (has level > 0)
+                    char_elements = set()
+                    for elem in ('air', 'water', 'earth', 'fire', 'spirit'):
+                        v = norm_kv.get(normalize_name(elem))
+                        try:
+                            vnum = float(v) if v is not None else 0.0
+                        except Exception:
+                            try:
+                                vnum = float(to_number(v))
+                            except Exception:
+                                vnum = 0.0
+                        if vnum > 0:
+                            char_elements.add(elem)
+                    
+                    # Match action type categories, filtering by element if specified
+                    # Tags can be like #Action, #Reaction, or element-specific like:
+                    # #Action (earthbender), #Reaction (waterbender), #Danger_Sense_Reaction (airbender)
+                    matched_categories = []
+                    
+                    # Pattern to match action type tags with optional element specification
+                    # e.g., #Action (earthbender) or just #Action
+                    action_tag_pattern = re.compile(r'#(action|bonus_action|reaction|danger_sense_reaction)(?:\s*\((\w+)(?:bender)?\))?', re.IGNORECASE)
+                    
+                    for tag in tags_in_file:
+                        match = action_tag_pattern.match(tag)
+                        if match:
+                            action_type = match.group(1).lower()
+                            element_spec = match.group(2)
+                            if element_spec:
+                                element_spec = element_spec.lower()
+                                # Strip 'bender' suffix if present
+                                if element_spec.endswith('bender'):
+                                    element_spec = element_spec[:-6]  # remove 'bender'
+                            
+                            # If element is specified, only include if character can bend that element
+                            if element_spec:
+                                if element_spec in char_elements:
+                                    # Map the action type to its folder name
+                                    tag_key = f'#{action_type}'
+                                    if tag_key in category_tags:
+                                        category = category_tags[tag_key]
+                                        if category not in matched_categories:
+                                            matched_categories.append(category)
+                            else:
+                                # No element specified, include for all characters that can learn this move
+                                tag_key = f'#{action_type}'
+                                if tag_key in category_tags:
+                                    category = category_tags[tag_key]
+                                    if category not in matched_categories:
+                                        matched_categories.append(category)
 
                     # build target path inside per-PC bending rules folder
                     # Preserve the original folder structure under the rules root

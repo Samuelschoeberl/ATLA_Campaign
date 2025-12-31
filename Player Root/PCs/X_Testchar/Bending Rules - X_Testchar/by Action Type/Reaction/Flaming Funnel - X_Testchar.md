@@ -1,5 +1,5 @@
-#Action_X_Testchar 
-#Reaction_X_Testchar 
+#Action_X_Testchar (firebender)
+#Reaction_X_Testchar (airbender)
 
 -  **Y**([[Firebending_slot]] (60)): Yd12 Fire Damage
 - **X**([[Airbending_slot]] (60)): X * 10 meter Range [[Air Attack Roll]] (1d20 + 20 + 2) (so no malus for [[stress level]] (0) for the Firebender)

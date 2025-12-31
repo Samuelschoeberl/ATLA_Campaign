@@ -1,5 +1,5 @@
-#Action 
-#Reaction 
+#Action (firebender)
+#Reaction (airbender)
 
 -  **Y**([[Firebending_slot]]): Yd12 Fire Damage
 - **X**([[Airbending_slot]]): X * 10 meter Range [[Air Attack Roll]] (so no malus for [[stress level]] for the Firebender)

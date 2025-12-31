@@ -6,10 +6,12 @@ import { CSS } from '@dnd-kit/utilities';
 import { API_BASE_URL } from '../config/api';
 import { hexToRgba } from '../utils/colorUtils';
 import { useReadyState } from '../context/ReadyStateContext';
+import PixelAvatar from './PixelAvatar';
+import { normalizeAvatarMatrix } from '../utils/avatarUtils';
 import './InitiativeTracker.css';
 
 // Draggable Sidebar Character Component
-function DraggableSidebarCharacter({ character, isInInitiative, onClick }) {
+function DraggableSidebarCharacter({ character, isInInitiative, onClick, avatarPixels, accentColor }) {
   const {
     attributes,
     listeners,
@@ -38,7 +40,13 @@ function DraggableSidebarCharacter({ character, isInInitiative, onClick }) {
       title={isInInitiative ? 'Click to remove from initiative' : 'Click to add or drag into position'}
     >
       <div className="sidebar-char-content" onClick={handleClick}>
-        <span className="character-icon">👤</span>
+        <PixelAvatar
+          className="character-icon"
+          pixels={avatarPixels}
+          size={56}
+          borderColor={accentColor || 'rgba(255,255,255,0.3)'}
+          placeholderLabel={character.name?.[0] || 'C'}
+        />
         <span className="character-name">{character.name}</span>
         {isInInitiative && <span className="in-initiative-badge">✓</span>}
       </div>
@@ -50,7 +58,23 @@ function DraggableSidebarCharacter({ character, isInInitiative, onClick }) {
 }
 
 // Sortable Initiative Item Component
-function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onRemove, showDropIndicatorBefore, showDropIndicatorAfter, characters, pcStats, onToggleEnemy, onUpdateManualHp, isReady }) {
+function SortableInitiativeItem({
+  character,
+  index,
+  isCurrentTurn,
+  onUpdate,
+  onRemove,
+  showDropIndicatorBefore,
+  showDropIndicatorAfter,
+  characters,
+  pcStats,
+  onToggleEnemy,
+  onUpdateManualHp,
+  onToggleDamageMode,
+  isReady,
+  avatarPixels,
+  accentColor
+}) {
   const {
     attributes,
     listeners,
@@ -154,7 +178,15 @@ function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onR
         className={`btn-enemy-toggle ${character.isEnemy ? 'active' : ''}`}
         title={character.isEnemy ? 'Mark as ally' : 'Mark as enemy'}
       >
-        {character.isEnemy ? '👹' : '👤'}
+        {character.isEnemy ? '👹' : (
+          <PixelAvatar
+            className="enemy-toggle-avatar"
+            pixels={avatarPixels}
+            size={44}
+            borderColor={accentColor || 'rgba(255,255,255,0.6)'}
+            placeholderLabel={character.name?.[0] || 'C'}
+          />
+        )}
       </button>
       
       <div className="character-fields">
@@ -223,83 +255,136 @@ function SortableInitiativeItem({ character, index, isCurrentTurn, onUpdate, onR
             fontWeight: '600',
             color: '#cccccc'
           }}>
-            <span>HP</span>
+            <span>{character.isEnemy && character.damageMode ? 'Damage' : 'HP'}</span>
             {hasManualHp ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <input
-                  type="number"
-                  value={character.manualCurrentHp ?? 0}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 0;
-                    onUpdateManualHp(character.id, value, character.manualMaxHp);
-                  }}
-                  style={{
-                    width: '40px',
-                    padding: '2px 4px',
-                    fontSize: '10px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '3px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    color: '#fff',
-                    textAlign: 'center'
-                  }}
-                />
-                <span>/</span>
-                <input
-                  type="number"
-                  value={character.manualMaxHp ?? 0}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 0;
-                    onUpdateManualHp(character.id, character.manualCurrentHp, value);
-                  }}
-                  style={{
-                    width: '40px',
-                    padding: '2px 4px',
-                    fontSize: '10px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '3px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    color: '#fff',
-                    textAlign: 'center'
-                  }}
-                />
+                {character.isEnemy && character.damageMode ? (
+                  // Damage mode - only show damage dealt (can exceed max HP)
+                  <>
+                    <input
+                      type="number"
+                      value={(character.manualMaxHp ?? 0) - (character.manualCurrentHp ?? 0)}
+                      onChange={(e) => {
+                        const damageDealt = parseInt(e.target.value) || 0;
+                        const newCurrentHp = (character.manualMaxHp ?? 0) - damageDealt;
+                        // Allow negative HP (damage can exceed max)
+                        onUpdateManualHp(character.id, newCurrentHp, character.manualMaxHp);
+                      }}
+                      style={{
+                        width: '50px',
+                        padding: '2px 4px',
+                        fontSize: '10px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '3px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        color: '#fff',
+                        textAlign: 'center'
+                      }}
+                    />
+                    <span>dealt</span>
+                  </>
+                ) : (
+                  // Normal HP mode
+                  <>
+                    <input
+                      type="number"
+                      value={character.manualCurrentHp ?? 0}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        onUpdateManualHp(character.id, value, character.manualMaxHp);
+                      }}
+                      style={{
+                        width: '40px',
+                        padding: '2px 4px',
+                        fontSize: '10px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '3px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        color: '#fff',
+                        textAlign: 'center'
+                      }}
+                    />
+                    <span>/</span>
+                    <input
+                      type="number"
+                      value={character.manualMaxHp ?? 0}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        onUpdateManualHp(character.id, character.manualCurrentHp, value);
+                      }}
+                      style={{
+                        width: '40px',
+                        padding: '2px 4px',
+                        fontSize: '10px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '3px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        color: '#fff',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </>
+                )}
+                {character.isEnemy && (
+                  <button
+                    onClick={() => onToggleDamageMode(character.id)}
+                    style={{
+                      padding: '2px 6px',
+                      fontSize: '10px',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: '3px',
+                      backgroundColor: character.damageMode ? 'rgba(231, 76, 60, 0.3)' : 'rgba(46, 204, 113, 0.3)',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      marginLeft: '4px',
+                      fontWeight: '600',
+                      transition: 'background-color 0.2s'
+                    }}
+                    title={character.damageMode ? 'Switch to HP mode' : 'Switch to damage mode'}
+                  >
+                    {character.damageMode ? '💢' : '❤️'}
+                  </button>
+                )}
               </div>
             ) : (
               <span>{displayCurrentHp} / {displayMaxHp}</span>
             )}
           </div>
-          <div style={{
-            width: '100%',
-            height: '12px',
-            backgroundColor: '#2d2d30',
-            borderRadius: '6px',
-            overflow: 'hidden',
-            border: '1px solid #444',
-            position: 'relative',
-            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
-          }}>
+          {/* Only show health bar if NOT in damage mode */}
+          {!(character.isEnemy && character.damageMode) && (
             <div style={{
-              width: `${hpPercentage}%`,
-              height: '100%',
-              backgroundColor: hpColor,
-              transition: 'width 0.5s ease, background-color 0.5s ease',
-              boxShadow: `0 0 8px ${hpColor}, inset 0 1px 2px rgba(255, 255, 255, 0.3)`,
-              borderRadius: '5px'
-            }} />
-            <span style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              fontSize: '9px',
-              fontWeight: 'bold',
-              color: '#fff',
-              textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
-              pointerEvents: 'none'
+              width: '100%',
+              height: '12px',
+              backgroundColor: '#2d2d30',
+              borderRadius: '6px',
+              overflow: 'hidden',
+              border: '1px solid #444',
+              position: 'relative',
+              boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
             }}>
-              {Math.round(hpPercentage)}%
-            </span>
-          </div>
+              <div style={{
+                width: `${hpPercentage}%`,
+                height: '100%',
+                backgroundColor: hpColor,
+                transition: 'width 0.5s ease, background-color 0.5s ease',
+                boxShadow: `0 0 8px ${hpColor}, inset 0 1px 2px rgba(255, 255, 255, 0.3)`,
+                borderRadius: '5px'
+              }} />
+              <span style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                fontSize: '9px',
+                fontWeight: 'bold',
+                color: '#fff',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
+                pointerEvents: 'none'
+              }}>
+                {Math.round(hpPercentage)}%
+              </span>
+            </div>
+          )}
         </div>
       )}
       
@@ -439,6 +524,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
   const [overId, setOverId] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [pcStats, setPcStats] = useState({});
+  const [customizations, setCustomizations] = useState({});
   
   // Get ready state from context
   const { isReady, clearReady, setReady } = useReadyState();
@@ -466,6 +552,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
     loadInitiativeData();
     loadAvailableCharacters();
     loadPcStats();
+    loadCustomizations();
   }, [filePath]);
 
   // Load ready states after characters are loaded
@@ -490,6 +577,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
       loadReadyStates();
       // Reload initiative data to sync current turn across devices
       loadInitiativeDataSilently();
+       loadCustomizations();
     }, 5000); // Refresh every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
@@ -504,6 +592,18 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
       }
     } catch (error) {
       console.error('Error loading PC stats:', error);
+    }
+  };
+
+  const loadCustomizations = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/characters/customizations`);
+      if (response.ok) {
+        const data = await response.json();
+        setCustomizations(data.customizations || {});
+      }
+    } catch (error) {
+      console.error('Error loading character customizations:', error);
     }
   };
 
@@ -623,6 +723,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
               name: parts[0],
               initiative: parseInt(parts[1]) || 0,
               isEnemy: false,
+              damageMode: false,
             };
             
             // Parse enemy status (column 3, if it exists)
@@ -637,6 +738,11 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
                 character.manualCurrentHp = parseInt(hpMatch[1]);
                 character.manualMaxHp = parseInt(hpMatch[2]);
               }
+            }
+            
+            // Parse damage mode (column 5, if it exists)
+            if (parts.length >= 5 && parts[4] === '💢') {
+              character.damageMode = true;
             }
             
             return character;
@@ -696,6 +802,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
               name: parts[0],
               initiative: parseInt(parts[1]) || 0,
               isEnemy: false,
+              damageMode: false,
             };
             
             // Parse enemy status (column 3, if it exists)
@@ -712,6 +819,11 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
               }
             }
             
+            // Parse damage mode (column 5, if it exists)
+            if (parts.length >= 5 && parts[4] === '💢') {
+              character.damageMode = true;
+            }
+            
             return character;
           }
           return null;
@@ -719,8 +831,8 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
         .filter(char => char !== null);
 
       // Only update if data has actually changed
-      const hasCharacterChanges = JSON.stringify(characters.map(c => ({ name: c.name, initiative: c.initiative, isEnemy: c.isEnemy, manualCurrentHp: c.manualCurrentHp, manualMaxHp: c.manualMaxHp }))) 
-        !== JSON.stringify(parsedCharacters.map(c => ({ name: c.name, initiative: c.initiative, isEnemy: c.isEnemy, manualCurrentHp: c.manualCurrentHp, manualMaxHp: c.manualMaxHp })));
+      const hasCharacterChanges = JSON.stringify(characters.map(c => ({ name: c.name, initiative: c.initiative, isEnemy: c.isEnemy, manualCurrentHp: c.manualCurrentHp, manualMaxHp: c.manualMaxHp, damageMode: c.damageMode }))) 
+        !== JSON.stringify(parsedCharacters.map(c => ({ name: c.name, initiative: c.initiative, isEnemy: c.isEnemy, manualCurrentHp: c.manualCurrentHp, manualMaxHp: c.manualMaxHp, damageMode: c.damageMode })));
       const hasTurnChange = loadedTurnIndex !== currentTurnIndex;
       const hasRoundChange = loadedRound !== roundNumber;
 
@@ -744,17 +856,18 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
     isSavingRef.current = true;
     lastInitiativeUpdateRef.current = Date.now();
 
-    const tableHeader = '| Character | Initiative | Enemy | Manual HP |\n| --------- | ---------: | :---: | :-------: |';
+    const tableHeader = '| Character | Initiative | Enemy | Manual HP | Damage Mode |\n| --------- | ---------: | :---: | :-------: | :---------: |';
     const tableRows = updatedCharacters
       .map(char => {
         const enemyStatus = char.isEnemy ? '👹' : '';
         const manualHp = (char.manualCurrentHp !== undefined && char.manualMaxHp !== undefined) 
           ? `${char.manualCurrentHp}/${char.manualMaxHp}` 
           : '';
-        return `| ${char.name} | ${char.initiative} | ${enemyStatus} | ${manualHp} |`;
+        const damageMode = char.damageMode ? '💢' : '';
+        return `| ${char.name} | ${char.initiative} | ${enemyStatus} | ${manualHp} | ${damageMode} |`;
       })
       .join('\n');
-    const endMarker = '\n| End of Round | 0 | | |';
+    const endMarker = '\n| End of Round | 0 | | | |';
     
     // Add metadata about current turn and round
     const currentCharName = updatedCharacters[turnIndex]?.name || '';
@@ -917,6 +1030,15 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
     saveInitiativeData(updatedCharacters);
   };
 
+  // Toggle damage mode for enemies
+  const handleToggleDamageMode = (id) => {
+    const updatedCharacters = characters.map(char =>
+      char.id === id ? { ...char, damageMode: !char.damageMode } : char
+    );
+    setCharacters(updatedCharacters);
+    saveInitiativeData(updatedCharacters);
+  };
+
   // Toggle character from available list (add or remove)
   const handleToggleFromAvailable = (characterName) => {
     // Check if character is already in initiative
@@ -1039,6 +1161,9 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
   const activeCharacter = activeId 
     ? characters.find(c => c.id === activeId) || availableCharacters.find(c => c.id === activeId)
     : null;
+  const activeCustomization = activeCharacter ? customizations?.[activeCharacter.name] : null;
+  const activeAvatarPixels = activeCustomization?.avatar ? normalizeAvatarMatrix(activeCustomization.avatar) : null;
+  const activeAccentColor = activeCustomization?.folderColor;
 
   return (
     <div className={`initiative-tracker-container ${lightMode ? 'light-mode' : ''}`}>
@@ -1062,12 +1187,17 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
               <div className="available-characters-list">
                 {availableCharacters.map((char) => {
                   const isInInitiative = characters.some(c => c.name === char.name);
+                  const customization = customizations?.[char.name];
+                  const avatarPixels = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : null;
+                  const accentColor = customization?.folderColor;
                   return (
                     <DraggableSidebarCharacter
                       key={char.id}
                       character={char}
                       isInInitiative={isInInitiative}
                       onClick={() => handleToggleFromAvailable(char.name)}
+                      avatarPixels={avatarPixels}
+                      accentColor={accentColor}
                     />
                   );
                 })}
@@ -1125,6 +1255,9 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
               
               // Check if character is ready from context
               const isCharacterReady = isReady(character.name);
+              const customization = customizations?.[character.name];
+              const avatarPixels = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : null;
+              const accentColor = customization?.folderColor;
               
               return (
                 <SortableInitiativeItem
@@ -1136,11 +1269,14 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
                   onRemove={handleRemove}
                   onToggleEnemy={handleToggleEnemy}
                   onUpdateManualHp={handleUpdateManualHp}
+                  onToggleDamageMode={handleToggleDamageMode}
                   showDropIndicatorBefore={showDropIndicatorBefore}
                   showDropIndicatorAfter={false}
                   characters={characters}
                   pcStats={pcStats}
                   isReady={isCharacterReady}
+                  avatarPixels={avatarPixels}
+                  accentColor={accentColor}
                 />
               );
             })}
@@ -1202,7 +1338,13 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
       <DragOverlay>
         {activeCharacter ? (
           <div className="drag-overlay-item">
-            <span className="character-icon">👤</span>
+            <PixelAvatar
+              className="character-icon"
+              pixels={activeAvatarPixels}
+              size={56}
+              borderColor={activeAccentColor || 'rgba(255,255,255,0.5)'}
+              placeholderLabel={activeCharacter.name?.[0] || 'C'}
+            />
             <span className="character-name">{activeCharacter.name}</span>
             {activeCharacter.initiative !== undefined && (
               <span className="character-initiative">{activeCharacter.initiative}</span>

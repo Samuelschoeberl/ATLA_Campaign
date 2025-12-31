@@ -1,5 +1,5 @@
-#Action_Mahogany 
-#Reaction_Mahogany 
+#Action_Mahogany (earthbender)
+#Reaction_Mahogany (airbender)
 
 -  **Y**([[Earthbending slot]] (0)): Yd12 Damage per projectile
 - **X**([[Airbending_slot]] (3)): X Projectiles [[Air Attack Roll]] (1d20 + 1 + 4)

@@ -3,6 +3,7 @@ import { hexToRgba } from '../utils/colorUtils';
 import './BendingMove.css';
 import { API_BASE_URL } from '../config/api';
 import ShapeshiftingForm from './ShapeshiftingForm';
+import HexGridSVG from './HexGridSVG';
 
 const ELEMENT_COLORS = {
   fire: '#ffb3b3',
@@ -11,6 +12,58 @@ const ELEMENT_COLORS = {
   spirit: '#ffcaf4',
   earth: '#c8f0a6'
 };
+
+const AREA_PATTERNS = {
+  cone: [
+    { count: 1, offset: 2 },
+    { count: 2, offset: 1 },
+    { count: 3, offset: 0 }
+  ],
+  sphere: [
+    { count: 2, offset: 1 },
+    { count: 3, offset: 0 },
+    { count: 2, offset: 1 }
+  ],
+  aura: [
+    { count: 1, offset: 2 },
+    { count: 3, offset: 1 },
+    { count: 4, offset: 0 },
+    { count: 3, offset: 1 },
+    { count: 1, offset: 2 }
+  ],
+  line: [
+    { count: 5, offset: 0 }
+  ],
+  wall: [
+    { count: 4, offset: 0 },
+    { count: 4, offset: 0 }
+  ],
+  cluster: [
+    { count: 1, offset: 2 },
+    { count: 2, offset: 1 },
+    { count: 2, offset: 1 },
+    { count: 1, offset: 2 }
+  ],
+  self: [
+    { count: 1, offset: 0 }
+  ],
+  melee: [
+    { count: 1, offset: 1 },
+    { count: 2, offset: 0 },
+    { count: 1, offset: 1 }
+  ]
+};
+
+const AREA_MATCHERS = [
+  { type: 'cone', label: 'Cone', keywords: ['cone'] },
+  { type: 'line', label: 'Line', keywords: ['line', 'beam'] },
+  { type: 'wall', label: 'Wall', keywords: ['wall'] },
+  { type: 'aura', label: 'Aura', keywords: ['aura'] },
+  { type: 'sphere', label: 'Sphere', keywords: ['sphere', 'radius', 'burst', 'cloud'] },
+  { type: 'cluster', label: 'Cluster', keywords: ['cluster'] },
+  { type: 'melee', label: 'Melee', keywords: ['melee', 'touch'] },
+  { type: 'self', label: 'Self', keywords: ['self'] }
+];
 
 // Dice roller utility (same as CharacterSheet)
 const rollDice = (diceString) => {
@@ -158,7 +211,7 @@ const DiceRollText = ({ text }) => {
   );
 };
 
-const BendingMove = ({ file, lightMode = false }) => {
+const BendingMove = ({ file, lightMode = false, characterData = null }) => {
   const [content, setContent] = useState('');
   const [moveData, setMoveData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -476,16 +529,62 @@ const BendingMove = ({ file, lightMode = false }) => {
     return '#95a5a6'; // Default gray
   };
 
-  const getActionTypeFromTags = (tags) => {
-    for (const tag of tags) {
-      const lowerTag = tag.toLowerCase();
-      if (lowerTag.includes('danger_sense_reaction')) return 'Danger Sense Reaction';
-      if (lowerTag.includes('bonus_action')) return 'Bonus Action';
+const getActionTypeFromTags = (tags) => {
+  for (const tag of tags) {
+    const lowerTag = tag.toLowerCase();
+    if (lowerTag.includes('danger_sense_reaction')) return 'Danger Sense Reaction';
+    if (lowerTag.includes('bonus_action')) return 'Bonus Action';
       if (lowerTag.includes('reaction')) return 'Reaction';
       if (lowerTag.includes('action')) return 'Action';
     }
     return null;
   };
+
+  const detectAreaInfo = (key, value) => {
+    if (!value && !key) return null;
+    const text = `${key || ''} ${value || ''}`.toLowerCase();
+    const keyIsRangeLike = (key || '').toLowerCase().match(/range|area|radius/);
+    if (
+      !keyIsRangeLike &&
+      !(value || '').toLowerCase().match(/cone|sphere|aura|line|wall|burst|cloud/)
+    ) {
+      return null;
+    }
+
+    const matcher = AREA_MATCHERS.find(({ keywords }) =>
+      keywords.some(keyword => {
+        const safeKeyword = keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`\\b${safeKeyword}\\b`);
+        return regex.test(text);
+      })
+    );
+
+    if (!matcher) return null;
+    const pattern = AREA_PATTERNS[matcher.type];
+    if (!pattern) return null;
+
+    return { ...matcher, pattern };
+  };
+
+  // Extract target range multiplier from metadata
+  const getTargetRangeMultiplier = (metadata) => {
+    if (!metadata) return 0;
+    
+    // Look for "Target Range" or similar field
+    for (const [key, value] of Object.entries(metadata)) {
+      const keyLower = key.toLowerCase();
+      if (keyLower.includes('target') && keyLower.includes('range')) {
+        const rangeMatch = String(value).match(/(\d+)\s*\*\s*/);
+        if (rangeMatch) {
+          return parseInt(rangeMatch[1]);
+        }
+      }
+    }
+    return 0;
+  };
+
+  const targetRangeMultiplier = moveData?.metadata ? getTargetRangeMultiplier(moveData.metadata) : 0;
+
 
   // Render markdown fallback
   const renderMarkdown = () => {
@@ -549,6 +648,28 @@ const BendingMove = ({ file, lightMode = false }) => {
   const elementColor = getElementColor(moveData.tags);
   const actionType = getActionTypeFromTags(moveData.tags);
   const moveName = file.name ? file.name.replace('.md', '') : 'Bending Move';
+  
+  const renderAreaPreview = (areaInfo, rangeMultiplier = 0) => {
+    if (!areaInfo) return null;
+
+    const opacity = lightMode ? 0.5 : 0.35;
+
+    return (
+      <div className="area-preview">
+        <div className="area-preview-label">
+          {areaInfo.label} area {rangeMultiplier > 0 && `(Range: ${rangeMultiplier}×)`}
+        </div>
+        <HexGridSVG 
+          pattern={areaInfo.pattern}
+          color={elementColor}
+          opacity={opacity}
+          lightMode={lightMode}
+          range={rangeMultiplier}
+          characterData={characterData}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className={`bending-move ${lightMode ? 'light-mode' : ''}`}>
@@ -620,64 +741,74 @@ const BendingMove = ({ file, lightMode = false }) => {
             <div className="metadata-grid">
               {Object.entries(moveData.metadata)
                 .filter(([key, value]) => String(value).length <= 50)
-                .map(([key, value]) => (
-                  <div 
-                    key={key} 
-                    className="metadata-item"
-                    style={{
-                      padding: '12px',
-                      backgroundColor: lightMode ? '#f8f9fa' : '#2a2a2a',
-                      borderRadius: '6px',
-                      borderLeft: `3px solid ${elementColor}`
-                    }}
-                  >
-                    <div style={{ 
-                      fontWeight: '600', 
-                      fontSize: '14px',
-                      color: elementColor,
-                      marginBottom: '6px'
-                    }}>
-                      {key}
+                .map(([key, value]) => {
+                  const areaInfo = detectAreaInfo(key, value);
+                  
+                  return (
+                    <div 
+                      key={key} 
+                      className="metadata-item"
+                      style={{
+                        padding: '12px',
+                        backgroundColor: lightMode ? '#f8f9fa' : '#2a2a2a',
+                        borderRadius: '6px',
+                        borderLeft: `3px solid ${elementColor}`
+                      }}
+                    >
+                      <div style={{ 
+                        fontWeight: '600', 
+                        fontSize: '14px',
+                        color: elementColor,
+                        marginBottom: '6px'
+                      }}>
+                        {key}
+                      </div>
+                      <div style={{ fontSize: '15px' }}>
+                        {processText(value)}
+                      </div>
+                      {renderAreaPreview(areaInfo, targetRangeMultiplier)}
                     </div>
-                    <div style={{ fontSize: '15px' }}>
-                      {processText(value)}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           )}
           
           {/* Long fields - each gets full width */}
           {Object.entries(moveData.metadata)
             .filter(([key, value]) => String(value).length > 50)
-            .map(([key, value]) => (
-              <div 
-                key={key} 
-                className="metadata-item-full"
-                style={{
-                  padding: '15px',
-                  backgroundColor: lightMode ? '#f8f9fa' : '#2a2a2a',
-                  borderRadius: '8px',
-                  borderLeft: `4px solid ${elementColor}`,
-                  marginTop: '15px'
-                }}
-              >
-                <div style={{ 
-                  fontWeight: '600', 
-                  fontSize: '16px',
-                  color: elementColor,
-                  marginBottom: '10px'
-                }}>
-                  {key}
+            .map(([key, value]) => {
+              const areaInfo = detectAreaInfo(key, value);
+              
+              return (
+                <div 
+                  key={key} 
+                  className="metadata-item-full"
+                  style={{
+                    padding: '15px',
+                    backgroundColor: lightMode ? '#f8f9fa' : '#2a2a2a',
+                    borderRadius: '8px',
+                    borderLeft: `4px solid ${elementColor}`,
+                    marginTop: '15px'
+                  }}
+                >
+                  <div style={{ 
+                    fontWeight: '600', 
+                    fontSize: '16px',
+                    color: elementColor,
+                    marginBottom: '10px'
+                  }}>
+                    {key}
+                  </div>
+                  <div style={{ 
+                    fontSize: '15px',
+                    lineHeight: '1.6'
+                  }}>
+                    {processText(value)}
+                  </div>
+                  {renderAreaPreview(areaInfo, targetRangeMultiplier)}
                 </div>
-                <div style={{ 
-                  fontSize: '15px',
-                  lineHeight: '1.6'
-                }}>
-                  {processText(value)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
         </section>
       )}
 
