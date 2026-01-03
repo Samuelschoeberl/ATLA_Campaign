@@ -1,6 +1,8 @@
+[[Battlemap.json]]
 [[stat_overview]]
 [[Initiative Tracker]]
 [[Shared Notes]]
+
 
 | Characters     |
 | -------------- |

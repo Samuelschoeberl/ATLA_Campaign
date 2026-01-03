@@ -1,0 +1,16 @@
+{
+  "format": "graph",
+  "version": "2.0",
+  "gridSize": {
+    "rows": 61,
+    "cols": 81
+  },
+  "hexGraph": {},
+  "tokens": [],
+  "backgroundImage": {
+    "name": "[Battlemaps] Sandnomad camp.jpeg",
+    "path": "Maps/Battlemaps"
+  },
+  "hexSize": 16,
+  "lastModified": 1767329039492
+}

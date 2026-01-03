@@ -104,6 +104,82 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
 
   const handleLinkClick = async (linkName) => {
     console.log('Quicklinks: Clicking link:', linkName);
+    
+    // Check if this is a battlemap.json file
+    if (linkName.toLowerCase().endsWith('battlemap.json') || linkName.toLowerCase().includes('battlemap')) {
+      try {
+        // For battlemap files, try using the player_root endpoint directly
+        const possiblePaths = [
+          'Maps/Battlemap.json',
+          'Maps/battlemap.json',
+          linkName
+        ];
+        
+        // Try each path using player_root endpoint
+        for (const path of possiblePaths) {
+          try {
+            const testResponse = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(path)}`);
+            if (testResponse.ok) {
+              console.log('Quicklinks: Found battlemap at:', path);
+              const fileName = path.split('/').pop();
+              onFileSelect({
+                name: fileName,
+                path: path,
+                type: 'battlemap'
+              });
+              return;
+            }
+          } catch (err) {
+            // Continue to next path
+            console.log(`Path ${path} not found, trying next...`);
+            continue;
+          }
+        }
+        
+        // If direct paths failed, try searching
+        const searchResponse = await fetch(
+          `${API_BASE_URL}/player_root/search?q=${encodeURIComponent('battlemap.json')}`
+        );
+        
+        if (searchResponse.ok) {
+          const searchData = await searchResponse.json();
+          const results = searchData.results || [];
+          console.log('Quicklinks: Battlemap search results:', results);
+          
+          // Look for .json file match
+          const battlemapMatch = results.find(result => {
+            const pathLower = result.path.toLowerCase();
+            return pathLower.includes('battlemap') && pathLower.endsWith('.json');
+          });
+          
+          if (battlemapMatch) {
+            console.log('Quicklinks: Found battlemap:', battlemapMatch);
+            // Extract the relative path (remove "Player Root/" prefix)
+            const relativePath = battlemapMatch.path.replace(/^Player Root\//, '');
+            const fileName = relativePath.split('/').pop();
+            
+            console.log('Quicklinks: Opening battlemap:', { name: fileName, path: relativePath });
+            onFileSelect({
+              name: fileName,
+              path: relativePath,
+              type: 'battlemap'
+            });
+            return;
+          }
+        }
+        
+        // If still not found, show error with debug info
+        console.error('Battlemap not found. Tried paths:', possiblePaths);
+        alert(`Could not find battlemap file. Tried:\n${possiblePaths.join('\n')}\n\nPlease check that Battlemap.json exists in the Maps folder.`);
+        return;
+      } catch (err) {
+        console.error('Error finding battlemap:', err);
+        alert('Error loading battlemap: ' + err.message);
+        return;
+      }
+    }
+    
+    // Regular file handling (markdown files, character sheets, etc.)
     try {
       // Search for the file
       const searchResponse = await fetch(
@@ -192,6 +268,7 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
     const lowerName = linkName.toLowerCase();
     
     // Custom emoji mappings
+    if (lowerName.includes('battlemap') || lowerName.endsWith('.json')) return '🗺️';
     if (lowerName.includes('stat') || lowerName.includes('overview')) return '📊';
     if (lowerName.includes('initiative') || lowerName.includes('tracker')) return '⚔️';
     if (lowerName.includes('inventory')) return '🎒';

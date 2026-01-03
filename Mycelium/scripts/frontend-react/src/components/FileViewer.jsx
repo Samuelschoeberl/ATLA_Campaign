@@ -194,8 +194,8 @@ const FileViewer = ({ file, lightMode = false, onFileSelect, advancedMode = fals
     setRenderedHtml(''); // Clear rendered HTML immediately
 
     try {
-      // Use the player_root endpoint - it returns JSON with {content, hash} for text files
-      const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(file.path)}`);
+      // Use the new RESTful /api/file/ endpoint
+      const response = await fetch(`${API_BASE_URL}/api/file/${encodeURIComponent(file.path)}`);
       if (response.ok) {
         const contentType = response.headers.get('content-type');
         
@@ -479,7 +479,7 @@ const FileViewer = ({ file, lightMode = false, onFileSelect, advancedMode = fals
   if (isBattlemap) {
     return (
       <div className={`file-viewer ${lightMode ? 'light-mode' : ''}`}>
-        <BattlemapViewer filePath={file.path} content={content} />
+        <BattlemapViewer filePath={file.path} content={content} advancedMode={advancedMode} />
       </div>
     );
   }

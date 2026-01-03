@@ -228,30 +228,41 @@ const HexGridSVG = ({
           }}
         />
         
-        {/* Embed pixel avatar in bender hexagon */}
+        {/* Clipping path for hexagon - create a tight fit */}
+        <defs>
+          <clipPath id={`hex-clip-bender-${hexSize}`}>
+            <path d={benderHex.vertices
+              .map((v, i) => `${i === 0 ? 'M' : 'L'} ${v.x} ${v.y}`)
+              .join(' ') + ' Z'} />
+          </clipPath>
+        </defs>
+        
+        {/* Embed pixel avatar in bender hexagon with clipping */}
         {characterData?.pixels && (
-          <foreignObject
-            x={benderHex.cx - hexSize * 0.7}
-            y={benderHex.cy - hexSize * 0.7}
-            width={hexSize * 1.4}
-            height={hexSize * 1.4}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
-              height: '100%',
-              overflow: 'hidden'
-            }}>
-              <PixelAvatar
-                pixels={characterData.pixels}
-                size={hexSize * 1.3}
-                borderColor="transparent"
-                background="transparent"
-              />
-            </div>
-          </foreignObject>
+          <g clipPath={`url(#hex-clip-bender-${hexSize})`}>
+            <foreignObject
+              x={benderHex.cx - hexSize}
+              y={benderHex.cy - hexSize}
+              width={hexSize * 2}
+              height={hexSize * 2}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden'
+              }}>
+                <PixelAvatar
+                  pixels={characterData.pixels}
+                  size={hexSize * 2}
+                  borderColor="transparent"
+                  background="transparent"
+                />
+              </div>
+            </foreignObject>
+          </g>
         )}
       </svg>
     </div>

@@ -6,7 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check-env": "./check-env.sh",
+    "test": "PATH=/usr/local/bin:$PATH playwright test",
+    "test:headed": "PATH=/usr/local/bin:$PATH playwright test --headed",
+    "test:ui": "PATH=/usr/local/bin:$PATH playwright test --ui",
+    "test:debug": "PATH=/usr/local/bin:$PATH playwright test --debug",
+    "test:report": "PATH=/usr/local/bin:$PATH playwright show-report",
+    "test:codegen": "PATH=/usr/local/bin:$PATH playwright codegen http://localhost:5173",
+    "test:analyze": "./test-with-analysis.sh",
+    "test:analyze:headed": "./test-with-analysis.sh --headed",
+    "test:extract": "node extract-test-results.js",
+    "test:extract:failed": "node extract-test-results.js --failed-only"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -14,6 +25,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@react-three/fiber": "^8.15.12",
     "dompurify": "^3.0.6",
+    "flask": "^0.2.10",
     "marked": "^9.1.6",
     "plotly.js": "^3.3.1",
     "react": "^18.2.0",
@@ -22,6 +34,7 @@
     "three": "^0.160.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@vitejs/plugin-react": "^4.2.0",

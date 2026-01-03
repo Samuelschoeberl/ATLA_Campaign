@@ -261,9 +261,19 @@ const DiceRollText = ({ text }) => {
   const [isPaintingAvatar, setIsPaintingAvatar] = useState(false);
   const [avatarEraseMode, setAvatarEraseMode] = useState(false);
   const [recentColors, setRecentColors] = useState([]);
-  const [customizeTab, setCustomizeTab] = useState('general'); // general | avatar
+  const [customizeTab, setCustomizeTab] = useState('general'); // general | avatar | hexExporter
   const [deathSaveSuccesses, setDeathSaveSuccesses] = useState(0);
   const [deathSaveFailures, setDeathSaveFailures] = useState(0);
+
+  // Hex grid exporter state
+  const [hexGridSize, setHexGridSize] = useState({ rows: 5, cols: 5 });
+  const [hexGrid, setHexGrid] = useState([]);
+  const [isPaintingHex, setIsPaintingHex] = useState(false);
+  const [hexEraseMode, setHexEraseMode] = useState(false);
+  const [hexBrushColor, setHexBrushColor] = useState('#3498db');
+  const [showCharacterInHex, setShowCharacterInHex] = useState(true);
+  const [hexCharacterPosition, setHexCharacterPosition] = useState({ row: 2, col: 2 });
+  const [hexExportSize, setHexExportSize] = useState(40); // Hex size in pixels
 
   const STANDARD_COLORS = [
     '#ff6b6b', '#ffb347', '#ffd166', '#9b59b6', '#6c5ce7', '#3498db',
@@ -983,6 +993,292 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }, 'image/png');
   };
 
+  const handleExportHexToken = () => {
+    // Create a canvas for the hexagonal token
+    const canvas = document.createElement('canvas');
+    const scale = 4; // Higher resolution for token
+    const hexSize = AVATAR_SIZE * scale / 2; // Half of avatar size as hex radius
+    
+    // Calculate hexagon dimensions
+    const hexWidth = hexSize * Math.sqrt(3);
+    const hexHeight = hexSize * 2;
+    
+    // Add padding around the hexagon
+    const padding = 20;
+    canvas.width = hexWidth + padding * 2;
+    canvas.height = hexHeight + padding * 2;
+    const ctx = canvas.getContext('2d');
+    
+    // Transparent background for token overlay
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Enable anti-aliasing for smooth edges
+    ctx.imageSmoothingEnabled = true;
+    
+    // Center coordinates
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Create hexagon clipping path (flat-top orientation)
+    ctx.save();
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i + Math.PI / 2; // Start from top
+      const x = centerX + hexSize * Math.cos(angle);
+      const y = centerY + hexSize * Math.sin(angle);
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.closePath();
+    ctx.clip();
+    
+    // Draw the pixel avatar scaled to fit within the hexagon
+    ctx.imageSmoothingEnabled = false;
+    const avatarScale = (hexSize * 2) / AVATAR_SIZE;
+    const avatarOffset = centerX - (AVATAR_SIZE * avatarScale) / 2;
+    
+    for (let row = 0; row < AVATAR_SIZE; row++) {
+      for (let col = 0; col < AVATAR_SIZE; col++) {
+        const pixel = workingAvatar[row][col];
+        if (pixel[3] > 0) { // Only draw non-transparent pixels
+          ctx.fillStyle = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3] / 255})`;
+          ctx.fillRect(
+            avatarOffset + col * avatarScale,
+            avatarOffset + row * avatarScale,
+            avatarScale,
+            avatarScale
+          );
+        }
+      }
+    }
+    
+    ctx.restore();
+    
+    // Draw hexagon border with glow effect
+    ctx.shadowColor = 'rgba(100, 200, 255, 0.6)';
+    ctx.shadowBlur = 10;
+    ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i + Math.PI / 2;
+      const x = centerX + hexSize * Math.cos(angle);
+      const y = centerY + hexSize * Math.sin(angle);
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // Convert to blob and download
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${characterData?.name || 'character'}_hex_token.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+
+  // Hex Grid Exporter Functions
+  const initializeHexGrid = (rows, cols) => {
+    const grid = [];
+    for (let r = 0; r < rows; r++) {
+      const row = [];
+      for (let c = 0; c < cols; c++) {
+        row.push({ filled: false, color: '#3498db' });
+      }
+      grid.push(row);
+    }
+    return grid;
+  };
+
+  const handleHexGridSizeChange = (rows, cols) => {
+    setHexGridSize({ rows, cols });
+    setHexGrid(initializeHexGrid(rows, cols));
+    // Center character position
+    setHexCharacterPosition({ 
+      row: Math.floor(rows / 2), 
+      col: Math.floor(cols / 2) 
+    });
+  };
+
+  const handleHexPaint = (row, col, erase = false) => {
+    setHexGrid(prev => {
+      const updated = prev.map((r, rIdx) => 
+        r.map((cell, cIdx) => {
+          if (rIdx === row && cIdx === col) {
+            return erase ? { filled: false, color: '#3498db' } : { filled: true, color: hexBrushColor };
+          }
+          return cell;
+        })
+      );
+      return updated;
+    });
+  };
+
+  const handleClearHexGrid = () => {
+    setHexGrid(initializeHexGrid(hexGridSize.rows, hexGridSize.cols));
+  };
+
+  const handleExportHexGrid = () => {
+    const { rows, cols } = hexGridSize;
+    const hexSize = hexExportSize;
+    
+    // Calculate hexagon dimensions
+    const hexWidth = hexSize * Math.sqrt(3);
+    const hexHeight = hexSize * 2;
+    const horizSpacing = hexWidth;
+    const vertSpacing = hexSize * 1.5;
+    
+    // Calculate canvas size
+    const padding = 40;
+    const canvasWidth = cols * horizSpacing + (hexWidth / 2) + padding * 2;
+    const canvasHeight = rows * vertSpacing + (hexHeight / 4) + padding * 2;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext('2d');
+    
+    // Transparent background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    
+    // Helper function to draw a hexagon
+    const drawHexagon = (cx, cy, size, fillColor, strokeColor, filled) => {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i + Math.PI / 2;
+        const x = cx + size * Math.cos(angle);
+        const y = cy + size * Math.sin(angle);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.closePath();
+      
+      if (filled) {
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+      }
+      
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    };
+    
+    // Helper to draw character avatar in hexagon
+    const drawCharacterInHex = (cx, cy, size) => {
+      // Create clipping path
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i + Math.PI / 2;
+        const x = cx + size * Math.cos(angle);
+        const y = cy + size * Math.sin(angle);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.closePath();
+      ctx.clip();
+      
+      // Draw avatar
+      ctx.imageSmoothingEnabled = false;
+      const avatarScale = (size * 2) / AVATAR_SIZE;
+      const avatarOffset = cx - (AVATAR_SIZE * avatarScale) / 2;
+      const avatarOffsetY = cy - (AVATAR_SIZE * avatarScale) / 2;
+      
+      for (let row = 0; row < AVATAR_SIZE; row++) {
+        for (let col = 0; col < AVATAR_SIZE; col++) {
+          const pixel = workingAvatar[row][col];
+          if (pixel[3] > 0) {
+            ctx.fillStyle = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3] / 255})`;
+            ctx.fillRect(
+              avatarOffset + col * avatarScale,
+              avatarOffsetY + row * avatarScale,
+              avatarScale,
+              avatarScale
+            );
+          }
+        }
+      }
+      
+      ctx.restore();
+      
+      // Draw border with glow
+      ctx.shadowColor = 'rgba(100, 200, 255, 0.6)';
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i + Math.PI / 2;
+        const x = cx + size * Math.cos(angle);
+        const y = cy + size * Math.sin(angle);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    };
+    
+    // Draw hexagons
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const cy = row * vertSpacing + padding + hexSize;
+        const tessellationOffset = (row % 2 === 1) ? (hexWidth / 2) : 0;
+        const cx = col * horizSpacing + padding + (hexWidth / 2) + tessellationOffset;
+        
+        const cell = hexGrid[row]?.[col];
+        const isCharacterPosition = showCharacterInHex && 
+                                    row === hexCharacterPosition.row && 
+                                    col === hexCharacterPosition.col;
+        
+        if (isCharacterPosition) {
+          // Draw character avatar
+          drawCharacterInHex(cx, cy, hexSize);
+        } else if (cell?.filled) {
+          // Draw filled hexagon
+          drawHexagon(cx, cy, hexSize, cell.color, cell.color, true);
+        } else {
+          // Draw empty hexagon outline
+          drawHexagon(cx, cy, hexSize, 'transparent', 'rgba(150, 150, 150, 0.3)', false);
+        }
+      }
+    }
+    
+    // Export
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${characterData?.name || 'hex'}_grid_${rows}x${cols}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+
   const openCustomizeModal = () => {
     const avatar = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : workingAvatar;
     setWorkingAvatar(avatar);
@@ -992,6 +1288,10 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     addRecentColor(baseColor);
     setCustomizeError(null);
     setCustomizeTab('general');
+    // Initialize hex grid if not already initialized
+    if (hexGrid.length === 0) {
+      setHexGrid(initializeHexGrid(hexGridSize.rows, hexGridSize.cols));
+    }
     setShowCustomizeModal(true);
   };
 
@@ -2128,6 +2428,12 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
               >
                 Avatar Painter
               </button>
+              <button
+                className={`customize-tab ${customizeTab === 'hexExporter' ? 'active' : ''}`}
+                onClick={() => setCustomizeTab('hexExporter')}
+              >
+                ⬡ Hex Grid Exporter
+              </button>
             </div>
 
             {customizeTab === 'general' && (
@@ -2255,6 +2561,18 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                     >
                       ⬇️ Export as PNG
                     </button>
+                    <button 
+                      className="ghost-button" 
+                      onClick={handleExportHexToken}
+                      style={{
+                        background: '#3498db',
+                        color: '#fff',
+                        fontWeight: '600',
+                        border: 'none'
+                      }}
+                    >
+                      ⬡ Export Hex Token
+                    </button>
                   </div>
                 </div>
                 <div className="customize-column">
@@ -2289,6 +2607,314 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   </div>
                   <div className="avatar-editor-hint">
                     Tip: Hold Alt or right-click to erase pixels. Use the slider to add transparency.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {customizeTab === 'hexExporter' && (
+              <div className="customize-grid">
+                <div className="customize-column">
+                  <h4>⬡ Hex Grid Settings</h4>
+                  
+                  {/* Grid Size Controls */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                      Grid Size
+                    </label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '12px', color: '#888' }}>Rows</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={hexGridSize.rows}
+                          onChange={(e) => handleHexGridSizeChange(parseInt(e.target.value) || 1, hexGridSize.cols)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid #3e3e42',
+                            background: '#2a2a2a',
+                            color: '#e0e0e0'
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '12px', color: '#888' }}>Columns</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={hexGridSize.cols}
+                          onChange={(e) => handleHexGridSizeChange(hexGridSize.rows, parseInt(e.target.value) || 1)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid #3e3e42',
+                            background: '#2a2a2a',
+                            color: '#e0e0e0'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hex Export Size */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                      Hex Size (pixels): {hexExportSize}
+                    </label>
+                    <input
+                      type="range"
+                      min="20"
+                      max="100"
+                      value={hexExportSize}
+                      onChange={(e) => setHexExportSize(parseInt(e.target.value))}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+
+                  {/* Color Picker */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                      Brush Color
+                    </label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={hexBrushColor}
+                        onChange={(e) => setHexBrushColor(e.target.value)}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <div style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        background: '#2a2a2a',
+                        borderRadius: '4px',
+                        fontFamily: 'monospace',
+                        fontSize: '14px'
+                      }}>
+                        {hexBrushColor}
+                      </div>
+                    </div>
+                    
+                    {/* Quick color palette */}
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                      {STANDARD_COLORS.slice(0, 12).map((color) => (
+                        <div
+                          key={color}
+                          onClick={() => setHexBrushColor(color)}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            backgroundColor: color,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            border: hexBrushColor === color ? '3px solid #fff' : '1px solid #555',
+                            transition: 'transform 0.1s',
+                          }}
+                          onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
+                          onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Character Toggle */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={showCharacterInHex}
+                        onChange={(e) => setShowCharacterInHex(e.target.checked)}
+                      />
+                      <span>Show Character Avatar in Grid</span>
+                    </label>
+                  </div>
+
+                  {/* Character Position */}
+                  {showCharacterInHex && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                        Character Position
+                      </label>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '12px', color: '#888' }}>Row</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max={hexGridSize.rows - 1}
+                            value={hexCharacterPosition.row}
+                            onChange={(e) => setHexCharacterPosition({ ...hexCharacterPosition, row: parseInt(e.target.value) || 0 })}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '4px',
+                              border: '1px solid #3e3e42',
+                              background: '#2a2a2a',
+                              color: '#e0e0e0'
+                            }}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '12px', color: '#888' }}>Col</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max={hexGridSize.cols - 1}
+                            value={hexCharacterPosition.col}
+                            onChange={(e) => setHexCharacterPosition({ ...hexCharacterPosition, col: parseInt(e.target.value) || 0 })}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '4px',
+                              border: '1px solid #3e3e42',
+                              background: '#2a2a2a',
+                              color: '#e0e0e0'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <button 
+                      className="ghost-button" 
+                      onClick={handleClearHexGrid}
+                    >
+                      Clear Grid
+                    </button>
+                    <button 
+                      className="ghost-button" 
+                      onClick={handleExportHexGrid}
+                      style={{
+                        background: '#9b59b6',
+                        color: '#fff',
+                        fontWeight: '600',
+                        border: 'none'
+                      }}
+                    >
+                      ⬇️ Export Hex Grid
+                    </button>
+                  </div>
+                </div>
+
+                {/* Hex Grid Painter */}
+                <div className="customize-column">
+                  <h4>Hex Grid Painter</h4>
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      position: 'relative',
+                      userSelect: 'none'
+                    }}
+                    onContextMenu={(e) => e.preventDefault()}
+                    onMouseLeave={() => setIsPaintingHex(false)}
+                    onMouseUp={() => setIsPaintingHex(false)}
+                  >
+                    <svg
+                      width={hexGridSize.cols * 60 + 30}
+                      height={hexGridSize.rows * 52 + 30}
+                      style={{
+                        background: '#1a1a1a',
+                        borderRadius: '8px',
+                        border: '2px solid #3e3e42'
+                      }}
+                    >
+                      {hexGrid.map((row, rIdx) =>
+                        row.map((cell, cIdx) => {
+                          const hexSize = 25;
+                          const hexWidth = hexSize * Math.sqrt(3);
+                          const vertSpacing = hexSize * 1.5;
+                          const horizSpacing = hexWidth;
+                          const tessellationOffset = (rIdx % 2 === 1) ? (hexWidth / 2) : 0;
+                          
+                          const cx = cIdx * horizSpacing + 15 + (hexWidth / 2) + tessellationOffset;
+                          const cy = rIdx * vertSpacing + 15 + hexSize;
+                          
+                          const isCharacterPos = showCharacterInHex && 
+                                                rIdx === hexCharacterPosition.row && 
+                                                cIdx === hexCharacterPosition.col;
+                          
+                          // Calculate hexagon points
+                          const points = [];
+                          for (let i = 0; i < 6; i++) {
+                            const angle = (Math.PI / 3) * i + Math.PI / 2;
+                            const x = cx + hexSize * Math.cos(angle);
+                            const y = cy + hexSize * Math.sin(angle);
+                            points.push(`${x},${y}`);
+                          }
+                          
+                          return (
+                            <g key={`hex-${rIdx}-${cIdx}`}>
+                              <polygon
+                                points={points.join(' ')}
+                                fill={
+                                  isCharacterPos 
+                                    ? 'rgba(100, 200, 255, 0.3)' 
+                                    : cell.filled 
+                                      ? cell.color 
+                                      : 'transparent'
+                                }
+                                stroke={
+                                  isCharacterPos 
+                                    ? 'rgba(100, 200, 255, 0.9)' 
+                                    : cell.filled 
+                                      ? cell.color 
+                                      : 'rgba(150, 150, 150, 0.3)'
+                                }
+                                strokeWidth={isCharacterPos ? 3 : 2}
+                                style={{
+                                  cursor: isCharacterPos ? 'default' : 'pointer',
+                                  transition: 'all 0.1s'
+                                }}
+                                onMouseDown={(e) => {
+                                  if (isCharacterPos) return;
+                                  e.preventDefault();
+                                  setIsPaintingHex(true);
+                                  const erase = e.altKey || e.button === 2;
+                                  setHexEraseMode(erase);
+                                  handleHexPaint(rIdx, cIdx, erase);
+                                }}
+                                onMouseEnter={() => {
+                                  if (isPaintingHex && !isCharacterPos) {
+                                    handleHexPaint(rIdx, cIdx, hexEraseMode);
+                                  }
+                                }}
+                              />
+                              {isCharacterPos && (
+                                <text
+                                  x={cx}
+                                  y={cy}
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                  fill="rgba(100, 200, 255, 0.9)"
+                                  fontSize="20"
+                                  fontWeight="bold"
+                                >
+                                  👤
+                                </text>
+                              )}
+                            </g>
+                          );
+                        })
+                      )}
+                    </svg>
+                  </div>
+                  <div className="avatar-editor-hint" style={{ marginTop: '10px' }}>
+                    Tip: Click to paint hexagons. Hold Alt or right-click to erase. Character position shown with 👤
                   </div>
                 </div>
               </div>

@@ -1,0 +1,111 @@
+# Example GitHub Actions CI Configuration
+# Save this as .github/workflows/e2e-tests.yml in your repository root
+
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: Mycelium/scripts/frontend-react/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          pip install flask flask-cors
+
+      - name: Install Node dependencies
+        working-directory: Mycelium/scripts/frontend-react
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: Mycelium/scripts/frontend-react
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: Mycelium/scripts/frontend-react
+        env:
+          CI: true
+          FORCE_KILL: 1
+          NO_RELOAD: 1
+        run: npm test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: Mycelium/scripts/frontend-react/playwright-report/
+          retention-days: 30
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: Mycelium/scripts/frontend-react/test-results/
+          retention-days: 7
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: daun/playwright-report-comment@v3
+        with:
+          report-path: Mycelium/scripts/frontend-react/playwright-report
+
+# Optional: Run tests on schedule (nightly)
+  nightly:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        working-directory: Mycelium/scripts/frontend-react
+        run: |
+          npm ci
+          npx playwright install --with-deps ${{ matrix.browser }}
+      
+      - name: Install Python dependencies
+        run: pip install flask flask-cors
+      
+      - name: Run tests on ${{ matrix.browser }}
+        working-directory: Mycelium/scripts/frontend-react
+        env:
+          CI: true
+          FORCE_KILL: 1
+        run: npx playwright test --project=${{ matrix.browser }}

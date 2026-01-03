@@ -169,6 +169,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | max_hp | 36    | Player Root/variable/PC_variables/Rio/Rio_max_hp.md |
 | max_hp | 36    | Player Root/PCs/Rio/Rio Character Sheet.md |
 | current_hp | 36    | Player Root/PCs/Rio/Rio Character Sheet.md |
+| ready | no    | Player Root/PCs/Rio/Rio Character Sheet.md |
 
 
 **Defensive**
@@ -277,6 +278,7 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 | max_hp | 32    | Player Root/variable/PC_variables/Tiebeediy/Tiebeediy_max_hp.md |
 | max_hp | 32    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
 | current_hp | 32    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
+| ready | no    | Player Root/PCs/Tiebeediy/Tiebeediy character sheet.md |
 
 
 **Defensive**
@@ -308,10 +310,10 @@ _(Only shows variables tagged with #vitality, #defensive, or #bending_slot, or m
 
 
 | Key           | Value | Source File                            |
-| current_hp | 2600    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_current_hp.md |
+| current_hp | 2222    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_current_hp.md |
 | max_hp | 2600    | Player Root/variable/PC_variables/X_Testchar/X_Testchar_max_hp.md |
 | max_hp | 2600    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
-| current_hp | 2600    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
+| current_hp | 2222    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
 | ready | no    | Player Root/PCs/X_Testchar/X_Testchar character sheet.md |
 
 

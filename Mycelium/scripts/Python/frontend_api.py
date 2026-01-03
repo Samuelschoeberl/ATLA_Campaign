@@ -1799,6 +1799,89 @@ def get_file_colors():
         return jsonify({'error': f'Failed to compute colors: {e}'}), 500
 
 
+@bp.route('/api/file/<path:filepath>', methods=['GET'])
+def get_file_content(filepath):
+    """
+    RESTful endpoint to get file content.
+    This is an alias for /player_root/<path> for cleaner API semantics.
+    """
+    # Get the player root base
+    player_base = get_player_root_base()
+    
+    # Resolve the file path
+    target = player_base / filepath
+    
+    try:
+        target = target.resolve()
+    except Exception:
+        return jsonify({'error': 'Invalid path'}), 400
+    
+    # Security check: ensure target is inside repo
+    try:
+        repo_resolved = REPO_ROOT.resolve()
+        if repo_resolved not in target.parents and target != repo_resolved:
+            return jsonify({'error': 'Path outside repository'}), 403
+    except Exception:
+        return jsonify({'error': 'Path resolution error'}), 400
+    
+    # Check if file exists
+    if not target.exists():
+        return jsonify({'error': 'File not found'}), 404
+    
+    # Must be a file, not a directory
+    if target.is_dir():
+        return jsonify({'error': 'Path is a directory'}), 400
+    
+    # Check if it's an image or binary file
+    file_ext = target.suffix.lower()
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'}
+    
+    if file_ext in image_extensions:
+        # Serve image files directly
+        mimetype_map = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp',
+            '.svg': 'image/svg+xml',
+            '.bmp': 'image/bmp',
+            '.ico': 'image/x-icon',
+        }
+        mimetype = mimetype_map.get(file_ext, 'application/octet-stream')
+        
+        try:
+            response = send_file(
+                str(target),
+                mimetype=mimetype,
+                conditional=True,
+                download_name=target.name,
+                max_age=3600
+            )
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Cache-Control'] = 'public, max-age=3600'
+            return response
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    # Text file: return content as JSON
+    try:
+        content = target.read_text(encoding='utf-8')
+        h = hashlib.sha256(content.encode('utf-8')).hexdigest()
+        
+        return jsonify({
+            'content': content,
+            'hash': h,
+            'path': filepath,
+            'name': target.name,
+            'size': len(content)
+        })
+    except UnicodeDecodeError:
+        return jsonify({'error': 'File is not a text file'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @bp.route('/api/stat_overview', methods=['GET'])
 def get_stat_overview():
     """

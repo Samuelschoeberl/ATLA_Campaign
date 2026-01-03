@@ -218,12 +218,38 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
   const [error, setError] = useState(null);
   const [useMarkdown, setUseMarkdown] = useState(false);
   const [showRawMarkdown, setShowRawMarkdown] = useState(false);
+  const [loadedCharacterData, setLoadedCharacterData] = useState(null);
 
   useEffect(() => {
     if (file) {
       loadBendingMove();
     }
   }, [file]);
+
+  // Extract character name from filename like "Fireball - Ash.md"
+  const extractCharacterName = (fileName) => {
+    if (!fileName) return null;
+    // Remove .md extension
+    const withoutExt = fileName.replace(/\.md$/i, '');
+    // Look for pattern "Move Name - Character Name"
+    const match = withoutExt.match(/\s+-\s+(.+)$/);
+    return match ? match[1].trim() : null;
+  };
+
+  // Load character customization data for avatar
+  const loadCharacterCustomization = async (characterName) => {
+    if (!characterName) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterName)}/customization`);
+      if (response.ok) {
+        const data = await response.json();
+        setLoadedCharacterData({ pixels: data.avatar });
+      }
+    } catch (err) {
+      console.error('Error loading character customization:', err);
+    }
+  };
 
   const loadBendingMove = async () => {
     try {
@@ -242,6 +268,12 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
       const data = await response.json();
       setContent(data.content || '');
       const parsed = parseBendingMove(data.content || '');
+      
+      // Extract character name from filename and load their customization
+      const characterName = extractCharacterName(file.name);
+      if (characterName) {
+        await loadCharacterCustomization(characterName);
+      }
       
       // If parsing failed or didn't find structure, fall back to markdown
       if (!parsed || Object.keys(parsed.metadata).length === 0) {
@@ -649,6 +681,9 @@ const getActionTypeFromTags = (tags) => {
   const actionType = getActionTypeFromTags(moveData.tags);
   const moveName = file.name ? file.name.replace('.md', '') : 'Bending Move';
   
+  // Use loaded character data if available, otherwise fall back to prop
+  const activeCharacterData = loadedCharacterData || characterData;
+  
   const renderAreaPreview = (areaInfo, rangeMultiplier = 0) => {
     if (!areaInfo) return null;
 
@@ -665,7 +700,7 @@ const getActionTypeFromTags = (tags) => {
           opacity={opacity}
           lightMode={lightMode}
           range={rangeMultiplier}
-          characterData={characterData}
+          characterData={activeCharacterData}
         />
       </div>
     );

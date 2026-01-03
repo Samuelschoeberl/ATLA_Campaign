@@ -12,6 +12,7 @@ Name: Rio
 | Initiative        |        1d20 + 6 |
 | Movement          |          5 |
 
+| ready             |                    no |
 ## Core Stats
 
 | Stat         |   Value |

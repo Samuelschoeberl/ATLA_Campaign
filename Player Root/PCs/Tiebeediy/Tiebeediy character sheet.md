@@ -11,6 +11,7 @@ Name: Tiebeediy
 | Initiative        |        1d20 + 3 |
 | Movement          |          5 |
 
+| ready             |                    no |
 ## Core Stats
 
 | Stat         |   Value |
