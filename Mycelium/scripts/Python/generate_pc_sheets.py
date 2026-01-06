@@ -30,6 +30,7 @@ OUT_ROOT = ROOT.joinpath('Player Root', 'PCs')
 
 
 def parse_markdown_table(path: Path) -> Tuple[List[str], List[List[str]]]:
+    """Parse a markdown table and return header + row data."""
     txt = path.read_text(encoding='utf-8')
     lines = [l.strip() for l in txt.splitlines() if l.strip()]
     if not lines:
@@ -64,6 +65,7 @@ def parse_markdown_table(path: Path) -> Tuple[List[str], List[List[str]]]:
 
 
 def name_from_cell(cell: str) -> str:
+    """Extract a PC name from a wikilink cell or plain string."""
     # cell like [[Anju]] or Anju
     m = re.search(r"\[\[([^\]]+)\]\]", cell)
     if m:
@@ -72,6 +74,7 @@ def name_from_cell(cell: str) -> str:
 
 
 def to_number(s: str) -> Any:
+    """Convert a string to int/float when possible, otherwise return 0."""
     if s is None:
         return 0
     s = str(s).strip()
@@ -118,6 +121,7 @@ def safe_eval(expr: str) -> Any:
         return expr
 
     def _eval(n):
+        """Evaluate a limited AST node to avoid arbitrary code execution."""
         if isinstance(n, ast.Expression):
             return _eval(n.body)
         if isinstance(n, ast.Constant):
@@ -148,6 +152,7 @@ def safe_eval(expr: str) -> Any:
 
 
 def load_secondary_templates(dirpath: Path) -> Dict[str, str]:
+    """Load secondary stat formulas from markdown templates."""
     templates = {}
     if not dirpath.exists():
         return templates
@@ -164,12 +169,14 @@ def load_secondary_templates(dirpath: Path) -> Dict[str, str]:
 
 
 def load_primary_template_names(dirpath: Path) -> List[str]:
+    """List the stem names for all primary stat templates."""
     if not dirpath.exists():
         return []
     return [p.stem for p in dirpath.glob('*.md')]
 
 
 def compute_secondaries(kv: Dict[str, Any], templates: Dict[str, str]) -> Dict[str, Any]:
+    """Iteratively compute secondary stats using template formulas."""
     kv_local = {k.lower(): v for k, v in kv.items()}
     # iterative passes
     for _ in range(6):
@@ -178,6 +185,7 @@ def compute_secondaries(kv: Dict[str, Any], templates: Dict[str, str]) -> Dict[s
             key = name.lower()
             # substitute placeholders [[x]] case-insensitively
             def sub(m):
+                """Replace placeholders with the current numeric value."""
                 token = m.group(1).strip().lower()
                 # map spaces/dots/underscores
                 token_key = token
@@ -199,6 +207,7 @@ def compute_secondaries(kv: Dict[str, Any], templates: Dict[str, str]) -> Dict[s
 
 
 def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List[str], secondary_templates: Dict[str, str], out_root: Path) -> None:
+    """Write variable markdown files for a single PC."""
     safe_name = re.sub(r"[^A-Za-z0-9_\-]", '_', name)
     pc_dir = out_root.joinpath(safe_name)
     pc_dir.mkdir(parents=True, exist_ok=True)
@@ -225,6 +234,7 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
 
 
 def main():
+    """Generate per-PC variables and mirrored files from pc_primary_stats.md."""
     header, rows = parse_markdown_table(INPUT_TABLE)
     if not header or not rows:
         print('No table found at', INPUT_TABLE)

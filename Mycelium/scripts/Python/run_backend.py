@@ -1,3 +1,4 @@
+"""Lightweight Flask launcher that serves the frontend and supporting assets."""
 from flask import Flask, send_from_directory, send_file, request, g
 from flask_cors import CORS
 from pathlib import Path
@@ -325,6 +326,7 @@ def _safe_send_path(candidate_path: Path):
 
 @app.route('/favicon.ico')
 def serve_favicon():
+    """Serve a favicon from common repo locations."""
     # Try a few common locations; fall back to the repository logo
     candidates = [
         FRONTEND_DIR / 'favicon.ico',
@@ -343,6 +345,7 @@ def serve_favicon():
 @app.route('/Logo.png')
 @app.route('/Mycelium/Logo.png')
 def serve_logo_png():
+    """Serve the project logo from whichever canonical path exists."""
     # Map generic Logo.png requests to the canonical repo logo file when present
     candidates = [
         REPO_ROOT / 'Mycelium' / 'Mycelium Logo.png',
@@ -360,6 +363,7 @@ def serve_logo_png():
 @app.route("/", defaults={"path": "index.html"})
 @app.route("/<path:path>")
 def serve_frontend(path):
+    """Serve frontend assets, falling back to index.html for SPA routes."""
     # Build a prioritized list of candidate paths to try for this request.
     # Start by URL-decoding and normalizing the incoming path, then include
     # variants (original, double-decoded, %20->space, basename fallbacks).
@@ -368,6 +372,7 @@ def serve_frontend(path):
     original = (path or "").lstrip('/')
     candidates = []
     def add_once(p):
+        """Insert a candidate path only if it has not been tried yet."""
         if not p:
             return
         pp = Path(p).as_posix()
@@ -450,6 +455,7 @@ def serve_frontend(path):
 # Dedicated, robust handler for files under /Mycelium/
 @app.route('/Mycelium/<path:subpath>')
 def serve_mycelium(subpath):
+    """Serve files from the Mycelium/ directory with basic decoding."""
     # subpath may be percent-encoded; decode and try to serve the file from
     # the repository's Mycelium directory.
     try:
@@ -505,6 +511,7 @@ if __name__ == "__main__":
     force_kill = env_force_kill or auto_enable or (not __import__('sys').stdin.isatty())
 
     def find_listeners(p: int):
+        """Return processes listening on the given port using lsof."""
         import subprocess
         try:
             out = subprocess.check_output(["lsof", "-i", f":{p}", "-sTCP:LISTEN"], stderr=subprocess.DEVNULL, text=True)
@@ -554,6 +561,7 @@ if __name__ == "__main__":
 
             # wait for the port to free up, with retries
             def still_listening():
+                """Check whether the port is still in use after signals."""
                 return bool(find_listeners(port))
 
             wait_seconds = 5

@@ -21,6 +21,7 @@ from typing import Dict, List
 
 
 def parse_file_lines(p: Path) -> List[str]:
+    """Load a file into a list of lines, tolerating encoding issues."""
     try:
         txt = p.read_text(encoding='utf-8', errors='replace')
     except Exception:
@@ -29,6 +30,7 @@ def parse_file_lines(p: Path) -> List[str]:
 
 
 def extract_explicit_tags(lines: List[str]) -> List[str]:
+    """Collect hashtag-style tags near the top of the document."""
     tags = set()
     for ln in lines[:30]:
         for m in re.finditer(r"#([A-Za-z0-9_\-]+)", ln):
@@ -37,6 +39,7 @@ def extract_explicit_tags(lines: List[str]) -> List[str]:
 
 
 def find_wikilinks(lines: List[str]) -> Dict[str, List[int]]:
+    """Return mapping of wikilink targets to the line numbers where they appear."""
     wik = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]+)?\]\]")
     out: Dict[str, List[int]] = {}
     for i, ln in enumerate(lines):
@@ -47,6 +50,7 @@ def find_wikilinks(lines: List[str]) -> Dict[str, List[int]]:
 
 
 def find_keyword_occurrences(lines: List[str], keywords: List[str]) -> Dict[str, List[int]]:
+    """Find approximate keyword hits by substring matching against each line."""
     out: Dict[str, List[int]] = {}
     low = [k.lower() for k in keywords]
     for i, ln in enumerate(lines):
@@ -58,6 +62,7 @@ def find_keyword_occurrences(lines: List[str], keywords: List[str]) -> Dict[str,
 
 
 def decay_multiplier(d: int, lam: float, tag_boost: float, explicit: bool) -> float:
+    """Compute the weight contribution for a tag hit at distance `d`."""
     # base multiplier contribution from a tag occurrence at distance d lines
     base = 1.0
     boost = tag_boost if explicit else (tag_boost / 2.0)
@@ -65,6 +70,7 @@ def decay_multiplier(d: int, lam: float, tag_boost: float, explicit: bool) -> fl
 
 
 def compute_link_multipliers(file_path: Path, lam: float = 0.25, tag_boost: float = 0.75, alpha: float = 0.05, agg_mode: str = 'sum') -> Dict:
+    """Aggregate wikilinks, tags, and keyword hints into per-target multipliers."""
     lines = parse_file_lines(file_path)
     tags = extract_explicit_tags(lines)
     wikilinks = find_wikilinks(lines)
@@ -128,6 +134,7 @@ def compute_link_multipliers(file_path: Path, lam: float = 0.25, tag_boost: floa
 
 
 def _cli(argv=None):
+    """Command-line entry point for quick analysis."""
     p = argparse.ArgumentParser()
     p.add_argument('file', help='Markdown file to analyze')
     p.add_argument('--out', default=None, help='JSON output file (defaults to <file>.multipliers.json)')
@@ -169,4 +176,3 @@ _mod = importlib.import_module('Mycelium.scripts.manuals.extract_link_multiplier
 for _k, _v in _mod.__dict__.items():
 	if not _k.startswith('_'):
 		globals()[_k] = _v
-

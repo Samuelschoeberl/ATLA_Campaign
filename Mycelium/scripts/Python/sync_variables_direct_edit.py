@@ -864,6 +864,7 @@ def watch_mode(interval: int = 10, verbose: bool = False):
 
 
 def main():
+    """Run one-time sync or watch mode based on CLI options."""
     import argparse
     
     parser = argparse.ArgumentParser(description='Direct sync - edit table cells in place')

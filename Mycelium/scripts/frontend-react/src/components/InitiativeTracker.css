@@ -321,6 +321,30 @@
   transform: translateX(1px);
 }
 
+.btn-next-vertical.btn-clicked {
+  animation: nextTurnClick 0.4s ease-out !important;
+}
+
+@keyframes nextTurnClick {
+  0% {
+    transform: translateX(0) scale(1);
+    background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+  }
+  25% {
+    transform: translateX(8px) scale(0.9);
+    background: linear-gradient(180deg, #27ae60 0%, #229954 100%);
+    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    transform: translateX(4px) scale(0.95);
+    background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+  }
+}
+
 .btn-next-vertical:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -392,6 +416,34 @@
 .btn-reset:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-previous:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn-previous.btn-clicked {
+  animation: previousTurnClick 0.4s ease-out !important;
+}
+
+@keyframes previousTurnClick {
+  0% {
+    transform: translateY(0) scale(1);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  25% {
+    transform: translateY(-6px) scale(0.9);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    transform: translateY(-3px) scale(0.95);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
 }
 
 .btn-previous {
@@ -486,17 +538,7 @@
   background: linear-gradient(135deg, rgba(231, 76, 60, 0.3) 0%, rgba(231, 76, 60, 0.1) 100%);
   border-color: #e74c3c;
   box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
-  animation: pulse 2s ease-in-out infinite;
   padding-top: 40px; /* Extra padding for the indicator banner */
-}
-
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(231, 76, 60, 0.8);
-  }
 }
 
 .initiative-item.dragging {
@@ -772,16 +814,6 @@
 
 .indicator-arrow {
   font-size: 1.2em;
-  animation: bounce 1s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(5px);
-  }
 }
 
 .indicator-text {

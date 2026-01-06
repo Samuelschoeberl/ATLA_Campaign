@@ -79,7 +79,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | <details><summary>Bonus air slots</summary>0/0</details> | |
 | Danger Sense Reactions |                       1/1 |
 | <details><summary>Bonus fire slots</summary>0/0</details> | |
-| <details><summary>Bonus earth slots</summary>0/0</details> | |
+| <details><summary>Bonus earth slots</summary>3</details> | |
 | Spiritbending slot     |                       2/2 |
 | <details><summary>Bonus spirit slots</summary>0/0</details> | |
 

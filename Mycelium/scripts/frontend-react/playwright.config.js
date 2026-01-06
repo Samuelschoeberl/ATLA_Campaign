@@ -13,12 +13,12 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   
-  // Timeout for each test
-  timeout: 30 * 1000,
+  // Timeout for each test (increased for multi-client sync tests)
+  timeout: 180 * 1000, // 3 minutes for multi-client tests with polling
   
   // Expect timeout for assertions
   expect: {
-    timeout: 5000
+    timeout: 10000 // Increased for sync operations
   },
   
   // Run tests in parallel

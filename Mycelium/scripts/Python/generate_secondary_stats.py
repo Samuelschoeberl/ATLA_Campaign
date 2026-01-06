@@ -26,6 +26,7 @@ try:
     from config_loader import get_config
 except Exception:
     def get_config(key, default):
+        """Fallback config loader that returns the provided default."""
         return default
 
 # Debug toggle
@@ -44,9 +45,11 @@ class SafeEval(ast.NodeVisitor):
     ALLOWED_FUNCS = {'int': int, 'max': max, 'min': min, 'abs': abs, 'floor': math.floor, 'ceil': math.ceil}
 
     def __init__(self, names: Dict[str, Any]):
+        """Initialize with a mapping of variable names available to expressions."""
         self.names = names
 
     def visit(self, node):
+        """Evaluate an expression node, permitting only a small safe subset."""
         if isinstance(node, ast.Expression):
             return self.visit(node.body)
         if isinstance(node, ast.BinOp):
@@ -108,6 +111,7 @@ class SafeEval(ast.NodeVisitor):
 
 
 def safe_eval_expr(expr: str, names: Dict[str, Any]) -> Any:
+    """Safely evaluate an arithmetic expression with limited functions/names."""
     try:
         node = ast.parse(expr, mode='eval')
         return SafeEval(names).visit(node)
@@ -116,6 +120,7 @@ def safe_eval_expr(expr: str, names: Dict[str, Any]) -> Any:
 
 
 def find_character_file(pc: str) -> Path | None:
+    """Locate a character sheet for the given PC name across known folders."""
     # Prefer a 'PC Character Sheets' folder anywhere under the repo if present
     base = Path(__file__).resolve().parent
     try:
@@ -141,6 +146,7 @@ def find_character_file(pc: str) -> Path | None:
 
 
 def parse_pcs_input_row(pc_name: str, pcs_path: Path | None = None) -> Dict[str, Any]:
+    """Parse a single PCS input row for the named PC into a stats dict."""
     if pcs_path is None:
         pcs_path = Path(get_config('pcs_input', 'pcs_input.md'))
     if not pcs_path.exists():
@@ -163,6 +169,7 @@ def parse_pcs_input_row(pc_name: str, pcs_path: Path | None = None) -> Dict[str,
     norm_headers = [re.sub(r'[^A-Za-z0-9_]+', ' ', h).strip().lower() for h in header_parts]
 
     def find_col(*cands):
+        """Return the first matching column index for any candidate header."""
         for cand in cands:
             cand = cand.lower()
             for idx, h in enumerate(norm_headers):
@@ -202,6 +209,7 @@ def parse_pcs_input_row(pc_name: str, pcs_path: Path | None = None) -> Dict[str,
             continue
 
         def get_int_at(idx):
+            """Extract an integer value from the table column if present."""
             if idx is None or idx >= len(parts):
                 return 0
             raw = parts[idx].strip()
@@ -234,6 +242,7 @@ def parse_pcs_input_row(pc_name: str, pcs_path: Path | None = None) -> Dict[str,
 
 
 def list_all_pcs(pcs_path: Path | None = None) -> List[str]:
+    """Return a list of PC names from the pcs_input markdown table."""
     if pcs_path is None:
         pcs_path = Path(get_config('pcs_input', 'pcs_input.md'))
     if not pcs_path.exists():
@@ -256,6 +265,7 @@ def list_all_pcs(pcs_path: Path | None = None) -> List[str]:
     norm_headers = [re.sub(r'[^A-Za-z0-9_]+', ' ', h).strip().lower() for h in header_parts]
 
     def find_col(*cands):
+        """Return the column index for a matching header name."""
         for cand in cands:
             cand = cand.lower()
             for idx, h in enumerate(norm_headers):
@@ -289,6 +299,7 @@ def list_all_pcs(pcs_path: Path | None = None) -> List[str]:
 
 
 def extract_current_hitpoints(character_path: Path) -> int | None:
+    """Pull the current HP value from a character sheet if it can be found."""
     try:
         txt = character_path.read_text(encoding='utf-8')
     except Exception:
@@ -310,6 +321,7 @@ def extract_current_hitpoints(character_path: Path) -> int | None:
 
 
 def parse_bending_levels(character_path: Path) -> Dict[str, int]:
+    """Extract bending level values from a character sheet table."""
     levels: Dict[str, int] = {}
     try:
         txt = character_path.read_text(encoding='utf-8')
@@ -348,6 +360,7 @@ def parse_bending_levels(character_path: Path) -> Dict[str, int]:
 
 
 def parse_autogen_report_inferred(character_path: Path) -> Dict[str, int]:
+    """Parse inferred values from an Autogen Report markdown next to the sheet."""
     res: Dict[str, int] = {}
     try:
         txt = character_path.read_text(encoding='utf-8')
@@ -444,6 +457,7 @@ def load_formulas(path: Path | None = None) -> Dict[str, tuple[str, str]]:
 
 
 def compute_secondary(stats: Dict[str, int], formulas: Dict[str, tuple[str, str]], extra_vars: Dict[str, int] | None = None) -> Dict[str, int]:
+    """Compute derived stats from formulas using provided base and extra vars."""
     env: Dict[str, Any] = {k: v for k, v in stats.items()}
     # allow lowercase and underscore variants
     for k, v in list(stats.items()):
@@ -467,6 +481,7 @@ def compute_secondary(stats: Dict[str, int], formulas: Dict[str, tuple[str, str]
 
 
 def write_secondary_file(pc: str, dest: Path, derived: Dict[str, int], current_hp: int | None, bending: Dict[str, int], inferred: Dict[str, int], formulas: Dict[str, tuple[str, str]] | None = None, pcs_row: Dict[str, int] | None = None):
+    """Write the combined secondary stats markdown file for a PC."""
     lines: List[str] = []
     lines.append(f"# {pc} — Secondary Stats")
     lines.append("")
@@ -527,6 +542,7 @@ def write_secondary_file(pc: str, dest: Path, derived: Dict[str, int], current_h
 
 
 def process_pc(pc: str, formulas: Dict[str, tuple[str, str]]):
+    """Compute secondary stats, write files, and log progress for one PC."""
     pcs_row = parse_pcs_input_row(pc)
     if not pcs_row:
         print(f"No row for PC '{pc}' found in pcs_input.md")
@@ -616,6 +632,7 @@ def process_pc(pc: str, formulas: Dict[str, tuple[str, str]]):
 
 
 def main():
+    """Generate secondary stats based on CLI flags."""
     p = argparse.ArgumentParser()
     p.add_argument('--pc', help='PC name (e.g. Anju)')
     p.add_argument('--all', action='store_true', help='Generate for all PCs in pcs_input.md')

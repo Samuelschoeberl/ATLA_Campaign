@@ -1,3 +1,4 @@
+"""Flask blueprint exposing helper endpoints for the React frontend."""
 from flask import Blueprint, request, jsonify, send_from_directory, send_file, abort, current_app
 from pathlib import Path
 import hashlib
@@ -69,11 +70,13 @@ AVATAR_SIZE = 100
 
 
 def _safe_character_slug(name: str) -> str:
+    """Normalize a character name into a filesystem-safe slug."""
     slug = re.sub(r'[^A-Za-z0-9_-]+', '_', str(name or 'character')).strip('_')
     return slug or 'character'
 
 
 def _clamp_byte(val):
+    """Clamp arbitrary numeric-ish input to an integer in [0, 255]."""
     try:
         num = float(val)
     except Exception:
@@ -84,6 +87,7 @@ def _clamp_byte(val):
 
 
 def _normalize_pixel(pixel):
+    """Return a 4-element RGBA list for varied pixel inputs."""
     if isinstance(pixel, (list, tuple)):
         vals = list(pixel)[:4] + [0, 0, 0, 0]
         return [_clamp_byte(v) for v in vals[:4]]
@@ -98,6 +102,7 @@ def _normalize_pixel(pixel):
 
 
 def default_avatar_matrix():
+    """Create an empty AVATAR_SIZE×AVATAR_SIZE transparent pixel matrix."""
     return [
         [[0, 0, 0, 0] for _ in range(AVATAR_SIZE)]
         for _ in range(AVATAR_SIZE)
@@ -105,6 +110,7 @@ def default_avatar_matrix():
 
 
 def normalize_avatar_matrix(matrix):
+    """Ensure the avatar data is a correctly sized RGBA grid."""
     rows = []
     src = matrix if isinstance(matrix, (list, tuple)) else []
     for r in range(AVATAR_SIZE):
@@ -118,10 +124,12 @@ def normalize_avatar_matrix(matrix):
 
 
 def _is_valid_hex_color(value: str) -> bool:
+    """Return True if the string looks like a #RRGGBB hex color."""
     return bool(re.match(r'^#(?:[0-9a-fA-F]{6})$', str(value or '').strip()))
 
 
 def get_customization_dir() -> Path:
+    """Directory that stores per-character customization JSON files."""
     base = get_player_root_base()
     target = base.joinpath('character_customizations')
     target.mkdir(parents=True, exist_ok=True)
@@ -129,6 +137,7 @@ def get_customization_dir() -> Path:
 
 
 def load_character_customization(name: str):
+    """Load a customization record for a specific character name."""
     slug = _safe_character_slug(name)
     path = get_customization_dir().joinpath(f"{slug}.json")
     if not path.exists():
@@ -150,6 +159,7 @@ def load_character_customization(name: str):
 
 
 def load_all_customizations():
+    """Load all character customization JSON files into a name->record map."""
     out = {}
     custom_dir = get_customization_dir()
     if not custom_dir.exists():
@@ -167,6 +177,7 @@ def load_all_customizations():
 
 
 def save_character_customization(name: str, folder_color, avatar):
+    """Persist a customization entry and return the normalized payload."""
     slug = _safe_character_slug(name)
     payload = {
         'name': name,
@@ -439,6 +450,7 @@ def update_character_sheet(pcname: str, stats: dict):
 
 @bp.route("/api/create-md-file", methods=["POST"])
 def create_md_file():
+    """Create an empty markdown file under the Player Root tree."""
     data = request.get_json() or {}
     folder = (data.get("folderPath") or "").strip()
     filename = (data.get("filename") or "").strip()
@@ -564,6 +576,7 @@ def find_file_by_name(filename):
 @bp.route("/player_root", defaults={"subpath": ""})
 @bp.route("/player_root/<path:subpath>", methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"])
 def player_root(subpath):
+    """Serve, create, or delete files within the Player Root namespace."""
     # Handle OPTIONS preflight requests for CORS
     if request.method == "OPTIONS":
         response = jsonify(success=True)
@@ -944,6 +957,7 @@ def player_root_move():
         return jsonify(error="Missing src or dst"), 400
 
     def norm(p):
+        """Normalize incoming paths by stripping an optional Player Root prefix."""
         s = str(p or "").strip()
         if s.startswith(PLAYER_ROOT_PREFIX):
             s = s[len(PLAYER_ROOT_PREFIX) :].lstrip("/")
@@ -958,6 +972,7 @@ def player_root_move():
 
     # Helper to include debug info when enabled
     def _debug_info():
+        """Collect resolved paths to aid debugging failed moves."""
         try:
             return {
                 '_debug': '1',
@@ -1475,6 +1490,7 @@ def tail_wikigraphs():
     the log file for new content.
     """
     def event_stream():
+        """Yield log lines as SSE data events while the connection remains open."""
         import time
         # Keep polling: if the log file doesn't exist yet, wait silently until it does.
         while True:
@@ -1507,6 +1523,7 @@ def tail_wikigraphs():
 
 @bp.route("/update_sheet/<pcname>", methods=["POST"])
 def update_sheet(pcname):
+    """Write a character sheet and optionally propagate derived variables."""
     data = request.get_json() or {}
     content = data.get("content")
     propagate = bool(data.get("propagate", False))
@@ -1522,6 +1539,7 @@ def update_sheet(pcname):
         return jsonify(error="PC folder not found"), 404
 
     def _find_sheet_file(pc_dir, pcname):
+        """Pick the best-matching markdown sheet for the given PC."""
         candidates = []
         for p in pc_dir.iterdir():
             if not p.is_file():
@@ -1538,6 +1556,7 @@ def update_sheet(pcname):
         return candidates[0] if candidates else None
 
     def _snapshot_folder(pc_dir):
+        """Return name/path/content/hash for markdown files in the PC folder."""
         files = []
         for p in sorted(pc_dir.iterdir(), key=lambda x: x.name.lower()):
             if not p.is_file() or not p.name.lower().endswith('.md'):

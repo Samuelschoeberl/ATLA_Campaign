@@ -78,6 +78,7 @@ def _extract_show_if_condition_from_tags(tags: set) -> Optional[tuple]:
 
 
 def _is_in_environmental_folder(template_path: Path, vars_root: Path) -> bool:
+    """Check whether a template resides under an environmental folder."""
     try:
         rel = template_path.relative_to(vars_root)
         return 'environmental' in [p.lower() for p in rel.parts]
@@ -129,6 +130,7 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
             new_content = f"{val}\n\n#variable #secondary_stat #template #environmental_variables\n"
             # read canonical existing numeric value
             def _read_canonical(p: Path) -> Optional[str]:
+                """Read the canonical value from a variable file."""
                 try:
                     if p.exists():
                         txt = p.read_text(encoding='utf-8')
@@ -142,6 +144,7 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
                 return None
 
             def _norm_num(s: Optional[str]) -> Optional[float]:
+                """Normalize a numeric-ish string to a float."""
                 if s is None:
                     return None
                 try:
@@ -265,11 +268,13 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
 
 
 def _eval_expr_local(expr: str) -> Optional[float]:
+    """Evaluate a tiny arithmetic expression used in markdown computed files."""
     try:
         node = ast.parse(expr, mode='eval')
     except Exception:
         return None
     def _eval(n):
+        """Recursively evaluate AST nodes in a safe subset."""
         if isinstance(n, ast.Expression):
             return _eval(n.body)
         if isinstance(n, ast.Constant):
@@ -306,6 +311,7 @@ def _eval_expr_local(expr: str) -> Optional[float]:
 
 
 def _touch_or_update_dependent_files(changed_path: Path, vars_root: Path) -> None:
+    """Touch files that reference a variable or recompute simple expressions."""
     # reuse a lightweight approach similar to watch_env_and_regen
     try:
         display = changed_path.stem.replace('_', ' ')
@@ -352,6 +358,7 @@ def _touch_or_update_dependent_files(changed_path: Path, vars_root: Path) -> Non
                         expr = s.lstrip('=')
                         # replace [[Token]] with numeric values
                         def sub_token(m):
+                            """Swap in numeric values for [[var]] tokens before eval."""
                             raw = m.group(1).strip()
                             key = re.sub(r'[^A-Za-z0-9_\-]', '_', raw).lower()
                             v = vars_map.get(key)
@@ -386,6 +393,7 @@ def _touch_or_update_dependent_files(changed_path: Path, vars_root: Path) -> Non
 
 
 def pc_element_level(pc_dir: Path, element: str) -> float:
+    """Return a PC's element level by reading variables or sheet tables."""
     # try to read the per-PC variables file first
     safe = pc_dir.name
     vars_path = pc_dir.joinpath(f"{safe}_variables.md")
@@ -459,6 +467,7 @@ def pc_references_env(pc_dir: Path, cand: str, display_name: str) -> bool:
 
 
 def main() -> None:
+    """Watch PC sheets for changes and trigger regeneration/propagation."""
     p = argparse.ArgumentParser(description='Watch PC sheets and re-run generator for changed PC')
     p.add_argument('--interval', type=float, default=2.0, help='Poll interval seconds')
     p.add_argument('--pcs-dir', default='Player Root/PCs', help='Repo-relative PCs folder')
@@ -553,6 +562,7 @@ def main() -> None:
                             new_content = f"{val}\n\n#variable #secondary_stat #template #environmental_variables\n"
                             # read canonical existing numeric value (if any)
                             def _read_canonical(p: Path) -> Optional[str]:
+                                """Read the current stored value for comparison."""
                                 try:
                                     if p.exists():
                                         txt = p.read_text(encoding='utf-8')
@@ -571,6 +581,7 @@ def main() -> None:
                             canon_val = _read_canonical(global_var)
                             # normalize numeric strings for compare
                             def _norm_num(s: Optional[str]) -> Optional[float]:
+                                """Convert numeric-looking strings to floats when possible."""
                                 if s is None:
                                     return None
                                 try:

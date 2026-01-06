@@ -204,6 +204,7 @@ def compute_file_colors(root: Path, exts: List[str] = ['.md'], excludes: List[st
     
     # Count descendant files for weighting
     def count_descendants(node_id: str) -> int:
+        """Return the number of leaf files under the given directory node."""
         children = parent_children.get(node_id, [])
         if not children:
             return 1  # leaf file

@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 # -------- number and expression helpers --------
 def to_number(s: Any) -> Any:
+    """Best-effort conversion of strings to int/float, falling back to 0."""
     if s is None:
         return 0
     s = str(s).strip()
@@ -77,6 +78,7 @@ def safe_eval(expr: str) -> Any:
         return expr
 
     def _eval(n):
+        """Evaluate a limited AST node, rejecting unsupported operations."""
         if isinstance(n, ast.Expression):
             return _eval(n.body)
         if isinstance(n, ast.Constant):
@@ -124,6 +126,7 @@ def read_var_value(path: Path) -> str:
 
 
 def write_var_file(path: Path, value: Any, tags: Optional[List[str]] = None) -> None:
+    """Write a variable markdown file with a fenced code block and tag line."""
     tags = tags or ['#variable']
     tag_line = ' '.join(tags)
     content = f"```markdown\n{value}\n\n{tag_line}\n\n```\n"
@@ -133,10 +136,12 @@ def write_var_file(path: Path, value: Any, tags: Optional[List[str]] = None) -> 
 
 # -------- name/key helpers --------
 def normalize_key(k: str) -> str:
+    """Normalize keys for comparisons by lowering and removing separators."""
     return k.strip().lower().replace('_', ' ').replace('.', ' ').replace('  ', ' ').strip()
 
 
 def display_name_for(key: str) -> str:
+    """Return a human-friendly label for a variable/stat key."""
     mapping = {
         'str': 'Strength', 'dex': 'Dexterity', 'con': 'Constitution',
         'int': 'Intelligence', 'wis': 'Wisdom', 'cha': 'Charisma',
@@ -157,6 +162,7 @@ def display_name_for(key: str) -> str:
 
 
 def name_from_cell(cell: str) -> str:
+    """Extract a name from a wikilink cell or return the stripped cell text."""
     m = re.search(r"\[\[([^\]]+)\]\]", cell or '')
     return m.group(1).strip() if m else (cell or '').strip()
 
@@ -177,6 +183,7 @@ def name_from_sheet(path: Path) -> str:
 
 
 def pc_safe(name: str) -> str:
+    """Sanitize a string for filesystem-safe PC directory names."""
     return re.sub(r"[^A-Za-z0-9_\-]", '_', name)
 
 
@@ -225,6 +232,7 @@ def dedupe_variable_items(items: Dict[str, Any]) -> List[Tuple[str, Any]]:
 
 
 def parse_markdown_table(path: Path) -> Tuple[List[str], List[List[str]]]:
+    """Parse the first markdown table from a file into headers and rows."""
     try:
         txt = path.read_text(encoding='utf-8')
     except Exception:
@@ -287,6 +295,7 @@ def get_variable_root(foldername: Optional[str] = None) -> Optional[Path]:
 
 
 def load_secondary_templates(dirpath: Path) -> Dict[str, str]:
+    """Load secondary stat formulas from template markdown files."""
     out: Dict[str, str] = {}
     if not dirpath.exists():
         return out
@@ -311,6 +320,7 @@ def load_secondary_templates(dirpath: Path) -> Dict[str, str]:
 
 
 def load_template_tags(dirpath: Path) -> Dict[str, List[str]]:
+    """Read all markdown files in a directory and collect their hashtag tags."""
     out: Dict[str, List[str]] = {}
     if not dirpath.exists():
         return out
@@ -358,6 +368,7 @@ def update_sheet_rows(path: Path, updates: Dict[str, Any], verbose: bool = False
 
 # -------- environmental / sheet parsing helpers --------
 def _safe_rel(p: Path) -> str:
+    """Return a repo-relative path string when possible."""
     try:
         return str(p.relative_to(ROOT))
     except Exception:
@@ -366,6 +377,7 @@ def _safe_rel(p: Path) -> str:
 
 # Backwards-compatible aliases for older scripts
 def scan_sheet_files(pcs_dir: Path) -> Dict[Path, float]:
+    """Return map of sheet path -> mtime for all character sheet files."""
     out: Dict[Path, float] = {}
     if not pcs_dir.exists():
         return out
@@ -378,6 +390,7 @@ def scan_sheet_files(pcs_dir: Path) -> Dict[Path, float]:
 
 
 def _refresh_last_mtime_for_pc(pcs_dir: Path, last_mtimes: Dict[Path, float], pc_name: str) -> None:
+    """Update cached mtimes for a specific PC sheet if it exists."""
     try:
         path = pcs_dir.joinpath(pc_name, f"{pc_name} character sheet.md")
         if path.exists():
@@ -387,14 +400,17 @@ def _refresh_last_mtime_for_pc(pcs_dir: Path, last_mtimes: Dict[Path, float], pc
 
 
 def _extract_show_if_condition_from_tags(tags: set) -> Optional[tuple]:
+    """Backward-compatible wrapper around extract_show_if_condition_from_tags."""
     return extract_show_if_condition_from_tags(tags)
 
 
 def _is_in_environmental_folder(template_path: Path, vars_root: Path) -> bool:
+    """Backward-compatible wrapper around is_in_environmental_folder."""
     return is_in_environmental_folder(template_path, vars_root)
 
 
 def _eval_expr_local(expr: str) -> Optional[float]:
+    """Evaluate an expression locally, returning a float or None."""
     try:
         v = safe_eval(expr)
         if isinstance(v, (int, float)):
@@ -405,6 +421,7 @@ def _eval_expr_local(expr: str) -> Optional[float]:
 
 
 def _touch_or_update_dependent_files(changed_path: Path, vars_root: Path) -> None:
+    """Update markdown files that compute values based on a changed variable."""
     # reuse helper logic from watch scripts: update files that reference changed variable
     try:
         display = changed_path.stem.replace('_', ' ')
@@ -449,6 +466,7 @@ def _touch_or_update_dependent_files(changed_path: Path, vars_root: Path) -> Non
                     if s.startswith('='):
                         expr = s.lstrip('=')
                         def sub_token(m):
+                            """Replace [[var]] tokens with numeric values during eval."""
                             raw = m.group(1).strip()
                             key = re.sub(r'[^A-Za-z0-9_\-]', '_', raw).lower()
                             v = vars_map.get(key)
@@ -505,6 +523,7 @@ def load_environmental_templates(vars_dir: Path) -> Dict[str, Path]:
 
 
 def parse_sheet_for_vars(sheet_path: Path) -> Dict[str, str]:
+    """Extract key/value pairs from a character sheet markdown table."""
     res: Dict[str, str] = {}
     try:
         txt = sheet_path.read_text(encoding='utf-8')
@@ -518,6 +537,7 @@ def parse_sheet_for_vars(sheet_path: Path) -> Dict[str, str]:
 
 
 def extract_show_if_condition_from_tags(tags: set) -> Optional[tuple]:
+    """Return a tuple describing a #show_if_* condition embedded in tags."""
     for t in tags:
         if t.startswith('#show_if_'):
             body = t[len('#show_if_'):]
@@ -533,6 +553,7 @@ def extract_show_if_condition_from_tags(tags: set) -> Optional[tuple]:
 
 
 def is_in_environmental_folder(template_path: Path, vars_root: Path) -> bool:
+    """Check whether a template path resides in an environmental folder."""
     try:
         rel = template_path.relative_to(vars_root)
         return 'environmental' in [p.lower() for p in rel.parts]
@@ -541,6 +562,7 @@ def is_in_environmental_folder(template_path: Path, vars_root: Path) -> bool:
 
 
 def run_generator(script: Path, pc_name: str, create_placeholders: bool, dry_run: bool) -> None:
+    """Invoke a generator script for a given PC, respecting dry-run flag."""
     import subprocess
     if dry_run:
         print('[DRY] would run generator for', pc_name, 'via', script)
@@ -553,6 +575,7 @@ def run_generator(script: Path, pc_name: str, create_placeholders: bool, dry_run
 
 
 def pc_element_level(pc_dir: Path, element: str) -> float:
+    """Read a PC's element level from their variables or sheet tables."""
     safe = pc_dir.name
     vars_path = pc_dir.joinpath(f"{safe}_variables.md")
     if vars_path.exists():
@@ -587,6 +610,7 @@ def pc_element_level(pc_dir: Path, element: str) -> float:
 
 
 def pc_references_env(pc_dir: Path, cand: str, display_name: str) -> bool:
+    """Return True if a PC sheet references the given environmental variable."""
     safe = pc_dir.name
     vars_path = pc_dir.joinpath(f"{safe}_variables.md")
     try:

@@ -900,7 +900,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       } catch (err) {
         console.error('❌ Failed to sync battlemap:', err);
       }
-    }, 2000); // Poll every 2 seconds
+    }, 1000); // Poll every 1 second for fast multi-client sync
     
     return () => {
       console.log('BattlemapViewer: Clearing sync interval');

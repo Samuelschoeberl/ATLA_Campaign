@@ -578,18 +578,57 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
       // Reload initiative data to sync current turn across devices
       loadInitiativeDataSilently();
        loadCustomizations();
-    }, 5000); // Refresh every 5 seconds
+    }, 1000); // Refresh every 1 second for fast real-time sync
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [characters]); // Re-create interval when characters change
+  }, [characters]); // Reload when characters change
+
+  // Also load PC stats immediately when characters change
+  useEffect(() => {
+    if (characters.length > 0) {
+      loadPcStats();
+    }
+  }, [characters]);
 
   const loadPcStats = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/stat_overview`);
-      if (response.ok) {
-        const data = await response.json();
-        setPcStats(data.pcs || {});
+      // Instead of loading the expensive stat_overview, load HP values directly from individual files
+      // This is much faster (< 10ms per file vs 800-2000ms for stat_overview)
+      const stats = {};
+      
+      // Only load HP for characters currently in initiative
+      for (const char of characters) {
+        try {
+          const charName = char.name;
+          const [currentHpResponse, maxHpResponse] = await Promise.all([
+            fetch(`${API_BASE_URL}/player_root/variable/PC_variables/${encodeURIComponent(charName)}/${encodeURIComponent(charName)}_current_hp.md`),
+            fetch(`${API_BASE_URL}/player_root/variable/PC_variables/${encodeURIComponent(charName)}/${encodeURIComponent(charName)}_max_hp.md`)
+          ]);
+          
+          if (currentHpResponse.ok && maxHpResponse.ok) {
+            const currentHpData = await currentHpResponse.json();
+            const maxHpData = await maxHpResponse.json();
+            
+            // Parse the value (first line of content)
+            const currentHpValue = currentHpData.content?.split('\n')[0]?.trim();
+            const maxHpValue = maxHpData.content?.split('\n')[0]?.trim();
+            
+            if (currentHpValue && maxHpValue) {
+              stats[charName] = {
+                vitality: [
+                  { key: 'current_hp', value: currentHpValue },
+                  { key: 'max_hp', value: maxHpValue }
+                ]
+              };
+            }
+          }
+        } catch (charError) {
+          // Silently fail for individual characters (they might not have HP files)
+          continue;
+        }
       }
+      
+      setPcStats(stats);
     } catch (error) {
       console.error('Error loading PC stats:', error);
     }
@@ -612,11 +651,11 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
       // Load ready states for all characters in the initiative
       for (const character of characters) {
         if (!character.isEnemy) {
-          // Skip if we recently updated this character's ready state (within last 3 seconds)
+          // Skip if we recently updated this character's ready state (within last 1 second)
           const lastUpdate = lastReadyUpdateRef.current[character.name];
           const timeSinceUpdate = lastUpdate ? Date.now() - lastUpdate : Infinity;
           
-          if (lastUpdate && timeSinceUpdate < 3000) {
+          if (lastUpdate && timeSinceUpdate < 1000) {
             continue;
           }
           
@@ -1084,11 +1123,20 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
   };
 
   // Navigate turns
-  // Navigate turns
-  const handleNextTurn = async () => {
+  const handleNextTurn = () => {
     if (characters.length === 0) return;
     
-    // Clear the ready state for the character whose turn is ending
+    // Calculate next values first
+    const nextIndex = (currentTurnIndex + 1) % characters.length;
+    const newRound = nextIndex === 0 ? roundNumber + 1 : roundNumber;
+    
+    // Update state immediately for instant UI response
+    setCurrentTurnIndex(nextIndex);
+    if (nextIndex === 0) {
+      setRoundNumber(newRound);
+    }
+    
+    // Clear the ready state for the character whose turn is ending (non-blocking)
     const currentCharacter = characters[currentTurnIndex];
     
     if (currentCharacter && !currentCharacter.isEnemy) {
@@ -1097,28 +1145,15 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
       // Record that we're updating this character's ready state
       lastReadyUpdateRef.current[currentCharacter.name] = Date.now();
       
-      // First update the character sheet file with explicit "no" state
-      try {
-        await fetch(`${API_BASE_URL}/api/clear_ready/${encodeURIComponent(currentCharacter.name)}`, {
-          method: 'POST'
-        });
-        
-        // After file is updated, update context to match
-        clearReady(currentCharacter.name);
-      } catch (error) {
+      // Clear in context immediately
+      clearReady(currentCharacter.name);
+      
+      // Update the character sheet file in the background (don't await)
+      fetch(`${API_BASE_URL}/api/clear_ready/${encodeURIComponent(currentCharacter.name)}`, {
+        method: 'POST'
+      }).catch(error => {
         console.error(`Error clearing ready state in file for ${currentCharacter.name}:`, error);
-        // Still update context even if file update fails
-        clearReady(currentCharacter.name);
-      }
-    }
-    
-    const nextIndex = (currentTurnIndex + 1) % characters.length;
-    setCurrentTurnIndex(nextIndex);
-    
-    // Increment round when we loop back to the first character
-    const newRound = nextIndex === 0 ? roundNumber + 1 : roundNumber;
-    if (nextIndex === 0) {
-      setRoundNumber(newRound);
+      });
     }
     
     // Save is triggered automatically by useEffect

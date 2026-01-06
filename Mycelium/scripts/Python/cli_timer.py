@@ -2,12 +2,18 @@
 import time
 
 class Timer:
+    """Simple stopwatch helper for small CLI scripts."""
+
     def __init__(self):
+        """Capture the starting timestamp."""
         self.start = time.time()
+
     def elapsed(self):
+        """Return seconds elapsed since the timer was created."""
         return time.time() - self.start
 
 def main():
+    """Entry point for ad-hoc timing when the module is executed directly."""
     t = Timer()
     print('cli_timer placeholder, elapsed', t.elapsed())
 
@@ -38,4 +44,3 @@ _mod = importlib.import_module('Mycelium.scripts.manuals.cli_timer')
 for _k, _v in _mod.__dict__.items():
 	if not _k.startswith('_'):
 		globals()[_k] = _v
-

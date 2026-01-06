@@ -2,10 +2,350 @@
   "format": "graph",
   "version": "2.0",
   "gridSize": {
-    "rows": 85,
-    "cols": 40
+    "rows": 45,
+    "cols": 20
   },
   "hexGraph": {
+    "7,12": {
+      "id": "7,12",
+      "row": 7,
+      "col": 12,
+      "neighbors": {
+        "NW": "6,12",
+        "NE": "6,13",
+        "E": "7,13",
+        "SE": "8,13",
+        "SW": "8,12",
+        "W": "7,11"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 9.083831749058236,
+        "paintedAt": null
+      }
+    },
+    "7,13": {
+      "id": "7,13",
+      "row": 7,
+      "col": 13,
+      "neighbors": {
+        "NW": "6,13",
+        "NE": "6,14",
+        "E": "7,14",
+        "SE": "8,14",
+        "SW": "8,13",
+        "W": "7,12"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 1.7137713880489414,
+        "paintedAt": null
+      }
+    },
+    "8,9": {
+      "id": "8,9",
+      "row": 8,
+      "col": 9,
+      "neighbors": {
+        "NW": "7,8",
+        "NE": "7,9",
+        "E": "8,10",
+        "SE": "9,9",
+        "SW": "9,8",
+        "W": "8,8"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 7.270988914840451,
+        "paintedAt": null
+      }
+    },
+    "8,10": {
+      "id": "8,10",
+      "row": 8,
+      "col": 10,
+      "neighbors": {
+        "NW": "7,9",
+        "NE": "7,10",
+        "E": "8,11",
+        "SE": "9,10",
+        "SW": "9,9",
+        "W": "8,9"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 9.740486870213532,
+        "paintedAt": null
+      }
+    },
+    "8,11": {
+      "id": "8,11",
+      "row": 8,
+      "col": 11,
+      "neighbors": {
+        "NW": "7,10",
+        "NE": "7,11",
+        "E": "8,12",
+        "SE": "9,11",
+        "SW": "9,10",
+        "W": "8,10"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 5.702747870601944,
+        "paintedAt": null
+      }
+    },
+    "8,12": {
+      "id": "8,12",
+      "row": 8,
+      "col": 12,
+      "neighbors": {
+        "NW": "7,11",
+        "NE": "7,12",
+        "E": "8,13",
+        "SE": "9,12",
+        "SW": "9,11",
+        "W": "8,11"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 4.142110777182432,
+        "paintedAt": null
+      }
+    },
+    "8,13": {
+      "id": "8,13",
+      "row": 8,
+      "col": 13,
+      "neighbors": {
+        "NW": "7,12",
+        "NE": "7,13",
+        "E": "8,14",
+        "SE": "9,13",
+        "SW": "9,12",
+        "W": "8,12"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 5.146825210688757,
+        "paintedAt": null
+      }
+    },
+    "9,8": {
+      "id": "9,8",
+      "row": 9,
+      "col": 8,
+      "neighbors": {
+        "NW": "8,8",
+        "NE": "8,9",
+        "E": "9,9",
+        "SE": "10,9",
+        "SW": "10,8",
+        "W": "9,7"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 4.970391864745051,
+        "paintedAt": null
+      }
+    },
+    "9,9": {
+      "id": "9,9",
+      "row": 9,
+      "col": 9,
+      "neighbors": {
+        "NW": "8,9",
+        "NE": "8,10",
+        "E": "9,10",
+        "SE": "10,10",
+        "SW": "10,9",
+        "W": "9,8"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 9.662723409501798,
+        "paintedAt": null
+      }
+    },
+    "9,10": {
+      "id": "9,10",
+      "row": 9,
+      "col": 10,
+      "neighbors": {
+        "NW": "8,10",
+        "NE": "8,11",
+        "E": "9,11",
+        "SE": "10,11",
+        "SW": "10,10",
+        "W": "9,9"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 8.21887334916651,
+        "paintedAt": null
+      }
+    },
+    "9,11": {
+      "id": "9,11",
+      "row": 9,
+      "col": 11,
+      "neighbors": {
+        "NW": "8,11",
+        "NE": "8,12",
+        "E": "9,12",
+        "SE": "10,12",
+        "SW": "10,11",
+        "W": "9,10"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 5.298857006654596,
+        "paintedAt": null
+      }
+    },
+    "9,12": {
+      "id": "9,12",
+      "row": 9,
+      "col": 12,
+      "neighbors": {
+        "NW": "8,12",
+        "NE": "8,13",
+        "E": "9,13",
+        "SE": "10,13",
+        "SW": "10,12",
+        "W": "9,11"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 3.579929838807505,
+        "paintedAt": null
+      }
+    },
+    "10,8": {
+      "id": "10,8",
+      "row": 10,
+      "col": 8,
+      "neighbors": {
+        "NW": "9,7",
+        "NE": "9,8",
+        "E": "10,9",
+        "SE": "11,8",
+        "SW": "11,7",
+        "W": "10,7"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 8.113154049605022,
+        "paintedAt": null
+      }
+    },
+    "10,9": {
+      "id": "10,9",
+      "row": 10,
+      "col": 9,
+      "neighbors": {
+        "NW": "9,8",
+        "NE": "9,9",
+        "E": "10,10",
+        "SE": "11,9",
+        "SW": "11,8",
+        "W": "10,8"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 2.59566964673399,
+        "paintedAt": null
+      }
+    },
+    "10,10": {
+      "id": "10,10",
+      "row": 10,
+      "col": 10,
+      "neighbors": {
+        "NW": "9,9",
+        "NE": "9,10",
+        "E": "10,11",
+        "SE": "11,10",
+        "SW": "11,9",
+        "W": "10,9"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 4.548130518844227,
+        "paintedAt": null
+      }
+    },
+    "10,11": {
+      "id": "10,11",
+      "row": 10,
+      "col": 11,
+      "neighbors": {
+        "NW": "9,10",
+        "NE": "9,11",
+        "E": "10,12",
+        "SE": "11,11",
+        "SW": "11,10",
+        "W": "10,10"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 6.360085789973571,
+        "paintedAt": null
+      }
+    },
+    "10,12": {
+      "id": "10,12",
+      "row": 10,
+      "col": 12,
+      "neighbors": {
+        "NW": "9,11",
+        "NE": "9,12",
+        "E": "10,13",
+        "SE": "11,12",
+        "SW": "11,11",
+        "W": "10,11"
+      },
+      "data": {
+        "filled": true,
+        "color": "#8b6f47",
+        "effect": "earth",
+        "animationOffset": 7.24709446387486,
+        "paintedAt": null
+      }
+    },
     "12,12": {
       "id": "12,12",
       "row": 12,
@@ -86,146 +426,6 @@
         "paintedAt": null
       }
     },
-    "16,24": {
-      "id": "16,24",
-      "row": 16,
-      "col": 24,
-      "neighbors": {
-        "NW": "15,23",
-        "NE": "15,24",
-        "E": "16,25",
-        "SE": "17,24",
-        "SW": "17,23",
-        "W": "16,23"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": -10,
-        "paintedAt": null
-      }
-    },
-    "16,25": {
-      "id": "16,25",
-      "row": 16,
-      "col": 25,
-      "neighbors": {
-        "NW": "15,24",
-        "NE": "15,25",
-        "E": "16,26",
-        "SE": "17,25",
-        "SW": "17,24",
-        "W": "16,24"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": -2.5,
-        "paintedAt": null
-      }
-    },
-    "17,22": {
-      "id": "17,22",
-      "row": 17,
-      "col": 22,
-      "neighbors": {
-        "NW": "16,22",
-        "NE": "16,23",
-        "E": "17,23",
-        "SE": "18,23",
-        "SW": "18,22",
-        "W": "17,21"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 4.736205274973448,
-        "paintedAt": null
-      }
-    },
-    "17,23": {
-      "id": "17,23",
-      "row": 17,
-      "col": 23,
-      "neighbors": {
-        "NW": "16,23",
-        "NE": "16,24",
-        "E": "17,24",
-        "SE": "18,24",
-        "SW": "18,23",
-        "W": "17,22"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 4.689547476827821,
-        "paintedAt": null
-      }
-    },
-    "17,24": {
-      "id": "17,24",
-      "row": 17,
-      "col": 24,
-      "neighbors": {
-        "NW": "16,24",
-        "NE": "16,25",
-        "E": "17,25",
-        "SE": "18,25",
-        "SW": "18,24",
-        "W": "17,23"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 0,
-        "paintedAt": null
-      }
-    },
-    "17,25": {
-      "id": "17,25",
-      "row": 17,
-      "col": 25,
-      "neighbors": {
-        "NW": "16,25",
-        "NE": "16,26",
-        "E": "17,26",
-        "SE": "18,26",
-        "SW": "18,25",
-        "W": "17,24"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 5,
-        "paintedAt": null
-      }
-    },
-    "17,35": {
-      "id": "17,35",
-      "row": 17,
-      "col": 35,
-      "neighbors": {
-        "NW": "16,35",
-        "NE": "16,36",
-        "E": "17,36",
-        "SE": "18,36",
-        "SW": "18,35",
-        "W": "17,34"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 8.423594667958737,
-        "paintedAt": null
-      }
-    },
     "18,17": {
       "id": "18,17",
       "row": 18,
@@ -263,226 +463,6 @@
         "color": "#8b6f47",
         "effect": "earth",
         "animationOffset": 2.3546292390239207,
-        "paintedAt": null
-      }
-    },
-    "18,20": {
-      "id": "18,20",
-      "row": 18,
-      "col": 20,
-      "neighbors": {
-        "NW": "17,19",
-        "NE": "17,20",
-        "E": "18,21",
-        "SE": "19,20",
-        "SW": "19,19",
-        "W": "18,19"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 2.102071359383162,
-        "paintedAt": null
-      }
-    },
-    "18,21": {
-      "id": "18,21",
-      "row": 18,
-      "col": 21,
-      "neighbors": {
-        "NW": "17,20",
-        "NE": "17,21",
-        "E": "18,22",
-        "SE": "19,21",
-        "SW": "19,20",
-        "W": "18,20"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 2.493072220143601,
-        "paintedAt": null
-      }
-    },
-    "18,22": {
-      "id": "18,22",
-      "row": 18,
-      "col": 22,
-      "neighbors": {
-        "NW": "17,21",
-        "NE": "17,22",
-        "E": "18,23",
-        "SE": "19,22",
-        "SW": "19,21",
-        "W": "18,21"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 5.374348490978569,
-        "paintedAt": null
-      }
-    },
-    "18,23": {
-      "id": "18,23",
-      "row": 18,
-      "col": 23,
-      "neighbors": {
-        "NW": "17,22",
-        "NE": "17,23",
-        "E": "18,24",
-        "SE": "19,23",
-        "SW": "19,22",
-        "W": "18,22"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 4.595030431125119,
-        "paintedAt": null
-      }
-    },
-    "18,24": {
-      "id": "18,24",
-      "row": 18,
-      "col": 24,
-      "neighbors": {
-        "NW": "17,23",
-        "NE": "17,24",
-        "E": "18,25",
-        "SE": "19,24",
-        "SW": "19,23",
-        "W": "18,23"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 1.9590012982425498,
-        "paintedAt": null
-      }
-    },
-    "18,25": {
-      "id": "18,25",
-      "row": 18,
-      "col": 25,
-      "neighbors": {
-        "NW": "17,24",
-        "NE": "17,25",
-        "E": "18,26",
-        "SE": "19,25",
-        "SW": "19,24",
-        "W": "18,24"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 12.5,
-        "paintedAt": null
-      }
-    },
-    "18,29": {
-      "id": "18,29",
-      "row": 18,
-      "col": 29,
-      "neighbors": {
-        "NW": "17,28",
-        "NE": "17,29",
-        "E": "18,30",
-        "SE": "19,29",
-        "SW": "19,28",
-        "W": "18,28"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 5.97231532395594,
-        "paintedAt": null
-      }
-    },
-    "18,30": {
-      "id": "18,30",
-      "row": 18,
-      "col": 30,
-      "neighbors": {
-        "NW": "17,29",
-        "NE": "17,30",
-        "E": "18,31",
-        "SE": "19,30",
-        "SW": "19,29",
-        "W": "18,29"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 5.5768748307883484,
-        "paintedAt": null
-      }
-    },
-    "18,35": {
-      "id": "18,35",
-      "row": 18,
-      "col": 35,
-      "neighbors": {
-        "NW": "17,34",
-        "NE": "17,35",
-        "E": "18,36",
-        "SE": "19,35",
-        "SW": "19,34",
-        "W": "18,34"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 8.638428049264416,
-        "paintedAt": null
-      }
-    },
-    "18,36": {
-      "id": "18,36",
-      "row": 18,
-      "col": 36,
-      "neighbors": {
-        "NW": "17,35",
-        "NE": "17,36",
-        "E": "18,37",
-        "SE": "19,36",
-        "SW": "19,35",
-        "W": "18,35"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 5.33781468967369,
-        "paintedAt": null
-      }
-    },
-    "18,37": {
-      "id": "18,37",
-      "row": 18,
-      "col": 37,
-      "neighbors": {
-        "NW": "17,36",
-        "NE": "17,37",
-        "E": "18,38",
-        "SE": "19,37",
-        "SW": "19,36",
-        "W": "18,36"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 9.986548574806312,
         "paintedAt": null
       }
     },
@@ -552,9 +532,6 @@
       "col": 19,
       "neighbors": {
         "NW": "18,19",
-        "NE": "18,20",
-        "E": "19,20",
-        "SE": "20,20",
         "SW": "20,19",
         "W": "19,18"
       },
@@ -563,166 +540,6 @@
         "color": "#8b6f47",
         "effect": "earth",
         "animationOffset": 4.600335551607891,
-        "paintedAt": null
-      }
-    },
-    "19,20": {
-      "id": "19,20",
-      "row": 19,
-      "col": 20,
-      "neighbors": {
-        "NW": "18,20",
-        "NE": "18,21",
-        "E": "19,21",
-        "SE": "20,21",
-        "SW": "20,20",
-        "W": "19,19"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 3.910201299489663,
-        "paintedAt": null
-      }
-    },
-    "19,21": {
-      "id": "19,21",
-      "row": 19,
-      "col": 21,
-      "neighbors": {
-        "NW": "18,21",
-        "NE": "18,22",
-        "E": "19,22",
-        "SE": "20,22",
-        "SW": "20,21",
-        "W": "19,20"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 9.297093461334375,
-        "paintedAt": null
-      }
-    },
-    "19,22": {
-      "id": "19,22",
-      "row": 19,
-      "col": 22,
-      "neighbors": {
-        "NW": "18,22",
-        "NE": "18,23",
-        "E": "19,23",
-        "SE": "20,23",
-        "SW": "20,22",
-        "W": "19,21"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 9.665680879271127,
-        "paintedAt": null
-      }
-    },
-    "19,23": {
-      "id": "19,23",
-      "row": 19,
-      "col": 23,
-      "neighbors": {
-        "NW": "18,23",
-        "NE": "18,24",
-        "E": "19,24",
-        "SE": "20,24",
-        "SW": "20,23",
-        "W": "19,22"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 9.715017979806811,
-        "paintedAt": null
-      }
-    },
-    "19,24": {
-      "id": "19,24",
-      "row": 19,
-      "col": 24,
-      "neighbors": {
-        "NW": "18,24",
-        "NE": "18,25",
-        "E": "19,25",
-        "SE": "20,25",
-        "SW": "20,24",
-        "W": "19,23"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 4.482866598213546,
-        "paintedAt": null
-      }
-    },
-    "19,25": {
-      "id": "19,25",
-      "row": 19,
-      "col": 25,
-      "neighbors": {
-        "NW": "18,25",
-        "NE": "18,26",
-        "E": "19,26",
-        "SE": "20,26",
-        "SW": "20,25",
-        "W": "19,24"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 1.5251074583939117,
-        "paintedAt": null
-      }
-    },
-    "19,36": {
-      "id": "19,36",
-      "row": 19,
-      "col": 36,
-      "neighbors": {
-        "NW": "18,36",
-        "NE": "18,37",
-        "E": "19,37",
-        "SE": "20,37",
-        "SW": "20,36",
-        "W": "19,35"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 6.640485216293289,
-        "paintedAt": null
-      }
-    },
-    "19,37": {
-      "id": "19,37",
-      "row": 19,
-      "col": 37,
-      "neighbors": {
-        "NW": "18,37",
-        "NE": "18,38",
-        "E": "19,38",
-        "SE": "20,38",
-        "SW": "20,37",
-        "W": "19,36"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 8.367218480777684,
         "paintedAt": null
       }
     },
@@ -766,166 +583,6 @@
         "paintedAt": null
       }
     },
-    "20,21": {
-      "id": "20,21",
-      "row": 20,
-      "col": 21,
-      "neighbors": {
-        "NW": "19,20",
-        "NE": "19,21",
-        "E": "20,22",
-        "SE": "21,21",
-        "SW": "21,20",
-        "W": "20,20"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 0.5236018432395351,
-        "paintedAt": null
-      }
-    },
-    "20,22": {
-      "id": "20,22",
-      "row": 20,
-      "col": 22,
-      "neighbors": {
-        "NW": "19,21",
-        "NE": "19,22",
-        "E": "20,23",
-        "SE": "21,22",
-        "SW": "21,21",
-        "W": "20,21"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 1.383914527089647,
-        "paintedAt": null
-      }
-    },
-    "20,23": {
-      "id": "20,23",
-      "row": 20,
-      "col": 23,
-      "neighbors": {
-        "NW": "19,22",
-        "NE": "19,23",
-        "E": "20,24",
-        "SE": "21,23",
-        "SW": "21,22",
-        "W": "20,22"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 0.19793118213132677,
-        "paintedAt": null
-      }
-    },
-    "20,24": {
-      "id": "20,24",
-      "row": 20,
-      "col": 24,
-      "neighbors": {
-        "NW": "19,23",
-        "NE": "19,24",
-        "E": "20,25",
-        "SE": "21,24",
-        "SW": "21,23",
-        "W": "20,23"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 9.278620952768078,
-        "paintedAt": null
-      }
-    },
-    "20,25": {
-      "id": "20,25",
-      "row": 20,
-      "col": 25,
-      "neighbors": {
-        "NW": "19,24",
-        "NE": "19,25",
-        "E": "20,26",
-        "SE": "21,25",
-        "SW": "21,24",
-        "W": "20,24"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 0.4621157037721446,
-        "paintedAt": null
-      }
-    },
-    "20,26": {
-      "id": "20,26",
-      "row": 20,
-      "col": 26,
-      "neighbors": {
-        "NW": "19,25",
-        "NE": "19,26",
-        "E": "20,27",
-        "SE": "21,26",
-        "SW": "21,25",
-        "W": "20,25"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 6.874271374800637,
-        "paintedAt": null
-      }
-    },
-    "20,36": {
-      "id": "20,36",
-      "row": 20,
-      "col": 36,
-      "neighbors": {
-        "NW": "19,35",
-        "NE": "19,36",
-        "E": "20,37",
-        "SE": "21,36",
-        "SW": "21,35",
-        "W": "20,35"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 4.202857058967899,
-        "paintedAt": null
-      }
-    },
-    "20,37": {
-      "id": "20,37",
-      "row": 20,
-      "col": 37,
-      "neighbors": {
-        "NW": "19,36",
-        "NE": "19,37",
-        "E": "20,38",
-        "SE": "21,37",
-        "SW": "21,36",
-        "W": "20,36"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 3.675235087427776,
-        "paintedAt": null
-      }
-    },
     "21,15": {
       "id": "21,15",
       "row": 21,
@@ -966,46 +623,6 @@
         "paintedAt": null
       }
     },
-    "21,36": {
-      "id": "21,36",
-      "row": 21,
-      "col": 36,
-      "neighbors": {
-        "NW": "20,36",
-        "NE": "20,37",
-        "E": "21,37",
-        "SE": "22,37",
-        "SW": "22,36",
-        "W": "21,35"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 1.2398518733329267,
-        "paintedAt": null
-      }
-    },
-    "21,38": {
-      "id": "21,38",
-      "row": 21,
-      "col": 38,
-      "neighbors": {
-        "NW": "20,38",
-        "NE": "20,39",
-        "E": "21,39",
-        "SE": "22,39",
-        "SW": "22,38",
-        "W": "21,37"
-      },
-      "data": {
-        "filled": true,
-        "color": "#8b6f47",
-        "effect": "earth",
-        "animationOffset": 4.315783590303256,
-        "paintedAt": null
-      }
-    },
     "22,16": {
       "id": "22,16",
       "row": 22,
@@ -1025,13 +642,66 @@
         "animationOffset": 8.809465747732812,
         "paintedAt": null
       }
+    },
+    "25,19": {
+      "id": "25,19",
+      "row": 25,
+      "col": 19,
+      "neighbors": {
+        "NW": "24,19",
+        "SW": "26,19",
+        "W": "25,18"
+      },
+      "data": {
+        "filled": true,
+        "color": "#ff6b6b",
+        "effect": "none",
+        "animationOffset": -6.927508529512998,
+        "paintedAt": null
+      }
+    },
+    "26,19": {
+      "id": "26,19",
+      "row": 26,
+      "col": 19,
+      "neighbors": {
+        "NW": "25,18",
+        "NE": "25,19",
+        "SE": "27,19",
+        "SW": "27,18",
+        "W": "26,18"
+      },
+      "data": {
+        "filled": true,
+        "color": "#ff6b6b",
+        "effect": "none",
+        "animationOffset": 45,
+        "paintedAt": null
+      }
+    },
+    "27,19": {
+      "id": "27,19",
+      "row": 27,
+      "col": 19,
+      "neighbors": {
+        "NW": "26,19",
+        "SW": "28,19",
+        "W": "27,18"
+      },
+      "data": {
+        "filled": true,
+        "color": "#ff6b6b",
+        "effect": "none",
+        "animationOffset": 46.927508529513,
+        "paintedAt": null
+      }
     }
   },
   "tokens": [
     {
       "id": "token-1767272907460",
-      "row": 17,
-      "col": 18,
+      "row": 21,
+      "col": 22,
       "name": "X_Testchar",
       "avatar": [
         [
@@ -61239,6 +60909,6 @@
       "color": "#3498db"
     }
   ],
-  "hexSize": 16,
-  "lastModified": 1767328940772
+  "hexSize": 29,
+  "lastModified": 1767698792685
 }

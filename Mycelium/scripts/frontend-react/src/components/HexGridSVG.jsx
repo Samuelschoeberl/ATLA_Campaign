@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useId } from 'react';
 import PixelAvatar from './PixelAvatar';
 
 /**
@@ -23,6 +23,7 @@ const HexGridSVG = ({
   if (!pattern || pattern.length === 0) return null;
 
   const hexSize = 20; // Distance from center to vertex
+  const clipPathId = useId(); // Generate unique ID for this component instance
 
   const { benderHex, effectHexagons, pathHexagons, bounds } = useMemo(() => {
     const hexList = [];
@@ -230,7 +231,7 @@ const HexGridSVG = ({
         
         {/* Clipping path for hexagon - create a tight fit */}
         <defs>
-          <clipPath id={`hex-clip-bender-${hexSize}`}>
+          <clipPath id={clipPathId}>
             <path d={benderHex.vertices
               .map((v, i) => `${i === 0 ? 'M' : 'L'} ${v.x} ${v.y}`)
               .join(' ') + ' Z'} />
@@ -239,7 +240,7 @@ const HexGridSVG = ({
         
         {/* Embed pixel avatar in bender hexagon with clipping */}
         {characterData?.pixels && (
-          <g clipPath={`url(#hex-clip-bender-${hexSize})`}>
+          <g clipPath={`url(#${clipPathId})`}>
             <foreignObject
               x={benderHex.cx - hexSize}
               y={benderHex.cy - hexSize}

@@ -1,3 +1,4 @@
+"""Smoke tests for the shared common.py helpers."""
 import pytest
 from pathlib import Path
 import importlib.util
@@ -12,6 +13,7 @@ common = mod
 
 
 def test_to_number():
+    """Numeric parser handles ints, floats, empties, and embedded digits."""
     assert common.to_number('42') == 42
     assert common.to_number(' 3.14 ') == pytest.approx(3.14)
     assert common.to_number('') == 0
@@ -20,6 +22,7 @@ def test_to_number():
 
 
 def test_safe_eval():
+    """safe_eval evaluates simple math and returns zero on blanks."""
     assert common.safe_eval('1+2*3') == 7
     assert common.safe_eval('  ') == 0
     # unsupported or complex expression returns the original string or raises; ensure numeric case
@@ -27,6 +30,7 @@ def test_safe_eval():
 
 
 def test_read_var_value(tmp_path):
+    """read_var_value should prefer fenced markdown blocks."""
     f = tmp_path.joinpath('v.md')
     f.write_text('```markdown\n123\n\n#variable\n\n```\n')
     assert common.read_var_value(f) == '123'
@@ -36,6 +40,7 @@ def test_read_var_value(tmp_path):
 
 
 def test_parse_markdown_table(tmp_path):
+    """parse_markdown_table extracts headers and rows from markdown tables."""
     t = tmp_path.joinpath('tab.md')
     t.write_text('\n| Name | STR | CON |\n|---|---:|---:|\n| Anju | 12 | 14 |\n')
     hdr, rows = common.parse_markdown_table(t)

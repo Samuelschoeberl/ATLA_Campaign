@@ -1,3 +1,4 @@
+"""Helpers for git-aware file operations during Mycelium growth scripts."""
 from pathlib import Path
 from typing import Optional
 import subprocess

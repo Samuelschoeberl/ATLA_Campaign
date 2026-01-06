@@ -71,11 +71,11 @@ Total Bending Level: 100
 ## Bending Slots
 You can always only use maximum half of you current Bending slots (rounded up so if you have 3 left you can either spend 2 and then 1 or only 1 but 3 times)
 
-| Slot                   |                    Amount |
+| Slot                   | 20/20 |
 | ---------------------- | ------------------------: |
 | Airbending slot        |                     60/60 |
 | <details><summary>Bonus air slots</summary>0/0</details> | |
-| Danger Sense Reactions |                     20/20 |
+| Danger Sense Reactions | 20/20 |
 | Firebending slot       |                     60/60 |
 | <details><summary>Bonus fire slots</summary>0/0</details> | |
 | Earthbending slot      |                     60/60 |
@@ -88,7 +88,7 @@ You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Waterbottle charge         |                          40/40 |
+| Waterbottle charge         | 40 |
 | <details><summary>Bonus water charges</summary>0/0</details> | |
 
 

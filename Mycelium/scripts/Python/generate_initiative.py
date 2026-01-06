@@ -255,6 +255,7 @@ def edit_initiative():
 
 
 def main():
+    """CLI entry point to create or edit the initiative tracker markdown."""
     parser = argparse.ArgumentParser(description="Generate or edit initiative tracker")
     parser.add_argument("--edit", action="store_true", help="Edit existing tracker (update one character)")
     args = parser.parse_args()

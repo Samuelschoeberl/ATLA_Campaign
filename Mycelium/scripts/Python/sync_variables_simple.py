@@ -570,6 +570,7 @@ def watch_mode(interval: int = 10, verbose: bool = False):
 
 
 def main():
+    """Synchronize variables once or continuously depending on CLI flags."""
     import argparse
     
     parser = argparse.ArgumentParser(description='Sync variables between character sheets and variable files')
