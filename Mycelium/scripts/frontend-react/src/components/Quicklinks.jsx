@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './Quicklinks.css';
 import { API_BASE_URL } from '../config/api';
 import PixelAvatar from './PixelAvatar';
-import { normalizeAvatarMatrix } from '../utils/avatarUtils';
 
 const Quicklinks = ({ lightMode = false, onFileSelect }) => {
   const [content, setContent] = useState('');
@@ -10,6 +9,7 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
   const [error, setError] = useState(null);
   const [fileColors, setFileColors] = useState({});
   const [customizations, setCustomizations] = useState({});
+  const [avatarImages, setAvatarImages] = useState({}); // Store loaded avatar data URLs
 
   useEffect(() => {
     loadQuicklinks();
@@ -52,7 +52,52 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
       const response = await fetch(`${API_BASE_URL}/api/characters/customizations`);
       if (response.ok) {
         const data = await response.json();
-        setCustomizations(data.customizations || {});
+        const customizationsData = data.customizations || {};
+        setCustomizations(customizationsData);
+        
+        // Load avatar images for each character
+        const images = {};
+        console.log('Quicklinks: Loading avatars for customizations:', Object.keys(customizationsData));
+        for (const [charName, customization] of Object.entries(customizationsData)) {
+          console.log(`Quicklinks: Processing ${charName}, avatarPng:`, customization.avatarPng);
+          if (customization.avatarPng) {
+            if (customization.avatarPng.startsWith('data:image')) {
+              // It's a data URL, use directly
+              console.log(`Quicklinks: ${charName} has data URL, length:`, customization.avatarPng.length);
+              images[charName] = customization.avatarPng;
+            } else {
+              // It's a file path, fetch from server
+              console.log(`Quicklinks: ${charName} has file path, fetching:`, customization.avatarPng);
+              try {
+                const fetchUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(customization.avatarPng)}`;
+                console.log(`Quicklinks: Fetch URL:`, fetchUrl);
+                const imgResponse = await fetch(fetchUrl);
+                console.log(`Quicklinks: Fetch response status:`, imgResponse.status);
+                if (imgResponse.ok) {
+                  // Convert blob to base64 data URL
+                  const blob = await imgResponse.blob();
+                  console.log(`Quicklinks: Got blob, size:`, blob.size, 'type:', blob.type);
+                  const reader = new FileReader();
+                  const dataUrl = await new Promise((resolve, reject) => {
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                  });
+                  images[charName] = dataUrl;
+                  console.log(`Quicklinks: Set avatar for ${charName}, data URL length:`, images[charName].length);
+                } else {
+                  console.error(`Quicklinks: Failed to fetch avatar for ${charName}:`, imgResponse.status);
+                }
+              } catch (err) {
+                console.error(`Error loading avatar for ${charName}:`, err);
+              }
+            }
+          } else {
+            console.log(`Quicklinks: ${charName} has no avatarPng`);
+          }
+        }
+        console.log('Quicklinks: Final avatar images:', Object.keys(images));
+        setAvatarImages(images);
       }
     } catch (err) {
       console.error('Error loading character customizations:', err);
@@ -316,7 +361,8 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
               // Get the character folder color (format: PCs/CharacterName/)
               const folderPath = `PCs/${character}/`;
               const customization = customizations?.[character];
-              const avatarPixels = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : null;
+              const avatarPng = avatarImages[character] || null;
+              console.log(`Quicklinks: Rendering ${character}, avatarPng from avatarImages:`, avatarPng ? `${avatarPng.substring(0, 50)}...` : 'NULL');
               const characterColor = customization?.folderColor || fileColors[folderPath] || '#888888';
               const isUncolored = characterColor === '#e6e6e6';
               
@@ -340,7 +386,7 @@ const Quicklinks = ({ lightMode = false, onFileSelect }) => {
                 >
                   <PixelAvatar
                     className="quicklink-avatar"
-                    pixels={avatarPixels}
+                    avatarPng={avatarPng}
                     size={48}
                     borderColor={accentColor}
                     placeholderLabel={character?.[0] || 'C'}

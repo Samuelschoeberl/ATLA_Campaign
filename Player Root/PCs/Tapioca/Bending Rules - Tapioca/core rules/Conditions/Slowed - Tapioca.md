@@ -1,3 +1,4 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Tapioca or #reactions_Tapioca (including #Danger_Sense_Reaction_Tapioca). ( #Action_Tapioca is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
-#condition_Tapioca
+#condition_Tapioca #Curse_Tapioca #general_Tapioca
+

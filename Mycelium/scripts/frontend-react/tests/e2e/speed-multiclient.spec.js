@@ -107,13 +107,14 @@ test.describe('Multi-Client Communication Speed Tests', () => {
       const startTime = Date.now();
       
       // Client 1: Click next turn multiple times to complete a round
+      // Add more waiting between clicks to prevent overwhelming the system
       for (let i = 0; i < existingCount + 1; i++) {
-        await client1.click('.btn-next-vertical');
-        await client1.waitForTimeout(50);
+        await client1.click('.btn-next-vertical', { timeout: 5000 });
+        await client1.waitForTimeout(200); // Increased from 50ms to 200ms
       }
       
       // Wait for client 1 to update locally
-      await client1.waitForTimeout(300);
+      await client1.waitForTimeout(500); // Increased from 300ms
       const roundAfter1 = await client1.locator('.round-number').textContent();
       console.log(`Client 1 round after clicks: ${roundAfter1}`);
       

@@ -6,6 +6,11 @@
 
 | Characters     |
 | -------------- |
+| [[Tai]]        |
+| [[Kana]]       |
+| [[Nafas]]      |
+| [[Leif]]       |
+| [[Blimp]]      |
 | [[Anju]]       |
 | [[Puy]]        |
 | [[Rio]]        |

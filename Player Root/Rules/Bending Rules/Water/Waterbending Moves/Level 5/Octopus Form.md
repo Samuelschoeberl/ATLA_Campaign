@@ -18,7 +18,7 @@ You can expand any number of Tentacles to do any of the following:
 #Bonus_Action 
 - Range: Tentacle Meters
 - You try to grab a creature. 
-	- They need to succeed on a Dex Saving throw against your [[Waterbending DC]] or become [[Immobilised]] and [[Slowed]].
+	- They need to succeed on a Dex Saving throw against your [[Waterbending DC]] or become [[Immobilised]] and [[Exhausted]].
 	- On the end of their Turn they get to roll a Str Saving throw against you [[Waterbending DC]]. 
 
 #Reaction 

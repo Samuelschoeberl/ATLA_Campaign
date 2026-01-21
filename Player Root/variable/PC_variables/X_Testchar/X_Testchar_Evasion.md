@@ -1,3 +1,3 @@
 32
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#defensive #variable_X_Testchar #character_stat_X_Testchar #character_stats_X_Testchar #secondary_stat_X_Testchar

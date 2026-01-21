@@ -11,6 +11,7 @@ import PixelAvatar from './PixelAvatar';
  * @param {boolean} lightMode - Whether light mode is active
  * @param {number} range - Range multiplier (e.g., 5 for "5 * firebending_slot meters")
  * @param {Object} characterData - Character data for pixel avatar
+ * @param {string} patternType - Type of pattern (e.g., 'cone', 'sphere', 'line')
  */
 const HexGridSVG = ({ 
   pattern, 
@@ -18,7 +19,8 @@ const HexGridSVG = ({
   opacity = 0.35, 
   lightMode = false,
   range = 0,
-  characterData = null
+  characterData = null,
+  patternType = null
 }) => {
   if (!pattern || pattern.length === 0) return null;
 
@@ -70,10 +72,29 @@ const HexGridSVG = ({
     const effectCenterX = (Math.min(...hexList.map(h => h.cx)) + Math.max(...hexList.map(h => h.cx))) / 2;
     const effectCenterY = (Math.min(...hexList.map(h => h.cy)) + Math.max(...hexList.map(h => h.cy))) / 2;
     
-    // Bender position: to the LEFT of the effect CENTER with range hex-lengths in between
-    // range * horizSpacing gives us the distance in terms of hex widths
-    const benderX = effectCenterX - (range * horizSpacing);
-    const benderY = effectCenterY; // Same vertical center as effect
+    // Bender position logic:
+    // For CONE: bender is AT the origin (first hex of the pattern, row 0)
+    // For other effects: bender is to the LEFT with range-based spacing
+    let benderX, benderY;
+    
+    if (patternType === 'cone') {
+      // For cones, bender is at the first hex (row 0, which should be centered in hexList)
+      // Find the hex at row 0 (cy = 0)
+      const originHex = hexList.find(h => h.cy === 0);
+      if (originHex) {
+        benderX = originHex.cx;
+        benderY = originHex.cy;
+      } else {
+        // Fallback to first hex if row 0 not found
+        benderX = hexList[0].cx;
+        benderY = hexList[0].cy;
+      }
+    } else {
+      // For non-cone effects: to the LEFT of the effect CENTER with range hex-lengths in between
+      // range * horizSpacing gives us the distance in terms of hex widths
+      benderX = effectCenterX - (range * horizSpacing);
+      benderY = effectCenterY; // Same vertical center as effect
+    }
     
     // Create bender hexagon
     const benderVertices = [];
@@ -93,8 +114,9 @@ const HexGridSVG = ({
 
     // Create path hexagons from bender to effect (if range > 1)
     // Path hexagons go BETWEEN bender and effect, not including either
+    // Skip for cones (cone emanates directly from caster)
     const pathHexes = [];
-    if (range > 1) {
+    if (range > 1 && patternType !== 'cone') {
       for (let i = 1; i < range; i++) {
         const pathX = benderX + (i * horizSpacing);
         const pathVertices = [];
@@ -256,7 +278,7 @@ const HexGridSVG = ({
                 overflow: 'hidden'
               }}>
                 <PixelAvatar
-                  pixels={characterData.pixels}
+                  avatarPng={characterData.avatarPng}
                   size={hexSize * 2}
                   borderColor="transparent"
                   background="transparent"

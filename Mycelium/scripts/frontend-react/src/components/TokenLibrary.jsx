@@ -1,6 +1,5 @@
 import React from 'react';
 import PixelAvatar from './PixelAvatar';
-import { normalizeAvatarMatrix } from '../utils/avatarUtils';
 
 /**
  * TokenLibrary - Draggable token library for battlemap
@@ -118,9 +117,9 @@ const TokenLibrary = ({
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              {char.avatar ? (
+              {char.avatarPng || char.avatar ? (
                 <PixelAvatar
-                  pixels={normalizeAvatarMatrix(char.avatar)}
+                  avatarPng={char.avatarPng}
                   size={45}
                   borderColor={char.color || '#27ae60'}
                   background="rgba(0,0,0,0.3)"

@@ -1,3 +1,4 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Ash or #reactions_Ash (including #Danger_Sense_Reaction_Ash). ( #Action_Ash is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
-#condition_Ash
+#condition_Ash #Curse_Ash #general_Ash
+

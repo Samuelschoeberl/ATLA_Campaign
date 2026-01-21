@@ -1,9 +1,50 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import './BattlemapViewer.css';
 import { API_BASE_URL } from '../config/api';
 import PixelAvatar from './PixelAvatar';
-import TokenLibrary from './TokenLibrary';
-import { normalizeAvatarMatrix } from '../utils/avatarUtils';
+import EditDataModal from './EditDataModal';
+import TokenMarkers from './battlemap/TokenMarkers';
+import MarkerPopup from './battlemap/MarkerPopup';
+import TokenContextMenu from './battlemap/TokenContextMenu';
+import { 
+  loadConditionDescriptions, 
+  fetchCharacterSheet, 
+  updateCharacterSheet,
+  parseSheetVitalsAndConditions,
+  buildBasicCharacterSheet,
+  loadNpcState,
+  saveNpcState
+} from '../utils/characterSheetParser';
+import { animateToolSelection, animateEffectSelection, animateEffectHover } from '../utils/battlemapAnimations';
+import { EFFECT_PRESETS, STANDARD_COLORS, CONDITION_COLORS } from '../constants/effectPresets';
+import { AREA_PATTERNS } from '../constants/areaPatterns';
+import {
+  offsetToCube,
+  cubeToOffset,
+  calculateHexDistance,
+  getHexNeighbors,
+  getNeighborInDirection,
+  getDirectionToNeighbor,
+  getHexCoordinates,
+  getHexVertices,
+  generateSpherePattern,
+  generateConePattern,
+  getTokenCells,
+  gridToGraphData,
+  initializeHexGrid,
+  graphDataToGrid,
+  calculateGridSizeForImage,
+  generateHexPathPoints,
+  generateArcPath,
+  getHealthBarColor
+} from '../utils/hexUtils';
+import {
+  getHexGridFilename,
+  saveHexGridForImage,
+  loadHexGridForImage,
+  saveBattlemapState as saveBattlemapStateUtil,
+  syncFromServer
+} from '../utils/syncUtils';
 
 /**
  * HexBattlemapViewer - Hex-grid based battlemap with token placement and drawing tools
@@ -18,241 +59,8 @@ import { normalizeAvatarMatrix } from '../utils/avatarUtils';
  * - Real-time synchronization
  */
 
-// Improved hex patterns for AOE shapes
-const AREA_PATTERNS = {
-  sphere1: {
-    name: 'Sphere (1 hex radius)',
-    pattern: [
-      { hexes: [{ row: 0, col: 0 }] }
-    ]
-  },
-  sphere2: {
-    name: 'Sphere (2 hex radius)',
-    pattern: [
-      { hexes: [
-        { row: -1, col: -1 }, { row: -1, col: 0 },
-        { row: 0, col: -1 }, { row: 0, col: 0 }, { row: 0, col: 1 },
-        { row: 1, col: 0 }, { row: 1, col: 1 }
-      ]}
-    ]
-  },
-  sphere3: {
-    name: 'Sphere (3 hex radius)',
-    pattern: [
-      { hexes: [
-        { row: -2, col: -1 }, { row: -2, col: 0 },
-        { row: -1, col: -2 }, { row: -1, col: -1 }, { row: -1, col: 0 }, { row: -1, col: 1 },
-        { row: 0, col: -2 }, { row: 0, col: -1 }, { row: 0, col: 0 }, { row: 0, col: 1 }, { row: 0, col: 2 },
-        { row: 1, col: -1 }, { row: 1, col: 0 }, { row: 1, col: 1 }, { row: 1, col: 2 },
-        { row: 2, col: 0 }, { row: 2, col: 1 }
-      ]}
-    ]
-  },
-  cone: {
-    name: 'Cone (3 hex)',
-    pattern: [
-      { hexes: [
-        { row: 0, col: 0 },
-        { row: 1, col: -1 }, { row: 1, col: 0 },
-        { row: 2, col: -1 }, { row: 2, col: 0 }, { row: 2, col: 1 }
-      ]}
-    ]
-  },
-};
 
-// Effect presets with enhanced animation patterns and visual styles
-const EFFECT_PRESETS = {
-  fire: {
-    name: '🔥 Fire',
-    colors: ['#ff6b1a', '#ffaa00', '#ff4444', '#ff8800', '#ff3300'],
-    animation: 'flicker',
-    glowColor: 'rgba(255, 100, 0, 0.6)',
-    pattern: 'chaos',
-    emoji: '🔥',
-    gradient: 'radial-gradient(circle, #ffaa00 0%, #ff6b1a 50%, #ff3300 100%)'
-  },
-  ice: {
-    name: '❄️ Ice',
-    colors: ['#88ccff', '#ccffff', '#66bbee', '#aae6ff', '#5599dd'],
-    animation: 'pulse',
-    glowColor: 'rgba(136, 204, 255, 0.5)',
-    pattern: 'crystallize',
-    emoji: '❄️',
-    gradient: 'linear-gradient(135deg, #ccffff 0%, #88ccff 50%, #5599dd 100%)'
-  },
-  poison: {
-    name: '☠️ Poison',
-    colors: ['#9d4edd', '#c77dff', '#7b2cbf', '#b185db', '#8b45c7'],
-    animation: 'bubble',
-    glowColor: 'rgba(157, 78, 221, 0.5)',
-    pattern: 'toxic',
-    emoji: '☠️',
-    gradient: 'radial-gradient(circle, #c77dff 0%, #9d4edd 50%, #7b2cbf 100%)'
-  },
-  lightning: {
-    name: '⚡ Lightning',
-    colors: ['#ffeb3b', '#fff176', '#ffd54f', '#ffe082', '#ffdd33'],
-    animation: 'spark',
-    glowColor: 'rgba(255, 235, 59, 0.6)',
-    pattern: 'electric',
-    emoji: '⚡',
-    gradient: 'linear-gradient(45deg, #ffe082 0%, #ffeb3b 50%, #ffdd33 100%)'
-  },
-  earth: {
-    name: '🪨 Earth',
-    colors: ['#8b6f47', '#a0826d', '#6f5436', '#9a7b5a', '#705442'],
-    animation: 'static',
-    glowColor: 'rgba(139, 111, 71, 0.5)',
-    pattern: 'boulder',
-    emoji: '🪨',
-    gradient: 'linear-gradient(180deg, #a0826d 0%, #8b6f47 50%, #6f5436 100%)'
-  },
-  air: {
-    name: '🌪️ Air',
-    colors: ['#e6f3ff', '#d0e8ff', '#ffd9a8', '#ffe5c2', '#c0dcf0'],
-    animation: 'swirl',
-    glowColor: 'rgba(230, 243, 255, 0.4)',
-    pattern: 'vortex',
-    emoji: '🌪️',
-    gradient: 'conic-gradient(from 45deg, #e6f3ff, #ffd9a8, #d0e8ff, #ffe5c2, #e6f3ff)'
-  },
-  darkness: {
-    name: '🌑 Darkness',
-    colors: ['#1a1a1a', '#2a2a2a', '#0a0a0a', '#151515', '#000000'],
-    animation: 'wave',
-    glowColor: 'rgba(0, 0, 0, 0.9)',
-    pattern: 'shadow',
-    emoji: '🌑',
-    gradient: 'radial-gradient(circle, #2a2a2a 0%, #1a1a1a 50%, #000000 100%)'
-  },
-  healing: {
-    name: '✨ Healing',
-    colors: ['#ffdd88', '#ffffaa', '#ffee99', '#ffcc77', '#ffe68c'],
-    animation: 'shimmer',
-    glowColor: 'rgba(255, 230, 150, 0.6)',
-    pattern: 'radiance',
-    emoji: '✨',
-    gradient: 'radial-gradient(circle, #ffffaa 0%, #ffee99 50%, #ffdd88 100%)'
-  },
-  water: {
-    name: '💧 Water',
-    colors: ['#4da6ff', '#66b3ff', '#3399ff', '#80c1ff', '#3d8fd9'],
-    animation: 'flow',
-    glowColor: 'rgba(77, 166, 255, 0.5)',
-    pattern: 'ripple',
-    emoji: '💧',
-    gradient: 'linear-gradient(180deg, #80c1ff 0%, #4da6ff 50%, #3d8fd9 100%)'
-  },
-  blood: {
-    name: '🩸 Blood',
-    colors: ['#8b0000', '#a30000', '#700000', '#950000', '#600000'],
-    animation: 'drip',
-    glowColor: 'rgba(139, 0, 0, 0.6)',
-    pattern: 'splatter',
-    emoji: '🩸',
-    gradient: 'radial-gradient(circle, #a30000 0%, #8b0000 50%, #600000 100%)'
-  },
-  none: {
-    name: '⬡ Solid',
-    colors: null,
-    animation: 'none',
-    glowColor: null,
-    pattern: 'solid',
-    emoji: '⬡',
-    gradient: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)'
-  }
-};
-
-
-const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
-  // Coordinate conversion functions (odd-r offset <-> cube coordinates)
-  const offsetToCube = (row, col) => {
-    const q = col - (row - (row & 1)) / 2;
-    const r = row;
-    const s = -q - r;
-    return { q, r, s };
-  };
-  
-  const cubeToOffset = (q, r, s) => {
-    const col = q + (r - (r & 1)) / 2;
-    const row = r;
-    return { row, col };
-  };
-
-  // Graph-based hex grid conversion functions
-  // Converts the 2D array hexGrid to a graph where each node has neighbors
-  // KEY OPTIMIZATION: Only stores filled/painted hexes (sparse representation)
-  const gridToGraphData = (hexGrid, gridSize) => {
-    const nodes = {};
-    const directions = ['NW', 'NE', 'E', 'SE', 'SW', 'W']; // Six hex directions
-    
-    // Helper to get neighbors inline (flat-top hex, odd-r offset)
-    const getNeighborsInline = (row, col) => {
-      const isOddRow = row % 2 === 1;
-      const offsets = isOddRow
-        ? [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [0, -1]] // NW, NE, E, SE, SW, W for odd rows
-        : [[-1, -1], [-1, 0], [0, 1], [1, 0], [1, -1], [0, -1]]; // NW, NE, E, SE, SW, W for even rows
-      
-      return offsets.map(([dr, dc]) => ({
-        row: row + dr,
-        col: col + dc
-      }));
-    };
-    
-    for (let row = 0; row < gridSize.rows; row++) {
-      for (let col = 0; col < gridSize.cols; col++) {
-        const cell = hexGrid[row]?.[col];
-        
-        // OPTIMIZATION: Skip empty/unfilled hexes to save space
-        if (!cell || !cell.filled) continue;
-        
-        const nodeId = `${row},${col}`;
-        
-        // Get the 6 neighbors
-        const neighbors = getNeighborsInline(row, col);
-        const neighborMap = {};
-        
-        neighbors.forEach((neighbor, idx) => {
-          const { row: nRow, col: nCol } = neighbor;
-          // Only add neighbor if it's within bounds
-          if (nRow >= 0 && nRow < gridSize.rows && nCol >= 0 && nCol < gridSize.cols) {
-            neighborMap[directions[idx]] = `${nRow},${nCol}`;
-          }
-        });
-        
-        nodes[nodeId] = {
-          id: nodeId,
-          row,
-          col,
-          neighbors: neighborMap,
-          data: {
-            filled: cell.filled,
-            color: cell.color,
-            effect: cell.effect,
-            animationOffset: cell.animationOffset,
-            paintedAt: cell.paintedAt
-          }
-        };
-      }
-    }
-    
-    return nodes;
-  };
-  
-  // Converts graph back to 2D array format
-  const graphDataToGrid = (graphData, gridSize) => {
-    const grid = initializeHexGrid(gridSize.rows, gridSize.cols);
-    
-    Object.values(graphData).forEach(node => {
-      const { row, col, data } = node;
-      if (grid[row] && grid[row][col]) {
-        grid[row][col] = { ...data };
-      }
-    });
-    
-    return grid;
-  };
-  
+const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect }) => {
   // Grid state
   const [gridSize, setGridSize] = useState({ rows: 10, cols: 10 });
   const [pendingGridSize, setPendingGridSize] = useState({ rows: 10, cols: 10 });
@@ -266,11 +74,18 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
   const [imageDimensions, setImageDimensions] = useState({ width: 800, height: 800 }); // Actual image dimensions
   
   // Drawing tools state
-  const [currentTool, setCurrentTool] = useState('paint'); // paint, eraser, measure, sphere, cone, line, token, aura, debug
-  const [currentEffect, setCurrentEffect] = useState('none'); // Effect preset key
+  const [currentTool, setCurrentTool] = useState('select'); // select (default), paint, eraser, measure, sphere, cone, line, token, aura, debug, edit
+  const [currentEffect, setCurrentEffect] = useState('fire'); // Effect preset key
   const [brushColor, setBrushColor] = useState('#ff6b6b');
   const [isPainting, setIsPainting] = useState(false);
   const [paintMode, setPaintMode] = useState(false); // false = erase
+  
+  // Edit Data tool state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState(null); // { type: 'token' | 'hex', data: {...}, row, col }
+  
+  // Condition descriptions state
+  const [conditionDescriptions, setConditionDescriptions] = useState({});
   
   // Debug tool state
   const [selectedHexInfo, setSelectedHexInfo] = useState(null); // { row, col, neighbors, data }
@@ -305,9 +120,25 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
   const [fadeSeconds, setFadeSeconds] = useState(3);
   
   // Token state
-  const [tokens, setTokens] = useState([]); // { id, row, col, name, avatar, color, aura }
+  const [tokens, setTokens] = useState([]); // { id, row, col, name, avatar, color, aura, width, height, showHp }
   const [selectedToken, setSelectedToken] = useState(null);
   const [draggedToken, setDraggedToken] = useState(null);
+  const [tokenToMove, setTokenToMove] = useState(null); // Token ID to move on next hex click
+  
+  // Camera panning state (for select/neutral mode)
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [scrollStart, setScrollStart] = useState({ x: 0, y: 0 });
+  
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState(null); // { x, y, tokenId }
+  
+  // Marker popup state
+  const [markerPopup, setMarkerPopup] = useState(null); // { type: 'condition'|'defensive', tokenId, data, x, y }
+  
+  // Token placement tool state
+  const [tokenToPlace, setTokenToPlace] = useState(null); // { name, avatar, color, icon, type, width, height }
+  const [tokenPlacementSize, setTokenPlacementSize] = useState({ width: 1, height: 1 });
   
   // Character data for token creation
   const [availableCharacters, setAvailableCharacters] = useState([]);
@@ -327,9 +158,100 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
   
   // UI state
   const [scale, setScale] = useState(1.0);
-  const [showTokenPanel, setShowTokenPanel] = useState(false);
-  const [showToolbar, setShowToolbar] = useState(true);
-  const [showDrawingTools, setShowDrawingTools] = useState(true);
+  const [navOpen, setNavOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('toolbar');
+  const [sectionVisibility, setSectionVisibility] = useState({
+    toolbar: false,
+    drawing: false,
+    tokens: false,
+    camera: false,
+    effects: false
+  });
+  const [drawingToolsCollapsed, setDrawingToolsCollapsed] = useState(false); // Collapse UI but keep tool active
+
+  // Cache for normalized PNG data URLs (avoid repeat canvas work)
+  const normalizedImageCacheRef = useRef(new Map());
+  const [normalizedSrcMap, setNormalizedSrcMap] = useState(new Map());
+
+  // Re-encode PNGs client-side to strip any remaining color profile for SVG rendering
+  const normalizeDataUrl = async (dataUrl) => {
+    if (!dataUrl || !dataUrl.startsWith('data:image')) return dataUrl;
+    if (normalizedImageCacheRef.current.has(dataUrl)) {
+      return normalizedImageCacheRef.current.get(dataUrl);
+    }
+    try {
+      const normalized = await new Promise(async (resolve, reject) => {
+        try {
+          // Prefer createImageBitmap path to avoid premultiplied alpha/gamma surprises
+          if (window.createImageBitmap) {
+            const blob = await (await fetch(dataUrl)).blob();
+            const bitmap = await createImageBitmap(blob, {
+              colorSpaceConversion: 'none',
+              premultiplyAlpha: 'none'
+            });
+            const canvas = document.createElement('canvas');
+            canvas.width = bitmap.width;
+            canvas.height = bitmap.height;
+            const ctx = canvas.getContext('2d', { alpha: true, colorSpace: 'srgb' });
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bitmap, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+            return;
+          }
+        } catch (e) {
+          console.warn('normalizeDataUrl createImageBitmap failed, falling back', e);
+        }
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d', { alpha: true, colorSpace: 'srgb' });
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+      normalizedImageCacheRef.current.set(dataUrl, normalized);
+      return normalized;
+    } catch (err) {
+      console.warn('normalizeDataUrl failed, using original', err);
+      return dataUrl;
+    }
+  };
+
+  // Ensure all token images are normalized once loaded
+  useEffect(() => {
+    // Skip normalization - just use raw images
+  }, [tokens]);
+
+  const NAV_SECTIONS = [
+    { id: 'toolbar', label: 'Tools', icon: '⚙️', color: '#3498db' },
+    { id: 'drawing', label: 'Draw', icon: '🎨', color: '#9b59b6' },
+    { id: 'tokens', label: 'Tokens', icon: '🎭', color: '#e67e22', onNavigate: () => setCurrentTool('place-token') },
+    { id: 'camera', label: 'View', icon: '📹', color: '#27ae60' },
+    { id: 'effects', label: 'FX', icon: '✨', color: '#e74c3c', onNavigate: () => setCurrentTool('aura') }
+  ];
+
+  const currentToolLabel = (() => {
+    switch (currentTool) {
+      case 'paint': return 'Paint';
+      case 'eraser': return 'Eraser';
+      case 'measure': return 'Measure';
+      case 'sphere': return 'Sphere';
+      case 'cone': return 'Cone';
+      case 'line': return 'Line';
+      case 'token': return 'Token Select';
+      case 'place-token': return 'Place Token';
+      case 'aura': return 'Aura';
+      case 'debug': return 'Debug';
+      default: return 'None';
+    }
+  })();
   
   // Watcher Mode state
   const [watcherMode, setWatcherMode] = useState(false);
@@ -337,7 +259,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
   const [preWatcherScale, setPreWatcherScale] = useState(1.0); // Store scale before entering watcher mode
   const [watcherRotation, setWatcherRotation] = useState(0); // Rotation angle for watcher mode (0 or 90 degrees)
   const [watcherDefaultView, setWatcherDefaultView] = useState({ scale: 1.0, rotation: 0 }); // Store the calculated optimal view
+  const [preWatcherTool, setPreWatcherTool] = useState('select'); // Remember tool before watcher mode
   const [showCameraPanel, setShowCameraPanel] = useState(false); // Toggle for camera control panel
+  
+  // Advanced Mode Fullscreen state
+  const [advancedFullscreen, setAdvancedFullscreen] = useState(false);
   
   // Sync state
   const [lastSyncTime, setLastSyncTime] = useState(Date.now());
@@ -357,6 +283,10 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
   
   const canvasRef = useRef(null);
   const areaRangeInputRef = useRef(null);
+  const toolbarContentRef = useRef(null);
+  const drawingToolsContentRef = useRef(null);
+  const edgePanRef = useRef(null); // For edge panning animation frame
+  const edgePanDirectionRef = useRef({ x: 0, y: 0 }); // Current pan direction
   
   // Keep refs in sync with state
   useEffect(() => {
@@ -402,11 +332,60 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
   useEffect(() => {
     if (!advancedMode) {
       if (currentTool === 'debug') {
-        setCurrentTool('paint');
+        setCurrentTool('select');
       }
       setSelectedHexInfo(null);
     }
   }, [advancedMode, currentTool]);
+
+  // Load condition descriptions on mount
+  useEffect(() => {
+    const loadConditions = async () => {
+      try {
+        const descriptions = await loadConditionDescriptions(API_BASE_URL);
+        setConditionDescriptions(descriptions);
+        console.log('Loaded condition descriptions:', Object.keys(descriptions));
+      } catch (error) {
+        console.error('Error loading condition descriptions:', error);
+      }
+    };
+    loadConditions();
+  }, []);
+
+  // (Collapsible animations removed; sections remain always visible for smoother nav)
+
+  const scrollToSection = (sectionId) => {
+    const target = document.querySelector(`[data-section-id="${sectionId}"]`);
+    if (!target) return;
+    const headerOffset = 76;
+    const y = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+    setActiveSection(sectionId);
+  };
+
+  // Track visible section for nav highlighting
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('data-section-id');
+          if (id) setActiveSection(id);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    const nodes = document.querySelectorAll('[data-section-id]');
+    nodes.forEach(node => observer.observe(node));
+    return () => observer.disconnect();
+  }, [sectionVisibility]);
+
+  // Keep active section aligned with visible sections
+  useEffect(() => {
+    const visibleIds = NAV_SECTIONS.filter(s => sectionVisibility[s.id]).map(s => s.id);
+    if (!visibleIds.includes(activeSection) && visibleIds.length > 0) {
+      setActiveSection(visibleIds[0]);
+    }
+  }, [sectionVisibility, activeSection]);
 
   // Directory path for images
   const dirPath = useMemo(() => {
@@ -416,15 +395,21 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     return parts.join('/');
   }, [filePath]);
 
-  // Animation loop for effects
+  // Animation loop for effects - optimized with CSS animations
   useEffect(() => {
-    const interval = setInterval(() => {
-      setAnimationFrame(prev => (prev + 1) % 60); // 60 frame cycle
+    if (!fadeEnabled || fadeSeconds <= 0) return;
+    
+    let animationId;
+    let lastFadeCheck = Date.now();
+    const fadeCheckInterval = 1000; // Check fade every 1 second
+    
+    const checkFade = () => {
+      const now = Date.now();
       
-      // Handle fade effect
-      if (fadeEnabled && fadeSeconds > 0) {
+      // Only check fade effect periodically to reduce computation
+      if (now - lastFadeCheck >= fadeCheckInterval) {
+        lastFadeCheck = now;
         const fadeMs = fadeSeconds * 1000;
-        const now = Date.now();
         
         setHexGrid(prev => {
           let hasChanges = false;
@@ -444,9 +429,13 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
           return hasChanges ? updated : prev;
         });
       }
-    }, 100); // Update every 100ms
+      
+      animationId = requestAnimationFrame(checkFade);
+    };
     
-    return () => clearInterval(interval);
+    animationId = requestAnimationFrame(checkFade);
+    
+    return () => cancelAnimationFrame(animationId);
   }, [fadeEnabled, fadeSeconds]);
 
   // Listen for fullscreen changes
@@ -461,6 +450,30 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [watcherMode]);
+
+  // Pinch-to-zoom on trackpad (two-finger zoom)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e) => {
+      // Check if this is a pinch gesture (ctrlKey is set for pinch on most browsers)
+      if (e.ctrlKey) {
+        e.preventDefault();
+        
+        // deltaY is negative when pinching out (zooming in), positive when pinching in (zooming out)
+        const delta = -e.deltaY;
+        const zoomIntensity = 0.002; // Adjust sensitivity
+        const newScale = Math.max(0.1, Math.min(5, scale + delta * zoomIntensity));
+        
+        setScale(newScale);
+      }
+    };
+
+    // Use passive: false to allow preventDefault
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', handleWheel);
+  }, [scale]);
 
   // Handle background image changes - save current and load new hex grid
   useEffect(() => {
@@ -545,7 +558,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
   }, [selectedImage]);
 
   // Initialize hex grid with effect support
-  const initializeHexGrid = (rows, cols) => {
+  const initializeHexGrid = useCallback((rows, cols) => {
     const grid = [];
     for (let r = 0; r < rows; r++) {
       const row = [];
@@ -562,7 +575,21 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       grid.push(row);
     }
     return grid;
-  };
+  }, []);
+
+  // Get all cells occupied by a token based on its position and size
+  // For a 2x2 token at position (5,9), it occupies: (5,9), (5,10), (6,9), (6,10)
+  const getTokenCells = useCallback((row, col, width, height) => {
+    const cells = [];
+    for (let h = 0; h < height; h++) {
+      for (let w = 0; w < width; w++) {
+        // In odd-r offset coordinates, moving right increases col
+        // Moving down increases row
+        cells.push({ row: row + h, col: col + w });
+      }
+    }
+    return cells;
+  }, []);
 
   // Get hex grid filename for a specific background image
   const getHexGridFilename = (imageName) => {
@@ -741,6 +768,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       if (response.ok) {
         lastSavedStateRef.current = stateString;
         setLastSyncTime(now); // Use same timestamp as state.lastModified
+        lastSyncTimeRef.current = now; // CRITICAL: Update ref immediately to prevent race condition
         console.log('✅ BattlemapViewer: Save successful, lastSyncTime updated to:', now);
       } else {
         const errorText = await response.text();
@@ -758,8 +786,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     // Don't trigger auto-save if changes came from sync
     if (isUpdatingFromSyncRef.current) {
       console.log('BattlemapViewer: Skipping auto-save (changes from sync)');
-      isUpdatingFromSyncRef.current = false;
-      return;
+      return; // Don't clear the flag yet - let all state updates finish
     }
     
     if (saveTimeoutRef.current) {
@@ -773,7 +800,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       if (selectedImage?.name) {
         saveHexGridForImage(selectedImage.name);
       }
-    }, 1000); // Wait 1 second after last change
+    }, 3000); // Wait 3 seconds after last change - minimize server load
     
     return () => {
       if (saveTimeoutRef.current) {
@@ -782,7 +809,19 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     };
   }, [hexGrid, tokens, selectedImage, hexSize, gridSize]);
   
-  // Sync from server: poll for changes every 2 seconds
+  // Clear the sync flag after all state updates have been processed
+  useEffect(() => {
+    if (isUpdatingFromSyncRef.current) {
+      // Set a short timeout to ensure all state updates from sync are processed
+      const timer = setTimeout(() => {
+        isUpdatingFromSyncRef.current = false;
+        console.log('BattlemapViewer: Sync flag cleared after state updates');
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [hexGrid, tokens, selectedImage, hexSize, gridSize]);
+  
+  // Sync from server: poll for changes with adaptive interval
   useEffect(() => {
     if (!filePath) return;
     
@@ -791,9 +830,18 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     
     // Track the last fetch request to prevent race conditions
     let latestFetchId = 0;
+    let consecutiveNoChanges = 0;
+    let isSyncing = false;
     
     const syncInterval = setInterval(async () => {
+      // Prevent overlapping requests
+      if (isSyncing) {
+        console.log('⏭️ Skipping sync, previous request still in progress');
+        return;
+      }
+      
       const currentFetchId = ++latestFetchId;
+      isSyncing = true;
       
       try {
         // Use the same endpoint as we use for saving (GET to read)
@@ -845,10 +893,17 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
           }
           
           console.log('📥 Parsed state - lastModified:', newState.lastModified, '| Local:', lastSyncTimeRef.current);
+          
+          // Early exit if remote state is not newer - skip all processing
+          if (!newState.lastModified || newState.lastModified <= lastSyncTimeRef.current) {
+            consecutiveNoChanges++;
+            return;
+          }
+          
           console.log('Parsed state format:', newState.format || 'legacy array');
           console.log('Parsed state - hexGrid rows:', newState.hexGrid?.length, '| tokens:', newState.tokens?.length);
           
-          // Convert graph format to grid if needed
+          // Convert graph format to grid only if we're going to apply changes
           if (newState.format === 'graph' && newState.hexGraph) {
             console.log('📊 Converting graph format to grid');
             newState.hexGrid = graphDataToGrid(newState.hexGraph, newState.gridSize);
@@ -860,8 +915,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
             return;
           }
           
-          // Only update if remote state is newer and different
-          // Use refs to get current values without creating dependency
+          // Remote state is newer, check if different
           if (newState.lastModified && newState.lastModified > lastSyncTimeRef.current) {
             const currentStateString = JSON.stringify({
               gridSize: gridSizeRef.current,
@@ -879,19 +933,30 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
             });
             
             if (currentStateString !== newStateString) {
+              // Check if we have pending unsaved changes (saveTimeout is active)
+              if (saveTimeoutRef.current) {
+                console.log('⚠️ BattlemapViewer: Pending local changes detected, skipping sync to prevent data loss');
+                return;
+              }
+              
               // Remote changes detected, update local state
               console.log('✅ BattlemapViewer: Applying remote changes from', new Date(newState.lastModified).toISOString());
               
               isUpdatingFromSyncRef.current = true; // Mark that next updates are from sync
               
+              // Batch state updates to reduce re-renders
               if (newState.gridSize) setGridSize(newState.gridSize);
               if (newState.hexGrid) setHexGrid(newState.hexGrid);
               if (newState.tokens) setTokens(newState.tokens);
               if (newState.backgroundImage) setSelectedImage(newState.backgroundImage);
               if (newState.hexSize) setHexSize(newState.hexSize);
               setLastSyncTime(newState.lastModified);
+              lastSyncTimeRef.current = newState.lastModified; // CRITICAL: Update ref immediately to prevent race condition
+              
+              consecutiveNoChanges = 0;
             } else {
               console.log('ℹ️ Remote state is newer but identical, skipping update');
+              consecutiveNoChanges++;
             }
           }
         } else {
@@ -899,14 +964,92 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         }
       } catch (err) {
         console.error('❌ Failed to sync battlemap:', err);
+      } finally {
+        isSyncing = false;
       }
-    }, 1000); // Poll every 1 second for fast multi-client sync
+    }, 5000); // Poll every 5 seconds - further reduced server load
     
     return () => {
       console.log('BattlemapViewer: Clearing sync interval');
       clearInterval(syncInterval);
     };
   }, [filePath]); // Only depend on filePath
+
+  // Periodic token stats refresh - refresh HP and conditions every 10 seconds
+  useEffect(() => {
+    // Initial refresh on mount
+    const refreshTokens = async () => {
+      // Use ref to avoid dependency on tokens state
+      const currentTokens = tokensRef.current;
+      const playerTokens = currentTokens.filter(t => t.type === 'player' && t.name);
+      if (playerTokens.length === 0) return;
+      
+      console.log('🔄 Periodic token stats refresh...');
+      
+      const updatedTokens = await Promise.all(
+        currentTokens.map(async (token) => {
+          // Only refresh player character tokens
+          if (token.type !== 'player' || !token.name) {
+            return token;
+          }
+          
+          try {
+            const characterData = await fetchCharacterSheet(token.name, API_BASE_URL);
+            
+            if (characterData) {
+              console.log(`  Token ${token.name}: Fetched vitals`, {
+                current_hp: characterData.vitals?.current_hp,
+                max_hp: characterData.vitals?.max_hp
+              });
+              
+              const newCurrentHp = characterData.vitals?.current_hp ? parseFloat(characterData.vitals.current_hp) : token.currentHp;
+              const newMaxHp = characterData.vitals?.max_hp ? parseFloat(characterData.vitals.max_hp) : token.maxHp;
+              
+              // Parse conditions array from character data
+              let newConditions = characterData.conditions || token.conditions || [];
+              
+              // Auto-add "Bleeding out" if HP is 0 or below
+              const isBleedingOut = newMaxHp > 0 && newCurrentHp <= 0;
+              if (isBleedingOut && !newConditions.includes('Bleeding out')) {
+                newConditions = [...newConditions, 'Bleeding out'];
+              } else if (!isBleedingOut) {
+                // Remove "Bleeding out" if HP is above 0
+                newConditions = newConditions.filter(c => c !== 'Bleeding out');
+              }
+              
+              return {
+                ...token,
+                currentHp: newCurrentHp,
+                maxHp: newMaxHp,
+                conditions: newConditions
+              };
+            }
+          } catch (err) {
+            console.warn(`⚠️ Could not refresh data for ${token.name}:`, err);
+          }
+          
+          return token;
+        })
+      );
+      
+      // Only update if there are actual changes
+      if (JSON.stringify(updatedTokens) !== JSON.stringify(tokensRef.current)) {
+        console.log('✅ Token stats updated from character sheets');
+        setTokens(updatedTokens);
+      }
+    };
+    
+    // Set up interval for periodic refresh
+    const refreshInterval = setInterval(refreshTokens, 10000); // Every 10 seconds
+    
+    // Run initial refresh after a short delay
+    const initialTimeout = setTimeout(refreshTokens, 2000);
+    
+    return () => {
+      clearInterval(refreshInterval);
+      clearTimeout(initialTimeout);
+    };
+  }, []); // Empty dependency - runs once on mount, uses refs for current values
 
   // Load saved battlemap state
   useEffect(() => {
@@ -924,6 +1067,15 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         setHexGrid(defaultGrid);
         // Trigger save by updating a dummy state after grid is set
         // The debounced auto-save will pick this up
+        return;
+      }
+      
+      // Check if content is valid JSON before parsing
+      const trimmedContent = content.trim();
+      if (!trimmedContent.startsWith('{') && !trimmedContent.startsWith('[')) {
+        console.log('BattlemapViewer: Content is not JSON format, initializing default state');
+        const defaultGrid = initializeHexGrid(gridSize.rows, gridSize.cols);
+        setHexGrid(defaultGrid);
         return;
       }
       
@@ -1016,11 +1168,96 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         const customizations = customData.customizations || customData || {};
         console.log('BattlemapViewer: Parsed customizations:', customizations);
         
+        // Also scan PCs folder to find characters without customization files
+        try {
+          const pcsResp = await fetch(`${API_BASE_URL}/player_root/PCs`);
+          if (pcsResp.ok) {
+            const pcsData = await pcsResp.json();
+            console.log('BattlemapViewer: PCs folder response:', pcsData);
+            
+            // Handle different possible response structures
+            const pcsFolders = pcsData.children || pcsData.folders || (Array.isArray(pcsData) ? pcsData : []);
+            
+            if (pcsFolders.length > 0) {
+              // Add any PC folders that aren't in customizations yet
+              pcsFolders.forEach(child => {
+                const childName = child.name || child;
+                const isFolder = child.type === 'folder' || child.type === 'directory' || typeof child === 'string';
+                
+                if (isFolder && childName && !customizations[childName]) {
+                  console.log(`BattlemapViewer: Adding ${childName} without customization`);
+                  customizations[childName] = {
+                    name: childName,
+                    folderColor: null,
+                    avatar: null,
+                    avatarPng: null
+                  };
+                }
+              });
+            } else {
+              console.log('BattlemapViewer: No PC folders found in response');
+            }
+          } else {
+            console.warn('BattlemapViewer: PCs folder fetch returned', pcsResp.status);
+          }
+        } catch (err) {
+          console.warn('BattlemapViewer: Could not scan PCs folder:', err);
+        }
+        
+        // Load avatar PNGs for characters with file paths
+        const avatarImagesRaw = {};
+        const avatarImagesNormalized = {};
+        console.log('BattlemapViewer: Loading avatars for customizations:', Object.keys(customizations));
+        for (const [name, data] of Object.entries(customizations)) {
+          console.log(`BattlemapViewer: Processing ${name}, avatarPng:`, data.avatarPng);
+          if (data.avatarPng) {
+            if (data.avatarPng.startsWith('data:image')) {
+              // It's a data URL, already normalized at upload - use directly
+              console.log(`BattlemapViewer: ${name} has data URL`);
+              avatarImagesRaw[name] = data.avatarPng;
+              avatarImagesNormalized[name] = data.avatarPng;
+            } else {
+              // It's a file path, fetch from server
+              console.log(`BattlemapViewer: ${name} has file path, fetching:`, data.avatarPng);
+              try {
+                const fetchUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(data.avatarPng)}?cb=${Date.now()}`;
+                console.log(`BattlemapViewer: Fetch URL:`, fetchUrl);
+                const imgResponse = await fetch(fetchUrl);
+                console.log(`BattlemapViewer: Fetch response status:`, imgResponse.status);
+                if (imgResponse.ok) {
+                  // Convert blob to base64 data URL
+                  const blob = await imgResponse.blob();
+                  console.log(`BattlemapViewer: Got blob, size:`, blob.size);
+                  const reader = new FileReader();
+                  const dataUrl = await new Promise((resolve, reject) => {
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                  });
+                  avatarImagesRaw[name] = dataUrl;
+                  // Already normalized at source - use directly
+                  avatarImagesNormalized[name] = dataUrl;
+                  console.log(`BattlemapViewer: Set avatar for ${name}`);
+                } else {
+                  console.error(`BattlemapViewer: Failed to fetch avatar for ${name}:`, imgResponse.status);
+                }
+              } catch (err) {
+                console.error(`Error loading avatar for ${name}:`, err);
+              }
+            }
+          } else {
+            console.log(`BattlemapViewer: ${name} has no avatarPng`);
+          }
+        }
+        console.log('BattlemapViewer: Final avatar images (raw):', Object.keys(avatarImagesRaw));
+        
         // Convert customizations object to array of characters
         const characters = Object.entries(customizations).map(([name, data]) => ({
           name: name,
           avatar: data.avatar || null,
-          color: data.folderColor || '#3498db',
+          avatarPng: avatarImagesRaw[name] || null,              // raw for menu display
+          avatarPngNormalized: avatarImagesNormalized[name] || avatarImagesRaw[name] || null, // normalized for tokens
+          color: data.folderColor || 'rgba(0,0,0,0)',  // Default to transparent
           type: 'player'
         }));
         
@@ -1050,7 +1287,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       }
       
       if (imagePath) {
-        setBackgroundUrl(`${API_BASE_URL}/player_root/${encodeURIComponent(imagePath)}`);
+        setBackgroundUrl(`${API_BASE_URL}/player_root/${encodeURIComponent(imagePath)}?cb=${Date.now()}`);
       } else {
         setBackgroundUrl('');
       }
@@ -1130,6 +1367,9 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
 
   const toggleWatcherMode = () => {
     if (!watcherMode) {
+      // Remember current tool and switch to neutral select for watcher mode
+      setPreWatcherTool(currentTool);
+      setCurrentTool('select');
       // Entering watcher mode - go fullscreen and optimize view
       const elem = document.documentElement;
       if (elem.requestFullscreen) {
@@ -1239,14 +1479,102 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       // Restore previous scale and rotation
       setScale(preWatcherScale);
       setWatcherRotation(0);
+      setCurrentTool(preWatcherTool || 'select');
     }
     setWatcherMode(!watcherMode);
+  };
+
+  const toggleAdvancedFullscreen = () => {
+    if (!advancedFullscreen) {
+      // Entering advanced fullscreen - hide external UI elements
+      const hideElements = () => {
+        // Hide file explorer header (search + advanced button)
+        const explorerHeaders = document.querySelectorAll('.file-explorer-header, [class*="header"]');
+        explorerHeaders.forEach(el => {
+          if (el.querySelector('input[type="text"]') || el.textContent.includes('Advanced')) {
+            el.style.display = 'none';
+            el.setAttribute('data-advanced-fullscreen-hidden', 'true');
+          }
+        });
+        
+        // Hide tab bar
+        const tabBars = document.querySelectorAll('.tab-bar, [class*="tab"]');
+        tabBars.forEach(el => {
+          el.style.display = 'none';
+          el.setAttribute('data-advanced-fullscreen-hidden', 'true');
+        });
+        
+        // Hide dice roller at bottom
+        const diceRollers = document.querySelectorAll('[class*="dice"], [style*="borderTop"]');
+        diceRollers.forEach(el => {
+          if (el.textContent.includes('Roll') || el.querySelector('button')) {
+            el.style.display = 'none';
+            el.setAttribute('data-advanced-fullscreen-hidden', 'true');
+          }
+        });
+
+        // Hide collapsed file tree sidebar
+        const sidebars = document.querySelectorAll(
+          '[class*="sidebar"], [class*="activitybar"], [class*="sidebarPart"], ' +
+          '[class*="composite"], [class*="split-view-view"], ' + 
+          '.part.sidebar, .part.activitybar, ' +
+          '[id*="workbench.parts.sidebar"]'
+        );
+        sidebars.forEach(el => {
+          // Check if it's a sidebar element (usually has fixed width when collapsed)
+          if (el.offsetWidth > 0 && el.offsetWidth < 100) {
+            el.style.display = 'none';
+            el.setAttribute('data-advanced-fullscreen-hidden', 'true');
+          }
+        });
+
+        // Also try to hide any element that looks like a collapsed sidebar (thin vertical bar)
+        document.querySelectorAll('*').forEach(el => {
+          const computedStyle = window.getComputedStyle(el);
+          if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
+            const width = el.offsetWidth;
+            const height = el.offsetHeight;
+            // If it's a thin vertical element on the left side
+            if (width > 0 && width < 100 && height > 500 && 
+                el.getBoundingClientRect().left < 100 &&
+                !el.closest('[data-advanced-fullscreen-hidden]')) {
+              el.style.display = 'none';
+              el.setAttribute('data-advanced-fullscreen-hidden', 'true');
+            }
+          }
+        });
+      };
+      
+      setTimeout(hideElements, 50);
+    } else {
+      // Exiting advanced fullscreen - restore hidden UI elements
+      const hiddenElements = document.querySelectorAll('[data-advanced-fullscreen-hidden="true"]');
+      hiddenElements.forEach(el => {
+        el.style.display = '';
+        el.removeAttribute('data-advanced-fullscreen-hidden');
+      });
+    }
+    
+    setAdvancedFullscreen(!advancedFullscreen);
   };
 
   const resetWatcherView = () => {
     // Reset to the optimal calculated view
     setScale(watcherDefaultView.scale);
     setWatcherRotation(watcherDefaultView.rotation);
+
+    // Also recenter the scroll viewport on the grid
+    requestAnimationFrame(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const padding = watcherMode ? 1000 : 20;
+      const contentWidth = svgWidth + padding * 2;
+      const contentHeight = svgHeight + padding * 2;
+      const targetLeft = padding + svgWidth / 2 - canvas.clientWidth / 2;
+      const targetTop = padding + svgHeight / 2 - canvas.clientHeight / 2;
+      canvas.scrollLeft = Math.max(0, Math.min(contentWidth - canvas.clientWidth, targetLeft));
+      canvas.scrollTop = Math.max(0, Math.min(contentHeight - canvas.clientHeight, targetTop));
+    });
   };
 
   const rotateWatcherView = () => {
@@ -1277,6 +1605,85 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 2000);
   };
+
+  // Edge Panning - Automatically pan camera when mouse is near edges
+  const EDGE_PAN_ZONE = 100; // Pixels from edge to trigger panning
+  const EDGE_PAN_BASE_SPEED = 25; // Base pixels per frame to pan
+  
+  useEffect(() => {
+    if (!watcherMode) {
+      // Clean up when not in watcher mode
+      if (edgePanRef.current) {
+        cancelAnimationFrame(edgePanRef.current);
+        edgePanRef.current = null;
+      }
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const width = rect.width;
+      const height = rect.height;
+
+      let panX = 0;
+      let panY = 0;
+      
+      // Scale speed with zoom level - faster panning when zoomed in
+      const speedMultiplier = Math.max(1, scale * 1.5);
+      const panSpeed = EDGE_PAN_BASE_SPEED * speedMultiplier;
+
+      // Check horizontal edges
+      if (x < EDGE_PAN_ZONE) {
+        // Left edge - pan left (scroll left decreases)
+        panX = -panSpeed * (1 - x / EDGE_PAN_ZONE);
+      } else if (x > width - EDGE_PAN_ZONE) {
+        // Right edge - pan right (scroll left increases)
+        panX = panSpeed * (1 - (width - x) / EDGE_PAN_ZONE);
+      }
+
+      // Check vertical edges
+      if (y < EDGE_PAN_ZONE) {
+        // Top edge - pan up
+        panY = -panSpeed * (1 - y / EDGE_PAN_ZONE);
+      } else if (y > height - EDGE_PAN_ZONE) {
+        // Bottom edge - pan down
+        panY = panSpeed * (1 - (height - y) / EDGE_PAN_ZONE);
+      }
+
+      edgePanDirectionRef.current = { x: panX, y: panY };
+    };
+
+    const handleMouseLeave = () => {
+      edgePanDirectionRef.current = { x: 0, y: 0 };
+    };
+
+    // Animation loop for smooth panning
+    const panLoop = () => {
+      const { x, y } = edgePanDirectionRef.current;
+      if (x !== 0 || y !== 0) {
+        canvas.scrollLeft += x;
+        canvas.scrollTop += y;
+      }
+      edgePanRef.current = requestAnimationFrame(panLoop);
+    };
+
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+    edgePanRef.current = requestAnimationFrame(panLoop);
+
+    return () => {
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
+      if (edgePanRef.current) {
+        cancelAnimationFrame(edgePanRef.current);
+      }
+    };
+  }, [watcherMode]);
 
   // Handle grid size change
   const handleGridSizeChange = (rows, cols) => {
@@ -1316,7 +1723,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
             } else {
               // Use effect colors if available, otherwise use brush color
               const effectPreset = EFFECT_PRESETS[currentEffect];
-              const baseColor = effectPreset.colors ? effectPreset.colors[0] : brushColor;
+              const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
               
               // Completely overwrite with new values
               return { 
@@ -1366,7 +1773,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     setHexGrid(prev => {
       const updated = prev.map(r => r.map(c => ({ ...c })));
       const effectPreset = EFFECT_PRESETS[currentEffect];
-      const baseColor = effectPreset.colors ? effectPreset.colors[0] : brushColor;
+      const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
       
       lineHexes.forEach(({ row, col }) => {
         if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
@@ -1393,7 +1800,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     setHexGrid(prev => {
       const updated = prev.map(r => r.map(c => ({ ...c })));
       const effectPreset = EFFECT_PRESETS[currentEffect];
-      const baseColor = effectPreset.colors ? effectPreset.colors[0] : brushColor;
+      const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
       
       // Apply pattern using coordinate offsets
       pattern.pattern[0].hexes.forEach(offset => {
@@ -1417,9 +1824,182 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     });
   };
 
+  // Handle Edit Data tool click - opens modal to edit token or hex
+  const handleEditDataClick = async (row, col) => {
+    // Check if there's a token at this position
+    const tokenAtPos = tokens.find(t => {
+      const cells = getTokenCells(t.row, t.col, t.width || 1, t.height || 1);
+      return cells.some(c => c.row === row && c.col === col);
+    });
+    
+    if (tokenAtPos) {
+      let tokenData = tokenAtPos;
+      if (tokenAtPos.characterSheetPath) {
+        const parsed = await parseCharacterSheetForToken(
+          tokenAtPos.characterSheetPath,
+          tokenAtPos.characterSheetEndpoint || 'player_root',
+          tokenAtPos.isTempCharacterSheet || false
+        );
+        if (parsed) {
+          tokenData = {
+            ...tokenAtPos,
+            currentHp: parsed.currentHp ?? tokenAtPos.currentHp,
+            maxHp: parsed.maxHp ?? tokenAtPos.maxHp,
+            conditions: parsed.conditions?.length ? parsed.conditions : tokenAtPos.conditions,
+            defensive: Object.keys(parsed.defensive || {}).length ? parsed.defensive : tokenAtPos.defensive
+          };
+        }
+      }
+      // Edit token data
+      setEditTarget({
+        type: 'token',
+        data: tokenData,
+        row,
+        col
+      });
+    } else {
+      // Edit hex cell data
+      const hexData = hexGrid[row]?.[col] || { filled: false, color: [0, 0, 0, 0] };
+      setEditTarget({
+        type: 'hex',
+        data: hexData,
+        row,
+        col
+      });
+    }
+    
+    setEditModalOpen(true);
+  };
+
+  // Handle save from Edit Data modal
+  const handleEditDataSave = async (editData) => {
+    saveToHistory();
+    
+    if (editData.type === 'token') {
+      // Find the old token to check if aura changed
+      const oldToken = tokens.find(t => t.id === editData.tokenId);
+      const newAura = editData.data.aura;
+      const oldAura = oldToken?.aura;
+      
+      // Update token - ensure conditions are properly merged
+      setTokens(prev => prev.map(t => {
+        if (t.id === editData.tokenId) {
+          return {
+            ...t,
+            ...editData.data,
+            conditions: editData.data.conditions || [],
+            defensive: editData.data.defensive || t.defensive || {}
+          };
+        }
+        return t;
+      }));
+      
+      // Sync HP/conditions/defensive back to the token's character sheet (PC or temp NPC)
+      const updates = {};
+      
+      // Include HP updates if changed
+      if (editData.data.currentHp !== undefined) {
+        updates.currentHp = editData.data.currentHp;
+      }
+      if (editData.data.maxHp !== undefined) {
+        updates.maxHp = editData.data.maxHp;
+      }
+      
+      // Include conditions if present
+      if (editData.data.conditions) {
+        updates.conditions = editData.data.conditions;
+      }
+      
+      // Include defensive stats if present
+      if (editData.data.defensive) {
+        updates.defensive = editData.data.defensive;
+      }
+      
+      const targetName = editData.data.name || oldToken?.name;
+      const targetSheetPath = editData.data.characterSheetPath || oldToken?.characterSheetPath;
+      const targetEndpoint = editData.data.characterSheetEndpoint || oldToken?.characterSheetEndpoint || 'player_root';
+      
+      // Only attempt sync if we have updates and a target
+      if (Object.keys(updates).length > 0 && (targetName || targetSheetPath)) {
+        // Don't await - run in background to not block UI
+        updateCharacterSheet(targetName, updates, API_BASE_URL, {
+          sheetPath: targetSheetPath,
+          endpoint: targetEndpoint
+        }).catch(err => {
+          console.warn('Failed to sync character sheet:', err);
+        });
+      }
+      
+      // Handle aura hex changes
+      if (oldAura?.moveHexes || newAura?.moveHexes) {
+        setHexGrid(prev => {
+          const updated = prev.map(r => r.map(c => ({ ...c })));
+          
+          // Clear old aura hexes if they existed
+          if (oldAura?.moveHexes) {
+            updated.forEach(row => {
+              row.forEach(cell => {
+                if (cell.auraTokenId === editData.tokenId) {
+                  cell.filled = false;
+                  cell.color = [0, 0, 0, 0];
+                  cell.effect = null;
+                  delete cell.auraTokenId;
+                  delete cell.paintedAt;
+                }
+              });
+            });
+          }
+          
+          // Add new aura hexes if aura exists and moveHexes is true
+          if (newAura && newAura.moveHexes && newAura.diameter > 0) {
+            const tokenWidth = editData.width || 1;
+            const tokenHeight = editData.height || 1;
+            const auraHexes = generateTokenAuraPattern(editData.row, editData.col, tokenWidth, tokenHeight, newAura.diameter);
+            const effectPreset = EFFECT_PRESETS[currentEffect];
+            const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
+            
+            auraHexes.forEach(({ row, col }) => {
+              if (updated[row] && updated[row][col]) {
+                updated[row][col] = {
+                  ...updated[row][col],
+                  filled: true,
+                  color: baseColor,
+                  effect: currentEffect,
+                  auraTokenId: editData.tokenId,
+                  paintedAt: fadeEnabled ? Date.now() : null
+                };
+              }
+            });
+          }
+          
+          return updated;
+        });
+      }
+    } else if (editData.type === 'hex') {
+      // Update hex cell
+      setHexGrid(prev => {
+        const updated = prev.map(r => r.map(c => ({ ...c })));
+        if (updated[editData.row] && updated[editData.row][editData.col]) {
+          updated[editData.row][editData.col] = editData.data;
+        }
+        return updated;
+      });
+    }
+  };
+
   // Handle hex click
   const handleHexClick = (row, col, erase = false) => {
-    if (currentTool === 'debug') {
+    // Check if we're in move token mode
+    if (tokenToMove) {
+      handleTokenDrop(row, col);
+      setTokenToMove(null);
+      return;
+    }
+    
+    if (currentTool === 'edit') {
+      // Edit Data tool: Open modal to edit token or hex data
+      handleEditDataClick(row, col);
+    } else if (currentTool === 'debug') {
       // Debug tool: Show hex info
       handleDebugHex(row, col);
     } else if (currentTool === 'paint') {
@@ -1441,6 +2021,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         handleLineDraw(lineStart.row, lineStart.col, row, col);
         setLineStart(null);
       }
+    } else if (currentTool === 'place-token') {
+      // Place token tool: place selected token at clicked position
+      if (tokenToPlace) {
+        handleAddToken(tokenToPlace, row, col);
+      }
     } else if (currentTool === 'aura') {
       // Aura tool: select token to attach aura to
       handleAuraToolClick(row, col);
@@ -1454,8 +2039,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         handleAreaEffectStart(row, col);
       }
     } else if (currentTool === 'token') {
-      // Check if clicking on existing token
-      const tokenAtPos = tokens.find(t => t.row === row && t.col === col);
+      // Check if clicking on existing token (check all cells occupied by each token)
+      const tokenAtPos = tokens.find(t => {
+        const cells = getTokenCells(t.row, t.col, t.width || 1, t.height || 1);
+        return cells.some(c => c.row === row && c.col === col);
+      });
       if (tokenAtPos) {
         setSelectedToken(tokenAtPos.id);
       }
@@ -1474,8 +2062,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
 
   // Handle aura tool click - attach aura to token at clicked hex
   const handleAuraToolClick = (row, col) => {
-    // Find token at this hex
-    const token = tokens.find(t => t.row === row && t.col === col);
+    // Find token at this hex (check all cells occupied by each token)
+    const token = tokens.find(t => {
+      const cells = getTokenCells(t.row, t.col, t.width || 1, t.height || 1);
+      return cells.some(c => c.row === row && c.col === col);
+    });
     
     if (!token) {
       console.log('No token at this hex. Select a token to attach aura to.');
@@ -1501,8 +2092,10 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     const token = tokens.find(t => t.id === auraTokenId);
     if (!token) return;
     
-    // Generate aura hexes
-    const auraHexes = generateSpherePattern(token.row, token.col, diameter);
+    // Generate aura hexes using multi-tile token logic
+    const tokenWidth = token.width || 1;
+    const tokenHeight = token.height || 1;
+    const auraHexes = generateTokenAuraPattern(token.row, token.col, tokenWidth, tokenHeight, diameter);
     
     // Store aura metadata on the token
     setTokens(prev => prev.map(t => 
@@ -1523,15 +2116,20 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       setHexGrid(prev => {
         const updated = prev.map(r => r.map(c => ({ ...c })));
         const effectPreset = EFFECT_PRESETS[currentEffect];
-        const baseColor = effectPreset.colors ? effectPreset.colors[0] : brushColor;
+        const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
         
         auraHexes.forEach(({ row, col }) => {
           if (updated[row] && updated[row][col]) {
+            // Calculate distance from token center for pulsing animation
+            const distance = calculateHexDistance(token.row, token.col, row, col);
+            const pulseOffset = distance * 8;
+            
             updated[row][col] = {
               ...updated[row][col],
               filled: true,
               color: baseColor,
               effect: currentEffect,
+              animationOffset: pulseOffset, // Distance-based pulse offset for animated effects
               auraTokenId: auraTokenId, // Link this hex to the token
               paintedAt: fadeEnabled ? Date.now() : null
             };
@@ -1581,16 +2179,53 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
 
   // Handle token drop
   const handleTokenDrop = (row, col) => {
-    if (!draggedToken) return;
+    const movingTokenId = draggedToken || tokenToMove;
+    if (!movingTokenId) return;
     
     // Find the token being moved
-    const token = tokens.find(t => t.id === draggedToken);
+    const token = tokens.find(t => t.id === movingTokenId);
     if (!token) return;
     
     const oldRow = token.row;
     const oldCol = token.col;
     const newRow = row;
     const newCol = col;
+    const width = token.width || 1;
+    const height = token.height || 1;
+    
+    // Check if the token would fit within grid bounds
+    if (newRow + height > gridSize.rows || newCol + width > gridSize.cols) {
+      console.warn('Token movement out of bounds');
+      setDraggedToken(null);
+      return;
+    }
+    
+    // Get cells that the token would occupy at new position
+    const newTokenCells = getTokenCells(newRow, newCol, width, height);
+    
+    // Check for collision with other tokens (excluding itself)
+    const hasCollision = tokens.some(existingToken => {
+      if (existingToken.id === draggedToken) return false; // Skip self
+      
+      const existingCells = getTokenCells(
+        existingToken.row, 
+        existingToken.col, 
+        existingToken.width || 1, 
+        existingToken.height || 1
+      );
+      // Check if any cell overlaps
+      return newTokenCells.some(newCell => 
+        existingCells.some(existingCell => 
+          existingCell.row === newCell.row && existingCell.col === newCell.col
+        )
+      );
+    });
+    
+    if (hasCollision) {
+      console.warn('Token movement would overlap with existing token');
+      setDraggedToken(null);
+      return;
+    }
     
     // Only move aura hexes if the token has an aura with moveHexes enabled
     if (token.aura && token.aura.moveHexes) {
@@ -1599,7 +2234,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       for (let r = 0; r < gridSize.rows; r++) {
         for (let c = 0; c < gridSize.cols; c++) {
           const cell = hexGrid[r]?.[c];
-          if (cell && cell.auraTokenId === draggedToken) {
+          if (cell && cell.auraTokenId === movingTokenId) {
             auraHexes.push({ row: r, col: c, data: { ...cell } });
           }
         }
@@ -1618,7 +2253,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
           
           // Check if this hex is part of the aura
           const cell = hexGrid[r]?.[c];
-          if (cell && cell.auraTokenId === draggedToken) {
+          if (cell && cell.auraTokenId === movingTokenId) {
             maxDistance = Math.max(maxDistance, distance);
           }
           
@@ -1662,19 +2297,30 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
           });
           
           // Generate new aura pattern from new position
-          const newAuraHexes = generateSpherePattern(newRow, newCol, diameter);
+          const tokenWidth = tokenRef.width || 1;
+          const tokenHeight = tokenRef.height || 1;
+          const newAuraHexes = generateTokenAuraPattern(newRow, newCol, tokenWidth, tokenHeight, diameter);
           
-          // Paint new aura hex positions
+          // Paint new aura hex positions - but only on empty hexes or hexes that were part of the old aura
           newAuraHexes.forEach(({ row: r, col: c }) => {
             if (updated[r] && updated[r][c]) {
-              updated[r][c] = {
-                ...updated[r][c],
-                filled: true,
-                color: auraColor,
-                effect: auraEffect,
-                auraTokenId: draggedToken,
-                paintedAt: auraPaintedAt
-              };
+              // Only paint if the hex is NOT filled, or if it was part of the old aura we just cleared
+              const wasOldAura = auraHexes.some(old => old.row === r && old.col === c);
+              if (!updated[r][c].filled || wasOldAura) {
+                // Calculate distance from new token center for pulsing animation
+                const distance = calculateHexDistance(newRow, newCol, r, c);
+                const pulseOffset = distance * 8;
+                
+                updated[r][c] = {
+                  ...updated[r][c],
+                  filled: true,
+                  color: auraColor,
+                  effect: auraEffect,
+                  animationOffset: pulseOffset, // Distance-based pulse offset
+                  auraTokenId: movingTokenId,
+                  paintedAt: auraPaintedAt
+                };
+              }
             }
           });
           
@@ -1685,50 +2331,506 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     
     // Update token position
     setTokens(prev => prev.map(token => 
-      token.id === draggedToken 
+      token.id === movingTokenId 
         ? { ...token, row, col }
         : token
     ));
     setDraggedToken(null);
+    setTokenToMove(null);
   };
 
+  const slugifyName = (name) => {
+    const safe = (name || 'token').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return safe || 'token';
+  };
+
+  const encodeRelativePath = (relativePath) => relativePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+
+  const fetchCharacterSheetContentByPath = async (relativePath, endpoint = 'player_root') => {
+    if (!relativePath) return null;
+    const url = `${API_BASE_URL}/${endpoint}/${encodeRelativePath(relativePath)}`;
+    try {
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      return data.content || '';
+    } catch (err) {
+      console.warn('Failed to fetch character sheet content for', relativePath, err);
+      return null;
+    }
+  };
+
+  const saveCharacterSheetContentByPath = async (relativePath, markdown, endpoint = 'player_root') => {
+    const url = `${API_BASE_URL}/${endpoint}/${encodeRelativePath(relativePath)}`;
+    await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: markdown })
+    });
+  };
+
+  const ensureCharacterSheetForToken = useCallback(async ({ tokenId, name, type, defaults = {} }) => {
+    const safeName = name || 'Token';
+    const isPlayer = (type || 'player') === 'player';
+    const path = isPlayer
+      ? `PCs/${safeName}/${safeName} character sheet.md`
+      : `NPCs/temp_token_${tokenId}_${slugifyName(safeName)}_character_sheet.md`;
+    const endpoint = 'player_root';
+
+    let content = await fetchCharacterSheetContentByPath(path, endpoint);
+    if (!content) {
+      const markdown = buildBasicCharacterSheet({
+        name: safeName,
+        currentHp: defaults.currentHp ?? 100,
+        maxHp: defaults.maxHp ?? 100,
+        conditions: defaults.conditions || [],
+        defensive: defaults.defensive || {},
+        type: type || 'npc'
+      });
+      try {
+        await saveCharacterSheetContentByPath(path, markdown, endpoint);
+        content = markdown;
+      } catch (err) {
+        console.warn('Failed to create character sheet for token', safeName, err);
+      }
+    }
+
+    return { path, endpoint, isTemp: !isPlayer, content };
+  }, []);
+
+  const parseCharacterSheetForToken = useCallback(async (relativePath, endpoint = 'player_root', isTemp = false) => {
+    if (!relativePath) return null;
+    const content = await fetchCharacterSheetContentByPath(relativePath, endpoint);
+    if (!content) return null;
+    
+    // For temp NPC sheets, try to load state JSON
+    let npcState = null;
+    if (isTemp) {
+      npcState = await loadNpcState(relativePath, API_BASE_URL);
+    }
+    
+    return { ...parseSheetVitalsAndConditions(content, npcState), content };
+  }, []);
+
+  const resetCharacterSheetForToken = useCallback(async (token) => {
+    if (!token?.characterSheetPath || !token.isTempCharacterSheet) return;
+    try {
+      const markdown = buildBasicCharacterSheet({
+        name: token.name || 'Token',
+        currentHp: 0,
+        maxHp: 0,
+        conditions: [],
+        defensive: token.defensive || {},
+        type: token.type || 'npc'
+      });
+      await saveCharacterSheetContentByPath(
+        token.characterSheetPath,
+        markdown,
+        token.characterSheetEndpoint || 'player_root'
+      );
+    } catch (err) {
+      console.warn('Failed to reset temp character sheet for token', token?.name, err);
+    }
+  }, []);
+
   // Add new token
-  const handleAddToken = (character, targetRow = null, targetCol = null) => {
+  const handleAddToken = async (character, targetRow = null, targetCol = null) => {
     // Save state before adding token
     saveToHistory();
     
     // Use provided position or default to center
     const row = targetRow !== null ? targetRow : Math.floor(gridSize.rows / 2);
     const col = targetCol !== null ? targetCol : Math.floor(gridSize.cols / 2);
+    const width = character.width || 1;
+    const height = character.height || 1;
+    const tokenId = `token-${Date.now()}`;
     
+    // Check if the token would fit within grid bounds
+    if (row + height > gridSize.rows || col + width > gridSize.cols) {
+      console.warn('Token placement out of bounds');
+      return;
+    }
+    
+    // Get cells that the new token would occupy
+    const newTokenCells = getTokenCells(row, col, width, height);
+    
+    // Check for collision with existing tokens
+    const hasCollision = tokens.some(existingToken => {
+      const existingCells = getTokenCells(
+        existingToken.row, 
+        existingToken.col, 
+        existingToken.width || 1, 
+        existingToken.height || 1
+      );
+      // Check if any cell overlaps
+      return newTokenCells.some(newCell => 
+        existingCells.some(existingCell => 
+          existingCell.row === newCell.row && existingCell.col === newCell.col
+        )
+      );
+    });
+    
+    if (hasCollision) {
+      console.warn('Token placement would overlap with existing token');
+      return;
+    }
+    
+    // Fetch character data from character sheet if this is a player character
+    let characterData = null;
+    if (character.type === 'player' && character.name) {
+      try {
+        console.log(`📋 Fetching character sheet data for ${character.name}...`);
+        characterData = await fetchCharacterSheet(character.name, API_BASE_URL);
+        console.log(`✅ Character data loaded for ${character.name}:`, characterData);
+        if (characterData?.vitals) {
+          console.log(`  Vitals:`, {
+            current_hp: characterData.vitals.current_hp,
+            max_hp: characterData.vitals.max_hp
+          });
+        }
+      } catch (err) {
+        console.warn(`⚠️ Could not load character sheet for ${character.name}:`, err);
+      }
+    }
+    
+    const parsedCurrentHp = characterData?.vitals?.current_hp ? parseFloat(characterData.vitals.current_hp) : undefined;
+    const parsedMaxHp = characterData?.vitals?.max_hp ? parseFloat(characterData.vitals.max_hp) : undefined;
+
+    // Ensure a character sheet exists for every token (players use their sheet, NPC/enemy get temp sheet)
+    const sheetInfo = await ensureCharacterSheetForToken({
+      tokenId,
+      name: character.name,
+      type: character.type || 'player',
+      defaults: {
+        currentHp: parsedCurrentHp ?? character.currentHp ?? 100,
+        maxHp: parsedMaxHp ?? character.maxHp ?? 100,
+        conditions: characterData?.conditions || [],
+        defensive: characterData?.defensive || {}
+      }
+    });
+
+    // Parse HP/conditions directly from the sheet for consistency
+    const parsedSheet = await parseCharacterSheetForToken(sheetInfo.path, sheetInfo.endpoint, sheetInfo.isTemp);
+    const sheetCurrentHp = parsedSheet?.currentHp;
+    const sheetMaxHp = parsedSheet?.maxHp;
+    const sheetConditions = parsedSheet?.conditions || [];
+    const sheetDefensive = parsedSheet?.defensive || {};
+
     const newToken = {
-      id: `token-${Date.now()}`,
+      id: tokenId,
       row,
       col,
       name: character.name,
       avatar: character.avatar,
+      avatarPng: character.avatarPng,  // Include PNG avatar
       icon: character.icon, // For enemy tokens
       type: character.type || 'player', // Preserve type from drag data, default to player
-      color: character.color || '#64c8ff'
+      color: character.color || 'rgba(0,0,0,0)',  // Default to transparent (rgba)
+      width,
+      height,
+      currentHp: sheetCurrentHp ?? parsedCurrentHp,
+      maxHp: sheetMaxHp ?? parsedMaxHp,
+      conditions: sheetConditions.length ? sheetConditions : (characterData?.conditions || []),
+      defensive: Object.keys(sheetDefensive).length ? sheetDefensive : (characterData?.defensive || {}),
+      characterSheetPath: sheetInfo.path,
+      characterSheetEndpoint: sheetInfo.endpoint,
+      isTempCharacterSheet: sheetInfo.isTemp
     };
+    
+    console.log(`🎭 Adding token with HP data:`, {
+      name: newToken.name,
+      currentHp: newToken.currentHp,
+      maxHp: newToken.maxHp,
+      hasCharacterData: !!characterData,
+      hasSheet: !!sheetInfo.path
+    });
     setTokens(prev => [...prev, newToken]);
-    setShowTokenPanel(false);
   };
 
   // Remove token
   const handleRemoveToken = (tokenId) => {
     // Save state before removing token
     saveToHistory();
+    const tokenToDelete = tokens.find(t => t.id === tokenId);
+    if (tokenToDelete) {
+      resetCharacterSheetForToken(tokenToDelete);
+    }
     setTokens(prev => prev.filter(t => t.id !== tokenId));
     if (selectedToken === tokenId) setSelectedToken(null);
+    setContextMenu(null);
+    setMarkerPopup(null);
+  };
+  
+  // Toggle token HP visibility
+  const handleToggleTokenHp = (tokenId) => {
+    setTokens(prev => prev.map(token => 
+      token.id === tokenId 
+        ? { ...token, showHp: token.showHp === false ? true : false }
+        : token
+    ));
+    setContextMenu(null);
+    setMarkerPopup(null);
+  };
+
+  const openCharacterSheetByPath = useCallback(async (relativePath, endpoint = 'player_root', allowInApp = true) => {
+    if (!relativePath) return false;
+
+    if (allowInApp && onFileSelect) {
+      const fileName = relativePath.split('/').pop();
+      onFileSelect({ name: fileName, path: relativePath });
+      return true;
+    }
+
+    try {
+      const url = `${API_BASE_URL}/${endpoint}/${encodeURIComponent(relativePath)}`;
+      const res = await fetch(url, { method: 'HEAD' });
+      if (res.ok) {
+        window.open(url, '_blank');
+        return true;
+      }
+    } catch (err) {
+      console.warn('Character sheet probe failed for', relativePath, err);
+    }
+    return false;
+  }, [onFileSelect]);
+
+  const handleOpenCharacterSheet = useCallback(async (tokenName) => {
+    const name = (tokenName || '').trim();
+    if (!name) return false;
+
+    try {
+      const searchResp = await fetch(`${API_BASE_URL}/player_root/search?q=${encodeURIComponent(name)}`);
+      if (searchResp.ok) {
+        const searchData = await searchResp.json();
+        const results = searchData.results || [];
+        const fileNameLower = name.toLowerCase();
+        const fileNameWithSpaces = name.replace(/_/g, ' ').toLowerCase();
+
+        let exactMatch = results.find(result => {
+          const parts = result.path.split('/');
+          const resultFile = parts[parts.length - 1].toLowerCase();
+          return resultFile === fileNameLower ||
+                 resultFile === `${fileNameLower}.md` ||
+                 resultFile === fileNameWithSpaces ||
+                 resultFile === `${fileNameWithSpaces}.md`;
+        });
+
+        if (!exactMatch) {
+          exactMatch = results.find(result => {
+            const parts = result.path.split('/');
+            const resultFile = parts[parts.length - 1].toLowerCase();
+            return resultFile === `${fileNameLower} character sheet.md` ||
+                   resultFile === `${fileNameWithSpaces} character sheet.md` ||
+                   resultFile === `${fileNameLower}_character_sheet.md`;
+          });
+        }
+
+        if (exactMatch) {
+          const relativePath = exactMatch.path.replace(/^Player Root\//, '');
+          if (await openCharacterSheetByPath(relativePath, 'player_root')) return true;
+        }
+      }
+    } catch (err) {
+      console.warn('Character sheet search failed:', err);
+    }
+
+    const candidatePlayerPaths = [
+      `PCs/${name}/${name} character sheet.md`,
+      `PCs/${name}/${name} Character Sheet.md`,
+      `PCs/${name}/${name}_character_sheet.md`,
+      `${name} character sheet.md`,
+      `${name}_character_sheet.md`
+    ];
+
+    for (const path of candidatePlayerPaths) {
+      if (await openCharacterSheetByPath(path, 'player_root')) return true;
+    }
+
+    const dmPaths = [
+      `Dms Root/NPCs/${name}/${name} character sheet.md`,
+      `Dms Root/NPCs/${name}/${name}_character_sheet.md`
+    ];
+
+    for (const path of dmPaths) {
+      // DM paths are outside player_root; open directly
+      if (await openCharacterSheetByPath(path, 'file', false)) return true;
+    }
+
+    alert(`Could not find character sheet for ${name}`);
+    return false;
+  }, [openCharacterSheetByPath]);
+
+  const syncTokenSheetUpdates = useCallback(async (tokenId, updates) => {
+    if (!tokenId || !updates || !Object.keys(updates).length) return;
+    const token = tokensRef.current.find(t => t.id === tokenId);
+    if (!token) return;
+
+    const targetName = token.name;
+    const targetSheetPath = token.characterSheetPath || (token.type === 'player' && token.name
+      ? `PCs/${token.name}/${token.name} character sheet.md`
+      : null);
+    const targetEndpoint = token.characterSheetEndpoint || 'player_root';
+
+    if (!targetName && !targetSheetPath) return;
+
+    // For temp NPC sheets, save state JSON
+    if (token.isTempCharacterSheet && targetSheetPath) {
+      try {
+        // Build state object from current token and updates
+        const currentState = {
+          currentHp: updates.currentHp !== undefined ? updates.currentHp : token.currentHp,
+          maxHp: updates.maxHp !== undefined ? updates.maxHp : token.maxHp,
+          slots: updates.slots || token.slots || {},
+          waterCharges: updates.waterCharges || token.waterCharges || {},
+          conditions: updates.conditions || (token.conditions ? Object.keys(token.conditions).filter(k => token.conditions[k]) : []),
+          lastUpdated: new Date().toISOString()
+        };
+        
+        await saveNpcState(targetSheetPath, currentState, API_BASE_URL);
+      } catch (err) {
+        console.warn('Failed to save NPC state JSON', err);
+      }
+    }
+
+    // Also update the markdown sheet
+    updateCharacterSheet(targetName, updates, API_BASE_URL, {
+      sheetPath: targetSheetPath,
+      endpoint: targetEndpoint
+    }).catch(err => {
+      console.warn('Failed to sync token updates to sheet', tokenId, err);
+    });
+  }, []);
+
+  const handleOpenNpcCharacterSheet = useCallback(async (token) => {
+    if (!token) return false;
+
+    let sheetPath = token.characterSheetPath;
+    let sheetEndpoint = token.characterSheetEndpoint || 'player_root';
+
+    // If no sheet is recorded (legacy tokens), generate one and persist metadata
+    if (!sheetPath) {
+      try {
+        const sheetInfo = await ensureCharacterSheetForToken({
+          tokenId: token.id || `token-${Date.now()}`,
+          name: token.name || 'Token',
+          type: token.type || 'npc',
+          defaults: {
+            currentHp: token.currentHp ?? 100,
+            maxHp: token.maxHp ?? 100,
+            conditions: token.conditions || [],
+            defensive: token.defensive || {}
+          }
+        });
+        sheetPath = sheetInfo.path;
+        sheetEndpoint = sheetInfo.endpoint;
+        setTokens(prev => prev.map(t =>
+          t.id === token.id
+            ? {
+                ...t,
+                characterSheetPath: sheetPath,
+                characterSheetEndpoint: sheetEndpoint,
+                isTempCharacterSheet: sheetInfo.isTemp
+              }
+            : t
+        ));
+      } catch (err) {
+        console.warn('Failed to generate character sheet for token', token.name, err);
+        return false;
+      }
+    }
+
+    return openCharacterSheetByPath(sheetPath, sheetEndpoint);
+  }, [ensureCharacterSheetForToken, openCharacterSheetByPath, setTokens]);
+
+  // Refresh token stats from character sheets
+  const handleRefreshTokenStats = async () => {
+    console.log('🔄 Refreshing token stats from character sheets...');
+    
+    const updatedTokens = await Promise.all(
+      tokens.map(async (token) => {
+        const sheetPath = token.characterSheetPath || (token.name ? `PCs/${token.name}/${token.name} character sheet.md` : null);
+        if (!sheetPath) return token;
+
+        try {
+          const parsed = await parseCharacterSheetForToken(
+            sheetPath, 
+            token.characterSheetEndpoint || 'player_root',
+            token.isTempCharacterSheet || false
+          );
+          if (!parsed) return token;
+
+          const newCurrentHp = parsed.currentHp ?? token.currentHp;
+          const newMaxHp = parsed.maxHp ?? token.maxHp;
+          let newConditions = parsed.conditions?.length ? parsed.conditions : (token.conditions || []);
+
+          // Auto-add "Bleeding out" if HP is 0 or below
+          const isBleedingOut = newMaxHp > 0 && newCurrentHp <= 0;
+          if (isBleedingOut && !newConditions.includes('Bleeding out')) {
+            newConditions = [...newConditions, 'Bleeding out'];
+          } else if (!isBleedingOut) {
+            newConditions = newConditions.filter(c => c !== 'Bleeding out');
+          }
+
+          return {
+            ...token,
+            currentHp: newCurrentHp,
+            maxHp: newMaxHp,
+            conditions: newConditions,
+            defensive: Object.keys(parsed.defensive || {}).length ? parsed.defensive : token.defensive
+          };
+        } catch (err) {
+          console.warn(`⚠️ Could not refresh data for ${token.name || token.id}:`, err);
+          return token;
+        }
+      })
+    );
+    
+    setTokens(updatedTokens);
+    console.log('✅ Token stats refreshed');
   };
 
   // Clear grid
-  const handleClearGrid = () => {
-    if (window.confirm('Clear all painted hexagons?')) {
+  const handleClearGrid = async () => {
+    if (window.confirm('Clear all painted hexagons and tokens?')) {
       // Save state before clearing
       saveToHistory();
-      setHexGrid(initializeHexGrid(gridSize.rows, gridSize.cols));
+      
+      // Clear the state
+      const emptyGrid = initializeHexGrid(gridSize.rows, gridSize.cols);
+      setHexGrid(emptyGrid);
+      setTokens([]);
+      
+      // Force immediate save to prevent sync from reverting changes
+      // We need to save with the cleared state before the next sync poll
+      try {
+        console.log('🧹 Clear Grid: Forcing immediate save');
+        const stateToSave = {
+          gridSize: gridSizeRef.current,
+          hexGrid: emptyGrid,
+          tokens: [],
+          backgroundImage: selectedImageRef.current,
+          hexSize: hexSizeRef.current,
+          lastModified: Date.now(),
+          format: 'graph',
+          hexGraph: gridToGraphData(emptyGrid, gridSizeRef.current)
+        };
+        
+        const saveUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(filePath)}`;
+        const response = await fetch(saveUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: JSON.stringify(stateToSave) })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Clear Grid: Save successful');
+          setLastSyncTime(stateToSave.lastModified);
+        } else {
+          console.error('❌ Clear Grid: Save failed with status:', response.status);
+        }
+      } catch (err) {
+        console.error('❌ Clear Grid: Save error:', err);
+      }
     }
   };
 
@@ -1793,6 +2895,118 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     return hexes;
   };
 
+  // Get all hexes surrounding a multi-tile token at given distance
+  // For multi-tile tokens, this finds ALL hexes that are exactly 'distance' away from ANY token cell
+  const getTokenNeighborHexes = (tokenRow, tokenCol, tokenWidth, tokenHeight, distance = 1) => {
+    const tokenCells = getTokenCells(tokenRow, tokenCol, tokenWidth, tokenHeight);
+    const tokenCellSet = new Set(tokenCells.map(c => `${c.row},${c.col}`));
+    
+    // Use BFS from all token cells simultaneously
+    const visited = new Set(tokenCellSet);
+    let currentLayer = tokenCells.map(c => ({ row: c.row, col: c.col }));
+    
+    // Expand outward for 'distance' layers
+    for (let layer = 0; layer < distance; layer++) {
+      const nextLayer = [];
+      for (const cell of currentLayer) {
+        const neighbors = getHexNeighbors(cell.row, cell.col);
+        for (const neighbor of neighbors) {
+          const key = `${neighbor.row},${neighbor.col}`;
+          if (!visited.has(key)) {
+            visited.add(key);
+            nextLayer.push(neighbor);
+          }
+        }
+      }
+      currentLayer = nextLayer;
+    }
+    
+    return currentLayer; // Returns only the hexes at exactly 'distance' away
+  };
+
+  // Generate aura pattern for multi-tile tokens
+  // Diameter represents the distance from the token edge, not from center
+  const generateTokenAuraPattern = (tokenRow, tokenCol, tokenWidth, tokenHeight, diameter) => {
+    const diameterNum = parseInt(diameter);
+    if (diameterNum <= 0) return [];
+    
+    // For diameter=1, get all hexes that are 1 hex away from any token cell
+    // For diameter=2, get all hexes that are 1 or 2 hexes away, etc.
+    const auraHexes = [];
+    const tokenCells = getTokenCells(tokenRow, tokenCol, tokenWidth, tokenHeight);
+    const tokenCellSet = new Set(tokenCells.map(c => `${c.row},${c.col}`));
+    
+    // Use BFS to find all hexes within diameter distance from ANY token cell
+    const visited = new Set(tokenCellSet);
+    const queue = tokenCells.map(c => ({ row: c.row, col: c.col, distance: 0 }));
+    
+    while (queue.length > 0) {
+      const { row, col, distance } = queue.shift();
+      
+      // Add to aura if we're beyond the token cells
+      if (!tokenCellSet.has(`${row},${col}`)) {
+        auraHexes.push({ row, col });
+      }
+      
+      // Continue expanding if within range
+      if (distance < diameterNum) {
+        const neighbors = getHexNeighbors(row, col);
+        for (const neighbor of neighbors) {
+          const key = `${neighbor.row},${neighbor.col}`;
+          if (!visited.has(key)) {
+            visited.add(key);
+            queue.push({ row: neighbor.row, col: neighbor.col, distance: distance + 1 });
+          }
+        }
+      }
+    }
+    
+    return auraHexes;
+  };
+
+  // Get the outline path vertices for a multi-tile token
+  // Returns an array of {x, y} coordinates tracing the perimeter
+  const getTokenOutlinePath = (tokenRow, tokenCol, tokenWidth, tokenHeight) => {
+    const tokenCells = getTokenCells(tokenRow, tokenCol, tokenWidth, tokenHeight);
+    const tokenCellSet = new Set(tokenCells.map(c => `${c.row},${c.col}`));
+    
+    // Collect all outer edges (edges not shared with another token cell)
+    const outerEdges = [];
+    
+    tokenCells.forEach(cell => {
+      const { cx, cy } = getHexCoordinates(cell.row, cell.col);
+      const neighbors = getHexNeighbors(cell.row, cell.col);
+      
+      // Get hex vertices (6 corners)
+      const hexVertices = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i + Math.PI / 2;
+        const x = cx + hexSize * Math.cos(angle);
+        const y = cy + hexSize * Math.sin(angle);
+        hexVertices.push({ x, y });
+      }
+      
+      // Map edge indices to neighbor indices (rotated for odd-r)
+      const edgeToNeighborMap = [4, 5, 0, 1, 2, 3];
+      
+      // Check each edge
+      for (let i = 0; i < 6; i++) {
+        const neighborIdx = edgeToNeighborMap[i];
+        const neighbor = neighbors[neighborIdx];
+        const isNeighborInToken = neighbor && tokenCellSet.has(`${neighbor.row},${neighbor.col}`);
+        
+        if (!isNeighborInToken) {
+          // This edge is on the outer boundary
+          const v1 = hexVertices[i];
+          const v2 = hexVertices[(i + 1) % 6];
+          outerEdges.push({ x1: v1.x, y1: v1.y, x2: v2.x, y2: v2.y });
+        }
+      }
+    });
+    
+    return outerEdges;
+  };
+
   // Get the 6 neighbors of a hex in odd-r offset coordinates (flat-top orientation)
   const getHexNeighbors = (row, col) => {
     const isOddRow = row % 2 === 1;
@@ -1825,7 +3039,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
 
   // Get neighbor in a specific direction
   const getNeighborInDirection = (row, col, direction) => {
-    const directions = ['NE', 'E', 'SE', 'SW', 'W', 'NW'];
+    const directions = ['NW', 'NE', 'E', 'SE', 'SW', 'W'];
     const isOddRow = row % 2 === 1;
     const offsets = isOddRow
       ? [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [0, -1]]
@@ -1848,7 +3062,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
   
   // Get the direction from one hex to an adjacent neighbor
   const getDirectionToNeighbor = (fromRow, fromCol, toRow, toCol) => {
-    const directions = ['NE', 'E', 'SE', 'SW', 'W', 'NW'];
+    const directions = ['NW', 'NE', 'E', 'SE', 'SW', 'W'];
     const isOddRow = fromRow % 2 === 1;
     const offsets = isOddRow
       ? [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [0, -1]]
@@ -1888,6 +3102,13 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       console.error('Selected hexes are not adjacent to origin!');
       return [];
     }
+    
+    // Add the origin hex
+    addHex(originRow, originCol);
+    
+    // Add the two initial direction hexes (the first row of the cone)
+    addHex(dir1Row, dir1Col);
+    addHex(dir2Row, dir2Col);
     
     // Build cone by extending both boundaries and filling between them at each layer
     for (let layer = 1; layer <= rangeNum; layer++) {
@@ -2015,7 +3236,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     setHexGrid(prev => {
       const updated = prev.map(r => r.map(c => ({ ...c })));
       const effectPreset = EFFECT_PRESETS[currentEffect];
-      const baseColor = effectPreset.colors ? effectPreset.colors[0] : brushColor;
+      const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
       
       hexes.forEach(({ row, col }) => {
         // Calculate position relative to center for whirlwind effect
@@ -2028,16 +3249,17 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         // Calculate distance from center
         const distance = calculateHexDistance(centerRow, centerCol, row, col);
         
-        // Create spiraling animation offset based on angle and distance
-        // This will make the animation flow around the center in a whirlwind pattern
-        const spiralOffset = (angle / (Math.PI * 2)) * 60 + distance * 5;
+        // Create pulsing animation offset based on distance from center
+        // Hexes at the same distance will pulse together, creating an outward wave effect
+        // Higher multiplier = slower pulse propagation from center
+        const pulseOffset = distance * 8;
         
-        // Completely overwrite the cell with coordinated whirlwind data
+        // Completely overwrite the cell with coordinated pulse data
         updated[row][col] = {
           filled: true,
           color: baseColor,
           effect: currentEffect,
-          animationOffset: spiralOffset, // Coordinated spiral offset
+          animationOffset: pulseOffset, // Distance-based pulse offset
           paintedAt: fadeEnabled ? Date.now() : null,
           whirlwindCenter: { row: centerRow, col: centerCol }, // Store center for reference
           radialDistance: distance, // Store distance for intensity variation
@@ -2057,7 +3279,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     setHexGrid(prev => {
       const updated = prev.map(r => r.map(c => ({ ...c })));
       const effectPreset = EFFECT_PRESETS[currentEffect];
-      const baseColor = effectPreset.colors ? effectPreset.colors[0] : brushColor;
+      const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
       
       hexes.forEach(({ row, col }) => {
         // Calculate distance from origin for wave animation
@@ -2141,203 +3363,26 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     return points.join(' ');
   };
 
-  // Get animated color and opacity for effects with whirlwind coordination
-  const getAnimatedStyle = (cell) => {
+  // Get CSS animation class for effects
+  const getEffectAnimationClass = (cell) => {
     if (!cell.filled || cell.effect === 'none') {
-      return { color: cell.color, opacity: 0.5 };
+      return '';
     }
-
+    return `hex-effect-${cell.effect}`;
+  };
+  
+  // Get base color for effect
+  const getEffectBaseColor = (cell) => {
+    if (!cell.filled || cell.effect === 'none') {
+      return cell.color;
+    }
+    
     const effectPreset = EFFECT_PRESETS[cell.effect];
     if (!effectPreset || !effectPreset.colors) {
-      return { color: cell.color, opacity: 0.5 };
+      return cell.color;
     }
-
-    // Apply logarithmic scaling to intensity values for more subtle changes
-    const logOpacityIntensity = Math.log10(1 + 9 * opacityIntensity) * 0.3;
-    const logShadeIntensity = Math.log10(1 + 9 * shadeIntensity) * 0.3;
-
-    const frame = (animationFrame + cell.animationOffset) % 60;
     
-    // Check if this cell is part of a whirlwind (has radial data)
-    const hasWhirlwindData = cell.whirlwindCenter && typeof cell.radialAngle === 'number';
-    
-    switch (effectPreset.animation) {
-      case 'flicker': {
-        // Fire effect - if part of whirlwind, create expanding fire rings
-        if (hasWhirlwindData) {
-          // Create smooth outward-traveling ring of bright flames
-          // Ring expands from center at a steady rate
-          const ringSpeed = 0.15; // Slower, smoother wave propagation
-          const ringWidth = 2.5; // Width of the bright flame ring
-          
-          // Distance from the flame wave (negative = behind wave, positive = ahead of wave)
-          const wavePosition = (animationFrame * ringSpeed) % 15; // Ring cycles every ~100 frames
-          const distanceFromWave = Math.abs(cell.radialDistance - wavePosition);
-          
-          // Calculate intensity - brightest at wave position, fades away from it
-          const ringIntensity = Math.exp(-distanceFromWave / ringWidth); // Smooth gaussian-like falloff
-          
-          // Brightness peaks when ring passes through
-          const brightness = 0.3 + ringIntensity * 0.7; // Range from dim (0.3) to bright (1.0)
-          
-          // Color shifts from yellow (hot core) to orange to red as ring passes
-          const colorPhase = (1 - ringIntensity) * effectPreset.colors.length;
-          const colorIndex = Math.min(
-            effectPreset.colors.length - 1,
-            Math.floor(colorPhase)
-          );
-          
-          // Add subtle flicker for realism
-          const flicker = Math.sin(animationFrame * 0.8 + cell.radialAngle * 5) * 0.1;
-          const opacity = Math.max(0.2, Math.min(1.0, brightness + flicker));
-          
-          return { color: effectPreset.colors[colorIndex], opacity };
-        } else {
-          // Standard flicker for non-whirlwind cells
-          const colorIndex = Math.floor((frame / 5)) % effectPreset.colors.length;
-          const opacityVariation = Math.sin(frame * 0.5) * logOpacityIntensity;
-          const opacity = 0.5 + opacityVariation;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        }
-      }
-      
-      case 'pulse': {
-        // Ice effect - crystallization spreading from center
-        if (hasWhirlwindData) {
-          const pulseWave = Math.sin(animationFrame * 0.2 - cell.radialDistance * 0.5);
-          const opacity = 0.4 + pulseWave * 0.3;
-          const colorIndex = Math.floor((animationFrame + cell.radialDistance * 5) / 15) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        } else {
-          const opacityVariation = Math.sin(frame * 0.2) * logOpacityIntensity;
-          const opacity = 0.5 + opacityVariation;
-          const colorIndex = Math.floor(frame / 20) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        }
-      }
-      
-      case 'bubble': {
-        // Poison effect - toxic clouds swirling
-        if (hasWhirlwindData) {
-          const swirlPhase = animationFrame * 0.4 + cell.radialAngle * 10;
-          const bubble = Math.sin(swirlPhase) * Math.sin(animationFrame * 0.3) * 0.25;
-          const opacity = 0.5 + bubble;
-          const colorIndex = Math.floor(swirlPhase / 12) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        } else {
-          const opacityVariation = Math.sin(frame * 0.3 + cell.animationOffset) * logOpacityIntensity;
-          const opacity = 0.5 + opacityVariation;
-          const colorIndex = (Math.floor(frame / 8) + Math.floor(cell.animationOffset)) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        }
-      }
-      
-      case 'spark': {
-        // Lightning effect - crackling electricity spiraling outward
-        if (hasWhirlwindData) {
-          const electricWave = (animationFrame * 0.8 - cell.radialAngle * 15 + cell.radialDistance * 8) % 60;
-          const flash = electricWave < 5 ? 0.9 : 0.4;
-          const colorIndex = Math.floor(electricWave / 10) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity: flash };
-        } else {
-          const colorIndex = Math.floor(frame / 3) % effectPreset.colors.length;
-          const baseOpacity = frame % 10 < 2 ? 0.8 : 0.5;
-          const opacityVariation = Math.random() * logOpacityIntensity;
-          const opacity = baseOpacity + opacityVariation;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        }
-      }
-      
-      case 'wave': {
-        // Darkness effect - creeping shadow waves
-        if (hasWhirlwindData) {
-          const shadowWave = Math.sin(animationFrame * 0.2 - cell.radialDistance * 0.8);
-          const opacity = 0.6 + shadowWave * 0.2;
-          const colorIndex = Math.floor((animationFrame + cell.radialDistance * 10) / 20) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        } else {
-          const opacityVariation = Math.sin(frame * 0.15 + cell.animationOffset * 0.5) * logOpacityIntensity;
-          const opacity = 0.6 + opacityVariation;
-          const colorIndex = Math.floor(frame / 15) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        }
-      }
-      
-      case 'shimmer': {
-        // Healing effect - radiant light pulsing from center
-        if (hasWhirlwindData) {
-          const radianceWave = Math.sin(animationFrame * 0.3 - cell.radialDistance * 0.6) * 0.3;
-          const opacity = 0.5 + radianceWave;
-          const colorIndex = Math.floor((animationFrame + cell.radialDistance * 8) / 12) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        } else {
-          const opacityVariation = Math.sin(frame * 0.25) * logOpacityIntensity;
-          const opacity = 0.5 + opacityVariation;
-          const colorIndex = Math.floor((frame + cell.animationOffset * 2) / 10) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        }
-      }
-      
-      case 'static': {
-        // Earth effect - mostly static with slight variation
-        const opacityVariation = Math.sin(frame * 0.1) * logOpacityIntensity * 0.3;
-        const opacity = 0.6 + opacityVariation;
-        return { color: effectPreset.colors[0], opacity };
-      }
-      
-      case 'swirl': {
-        // Air effect - true whirlwind with coordinated spiraling
-        if (hasWhirlwindData) {
-          // Create a rotating color wave that spirals around the center
-          const spiralPhase = (animationFrame * 0.5 + (cell.radialAngle / (Math.PI * 2)) * 60 + cell.radialDistance * 3) % 60;
-          const colorIndex = Math.floor(spiralPhase / 12) % effectPreset.colors.length;
-          
-          // Pulsing opacity that creates "gusts" in the whirlwind
-          const gustWave = Math.sin(spiralPhase * 0.3) * 0.25;
-          const opacity = 0.35 + gustWave;
-          
-          return { color: effectPreset.colors[colorIndex], opacity };
-        } else {
-          // Standard swirl for non-whirlwind cells
-          const opacityVariation = Math.sin(frame * 0.2) * logOpacityIntensity;
-          const opacity = 0.4 + opacityVariation;
-          const colorIndex = Math.floor((frame + cell.animationOffset * 3) / 15) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        }
-      }
-      
-      case 'flow': {
-        // Water effect - flowing ripples from center
-        if (hasWhirlwindData) {
-          const rippleWave = Math.sin(animationFrame * 0.25 - cell.radialDistance * 0.7);
-          const opacity = 0.45 + rippleWave * 0.25;
-          const colorIndex = Math.floor((animationFrame + cell.radialDistance * 6) / 15) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        } else {
-          const opacityVariation = Math.sin(frame * 0.2) * logOpacityIntensity;
-          const opacity = 0.5 + opacityVariation;
-          const colorIndex = Math.floor(frame / 15) % effectPreset.colors.length;
-          return { color: effectPreset.colors[colorIndex], opacity };
-        }
-      }
-      
-      case 'drip': {
-        // Blood effect - dripping and pooling from center
-        if (hasWhirlwindData) {
-          const dripPhase = (animationFrame * 0.3 + cell.radialDistance * 5) % 60;
-          const drip = dripPhase < 10 ? Math.sin(dripPhase * 0.3) * 0.2 : 0;
-          const opacity = 0.6 + drip;
-          return { color: effectPreset.colors[0], opacity };
-        } else {
-          const opacityVariation = Math.sin(frame * 0.2) * logOpacityIntensity;
-          const opacity = 0.6 + opacityVariation;
-          return { color: effectPreset.colors[0], opacity };
-        }
-      }
-      
-      default:
-        return { color: cell.color, opacity: 0.5 };
-    }
+    return effectPreset.colors[0];
   };
 
   // Calculate SVG dimensions
@@ -2696,56 +3741,291 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
     }
   };
 
+  // Helper functions for HP bars and condition rings
+  const generateHexPathPoints = (centerX, centerY, radius) => {
+    const points = [];
+    const segments = 6;
+    
+    // Create hexagon vertices (flat-top orientation) - matches getHexVertices
+    for (let i = 0; i < segments; i++) {
+      const angle = (Math.PI / 3) * i + Math.PI / 2; // Same as getHexVertices
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      points.push({ x, y });
+    }
+    
+    return points;
+  };
+
+  const generateArcPath = (centerX, centerY, radius, percentage) => {
+    const points = generateHexPathPoints(centerX, centerY, radius);
+    
+    if (percentage <= 0) return '';
+    if (percentage >= 100) {
+      // Full hexagon outline
+      return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ') + ' Z';
+    }
+    
+    // Calculate how many segments to trace along the edge
+    const totalSegments = 6;
+    const fillSegments = (percentage / 100) * totalSegments;
+    const fullSegments = Math.floor(fillSegments);
+    const partialSegment = fillSegments - fullSegments;
+    
+    // Start at the first point (top of hexagon)
+    let path = `M ${points[0].x},${points[0].y}`;
+    
+    // Trace along full segments
+    for (let i = 1; i <= fullSegments; i++) {
+      const point = points[i % totalSegments];
+      path += ` L ${point.x},${point.y}`;
+    }
+    
+    // Add partial segment if needed
+    if (partialSegment > 0 && fullSegments < totalSegments) {
+      const startPoint = points[fullSegments % totalSegments];
+      const endPoint = points[(fullSegments + 1) % totalSegments];
+      const partialX = startPoint.x + (endPoint.x - startPoint.x) * partialSegment;
+      const partialY = startPoint.y + (endPoint.y - startPoint.y) * partialSegment;
+      path += ` L ${partialX},${partialY}`;
+    }
+    
+    return path;
+  };
+
+  const getHealthBarColor = (percentage) => {
+    if (percentage > 66) return '#2ecc71'; // Green
+    if (percentage > 33) return '#f39c12'; // Orange
+    if (percentage > 0) return '#e74c3c'; // Red
+    return '#95a5a6'; // Gray (dead)
+  };
+
+  const CONDITION_COLORS = {
+    'Bleeding out': '#d7263d',
+    'Blinded': '#2c3e50',
+    'Dazed': '#f39c12',
+    'Immobilised': '#7f8c8d',
+    'Paralysed': '#9b59b6',
+    'Prone': '#95a5a6',
+    'Slowed': '#3498db',
+    'Empowered': '#4ec9b0',
+    'Quickened': '#4ec9b0',
+    'Armor Surge': '#4ec9b0',
+    'Barrier Surge': '#4ec9b0',
+    'Harmonic Flow': '#4ec9b0',
+    'Exhausted': '#c9944eff'
+  };
+
   return (
-    <div className="battlemap-viewer" style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', gap: '10px', overflow: 'visible' }}>
-      {/* Toolbar - Hidden in Watcher Mode */}
-      {!watcherMode && (
-      <div style={{
-        background: '#2a2a2a',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        flexShrink: 0
+    <div className="battlemap-shell" style={{ minHeight: '100vh', background: '#1a1a1a', color: '#e0e0e0' }}>
+      {/* Sticky Navigation - Hidden in Watcher Mode or Advanced Fullscreen */}
+      {!watcherMode && !advancedFullscreen && (
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 12000,
+        backdropFilter: 'blur(8px)',
+        background: 'rgba(26,26,26,0.92)',
+        borderBottom: '1px solid #333'
       }}>
-        {/* Toolbar Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: 700, letterSpacing: '0.5px' }}>
+            <span role="img" aria-label="battlemap">🗺️</span> Battlemap Controls
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {advancedMode && (
+              <button
+                onClick={toggleAdvancedFullscreen}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '8px',
+                  border: '1px solid #3e3e42',
+                  background: '#2a2a2a',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '18px'
+                }}
+                aria-label="Toggle fullscreen"
+                title="Toggle Fullscreen Canvas"
+              >
+                {advancedFullscreen ? '🪟' : '🔲'}
+              </button>
+            )}
+            <button
+              onClick={() => setNavOpen(!navOpen)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '38px',
+                height: '38px',
+                borderRadius: '8px',
+                border: '1px solid #3e3e42',
+                background: '#2a2a2a',
+                color: '#fff',
+                cursor: 'pointer'
+              }}
+              aria-label="Toggle navigation"
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+        <nav style={{
+          display: navOpen ? 'flex' : 'none',
+          gap: '6px',
+          flexWrap: 'wrap',
+          padding: '0 12px 12px',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          {NAV_SECTIONS.map((section) => {
+            const isActive = sectionVisibility[section.id];
+            const isCurrent = activeSection === section.id;
+            return (
+            <button
+              key={section.id}
+              onClick={() => {
+                const wasVisible = sectionVisibility[section.id];
+                setSectionVisibility(prev => ({ ...prev, [section.id]: !prev[section.id] }));
+                if (!wasVisible) {
+                  section.onNavigate?.();
+                  requestAnimationFrame(() => scrollToSection(section.id));
+                } else {
+                  // Reset to select tool when closing a section
+                  setCurrentTool('select');
+                  if (activeSection === section.id) {
+                    const fallback = NAV_SECTIONS.find(s => s.id !== section.id && sectionVisibility[s.id])?.id;
+                    if (fallback) setActiveSection(fallback);
+                  }
+                }
+              }}
+              title={`${isActive ? 'Hide' : 'Show'} ${section.label}`}
+              style={{
+                position: 'relative',
+                width: '52px',
+                height: '60px',
+                padding: 0,
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2px',
+                transition: 'transform 0.15s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              {/* Hexagon shape */}
+              <div style={{
+                position: 'relative',
+                width: '44px',
+                height: '50px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <svg
+                  viewBox="0 0 100 115"
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    filter: isActive 
+                      ? `drop-shadow(0 0 ${isCurrent ? '8px' : '4px'} ${section.color})`
+                      : 'none',
+                    transition: 'filter 0.2s ease'
+                  }}
+                >
+                  <polygon
+                    points="50,2 95,28 95,87 50,113 5,87 5,28"
+                    fill={isActive 
+                      ? (isCurrent ? section.color : `${section.color}55`) 
+                      : '#1a1a1a'}
+                    stroke={isActive ? section.color : '#333'}
+                    strokeWidth={isCurrent ? '4' : '2'}
+                    style={{ transition: 'all 0.2s ease' }}
+                  />
+                </svg>
+                <span style={{
+                  position: 'relative',
+                  fontSize: '20px',
+                  zIndex: 1,
+                  filter: isActive ? 'none' : 'grayscale(1) opacity(0.5)',
+                  transition: 'filter 0.2s ease'
+                }}>
+                  {section.icon}
+                </span>
+              </div>
+              {/* Label */}
+              <span style={{
+                fontSize: '9px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: isActive ? (isCurrent ? section.color : '#ccc') : '#555',
+                transition: 'color 0.2s ease',
+                whiteSpace: 'nowrap'
+              }}>
+                {section.label}
+              </span>
+            </button>
+          );})}
+        </nav>
+      </header>
+      )}
+
+      <div style={{ padding: advancedFullscreen ? '0' : '12px', paddingTop: advancedFullscreen ? '0' : '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="battlemap-viewer" style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', gap: '10px', overflow: 'visible' }}>
+          {/* Toolbar - Hidden in Watcher Mode, Advanced Fullscreen, or when toggled off */}
+          {sectionVisibility.toolbar && !watcherMode && !advancedFullscreen && (
+          <section id="toolbar" data-section-id="toolbar" style={{ scrollMarginTop: '90px' }}>
+          <div className="resizable-panel" style={{
+            background: '#2a2a2a',
+            borderRadius: '10px',
+            overflow: 'hidden',
+            flexShrink: 0,
+            resize: 'vertical',
+            border: '1px solid #333'
+          }}>
+        {/* Toolbar Header (static) */}
         <div
-          onClick={() => setShowToolbar(!showToolbar)}
           style={{
-            padding: '12px 16px',
-            background: 'linear-gradient(135deg, #34495e, #2c3e50)',
-            cursor: 'pointer',
+            padding: '14px 16px',
+            background: 'linear-gradient(135deg, #2f3d4c, #243140)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: showToolbar ? '1px solid #3e3e42' : 'none',
-            transition: 'background 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, #3d566e, #34495e)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, #34495e, #2c3e50)';
+            gap: '10px',
+            borderBottom: '1px solid #3e3e42'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>⚙️</span>
-            <span style={{ fontWeight: '700', color: '#fff', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Toolbar
-            </span>
-          </div>
-          <span style={{ fontSize: '20px', transform: showToolbar ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}>
-            ▼
+          <span style={{ fontSize: '18px' }}>⚙️</span>
+          <span style={{ fontWeight: '800', color: '#fff', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+            Toolbar
           </span>
+          <span style={{ fontSize: '12px', color: '#9aa7b8', letterSpacing: '0.4px' }}>Core controls</span>
         </div>
 
         {/* Toolbar Content */}
-        {showToolbar && (
-      <div style={{
-        padding: '15px',
-        display: 'flex',
-        gap: '20px',
-        flexWrap: 'wrap',
-        alignItems: 'center'
-      }}>
+      <div 
+        ref={toolbarContentRef}
+        className="toolbar-content" 
+        style={{
+          padding: '16px',
+          display: 'flex',
+          gap: '20px',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          background: '#242424'
+        }}
+      >
         {/* Sync Indicator (Advanced Mode Only) */}
         {advancedMode && (
           <div style={{
@@ -2913,86 +4193,30 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
           ↶ Undo {history.length > 0 && `(${history.length})`}
         </button>
 
-        {/* Watcher Mode Button */}
+        {/* Refresh Token Stats Button */}
         <button
-          onClick={toggleWatcherMode}
+          onClick={handleRefreshTokenStats}
+          disabled={tokens.filter(t => t.type === 'player').length === 0}
           style={{
             padding: '8px 16px',
-            background: watcherMode 
-              ? 'linear-gradient(135deg, #e74c3c, #c0392b)' 
-              : 'linear-gradient(135deg, #27ae60, #229954)',
-            border: watcherMode ? '2px solid #c0392b' : '2px solid #27ae60',
-            borderRadius: '6px',
-            color: '#fff',
-            cursor: 'pointer',
-            fontWeight: '700',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: watcherMode 
-              ? '0 0 15px rgba(231, 76, 60, 0.5)' 
-              : '0 4px 8px rgba(0,0,0,0.2)',
-            transition: 'all 0.3s ease',
-            fontSize: '14px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}
-          title={watcherMode ? 'Exit Watcher Mode (ESC)' : 'Enter Watcher Mode (Fullscreen)'}
-        >
-          {watcherMode ? '🔴 Live' : '👁️ Watcher Mode'}
-        </button>
-
-        {/* Set Default Position Button */}
-        <button
-          onClick={setCurrentAsDefaultPosition}
-          style={{
-            padding: '8px 16px',
-            background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8))',
-            border: '2px solid rgba(52, 152, 219, 0.6)',
-            borderRadius: '6px',
-            color: '#fff',
-            cursor: 'pointer',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-            transition: 'all 0.2s ease',
-            fontSize: '13px'
-          }}
-          title="Save current camera position as default for Watcher Mode"
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8))';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          📍 Set Default Position
-        </button>
-
-        {/* Token Library Toggle Button */}
-        <button
-          onClick={() => setShowTokenPanel(!showTokenPanel)}
-          style={{
-            padding: '8px 16px',
-            background: showTokenPanel ? '#27ae60' : '#3498db',
+            background: tokens.filter(t => t.type === 'player').length > 0 ? '#3498db' : '#555',
             border: 'none',
             borderRadius: '4px',
             color: '#fff',
-            cursor: 'pointer',
+            cursor: tokens.filter(t => t.type === 'player').length > 0 ? 'pointer' : 'not-allowed',
             fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            boxShadow: showTokenPanel ? '0 0 10px rgba(39, 174, 96, 0.5)' : 'none'
+            opacity: tokens.filter(t => t.type === 'player').length > 0 ? 1 : 0.5
           }}
+          title="Refresh HP and conditions from character sheets"
         >
-          🎭 Token Library
+          🔄 Refresh Stats
         </button>
-        
+
+
+
         {/* Debug Tool Button (Advanced Mode Only) */}
         {advancedMode && (
           <button
@@ -3156,58 +4380,94 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
           </label>
         </div>
       </div>
-        )}
-      </div>
+        </div>
+      </section>
       )}
 
-      {/* Drawing Tools - Hidden in Watcher Mode */}
-      {!watcherMode && (
-      <div style={{
+      {/* Drawing Tools - Hidden in Watcher Mode, Advanced Fullscreen, or when toggled off */}
+      {sectionVisibility.drawing && !watcherMode && !advancedFullscreen && (
+      <div data-section-id="drawing" id="drawing" className="resizable-panel" style={{
         background: '#2a2a2a',
-        borderRadius: '8px',
+        borderRadius: '10px',
         overflow: 'hidden',
-        flexShrink: 0
+        flexShrink: 0,
+        resize: drawingToolsCollapsed ? 'none' : 'vertical',
+        border: '1px solid #333'
       }}>
-        {/* Drawing Tools Header */}
+        {/* Drawing Tools Header (static) */}
         <div
-          onClick={() => setShowDrawingTools(!showDrawingTools)}
           style={{
-            padding: '12px 16px',
-            background: 'linear-gradient(135deg, #34495e, #2c3e50)',
-            cursor: 'pointer',
+            padding: '14px 16px',
+            background: 'linear-gradient(135deg, #2f3d4c, #243140)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: showDrawingTools ? '1px solid #3e3e42' : 'none',
-            transition: 'background 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, #3d566e, #34495e)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, #34495e, #2c3e50)';
+            gap: '10px',
+            borderBottom: drawingToolsCollapsed ? 'none' : '1px solid #3e3e42'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>🎨</span>
-            <span style={{ fontWeight: '700', color: '#fff', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Drawing Tools
-            </span>
-          </div>
-          <span style={{ fontSize: '20px', transform: showDrawingTools ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}>
-            ▼
+          <span style={{ fontSize: '18px' }}>🎨</span>
+          <span style={{ fontWeight: '800', color: '#fff', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+            Drawing Tools
           </span>
+          {drawingToolsCollapsed && (
+            <span style={{ 
+              fontSize: '11px', 
+              color: '#2ecc71', 
+              background: 'rgba(46, 204, 113, 0.2)',
+              padding: '3px 8px',
+              borderRadius: '4px',
+              fontWeight: '600',
+              border: '1px solid rgba(46, 204, 113, 0.4)'
+            }}>
+              {currentToolLabel} Active
+            </span>
+          )}
+          {!drawingToolsCollapsed && (
+            <span style={{ fontSize: '12px', color: '#9aa7b8', letterSpacing: '0.4px' }}>Painting & shapes</span>
+          )}
+          
+          {/* Collapse/Expand Toggle */}
+          <button
+            onClick={() => setDrawingToolsCollapsed(!drawingToolsCollapsed)}
+            style={{
+              marginLeft: 'auto',
+              padding: '6px 12px',
+              background: drawingToolsCollapsed ? 'rgba(46, 204, 113, 0.2)' : 'rgba(52, 152, 219, 0.2)',
+              border: drawingToolsCollapsed ? '1px solid rgba(46, 204, 113, 0.5)' : '1px solid rgba(52, 152, 219, 0.5)',
+              borderRadius: '6px',
+              color: drawingToolsCollapsed ? '#2ecc71' : '#5dade2',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: '600',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            title={drawingToolsCollapsed ? 'Expand UI (tool still active)' : 'Collapse UI (keep tool active)'}
+          >
+            <span>{drawingToolsCollapsed ? '▼' : '▲'}</span>
+            <span>{drawingToolsCollapsed ? 'Expand' : 'Collapse'}</span>
+          </button>
         </div>
 
-        {/* Drawing Tools Content */}
-        {showDrawingTools && (
-      <div style={{
-        padding: '15px',
-        display: 'flex',
-        gap: '15px',
-        flexWrap: 'wrap',
-        alignItems: 'center'
-      }}>
+        {/* Drawing Tools Content - Only show when not collapsed */}
+        {!drawingToolsCollapsed && (
+      <div 
+        ref={drawingToolsContentRef}
+        className="resizable-panel" 
+        style={{
+          resize: 'vertical',
+          minHeight: '150px',
+          padding: '16px',
+          display: 'flex',
+          gap: '15px',
+          flexWrap: 'wrap',
+          alignItems: 'flex-start',
+          alignContent: 'flex-start',
+          background: '#242424'
+        }}
+      >
         {/* Tool Selection - Horizontal Design */}
         <div style={{
           display: 'flex',
@@ -3233,57 +4493,81 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
             {[
               { id: 'paint', icon: '🖌️', label: 'Paint' },
               { id: 'eraser', icon: '🧹', label: 'Eraser' },
+              { id: 'edit', icon: '✏️', label: 'Edit Data (tokens & hexes)' },
               { id: 'measure', icon: '📏', label: 'Measure' },
               { id: 'sphere', icon: '⭕', label: 'Sphere (click hex or token)' },
               { id: 'cone', icon: '📐', label: 'Cone (click hex or token)' },
               { id: 'line', icon: '➖', label: 'Line' },
               { id: 'aura', icon: '✨', label: 'Aura (click token)' },
+              { id: 'place-token', icon: '🎭', label: 'Place Token' },
               { id: 'token', icon: '👤', label: 'Move tokens' }
             ].map(tool => (
               <button
                 key={tool.id}
-                onClick={() => {
+                onClick={(e) => {
                   setCurrentTool(tool.id);
-                  // Reset area effect state when switching tools
                   resetAreaEffect();
+                  if (e.currentTarget) {
+                    animateToolSelection(e.currentTarget, true);
+                  }
                 }}
                 style={{
-                  padding: '10px 16px',
-                  background: currentTool === tool.id 
-                    ? 'linear-gradient(135deg, #3498db, #2980b9)' 
-                    : 'rgba(26, 26, 26, 0.8)',
-                  border: currentTool === tool.id ? '2px solid #5dade2' : '2px solid #3e3e42',
-                  borderRadius: '8px',
-                  color: '#e0e0e0',
+                  position: 'relative',
+                  width: '52px',
+                  height: '60px',
+                  padding: 0,
+                  border: 'none',
+                  background: 'transparent',
                   cursor: 'pointer',
-                  fontWeight: currentTool === tool.id ? '700' : '500',
-                  fontSize: '20px',
-                  boxShadow: currentTool === tool.id 
-                    ? '0 0 15px rgba(52, 152, 219, 0.5), 0 4px 8px rgba(0,0,0,0.3)' 
-                    : '0 2px 4px rgba(0,0,0,0.2)',
-                  transition: 'all 0.2s ease',
-                  transform: currentTool === tool.id ? 'translateY(-2px)' : 'translateY(0)',
-                  minWidth: '48px',
-                  minHeight: '48px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2px',
+                  transition: 'transform 0.15s ease'
+                }}
+                title={tool.label}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <div style={{
+                  position: 'relative',
+                  width: '44px',
+                  height: '50px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
-                }}
-                title={tool.label}
-                onMouseEnter={(e) => {
-                  if (currentTool !== tool.id) {
-                    e.currentTarget.style.background = 'rgba(52, 152, 219, 0.3)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (currentTool !== tool.id) {
-                    e.currentTarget.style.background = 'rgba(26, 26, 26, 0.8)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }
-                }}
-              >
-                {tool.icon}
+                }}>
+                  <svg
+                    viewBox="0 0 100 115"
+                    style={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      filter: currentTool === tool.id
+                        ? 'drop-shadow(0 0 8px #3498db)'
+                        : 'none',
+                      transition: 'filter 0.2s ease'
+                    }}
+                  >
+                    <polygon
+                      points="50,2 95,28 95,87 50,113 5,87 5,28"
+                      fill={currentTool === tool.id ? '#3498db' : '#1a1a1a'}
+                      stroke={currentTool === tool.id ? '#5dade2' : '#333'}
+                      strokeWidth={currentTool === tool.id ? '4' : '2'}
+                      style={{ transition: 'all 0.2s ease' }}
+                    />
+                  </svg>
+                  <span style={{
+                    position: 'relative',
+                    fontSize: '20px',
+                    zIndex: 1,
+                    filter: currentTool === tool.id ? 'none' : 'grayscale(1) opacity(0.5)',
+                    transition: 'filter 0.2s ease'
+                  }}>
+                    {tool.icon}
+                  </span>
+                </div>
               </button>
             ))}
           </div>
@@ -3371,16 +4655,22 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
             </button>
           </div>
         )}
+      </div>
+        )}
+      </div>
+      )}
 
-        {/* Aura Tool Settings */}
-        {currentTool === 'aura' && (
+        {/* Aura Tool Settings - Effects Section (independent from Drawing Tools) */}
+        {sectionVisibility.effects && !watcherMode && !advancedFullscreen && (
+        <section id="effects" data-section-id="effects" style={{ scrollMarginTop: '90px' }}>
+        {currentTool === 'aura' ? (
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
+            gap: '8px',
             background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(231, 76, 60, 0.15))',
-            padding: '16px 20px',
-            borderRadius: '10px',
+            padding: '10px 14px',
+            borderRadius: '8px',
             border: '2px solid rgba(255, 107, 107, 0.4)',
             boxShadow: '0 4px 12px rgba(255, 107, 107, 0.2)'
           }}>
@@ -3420,6 +4710,59 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
                 border: '2px solid #fff',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
               }} />
+            </div>
+            
+            {/* Aura Effect Presets */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontWeight: '600', color: '#e0e0e0', fontSize: '13px' }}>
+                Effect Presets:
+              </label>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gap: '4px',
+                maxWidth: '240px'
+              }}>
+                {Object.entries(EFFECT_PRESETS).map(([key, preset]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      // Extract primary color from gradient for aura
+                      const gradientMatch = preset.gradient.match(/#[0-9a-fA-F]{6}/);
+                      if (gradientMatch) {
+                        setAuraOutlineColor(gradientMatch[0]);
+                      }
+                    }}
+                    style={{
+                      padding: '0',
+                      width: '40px',
+                      height: '40px',
+                      background: preset.gradient,
+                      border: '1px solid #4e4e52',
+                      borderRadius: '6px',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontSize: '20px',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.1s ease, box-shadow 0.1s ease'
+                    }}
+                    title={preset.name}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                      e.currentTarget.style.boxShadow = `0 0 12px ${preset.glowColor}`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+                    }}
+                  >
+                    {preset.emoji}
+                  </button>
+                ))}
+              </div>
             </div>
             
             {/* Move Hexes Checkbox */}
@@ -3487,29 +4830,31 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
                 </div>
                 
                 <div style={{
-                  display: 'flex',
-                  gap: '6px',
-                  flexWrap: 'wrap',
-                  alignItems: 'center'
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '4px',
+                  maxWidth: '240px'
                 }}>
                   {Object.entries(EFFECT_PRESETS).map(([key, preset]) => (
                     <button
                       key={key}
-                      onClick={() => setCurrentEffect(key)}
+                      onClick={(e) => {
+                        setCurrentEffect(key);
+                        animateEffectSelection(e.currentTarget, preset.glowColor);
+                      }}
                       style={{
                         padding: '0',
-                        width: '44px',
-                        height: '44px',
+                        width: '40px',
+                        height: '40px',
                         background: currentEffect === key ? preset.gradient : 'rgba(42, 42, 42, 0.8)',
-                        border: currentEffect === key ? '3px solid #fff' : '2px solid #4e4e52',
-                        borderRadius: '8px',
+                        border: currentEffect === key ? '2px solid #fff' : '1px solid #4e4e52',
+                        borderRadius: '6px',
                         color: '#fff',
                         cursor: 'pointer',
-                        fontSize: '22px',
+                        fontSize: '20px',
                         boxShadow: currentEffect === key 
-                          ? `0 0 15px ${preset.glowColor}, 0 4px 8px rgba(0,0,0,0.5)` 
-                          : '0 2px 4px rgba(0,0,0,0.3)',
-                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          ? `0 0 12px ${preset.glowColor}, 0 2px 6px rgba(0,0,0,0.5)` 
+                          : '0 1px 3px rgba(0,0,0,0.3)',
                         transform: currentEffect === key ? 'scale(1.05)' : 'scale(1)',
                         display: 'flex',
                         alignItems: 'center',
@@ -3518,16 +4863,12 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
                       title={preset.name}
                       onMouseEnter={(e) => {
                         if (currentEffect !== key) {
-                          e.currentTarget.style.background = preset.gradient;
-                          e.currentTarget.style.transform = 'scale(1.02)';
-                          e.currentTarget.style.boxShadow = `0 0 10px ${preset.glowColor}, 0 3px 6px rgba(0,0,0,0.4)`;
+                          animateEffectHover(e.currentTarget, preset.gradient, preset.glowColor, true);
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (currentEffect !== key) {
-                          e.currentTarget.style.background = 'rgba(42, 42, 42, 0.8)';
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+                          animateEffectHover(e.currentTarget, 'rgba(42, 42, 42, 0.8)', preset.glowColor, false);
                         }
                       }}
                     >
@@ -3538,19 +4879,467 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
               </div>
             )}
           </div>
+        ) : (
+          <div style={{
+            marginTop: '8px',
+            padding: '12px 14px',
+            background: '#1f1f1f',
+            borderRadius: '8px',
+            border: '1px dashed #444',
+            color: '#999',
+            fontWeight: '600'
+          }}>
+            Switch to the Aura tool to see aura controls.
+          </div>
+        )}
+        </section>
         )}
 
-        {/* Enhanced Effect Presets - Horizontal Design */}
-        {currentTool !== 'token' && currentTool !== 'aura' && currentTool !== 'eraser' && currentTool !== 'measure' && (
+        {/* Camera Controls Section - Full controls in GM mode */}
+        {sectionVisibility.camera && !watcherMode && !advancedFullscreen && (
+        <section id="camera" data-section-id="camera" style={{ scrollMarginTop: '90px' }}>
+        <div className="resizable-panel" style={{
+          background: '#2a2a2a',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          flexShrink: 0,
+          resize: 'vertical',
+          border: '1px solid #333'
+        }}>
+          {/* Camera Header */}
+          <div
+            style={{
+              padding: '14px 16px',
+              background: 'linear-gradient(135deg, #2f3d4c, #243140)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              borderBottom: '1px solid #3e3e42'
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>📹</span>
+            <span style={{ fontWeight: '800', color: '#fff', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+              Camera
+            </span>
+            <span style={{ fontSize: '12px', color: '#9aa7b8', letterSpacing: '0.4px' }}>View & layers</span>
+          </div>
+
+          {/* Camera Content */}
+          <div style={{
+            padding: '16px',
+            display: 'flex',
+            gap: '12px',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            background: '#242424'
+          }}>
+            {/* Watcher Mode Button */}
+            <button
+              onClick={toggleWatcherMode}
+              style={{
+                padding: '10px 16px',
+                background: 'linear-gradient(135deg, #27ae60, #229954)',
+                border: '2px solid #27ae60',
+                borderRadius: '8px',
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+              title="Enter Watcher Mode (Fullscreen)"
+            >
+              👁️ Watcher Mode
+            </button>
+
+            {/* Set Default Position Button */}
+            <button
+              onClick={setCurrentAsDefaultPosition}
+              style={{
+                padding: '10px 16px',
+                background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8))',
+                border: '2px solid rgba(52, 152, 219, 0.6)',
+                borderRadius: '8px',
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                transition: 'all 0.2s ease',
+                fontSize: '13px'
+              }}
+              title="Save current camera position as default for Watcher Mode"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8))';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              📍 Set Default Position
+            </button>
+
+            {/* Placeholder for future layer toggles */}
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              flexWrap: 'wrap',
+              width: '100%',
+              paddingTop: '8px',
+              borderTop: '1px solid #3e3e42'
+            }}>
+              <span style={{
+                fontSize: '12px',
+                color: '#888',
+                fontStyle: 'italic'
+              }}>
+                Layer toggles coming soon: Background, Hexgrid, Tokens
+              </span>
+            </div>
+          </div>
+        </div>
+        </section>
+        )}
+
+        {/* Minimal Watcher Mode Exit Button - Floating overlay when in Watcher Mode */}
+        {watcherMode && (
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            zIndex: 10000
+          }}>
+            <button
+              onClick={toggleWatcherMode}
+              style={{
+                padding: '12px 20px',
+                background: 'linear-gradient(135deg, #e74c3c, #c0392b)',
+                border: '2px solid #c0392b',
+                borderRadius: '10px',
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 0 20px rgba(231, 76, 60, 0.6), 0 4px 12px rgba(0,0,0,0.4)',
+                transition: 'all 0.3s ease',
+                fontSize: '14px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+              title="Exit Watcher Mode (ESC)"
+            >
+              🔴 Exit Watcher Mode
+            </button>
+          </div>
+        )}
+
+        {/* Token Placement Settings */}
+        {sectionVisibility.tokens && !watcherMode && !advancedFullscreen && (
+        <section id="tokens" data-section-id="tokens" style={{ scrollMarginTop: '90px' }}>
+        {currentTool === 'place-token' ? (
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '10px',
-            background: 'linear-gradient(135deg, rgba(155, 89, 182, 0.15), rgba(142, 68, 173, 0.15))',
+            gap: '12px',
+            background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(41, 128, 185, 0.15))',
             padding: '16px 20px',
             borderRadius: '10px',
-            border: '2px solid rgba(155, 89, 182, 0.4)',
-            boxShadow: '0 4px 12px rgba(155, 89, 182, 0.2)'
+            border: '2px solid rgba(52, 152, 219, 0.4)',
+            boxShadow: '0 4px 12px rgba(52, 152, 219, 0.2)',
+            minWidth: '600px'
+          }}>
+            <label style={{ 
+              fontWeight: '800', 
+              color: '#5dade2',
+              fontSize: '13px',
+              textTransform: 'uppercase',
+              letterSpacing: '1.5px'
+            }}>
+              🎭 Token Placement
+            </label>
+            
+            {/* Token Size Input */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              background: '#2a2a2a',
+              padding: '10px',
+              borderRadius: '6px'
+            }}>
+              <label style={{ fontWeight: '600', color: '#e0e0e0', fontSize: '13px', minWidth: '80px' }}>
+                Token Size:
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={tokenPlacementSize.width}
+                onChange={(e) => setTokenPlacementSize(prev => ({ ...prev, width: parseInt(e.target.value) || 1 }))}
+                style={{
+                  width: '60px',
+                  padding: '6px',
+                  borderRadius: '4px',
+                  border: '1px solid #3e3e42',
+                  background: '#1a1a1a',
+                  color: '#e0e0e0'
+                }}
+              />
+              <span style={{ color: '#888' }}>×</span>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={tokenPlacementSize.height}
+                onChange={(e) => setTokenPlacementSize(prev => ({ ...prev, height: parseInt(e.target.value) || 1 }))}
+                style={{
+                  width: '60px',
+                  padding: '6px',
+                  borderRadius: '4px',
+                  border: '1px solid #3e3e42',
+                  background: '#1a1a1a',
+                  color: '#e0e0e0'
+                }}
+              />
+              <span style={{ fontSize: '12px', color: '#888' }}>hexes (width × height)</span>
+            </div>
+
+            {/* Player Characters Section */}
+            <div>
+              <h5 style={{ 
+                margin: '0 0 8px 0', 
+                color: '#27ae60', 
+                fontSize: '12px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                👥 Player Characters
+              </h5>
+              <div style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                flexWrap: 'wrap',
+                background: '#1a1a1a',
+                padding: '10px',
+                borderRadius: '6px',
+                maxHeight: '150px',
+                overflowY: 'auto'
+              }}>
+                {availableCharacters.map(char => (
+                  <button
+                    key={char.name}
+                    onClick={() => setTokenToPlace({
+                      ...char,
+                      avatarPng: char.avatarPngNormalized || char.avatarPng,
+                      type: 'player',
+                      width: tokenPlacementSize.width,
+                      height: tokenPlacementSize.height
+                    })}
+                    style={{
+                      padding: '8px 10px',
+                      background: tokenToPlace?.name === char.name 
+                        ? 'linear-gradient(135deg, #27ae60, #2ecc71)' 
+                        : 'rgba(39, 174, 96, 0.2)',
+                      border: tokenToPlace?.name === char.name ? '2px solid #2ecc71' : '2px solid #27ae60',
+                      borderRadius: '6px',
+                      color: '#e0e0e0',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '6px',
+                      minWidth: '70px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (tokenToPlace?.name !== char.name) {
+                        e.currentTarget.style.background = 'rgba(39, 174, 96, 0.4)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (tokenToPlace?.name !== char.name) {
+                        e.currentTarget.style.background = 'rgba(39, 174, 96, 0.2)';
+                      }
+                    }}
+                  >
+                    {char.avatarPng || char.avatar ? (
+                      <PixelAvatar
+                        avatarPng={char.avatarPng}
+                        size={40}
+                        borderColor={char.color || '#27ae60'}
+                        background="rgba(0,0,0,0.3)"
+                        placeholderLabel={char.name}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #27ae60, #2ecc71)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '20px'
+                      }}>
+                        👤
+                      </div>
+                    )}
+                    <span style={{
+                      fontSize: '10px',
+                      textAlign: 'center',
+                      lineHeight: '1.2',
+                      maxWidth: '70px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {char.name}
+                    </span>
+                  </button>
+                ))}
+                {availableCharacters.length === 0 && (
+                  <p style={{ 
+                    color: '#888', 
+                    margin: 0, 
+                    fontSize: '11px',
+                    textAlign: 'center',
+                    width: '100%',
+                    padding: '10px'
+                  }}>
+                    No player characters available
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Enemy Tokens Section */}
+            <div>
+              <h5 style={{ 
+                margin: '0 0 8px 0', 
+                color: '#e74c3c', 
+                fontSize: '12px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                ⚔️ Enemy / NPC Tokens
+              </h5>
+              <div style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                flexWrap: 'wrap',
+                background: '#1a1a1a',
+                padding: '10px',
+                borderRadius: '6px'
+              }}>
+                {enemyTokens.map(enemy => (
+                  <button
+                    key={enemy.name}
+                    onClick={() => setTokenToPlace({
+                      name: enemy.name,
+                      color: enemy.color,
+                      icon: enemy.icon,
+                      type: 'enemy',
+                      width: tokenPlacementSize.width,
+                      height: tokenPlacementSize.height
+                    })}
+                    style={{
+                      padding: '8px 12px',
+                      background: tokenToPlace?.name === enemy.name 
+                        ? 'linear-gradient(135deg, #e74c3c, #c0392b)' 
+                        : 'rgba(231, 76, 60, 0.2)',
+                      border: tokenToPlace?.name === enemy.name ? '2px solid #c0392b' : '2px solid #e74c3c',
+                      borderRadius: '6px',
+                      color: '#e0e0e0',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (tokenToPlace?.name !== enemy.name) {
+                        e.currentTarget.style.background = 'rgba(231, 76, 60, 0.4)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (tokenToPlace?.name !== enemy.name) {
+                        e.currentTarget.style.background = 'rgba(231, 76, 60, 0.2)';
+                      }
+                    }}
+                  >
+                    {enemy.icon} {enemy.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Instructions */}
+            {tokenToPlace ? (
+              <div style={{
+                background: '#27ae60',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#fff',
+                textAlign: 'center'
+              }}>
+                ✓ Click on the hex grid to place "{tokenToPlace.name}" ({tokenToPlace.width}×{tokenToPlace.height})
+              </div>
+            ) : (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                color: '#888',
+                textAlign: 'center'
+              }}>
+                Select a token above to place on the grid
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{
+            marginTop: '8px',
+            padding: '12px',
+            border: '1px dashed #3e3e42',
+            borderRadius: '8px',
+            color: '#b0b0b0',
+            background: '#1f1f1f'
+          }}>
+            Select the Token tool from the toolbar to manage tokens.
+          </div>
+        )}
+        </section>
+        )}
+
+        {/* Drawing Tools Additional Controls - Only visible when Drawing Tools section is on */}
+        {sectionVisibility.drawing && !watcherMode && !advancedFullscreen && (
+        <>
+        {/* Enhanced Effect Presets - Horizontal Design */}
+        {currentTool !== 'token' && currentTool !== 'place-token' && currentTool !== 'aura' && currentTool !== 'eraser' && currentTool !== 'measure' && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            width: '100%'
           }}>
             <div style={{
               display: 'flex',
@@ -3583,64 +5372,81 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
             
             <div style={{
               display: 'flex',
-              gap: '8px',
+              gap: '4px',
               flexWrap: 'wrap',
               alignItems: 'center'
             }}>
               {Object.entries(EFFECT_PRESETS).map(([key, preset]) => (
                 <button
                   key={key}
-                  onClick={() => setCurrentEffect(key)}
+                  onClick={(e) => {
+                    setCurrentEffect(key);
+                    animateEffectSelection(e.currentTarget, preset.glowColor);
+                  }}
                   style={{
-                    padding: '0',
-                    width: '52px',
-                    height: '52px',
-                    background: currentEffect === key ? preset.gradient : 'rgba(42, 42, 42, 0.8)',
-                    border: currentEffect === key ? '3px solid #fff' : '2px solid #4e4e52',
-                    borderRadius: '10px',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: '26px',
-                    boxShadow: currentEffect === key 
-                      ? `0 0 20px ${preset.glowColor}, 0 6px 12px rgba(0,0,0,0.5)` 
-                      : '0 3px 6px rgba(0,0,0,0.3)',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: currentEffect === key ? 'scale(1.1) translateY(-2px)' : 'scale(1)',
                     position: 'relative',
-                    overflow: 'hidden',
+                    width: '46px',
+                    height: '52px',
+                    padding: 0,
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '2px',
+                    transition: 'transform 0.15s ease'
+                  }}
+                  title={preset.name}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <div style={{
+                    position: 'relative',
+                    width: '38px',
+                    height: '44px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
-                  }}
-                  title={preset.name}
-                  onMouseEnter={(e) => {
-                    if (currentEffect !== key) {
-                      e.currentTarget.style.background = preset.gradient;
-                      e.currentTarget.style.transform = 'scale(1.05) translateY(-1px)';
-                      e.currentTarget.style.boxShadow = `0 0 15px ${preset.glowColor}, 0 4px 8px rgba(0,0,0,0.4)`;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (currentEffect !== key) {
-                      e.currentTarget.style.background = 'rgba(42, 42, 42, 0.8)';
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.boxShadow = '0 3px 6px rgba(0,0,0,0.3)';
-                    }
-                  }}
-                >
-                  {preset.emoji}
-                  {currentEffect === key && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '3px',
-                      right: '3px',
-                      width: '8px',
-                      height: '8px',
-                      background: '#fff',
-                      borderRadius: '50%',
-                      boxShadow: '0 0 8px #fff'
-                    }} />
-                  )}
+                  }}>
+                    <svg
+                      viewBox="0 0 100 115"
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        filter: currentEffect === key
+                          ? `drop-shadow(0 0 8px ${preset.glowColor})`
+                          : 'none',
+                        transition: 'filter 0.2s ease'
+                      }}
+                    >
+                      <defs>
+                        <linearGradient id={`grad-${key}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                          {preset.colors && preset.colors.map((color, i) => (
+                            <stop key={i} offset={`${(i / (preset.colors.length - 1)) * 100}%`} stopColor={color} />
+                          ))}
+                        </linearGradient>
+                      </defs>
+                      <polygon
+                        points="50,2 95,28 95,87 50,113 5,87 5,28"
+                        fill={currentEffect === key ? `url(#grad-${key})` : '#1a1a1a'}
+                        stroke={currentEffect === key ? '#fff' : '#333'}
+                        strokeWidth={currentEffect === key ? '3' : '2'}
+                        style={{ transition: 'all 0.2s ease' }}
+                      />
+                    </svg>
+                    <span style={{
+                      position: 'relative',
+                      fontSize: '22px',
+                      zIndex: 1,
+                      filter: currentEffect === key ? 'none' : 'grayscale(1) opacity(0.5)',
+                      transition: 'filter 0.2s ease'
+                    }}>
+                      {preset.emoji}
+                    </span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -3648,10 +5454,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         )}
 
         {/* Enhanced Animation Intensity Controls (Advanced Mode Only) */}
-        {advancedMode && currentTool !== 'token' && currentEffect !== 'none' && (
+        {advancedMode && currentTool !== 'token' && currentTool !== 'place-token' && currentEffect !== 'none' && (
           <div style={{
             display: 'flex',
             gap: '15px',
+            width: '100%',
             alignItems: 'center',
             flexWrap: 'wrap',
             background: 'linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(52, 152, 219, 0.1))',
@@ -3746,7 +5553,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         )}
 
         {/* Fade Effect Controls - Always Visible */}
-        {currentTool !== 'token' && currentEffect !== 'none' && (
+        {currentTool !== 'token' && currentTool !== 'place-token' && currentEffect !== 'none' && (
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column',
@@ -3806,8 +5613,13 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         )}
 
         {/* Color Picker */}
-        {currentTool !== 'token' && currentTool !== 'eraser' && currentTool !== 'measure' && currentEffect === 'none' && (
-          <>
+        {currentTool !== 'token' && currentTool !== 'place-token' && currentTool !== 'eraser' && currentTool !== 'measure' && currentEffect === 'none' && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            width: '100%'
+          }}>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <label style={{ fontWeight: '600' }}>Color:</label>
               <input
@@ -3853,7 +5665,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
                 />
               ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Clear Grid Button - Always visible */}
@@ -3940,24 +5752,62 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
             )}
           </>
         )}
-      </div>
+        </>
         )}
-      </div>
-      )}
       
       {/* Canvas */}
       <div
         ref={canvasRef}
         style={{
-          minHeight: watcherMode ? '100vh' : '600px',
+          minHeight: watcherMode || advancedFullscreen ? '100vh' : '600px',
           flexGrow: 1,
           background: '#1a1a1a',
-          borderRadius: watcherMode ? '0' : '8px',
+          borderRadius: watcherMode || advancedFullscreen ? '0' : '8px',
           overflow: 'auto', // Always allow scrolling for panning
           position: 'relative',
-          padding: watcherMode ? '0' : '20px'
+          // Dynamic padding: more padding when zoomed in to allow panning beyond edges
+          // In watcher/fullscreen: 1000px, otherwise scale from 200px to 2000px based on zoom
+          padding: watcherMode || advancedFullscreen 
+            ? '1000px' 
+            : `${Math.max(200, Math.min(2000, 200 * scale))}px`
         }}
       >
+        {/* Exit Fullscreen Button - Only in Advanced Fullscreen */}
+        {advancedFullscreen && (
+          <button
+            onClick={toggleAdvancedFullscreen}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              zIndex: 15000,
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              border: '2px solid #3e3e42',
+              background: 'rgba(42, 42, 42, 0.95)',
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.background = 'rgba(60, 60, 60, 0.95)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.background = 'rgba(42, 42, 42, 0.95)';
+            }}
+            title="Exit Fullscreen"
+          >
+            ✕
+          </button>
+        )}
         {/* Zoom and Rotation Wrapper - Applied to both layers equally */}
         <div
           style={{
@@ -4027,26 +5877,37 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
               top: 0,
               left: 0
             }}
-            onMouseUp={() => setIsPainting(false)}
-            onMouseLeave={() => setIsPainting(false)}
+            onClick={() => setMarkerPopup(null)}
+            onMouseUp={() => {
+              setIsPainting(false);
+              setIsPanning(false);
+            }}
+            onMouseLeave={() => {
+              setIsPainting(false);
+              setIsPanning(false);
+            }}
+            onMouseMove={(e) => {
+              // Handle camera panning
+              if (isPanning) {
+                e.preventDefault();
+                const canvas = canvasRef.current;
+                if (canvas) {
+                  const deltaX = panStart.x - e.clientX;
+                  const deltaY = panStart.y - e.clientY;
+                  canvas.scrollLeft = scrollStart.x + deltaX;
+                  canvas.scrollTop = scrollStart.y + deltaY;
+                }
+              }
+              
+              // Handle token dragging
+              if (draggedToken) {
+                // Token dragging handled by hex click
+              }
+            }}
           >
-            {/* SVG Definitions for effect patterns */}
+            {/* SVG Definitions for fallback patterns */}
             <defs>
-              {/* Fire gradient */}
-              <radialGradient id="fireGradient">
-                <stop offset="0%" stopColor="#ffaa00" stopOpacity="0.9" />
-                <stop offset="50%" stopColor="#ff6b1a" stopOpacity="0.7" />
-                <stop offset="100%" stopColor="#ff4444" stopOpacity="0.5" />
-              </radialGradient>
-              
-              {/* Ice gradient */}
-              <linearGradient id="iceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ccffff" stopOpacity="0.8" />
-                <stop offset="50%" stopColor="#88ccff" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#66bbee" stopOpacity="0.7" />
-              </linearGradient>
-              
-              {/* Earth texture pattern */}
+              {/* Earth static pattern */}
               <pattern id="earthPattern" width="20" height="20" patternUnits="userSpaceOnUse">
                 <rect width="20" height="20" fill="#8b6f47" />
                 <circle cx="5" cy="5" r="2" fill="#6f5436" opacity="0.6" />
@@ -4060,15 +5921,18 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
               row.map((cell, cIdx) => {
                 const { cx, cy } = getHexCoordinates(rIdx, cIdx);
                 const points = getHexVertices(cx, cy);
-                const hasToken = tokens.some(t => t.row === rIdx && t.col === cIdx);
+                // Check if any token occupies this cell
+                const hasToken = tokens.some(t => {
+                  const cells = getTokenCells(t.row, t.col, t.width || 1, t.height || 1);
+                  return cells.some(c => c.row === rIdx && c.col === cIdx);
+                });
                 
-                // Get animated style if cell has effect
-                const animStyle = cell.filled && cell.effect !== 'none' 
-                  ? getAnimatedStyle(cell) 
-                  : null;
+                // Get base color and effect class
+                const baseColor = cell.filled ? getEffectBaseColor(cell) : 'transparent';
+                const effectClass = getEffectAnimationClass(cell);
+                const effectPreset = cell.effect && EFFECT_PRESETS[cell.effect];
                 
                 // Get glow effect for animated cells
-                const effectPreset = cell.effect && EFFECT_PRESETS[cell.effect];
                 const glowFilter = effectPreset && effectPreset.glowColor
                   ? `drop-shadow(0 0 4px ${effectPreset.glowColor})`
                   : undefined;
@@ -4081,22 +5945,49 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
                   <polygon
                     key={`hex-${rIdx}-${cIdx}`}
                     points={points}
-                    fill={animStyle ? animStyle.color : (cell.filled ? cell.color : 'transparent')}
-                    fillOpacity={animStyle ? animStyle.opacity : (cell.filled ? 0.5 : 0)}
+                    fill={baseColor}
+                    fillOpacity={cell.filled ? 0.6 : 0}
                     stroke={hasToken ? '#64c8ff' : (isOuterEdge ? 'rgba(150, 150, 150, 0.6)' : 'rgba(150, 150, 150, 0.3)')}
                     strokeWidth={hasToken ? 3 : (isOuterEdge ? 2 : 1)}
+                    className={effectClass}
                     style={{
-                      cursor: currentTool === 'token' ? 'pointer' : 
+                      cursor: currentTool === 'select' ? (isPanning ? 'grabbing' : 'grab') :
+                              currentTool === 'edit' ? 'pointer' :
+                              currentTool === 'token' ? 'pointer' : 
                               (showDirectionSelect && currentTool === 'cone') ? 'pointer' :
+                              (currentTool === 'place-token' && tokenToPlace) ? 'copy' :
                               'crosshair',
-                      transition: animStyle ? 'none' : 'all 0.1s',
+                      transition: 'all 0.1s',
                       filter: glowFilter
                     }}
                     onMouseDown={(e) => {
-                      if (currentTool === 'token') {
+                      if (currentTool === 'select') {
+                        // In select mode, check if clicking on a token or empty space
+                        const tokenAtPos = tokens.find(t => {
+                          const cells = getTokenCells(t.row, t.col, t.width || 1, t.height || 1);
+                          return cells.some(c => c.row === rIdx && c.col === cIdx);
+                        });
+                        
+                        if (!tokenAtPos) {
+                          // Clicking on empty space - start camera pan
+                          e.preventDefault();
+                          setIsPanning(true);
+                          setPanStart({ x: e.clientX, y: e.clientY });
+                          const canvas = canvasRef.current;
+                          if (canvas) {
+                            setScrollStart({ x: canvas.scrollLeft, y: canvas.scrollTop });
+                          }
+                          return;
+                        }
+                      }
+                      
+                      if (currentTool === 'edit') {
+                        // Edit tool: always handle click (will open modal for token or hex)
+                        handleHexClick(rIdx, cIdx, false);
+                      } else if (currentTool === 'token') {
                         handleHexClick(rIdx, cIdx, false);
                       } else if (currentTool === 'measure' || currentTool === 'line' || 
-                                 currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura') {
+                                 currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura' || currentTool === 'place-token') {
                         // For click-based tools, just handle the click
                         handleHexClick(rIdx, cIdx, false);
                       } else {
@@ -4160,24 +6051,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
               // Only render aura outline if token has aura metadata
               if (!token.aura) return null;
               
-              // Find all hexes that are aura tiles for this token (if moveHexes is enabled)
-              // OR calculate aura pattern based on diameter (if moveHexes is disabled)
-              let auraHexes = [];
-              
-              if (token.aura.moveHexes) {
-                // Find hexes marked with auraTokenId
-                for (let r = 0; r < gridSize.rows; r++) {
-                  for (let c = 0; c < gridSize.cols; c++) {
-                    const cell = hexGrid[r]?.[c];
-                    if (cell && cell.auraTokenId === token.id) {
-                      auraHexes.push({ row: r, col: c });
-                    }
-                  }
-                }
-              } else {
-                // Generate aura pattern on the fly based on token position and diameter
-                auraHexes = generateSpherePattern(token.row, token.col, token.aura.diameter);
-              }
+              // Always calculate aura pattern based on token position and diameter for border
+              // This ensures the border is drawn correctly even if some hexes aren't filled
+              const tokenWidth = token.width || 1;
+              const tokenHeight = token.height || 1;
+              const auraHexes = generateTokenAuraPattern(token.row, token.col, tokenWidth, tokenHeight, token.aura.diameter);
               
               if (auraHexes.length === 0) return null;
               
@@ -4227,8 +6105,45 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
                 }
               });
               
+              // Convert hex color to rgba with 50% opacity
+              const auraColor = token.aura.outlineColor || '#64c8ff';
+              const hexToRgba = (hex, alpha = 0.5) => {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+              };
+              
               return (
                 <g key={`aura-outline-${token.id}`}>
+                  {/* Semi-transparent fill for aura hexes - only for empty cells */}
+                  {auraHexes.map(({ row, col }, idx) => {
+                    // Check if the cell is filled - if so, skip the fill
+                    // BUT allow it if it's filled because of THIS aura (auraTokenId matches)
+                    const cell = hexGrid[row]?.[col];
+                    if (cell && cell.filled && cell.auraTokenId !== token.id) {
+                      return null; // Don't fill already painted hexes (unless they're part of this aura)
+                    }
+                    
+                    const { cx, cy } = getHexCoordinates(row, col);
+                    const hexVertices = [];
+                    for (let i = 0; i < 6; i++) {
+                      const angle = (Math.PI / 3) * i + Math.PI / 2;
+                      const x = cx + hexSize * Math.cos(angle);
+                      const y = cy + hexSize * Math.sin(angle);
+                      hexVertices.push(`${x},${y}`);
+                    }
+                    return (
+                      <polygon
+                        key={`aura-fill-${idx}`}
+                        points={hexVertices.join(' ')}
+                        fill={hexToRgba(auraColor, 0.5)}
+                        style={{ pointerEvents: 'none' }}
+                      />
+                    );
+                  })}
+                  
+                  {/* Outline edges */}
                   {outerEdges.map((edge, idx) => (
                     <line
                       key={`aura-edge-${idx}`}
@@ -4236,7 +6151,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
                       y1={edge.y1}
                       x2={edge.x2}
                       y2={edge.y2}
-                      stroke={token.aura.outlineColor || '#64c8ff'}
+                      stroke={auraColor}
                       strokeWidth={3}
                       strokeOpacity={0.8}
                       strokeLinecap="round"
@@ -4249,111 +6164,329 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
 
             {/* Tokens */}
             {tokens.map(token => {
-              const { cx, cy } = getHexCoordinates(token.row, token.col);
+              const tokenWidth = token.width || 1;
+              const tokenHeight = token.height || 1;
+              const cells = getTokenCells(token.row, token.col, tokenWidth, tokenHeight);
+              
+              // Get coordinates of the center of the token (middle of all occupied cells)
+              const firstCell = getHexCoordinates(token.row, token.col);
+              const lastCell = getHexCoordinates(token.row + tokenHeight - 1, token.col + tokenWidth - 1);
+              const centerX = (firstCell.cx + lastCell.cx) / 2;
+              const centerY = (firstCell.cy + lastCell.cy) / 2;
+              
+              // Calculate size of the token image/icon
+              const tokenSizeMultiplier = Math.max(tokenWidth, tokenHeight);
+              
               const isEnemy = token.type === 'enemy';
               const isPlayer = token.type === 'player';
-              const points = getHexVertices(cx, cy);
               
               return (
                 <g
                   key={token.id}
                   onMouseDown={(e) => {
+                    e.stopPropagation(); // Prevent hex click from firing
+                    e.preventDefault(); // Prevent default browser behavior
+                    
+                    // Right-click should open context menu, not drag
+                    if (e.button === 2) {
+                      return;
+                    }
+                    
+                    // For edit tool, open the edit modal
+                    if (currentTool === 'edit') {
+                      handleEditDataClick(token.row, token.col);
+                      return;
+                    }
+                    
                     // For sphere/cone/aura tools, let the click pass through to the hex
                     if (currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura') {
                       // Don't handle the token drag, let it bubble to hex
                       return;
                     }
-                    // For other tools, handle token dragging normally
+                    
+                    // For token selection tool
+                    if (currentTool === 'token') {
+                      setSelectedToken(token.id);
+                      return;
+                    }
+                    
+                    // For select mode and other tools, handle token dragging
                     handleTokenDragStart(token.id);
                   }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setContextMenu({
+                      x: e.clientX,
+                      y: e.clientY,
+                      tokenId: token.id,
+                      token: token
+                    });
+                  }}
                   style={{ 
-                    cursor: (currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura') ? 'crosshair' : 'move',
+                    cursor: currentTool === 'edit' ? 'pointer' :
+                            (currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura') ? 'crosshair' : 
+                            currentTool === 'token' ? 'pointer' :
+                            currentTool === 'select' ? 'grab' :
+                            'move',
                     pointerEvents: (currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura') ? 'none' : 'auto'
                   }}
                 >
-                  {/* Token Background Hexagon with gradient */}
+                  {/* Token Background - render hexagons for all occupied cells */}
                   <defs>
                     <linearGradient id={`tokenGradient-${token.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor={token.color || '#888'} />
                       <stop offset="100%" stopColor={`${token.color || '#888'}dd`} />
                     </linearGradient>
                     
-                    {/* Clipping path for hexagon */}
+                    {/* Clipping path for all hexagons occupied by token */}
                     <clipPath id={`hex-clip-token-${token.id}`}>
-                      <polygon points={points} />
+                      {cells.map((cell, idx) => {
+                        const { cx, cy } = getHexCoordinates(cell.row, cell.col);
+                        const points = getHexVertices(cx, cy);
+                        return <polygon key={idx} points={points} />;
+                      })}
                     </clipPath>
                   </defs>
                   
-                  <polygon
-                    points={points}
-                    fill={`url(#tokenGradient-${token.id})`}
-                    stroke={token.color || '#888'}
-                    strokeWidth={3}
-                    strokeDasharray={isEnemy ? '5,3' : 'none'}
-                    style={{
-                      filter: selectedToken === token.id 
-                        ? 'drop-shadow(0 0 10px rgba(100, 200, 255, 0.8))'
-                        : isEnemy 
-                          ? 'drop-shadow(0 2px 6px rgba(231, 76, 60, 0.5))'
-                          : 'drop-shadow(0 2px 4px rgba(39, 174, 96, 0.5))'
-                    }}
-                  />
-                  
-                  {/* Token Icon/Avatar with hex clipping */}
-                  {token.avatar && isPlayer ? (
-                    // Use foreignObject to embed PixelAvatar component in SVG with hex clipping
-                    <g clipPath={`url(#hex-clip-token-${token.id})`}>
-                      <foreignObject
-                        x={cx - hexSize}
-                        y={cy - hexSize}
-                        width={hexSize * 2}
-                        height={hexSize * 2}
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        <div style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          width: '100%',
-                          height: '100%'
-                        }}>
-                          <PixelAvatar
-                            pixels={normalizeAvatarMatrix(token.avatar)}
-                            size={hexSize * 2}
-                            borderColor="transparent"
-                            background="transparent"
-                            placeholderLabel={token.name}
+                  {/* Render background hexagon for each occupied cell - only if color is not transparent */}
+                  {token.color && token.color !== 'transparent' && token.color !== 'rgba(0,0,0,0)' && (
+                    <>
+                      {cells.map((cell, idx) => {
+                        const { cx, cy } = getHexCoordinates(cell.row, cell.col);
+                        const points = getHexVertices(cx, cy);
+                        return (
+                          <polygon
+                            key={idx}
+                            points={points}
+                            fill={`url(#tokenGradient-${token.id})`}
+                            stroke={token.color || '#888'}
+                            strokeWidth={3}
+                            strokeDasharray={isEnemy ? '5,3' : 'none'}
+                            style={{
+                              filter: selectedToken === token.id 
+                                ? 'drop-shadow(0 0 10px rgba(100, 200, 255, 0.8))'
+                                : isEnemy 
+                                  ? 'drop-shadow(0 2px 6px rgba(231, 76, 60, 0.5))'
+                                  : 'drop-shadow(0 2px 4px rgba(39, 174, 96, 0.5))'
+                            }}
                           />
-                        </div>
-                      </foreignObject>
+                        );
+                      })}
+                    </>
+                  )}
+                  
+                  {/* Token Icon/Avatar - centered across all cells, scaled to fit */}
+                  {(token.customBackgroundPng || token.avatarPng || token.avatar) ? (
+                    <g clipPath={`url(#hex-clip-token-${token.id})`}>
+                      {(() => {
+                        const characterMatch = availableCharacters.find(c => c.name === token.name);
+                        const baseImage = characterMatch?.avatarPngNormalized
+                          || token.customBackgroundPng
+                          || token.avatarPng
+                          || characterMatch?.avatarPng
+                          || token.avatar;
+                        const imageSrc = baseImage && typeof baseImage === 'string' && !baseImage.startsWith('data:')
+                          ? `${baseImage}${baseImage.includes('?') ? '&' : '?'}cb=${Date.now()}`
+                          : baseImage;
+                        return (
+                          <foreignObject
+                            x={centerX - hexSize * tokenSizeMultiplier}
+                            y={centerY - hexSize * tokenSizeMultiplier}
+                            width={hexSize * 2 * tokenSizeMultiplier}
+                            height={hexSize * 2 * tokenSizeMultiplier}
+                          >
+                            <div 
+                              xmlns="http://www.w3.org/1999/xhtml"
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden'
+                              }}
+                            >
+                              <img
+                                src={imageSrc}
+                                alt={token.name}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                  imageRendering: 'pixelated',
+                                  filter: 'none',
+                                  mixBlendMode: 'normal'
+                                }}
+                              />
+                            </div>
+                          </foreignObject>
+                        );
+                      })()}
                     </g>
                   ) : token.icon ? (
-                    // Enemy token with icon emoji - centered in hex
+                    // Enemy token with icon emoji - centered across all cells, scaled
                     <text
-                      x={cx}
-                      y={cy}
+                      x={centerX}
+                      y={centerY}
                       textAnchor="middle"
                       dominantBaseline="middle"
-                      fontSize={hexSize * 1.2}
-                      style={{ pointerEvents: 'none' }}
+                      fontSize={hexSize * 0.9 * tokenSizeMultiplier}
                     >
                       {token.icon}
                     </text>
                   ) : (
                     // Fallback: First 3 letters
                     <text
-                      x={cx}
-                      y={cy}
+                      x={centerX}
+                      y={centerY}
                       textAnchor="middle"
                       dominantBaseline="middle"
                       fill="#fff"
-                      fontSize={hexSize * 0.6}
+                      fontSize={hexSize * 0.6 * tokenSizeMultiplier}
                       fontWeight="bold"
                       style={{ pointerEvents: 'none', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}
                     >
                       {token.name.slice(0, 3).toUpperCase()}
                     </text>
                   )}
+
+                  {/* HP Bar and Condition Rings */}
+                  {(() => {
+                    // Calculate HP data - only show if we have valid HP data
+                    const hasValidHp = token.currentHp !== undefined && token.maxHp !== undefined;
+                    const currentHp = hasValidHp ? token.currentHp : (token.hp || 0);
+                    const maxHp = hasValidHp ? token.maxHp : (token.hp ? 100 : 0);
+                    const hpPercentage = maxHp > 0 ? (currentHp / maxHp) * 100 : 0;
+                    
+                    // Get conditions
+                    const conditions = token.conditions || [];
+                    
+                    // Skip HP bar rendering if no valid HP data or showHp is explicitly false
+                    // Default to true for player tokens if not set
+                    const showHpEnabled = token.showHp !== false;
+                    const shouldShowHpBar = hasValidHp && maxHp > 0 && showHpEnabled;
+                    
+                    // HP bar should be positioned outside the token's stroke edge
+                    // Token background has strokeWidth=3, so we offset outward to avoid overlapping
+                    const tokenStrokeWidth = 3; // Must match the polygon strokeWidth
+                    const hpBarStrokeWidth = 4; // Thicker for better visibility outside the token
+                    const hpBarOutset = 8; // Offset outward from hex edge to position HP bar outside token
+                    const healthBarColor = getHealthBarColor(hpPercentage);
+                    const hpTooltip = `HP: ${Math.round(currentHp)}/${maxHp}`;
+                    
+                    return (
+                      <g>
+                        {/* Draw HP bar around entire token outline - only if we have valid HP data */}
+                        {shouldShowHpBar && (() => {
+                          // Get all outer edges of the multi-tile token
+                          const outerEdges = getTokenOutlinePath(token.row, token.col, tokenWidth, tokenHeight);
+                          
+                          if (outerEdges.length === 0) return null;
+                          
+                          // Calculate total perimeter length
+                          let totalLength = 0;
+                          outerEdges.forEach(edge => {
+                            const dx = edge.x2 - edge.x1;
+                            const dy = edge.y2 - edge.y1;
+                            totalLength += Math.sqrt(dx * dx + dy * dy);
+                          });
+                          
+                          // Calculate how much of the outline to fill based on HP percentage
+                          const fillLength = (hpPercentage / 100) * totalLength;
+                          
+                          // Build paths
+                          let fullPath = '';
+                          let hpPath = '';
+                          let currentLength = 0;
+                          let hpPathComplete = false;
+                          
+                          outerEdges.forEach((edge, i) => {
+                            const edgeLength = Math.sqrt(
+                              (edge.x2 - edge.x1) ** 2 + (edge.y2 - edge.y1) ** 2
+                            );
+                            
+                            // Add to full path
+                            if (i === 0) {
+                              fullPath = `M ${edge.x1},${edge.y1} L ${edge.x2},${edge.y2}`;
+                            } else {
+                              fullPath += ` M ${edge.x1},${edge.y1} L ${edge.x2},${edge.y2}`;
+                            }
+                            
+                            // Add to HP path if we haven't completed the HP fill yet
+                            if (!hpPathComplete && hpPercentage > 0) {
+                              if (currentLength + edgeLength <= fillLength) {
+                                // Full edge fits in HP fill
+                                if (i === 0) {
+                                  hpPath = `M ${edge.x1},${edge.y1} L ${edge.x2},${edge.y2}`;
+                                } else {
+                                  hpPath += ` M ${edge.x1},${edge.y1} L ${edge.x2},${edge.y2}`;
+                                }
+                                currentLength += edgeLength;
+                              } else {
+                                // Partial edge
+                                const remainingLength = fillLength - currentLength;
+                                const ratio = remainingLength / edgeLength;
+                                const partialX = edge.x1 + (edge.x2 - edge.x1) * ratio;
+                                const partialY = edge.y1 + (edge.y2 - edge.y1) * ratio;
+                                
+                                if (i === 0) {
+                                  hpPath = `M ${edge.x1},${edge.y1} L ${partialX},${partialY}`;
+                                } else {
+                                  hpPath += ` M ${edge.x1},${edge.y1} L ${partialX},${partialY}`;
+                                }
+                                hpPathComplete = true;
+                              }
+                            }
+                          });
+                          
+                          return (
+                            <g>
+                              {/* Health bar ring background (gray outline) */}
+                              <path
+                                d={fullPath}
+                                fill="none"
+                                stroke="#2c3e50"
+                                strokeWidth={hpBarStrokeWidth}
+                                opacity="0.3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                style={{ pointerEvents: 'stroke', cursor: 'help' }}
+                              >
+                                <title>{hpTooltip}</title>
+                              </path>
+                              
+                              {/* Health bar fill (colored portion) */}
+                              {hpPath && (
+                                <path
+                                  d={hpPath}
+                                  fill="none"
+                                  stroke={healthBarColor}
+                                  strokeWidth={hpBarStrokeWidth}
+                                  opacity="0.95"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  style={{ pointerEvents: 'stroke', cursor: 'help' }}
+                                >
+                                  <title>{hpTooltip}</title>
+                                </path>
+                              )}
+                            </g>
+                          );
+                        })()}
+                        
+                        {/* Token Markers (HP, Conditions, Defensive Stats) */}
+                        <TokenMarkers
+                          token={token}
+                          tokenSizeMultiplier={tokenSizeMultiplier}
+                          hexSize={hexSize}
+                          getHexCoordinates={getHexCoordinates}
+                          conditionDescriptions={conditionDescriptions}
+                          setMarkerPopup={setMarkerPopup}
+                        />
+                      </g>
+                    );
+                  })()}
                 </g>
               );
             })}
@@ -4491,8 +6624,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
                 {(() => {
                   const { cx, cy } = getHexCoordinates(areaOrigin.row, areaOrigin.col);
                   const points = getHexVertices(cx, cy);
-                  // Check if there's a token at origin
-                  const tokenAtOrigin = tokens.find(t => t.row === areaOrigin.row && t.col === areaOrigin.col);
+                  // Check if there's a token at origin (check all cells occupied by each token)
+                  const tokenAtOrigin = tokens.find(t => {
+                    const cells = getTokenCells(t.row, t.col, t.width || 1, t.height || 1);
+                    return cells.some(c => c.row === areaOrigin.row && c.col === areaOrigin.col);
+                  });
                   
                   return (
                     <>
@@ -4556,15 +6692,6 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
         </div>
       </div>
 
-      {/* Token Library - Floating Panel */}
-      {showTokenPanel && (
-        <TokenLibrary
-          availableCharacters={availableCharacters}
-          enemyTokens={enemyTokens}
-          onClose={() => setShowTokenPanel(false)}
-        />
-      )}
-      
       {/* Debug Info Panel - Floating Panel */}
       {selectedHexInfo && advancedMode && (
         <div style={{
@@ -4693,7 +6820,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
       )}
 
       {/* Floating Controls for Watcher Mode */}
-      {watcherMode && (
+      {sectionVisibility.camera && watcherMode && (
         <>
           {/* Camera Control Panel */}
           <div style={{
@@ -4944,6 +7071,41 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false }) => {
           </div>
         </>
       )}
+
+      {/* Edit Data Modal */}
+      <EditDataModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditTarget(null);
+        }}
+        target={editTarget}
+        onSave={handleEditDataSave}
+        onOpenCharacterSheet={handleOpenCharacterSheet}
+      />
+      
+      {/* Token Context Menu */}
+      <TokenContextMenu
+        contextMenu={contextMenu}
+        setContextMenu={setContextMenu}
+        setTokens={setTokens}
+        setTokenToMove={setTokenToMove}
+        handleToggleTokenHp={handleToggleTokenHp}
+        handleEditDataClick={handleEditDataClick}
+        handleRemoveToken={handleRemoveToken}
+        handleOpenCharacterSheet={handleOpenCharacterSheet}
+        handleOpenNpcCharacterSheet={handleOpenNpcCharacterSheet}
+      />
+      
+      {/* Marker Popup (for conditions and defensive stats) */}
+      <MarkerPopup
+        markerPopup={markerPopup}
+        setMarkerPopup={setMarkerPopup}
+        setTokens={setTokens}
+        onSyncTokenSheet={syncTokenSheetUpdates}
+      />
+    </div>
+    </div>
     </div>
   );
 };

@@ -1,0 +1,15 @@
+{
+  "moves": [
+    "Discombobulate",
+    "Cyclone Guard",
+    "Cold Breath",
+    "Sandstream",
+    "Tail Wind",
+    "Crosswind Step",
+    "Tornado Shield",
+    "Dust Shroud",
+    "Wind Spear",
+    "Shearing Draft"
+  ],
+  "_comment": "Add move names here (without .md extension) for moves this character has learned above level 1"
+}

@@ -7,11 +7,10 @@ import { API_BASE_URL } from '../config/api';
 import { hexToRgba } from '../utils/colorUtils';
 import { useReadyState } from '../context/ReadyStateContext';
 import PixelAvatar from './PixelAvatar';
-import { normalizeAvatarMatrix } from '../utils/avatarUtils';
 import './InitiativeTracker.css';
 
 // Draggable Sidebar Character Component
-function DraggableSidebarCharacter({ character, isInInitiative, onClick, avatarPixels, accentColor }) {
+function DraggableSidebarCharacter({ character, isInInitiative, onClick, avatarPng, accentColor }) {
   const {
     attributes,
     listeners,
@@ -42,7 +41,7 @@ function DraggableSidebarCharacter({ character, isInInitiative, onClick, avatarP
       <div className="sidebar-char-content" onClick={handleClick}>
         <PixelAvatar
           className="character-icon"
-          pixels={avatarPixels}
+          avatarPng={avatarPng}
           size={56}
           borderColor={accentColor || 'rgba(255,255,255,0.3)'}
           placeholderLabel={character.name?.[0] || 'C'}
@@ -72,7 +71,7 @@ function SortableInitiativeItem({
   onUpdateManualHp,
   onToggleDamageMode,
   isReady,
-  avatarPixels,
+  avatarPng,
   accentColor
 }) {
   const {
@@ -181,7 +180,7 @@ function SortableInitiativeItem({
         {character.isEnemy ? '👹' : (
           <PixelAvatar
             className="enemy-toggle-avatar"
-            pixels={avatarPixels}
+            avatarPng={avatarPng}
             size={44}
             borderColor={accentColor || 'rgba(255,255,255,0.6)'}
             placeholderLabel={character.name?.[0] || 'C'}
@@ -639,7 +638,61 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
       const response = await fetch(`${API_BASE_URL}/api/characters/customizations`);
       if (response.ok) {
         const data = await response.json();
-        setCustomizations(data.customizations || {});
+        const customizationsData = data.customizations || {};
+        
+        // Load avatar PNGs for characters with file paths
+        const avatarImages = {};
+        console.log('InitiativeTracker: Loading avatars for customizations:', Object.keys(customizationsData));
+        for (const [name, customization] of Object.entries(customizationsData)) {
+          console.log(`InitiativeTracker: Processing ${name}, avatarPng:`, customization.avatarPng);
+          if (customization.avatarPng) {
+            if (customization.avatarPng.startsWith('data:image')) {
+              // It's a data URL, use directly
+              console.log(`InitiativeTracker: ${name} has data URL`);
+              avatarImages[name] = customization.avatarPng;
+            } else {
+              // It's a file path, fetch from server
+              console.log(`InitiativeTracker: ${name} has file path, fetching:`, customization.avatarPng);
+              try {
+                const fetchUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(customization.avatarPng)}?cb=${Date.now()}`;
+                console.log(`InitiativeTracker: Fetch URL:`, fetchUrl);
+                const imgResponse = await fetch(fetchUrl);
+                console.log(`InitiativeTracker: Fetch response status:`, imgResponse.status);
+                if (imgResponse.ok) {
+                  // Convert blob to base64 data URL
+                  const blob = await imgResponse.blob();
+                  console.log(`InitiativeTracker: Got blob, size:`, blob.size);
+                  const reader = new FileReader();
+                  const dataUrl = await new Promise((resolve, reject) => {
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                  });
+                  avatarImages[name] = dataUrl;
+                  console.log(`InitiativeTracker: Set avatar for ${name}`);
+                } else {
+                  console.error(`InitiativeTracker: Failed to fetch avatar for ${name}:`, imgResponse.status);
+                }
+              } catch (err) {
+                console.error(`Error loading avatar for ${name}:`, err);
+              }
+            }
+          } else {
+            console.log(`InitiativeTracker: ${name} has no avatarPng`);
+          }
+        }
+        console.log('InitiativeTracker: Final avatar images:', Object.keys(avatarImages));
+        
+        // Update customizations with loaded avatar data URLs
+        const updatedCustomizations = {};
+        for (const [name, customization] of Object.entries(customizationsData)) {
+          updatedCustomizations[name] = {
+            ...customization,
+            avatarPng: avatarImages[name] || customization.avatarPng
+          };
+        }
+        
+        setCustomizations(updatedCustomizations);
       }
     } catch (error) {
       console.error('Error loading character customizations:', error);
@@ -1197,7 +1250,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
     ? characters.find(c => c.id === activeId) || availableCharacters.find(c => c.id === activeId)
     : null;
   const activeCustomization = activeCharacter ? customizations?.[activeCharacter.name] : null;
-  const activeAvatarPixels = activeCustomization?.avatar ? normalizeAvatarMatrix(activeCustomization.avatar) : null;
+  const activeAvatarPng = activeCustomization?.avatarPng || null;
   const activeAccentColor = activeCustomization?.folderColor;
 
   return (
@@ -1223,7 +1276,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
                 {availableCharacters.map((char) => {
                   const isInInitiative = characters.some(c => c.name === char.name);
                   const customization = customizations?.[char.name];
-                  const avatarPixels = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : null;
+                  const avatarPng = customization?.avatarPng || null;
                   const accentColor = customization?.folderColor;
                   return (
                     <DraggableSidebarCharacter
@@ -1231,7 +1284,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
                       character={char}
                       isInInitiative={isInInitiative}
                       onClick={() => handleToggleFromAvailable(char.name)}
-                      avatarPixels={avatarPixels}
+                      avatarPng={avatarPng}
                       accentColor={accentColor}
                     />
                   );
@@ -1291,7 +1344,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
               // Check if character is ready from context
               const isCharacterReady = isReady(character.name);
               const customization = customizations?.[character.name];
-              const avatarPixels = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : null;
+              const avatarPng = customization?.avatarPng || null;
               const accentColor = customization?.folderColor;
               
               return (
@@ -1310,7 +1363,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
                   characters={characters}
                   pcStats={pcStats}
                   isReady={isCharacterReady}
-                  avatarPixels={avatarPixels}
+                  avatarPng={avatarPng}
                   accentColor={accentColor}
                 />
               );
@@ -1375,7 +1428,7 @@ function InitiativeTracker({ filePath, lightMode = false, advancedMode = false }
           <div className="drag-overlay-item">
             <PixelAvatar
               className="character-icon"
-              pixels={activeAvatarPixels}
+              avatarPng={activeAvatarPng}
               size={56}
               borderColor={activeAccentColor || 'rgba(255,255,255,0.5)'}
               placeholderLabel={activeCharacter.name?.[0] || 'C'}

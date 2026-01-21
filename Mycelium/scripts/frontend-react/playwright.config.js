@@ -102,7 +102,7 @@ export default defineConfig({
       command: 'cd ../../.. && (python --version 2>&1 | grep -q "Python" && python Mycelium/scripts/Python/run_backend.py || python3 Mycelium/scripts/Python/run_backend.py)',
       url: 'http://localhost:9002/api/active_sessions', // Check a simple API endpoint
       timeout: 30 * 1000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true, // Always reuse existing server
       env: {
         NO_RELOAD: '1',        // Disable Flask reloader for tests
         FORCE_KILL: '1',       // Auto-kill existing processes on the port
@@ -117,7 +117,7 @@ export default defineConfig({
       command: 'npm run dev',
       url: 'http://localhost:5173',
       timeout: 30 * 1000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true, // Always reuse existing server
       stdout: 'pipe',
       stderr: 'pipe',
     }

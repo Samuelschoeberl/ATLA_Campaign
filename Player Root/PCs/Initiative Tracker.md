@@ -1,15 +1,15 @@
-| Character | Initiative | Enemy | Manual HP | Damage Mode |
-| --------- | ---------: | :---: | :-------: | :---------: |
-| Mahogany | 18 |  |  |  |
-| Hedgehog | 17 | 👹 | 17/34 | 💢 |
-| Ash | 10 |  |  |  |
-| X_Testchar | 16 |  |  |  |
-| Anju | 10 |  |  |  |
-| Tapioca | 10 |  |  |  |
-| Tiebeediy | 10 |  |  |  |
-| Rio | 8 |  |  |  |
-| Puy | 4 |  |  |  |
-| End of Round | 0 | | | |
+| Character    | Initiative | Enemy | Manual HP | Damage Mode |
+| ------------ | ---------: | :---: | :-------: | :---------: |
+| Mahogany     |         18 |       |           |             |
+| Hedgehog     |         17 |  👹   |   17/34   |     💢      |
+| Ash          |         10 |       |           |             |
+| X_Testchar   |         16 |       |           |             |
+| Anju         |         10 |       |           |             |
+| Tapioca      |         10 |       |           |             |
+| Tiebeediy    |         10 |       |           |             |
+| Rio          |          8 |       |           |             |
+| Puy          |          4 |       |           |             |
+| End of Round |          0 |       |           |             |
 
 **Current Turn:** Rio (Index: 7)
 **Round:** 3

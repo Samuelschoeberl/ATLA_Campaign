@@ -15,7 +15,7 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
   const [editingFile, setEditingFile] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [savingFile, setSavingFile] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   useEffect(() => {
     loadRootDirectory();

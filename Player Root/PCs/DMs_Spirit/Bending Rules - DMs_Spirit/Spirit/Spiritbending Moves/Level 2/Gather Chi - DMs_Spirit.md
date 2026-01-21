@@ -1,0 +1,13 @@
+#Action_DMs_Spirit 
+#Concentration_DMs_Spirit 
+#spirit_DMs_Spirit
+
+- Effect Range: [[Spiritbending slot]] (30) * 2 meters [[Aura]] (0).
+- Duration: [[Spiritbending slot]] (30) rounds. Concentration.
+
+**Effect**:
+Channel stabilizing spirit energy that keeps fallen allies fighting. You and any allies in range ignore all penalties of [[Bleeding_out]] (0) (movement cap and bending-slot limit) for the duration, but each affected creature still rolls death saving throws as normal. If the concentration
+
+#Level2_DMs_Spirit
+#spirit_DMs_Spirit
+

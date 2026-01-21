@@ -1,3 +1,4 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Mahogany or #reactions_Mahogany (including #Danger_Sense_Reaction_Mahogany). ( #Action_Mahogany is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
-#condition_Mahogany
+#condition_Mahogany #Curse_Mahogany #general_Mahogany
+

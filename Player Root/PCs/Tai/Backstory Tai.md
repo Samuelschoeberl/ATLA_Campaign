@@ -1,0 +1,9 @@
+Tai is a young waterbender from the Northern Water Tribe. He grew up in a wealthy family from the inner ring. His mum, Isay, is a member of the Lotus and used to teach him and his older sister, Siku, who was one of the most gifted waterbenders of her generation. However, several years ago, his sister passed away in an accident and his mum was overcome with grief. Therefore, his aunt Akira, also a member of the Lotus, took over his studies.
+
+Now they have been summoned to Sandlock City for the Resonance Ritual. His mum traveled a few days earlier with some other high-profile Lotus members, while Akira and her students (Tai included) arrived a few days later. That is why, when they arrived, the Nightbloom attack had already happened. Since a few benders were missing, along with his mother, Akira suggested Tai to try to follow their path and find them (eventually finding our party).
+
+
+__________________________(Behind the scenes)________________________________
+
+
+Since Siku was the perfect child, my mum resents me a bit because I'll never meet those expectations (that's why I'm closer to my aunt). She passed away along with other waterbenders when some calamity happened (tsunami, orca attack, idk whatever), trying to hold it off while hoping the Avatar would show up to save them. Since he didn't, why my mum started resenting the idea of the avatar and finding it useless. That's why eventually she created the Nightbloom and caused the attack on the Resonance Ritual. Akira suspected something sketchy was happening with her sister when she discreetly tried to recruit her, which is why she subconsciously delayed her arrival to the Ritual to avoid having to face her and purposefully sent Tai away to look for people so he wouldn't find out from the remaining Lotus members in Sandlock City that his mum had betrayed them.

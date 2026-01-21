@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { hexToRgba } from '../utils/colorUtils';
 import './CharacterSheet.css';
 import { API_BASE_URL } from '../config/api';
@@ -9,15 +9,11 @@ import BendingMoveWrapper from './BendingMoveWrapper';
 import PinnedMoveSlimBar from './PinnedMoveSlimBar';
 import ActionPanel from './ActionPanel';
 import PlanTurnModal from './PlanTurnModal';
-import ReactionsModal from './ReactionsModal';
+import MyMovesModal from './MyMovesModal';
 import { useReadyState } from '../context/ReadyStateContext';
 import PixelAvatar from './PixelAvatar';
 import {
-  AVATAR_SIZE,
-  createEmptyAvatar,
-  normalizeAvatarMatrix,
-  rgbaArrayFromHex,
-  pixelToCssRgba
+  AVATAR_SIZE
 } from '../utils/avatarUtils';
 
 const CONDITION_NAMES = [
@@ -28,7 +24,9 @@ const CONDITION_NAMES = [
   'Paralysed',
   'Prone',
   'Slowed',
+  'Exhausted',
   'Empowered',
+  'Quickened',
   'Armor Surge',
   'Barrier Surge',
   'Harmonic Flow'];
@@ -230,36 +228,41 @@ const DiceRollText = ({ text }) => {
   const [vitalsCollapsed, setVitalsCollapsed] = useState(false);
   const [conditionsCollapsed, setConditionsCollapsed] = useState(true);
   const [stressLevelCollapsed, setStressLevelCollapsed] = useState(true);
+  const [npcElementLevels, setNpcElementLevels] = useState({ air: '', water: '', earth: '', fire: '', spirit: '' });
   const [coreStatsCollapsed, setCoreStatsCollapsed] = useState(true);
   const [bendingLevelsCollapsed, setBendingLevelsCollapsed] = useState(true);
   const [defenseCollapsed, setDefenseCollapsed] = useState(true);
   const [resourcesCollapsed, setResourcesCollapsed] = useState(false);
   const [bonusResourcesCollapsed, setBonusResourcesCollapsed] = useState(true);
+  const [movesCollapsed, setMovesCollapsed] = useState(true);
   const [pinnedMovesCollapsed, setPinnedMovesCollapsed] = useState(true);
   const [expandedPinnedMoveInSlim, setExpandedPinnedMoveInSlim] = useState(null); // Track which move is expanded in slim view
   const [conditionDescriptions, setConditionDescriptions] = useState({});
   const [conditionMetadata, setConditionMetadata] = useState({});
   const [conditionFilter, setConditionFilter] = useState({ boon: true, curse: true, general: true, specific: true });
   const [movesByType, setMovesByType] = useState({ action: [], bonus: [], reaction: [], danger: [] });
+  const [allMovesByType, setAllMovesByType] = useState(null); // Cache of ALL moves from general Bending Rules
   const [movesLoading, setMovesLoading] = useState(false);
   const [movesError, setMovesError] = useState(null);
-  const [showReactionsModal, setShowReactionsModal] = useState(false);
-  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showMyMovesModal, setShowMyMovesModal] = useState(false);
   const [pinnedMoves, setPinnedMoves] = useState([]);
   const [movesLoadedFor, setMovesLoadedFor] = useState(null);
   const [expandedMoves, setExpandedMoves] = useState(new Set());
   const [usedMoves, setUsedMoves] = useState([]); // Track moves used this turn with their costs
+  const [learnedMoves, setLearnedMoves] = useState(new Set()); // Moves the character has learned (from JSON file)
+  const [showLearnableMoves, setShowLearnableMoves] = useState(false); // Toggle to show moves character can learn based on their level
+  const [showAllMoves, setShowAllMoves] = useState(false); // Toggle to show ALL moves from all elements/levels regardless of character level
+  const [maxLearnedMoves, setMaxLearnedMoves] = useState(null); // Maximum number of learned moves from pc_primary_stats.md
+  const [showUseMoveModal, setShowUseMoveModal] = useState(false);
+  const [useMoveData, setUseMoveData] = useState(null);
+  const [customCostAmounts, setCustomCostAmounts] = useState({});
   const [customization, setCustomization] = useState(null);
   const [customizationLoadedFor, setCustomizationLoadedFor] = useState(null);
+  const [avatarPngDataUrl, setAvatarPngDataUrl] = useState(null); // PNG data URL for avatar display
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
-  const [workingAvatar, setWorkingAvatar] = useState(createEmptyAvatar());
   const [workingFolderColor, setWorkingFolderColor] = useState('');
-  const [brushColor, setBrushColor] = useState('#000000');
-  const [brushAlpha, setBrushAlpha] = useState(1);
   const [customizeSaving, setCustomizeSaving] = useState(false);
   const [customizeError, setCustomizeError] = useState(null);
-  const [isPaintingAvatar, setIsPaintingAvatar] = useState(false);
-  const [avatarEraseMode, setAvatarEraseMode] = useState(false);
   const [recentColors, setRecentColors] = useState([]);
   const [customizeTab, setCustomizeTab] = useState('general'); // general | avatar | hexExporter
   const [deathSaveSuccesses, setDeathSaveSuccesses] = useState(0);
@@ -287,6 +290,13 @@ const DiceRollText = ({ text }) => {
   
   // Ready state from context
   const { setReady, isReady } = useReadyState();
+
+  // Detect if this is an NPC sheet (temp token) - must be computed early before useEffects
+  const isNpcSheet = useMemo(() => {
+    const lowerPath = (file?.path || '').toLowerCase();
+    const lowerName = (file?.name || '').toLowerCase();
+    return lowerPath.includes('temp_token') || lowerName.includes('temp_token') || lowerPath.includes('/npcs/');
+  }, [file?.path, file?.name]);
 
   // Stat calculation tooltips - based on game mechanics from recreate_pcs.py and rule definitions
   const statTooltips = {
@@ -621,7 +631,9 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         'Paralysed': 'Paralysed.md',
         'Prone': 'Prone.md',
         'Slowed': 'Slowed.md',
+        'Exhausted': 'Exhausted.md',
         'Empowered': 'Empowered.md',
+        'Quickened': 'Quickened.md',
         'Armor Surge': 'Armor_Surge.md',
         'Barrier Surge': 'Barrier_Surge.md',
         'Harmonic Flow': 'Harmonic_Flow.md',
@@ -681,7 +693,6 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       initialLoadRef.current = true;
       setCustomization(null);
       setCustomizationLoadedFor(null);
-      setWorkingAvatar(createEmptyAvatar());
       setWorkingFolderColor('');
       loadCharacterSheet();
     }
@@ -696,7 +707,14 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }
     
     if (characterName !== movesLoadedFor) {
-      loadBendingMoves(characterName);
+      // For NPCs (temp token sheets), use general bending rules instead of character-specific folders
+      const isNpc = file?.path?.includes('temp_token_') || false;
+      if (isNpc) {
+        loadAllBendingMoves();
+        setMovesLoadedFor(characterName);
+      } else {
+        loadBendingMoves(characterName);
+      }
     }
   }, [file, movesLoadedFor]);
 
@@ -772,17 +790,6 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     return () => clearInterval(intervalId);
   }, [file, characterData?.name, isReady, setReady, saving]);
 
-  // Stop avatar painting when mouse is released outside the grid
-  useEffect(() => {
-    const stopPainting = () => setIsPaintingAvatar(false);
-    const clearFlags = () => {
-      setIsPaintingAvatar(false);
-      setAvatarEraseMode(false);
-    };
-    window.addEventListener('mouseup', clearFlags);
-    return () => window.removeEventListener('mouseup', clearFlags);
-  }, []);
-
   // Auto-save effect with debouncing
   useEffect(() => {
     // Skip auto-save on initial load
@@ -813,6 +820,128 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       }
     };
   }, [characterData]);
+
+  // Memoized filtered moves for performance - only recalculate when movesByType or toggles change
+  const filteredMovesByType = useMemo(() => {
+    // Determine which move source to use
+    let sourceMoves = movesByType;
+    
+    // For NPCs or when "Show All Moves" is on, use allMovesByType
+    if ((isNpcSheet || showAllMoves) && allMovesByType) {
+      // Update isLearned status based on learnedMoves set
+      sourceMoves = {
+        action: (allMovesByType.action || []).map(move => ({
+          ...move,
+          isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(move.path.toLowerCase().replace(/\.md$/i, ''))
+        })),
+        bonus: (allMovesByType.bonus || []).map(move => ({
+          ...move,
+          isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(move.path.toLowerCase().replace(/\.md$/i, ''))
+        })),
+        reaction: (allMovesByType.reaction || []).map(move => ({
+          ...move,
+          isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(move.path.toLowerCase().replace(/\.md$/i, ''))
+        })),
+        danger: (allMovesByType.danger || []).map(move => ({
+          ...move,
+          isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(move.path.toLowerCase().replace(/\.md$/i, ''))
+        }))
+      };
+    }
+    
+    const filterMove = (move) => {
+      // If "Show Learnable Moves" is on, show moves character can learn (based on their level)
+      if (showLearnableMoves) {
+        // Hide level 1 moves FIRST (they're always learned, not "learnable")
+        if (move.isLevel1 || move.level === 1) return false;
+        
+        // Show if already learned
+        if (move.isLearned) return true;
+        
+        // For learnable moves, check if character meets requirements
+        if (!move.level) return false;
+        
+        // Check if this is a teamup move with multiple elements
+        const isTeamup = move.tags && move.tags.some(tag => tag.toLowerCase().includes('teamup'));
+        
+        if (isTeamup) {
+          // Extract all element tags from the move
+          const elementTags = ['air', 'water', 'earth', 'fire', 'spirit'];
+          const moveElements = elementTags.filter(element => 
+            move.tags.some(tag => tag.toLowerCase().includes(element))
+          );
+          
+          // For teamup moves, character needs ANY of the elements at the required level
+          if (moveElements.length > 0) {
+            return moveElements.some(element => {
+              const charLevel = characterData?.bendingLevels?.[element] || 0;
+              return charLevel >= move.level;
+            });
+          }
+        }
+        
+        // For non-teamup moves, check the single element
+        if (!move.element) return false;
+        const charLevel = characterData?.bendingLevels?.[move.element.toLowerCase()] || 0;
+        return charLevel >= move.level;
+      }
+      
+      // Default: only show learned moves
+      return move.isLearned;
+    };
+    
+    return {
+      action: (sourceMoves.action || []).filter(filterMove),
+      bonus: (sourceMoves.bonus || []).filter(filterMove),
+      reaction: (sourceMoves.reaction || []).filter(filterMove),
+      danger: (sourceMoves.danger || []).filter(filterMove)
+    };
+  }, [movesByType, allMovesByType, showAllMoves, showLearnableMoves, characterData?.bendingLevels, isNpcSheet, learnedMoves]);
+
+  const loadMaxLearnedMoves = async (characterName) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/player_root/pc_primary_stats.md`, { cache: 'no-store' });
+      if (!response.ok) {
+        console.error('Failed to fetch pc_primary_stats.md');
+        return;
+      }
+      
+      const data = await response.json();
+      const content = data.content || '';
+      
+      // Parse markdown table to find character's max learned moves
+      const lines = content.split('\n');
+      const headerIndex = lines.findIndex(line => line.includes('| Name'));
+      if (headerIndex === -1) return;
+      
+      // Find column index for "Amount of Learned Moves"
+      const headerCells = lines[headerIndex].split('|').map(c => c.trim()).filter(Boolean);
+      const maxMovesColIndex = headerCells.findIndex(h => h === 'Amount of Learned Moves');
+      if (maxMovesColIndex === -1) return;
+      
+      // Find character row
+      for (let i = headerIndex + 2; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim() || !line.includes('|')) continue;
+        
+        const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+        if (cells.length === 0) continue;
+        
+        // Extract character name (remove [[ ]] if present)
+        const nameCellRaw = cells[0];
+        const nameMatch = nameCellRaw.match(/\[\[(.+?)\]\]/);
+        const nameInTable = nameMatch ? nameMatch[1] : nameCellRaw;
+        
+        if (nameInTable === characterName) {
+          const maxMoves = parseInt(cells[maxMovesColIndex]) || 0;
+          setMaxLearnedMoves(maxMoves);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error loading max learned moves:', err);
+    }
+  };
 
   const loadCharacterSheet = async () => {
     try {
@@ -870,6 +999,11 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         console.error('Error loading environmental water charge:', envErr);
       }
       
+      // Load max learned moves from pc_primary_stats.md
+      if (parsedData.name) {
+        loadMaxLearnedMoves(parsedData.name);
+      }
+      
       setCharacterData(parsedData);
     } catch (err) {
       setError(err.message);
@@ -884,20 +1018,39 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterName)}/customization`);
       if (response.ok) {
         const data = await response.json();
-        const normalizedAvatar = normalizeAvatarMatrix(data.avatar || createEmptyAvatar());
-        const record = {
-          ...data,
-          avatar: normalizedAvatar,
-          folderColor: data.folderColor || ''
-        };
-        setCustomization(record);
-        setCustomizationLoadedFor(characterName);
-        if (!showCustomizeModal) {
-          setWorkingAvatar(normalizedAvatar);
-          setWorkingFolderColor(record.folderColor || '');
+        setCustomization(data);
+        
+        // Load avatar PNG - if it's a file path, fetch it from the server
+        if (data.avatarPng) {
+          if (data.avatarPng.startsWith('data:image')) {
+            // It's a data URL, use directly
+            setAvatarPngDataUrl(data.avatarPng);
+          } else {
+            // It's a file path, fetch from server
+            try {
+              const imgResponse = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(data.avatarPng)}`);
+              if (imgResponse.ok) {
+                // Convert blob to base64 data URL
+                const blob = await imgResponse.blob();
+                const reader = new FileReader();
+                const dataUrl = await new Promise((resolve, reject) => {
+                  reader.onloadend = () => resolve(reader.result);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(blob);
+                });
+                setAvatarPngDataUrl(dataUrl);
+              }
+            } catch (err) {
+              console.error('Error loading avatar PNG file:', err);
+            }
+          }
+        } else {
+          setAvatarPngDataUrl(null);
         }
-        if (record.folderColor) {
-          addRecentColor(record.folderColor);
+        
+        setCustomizationLoadedFor(characterName);
+        if (data.folderColor) {
+          addRecentColor(data.folderColor);
         }
       }
     } catch (err) {
@@ -906,188 +1059,17 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }
   };
 
-  const handleAvatarPaint = (row, col, erase = false) => {
-    setWorkingAvatar(prev => {
-      const base = normalizeAvatarMatrix(prev);
-      const updated = base.map(r => r.map(px => [...px]));
-      updated[row][col] = erase ? [0, 0, 0, 0] : rgbaArrayFromHex(brushColor, brushAlpha);
-      return updated;
-    });
-  };
-
-  const handleClearAvatar = () => {
-    setWorkingAvatar(createEmptyAvatar());
-  };
-
   const handleImportPNG = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        // Create a canvas to read pixel data
-        const canvas = document.createElement('canvas');
-        canvas.width = AVATAR_SIZE;
-        canvas.height = AVATAR_SIZE;
-        const ctx = canvas.getContext('2d');
-        
-        // Draw the image scaled to fit the canvas
-        ctx.imageSmoothingEnabled = false; // Preserve pixel art style
-        ctx.drawImage(img, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
-        
-        // Extract pixel data
-        const imageData = ctx.getImageData(0, 0, AVATAR_SIZE, AVATAR_SIZE);
-        const newAvatar = [];
-        
-        for (let row = 0; row < AVATAR_SIZE; row++) {
-          const rowData = [];
-          for (let col = 0; col < AVATAR_SIZE; col++) {
-            const idx = (row * AVATAR_SIZE + col) * 4;
-            rowData.push([
-              imageData.data[idx],     // R
-              imageData.data[idx + 1], // G
-              imageData.data[idx + 2], // B
-              imageData.data[idx + 3]  // A
-            ]);
-          }
-          newAvatar.push(rowData);
-        }
-        
-        setWorkingAvatar(newAvatar);
-      };
-      img.src = e.target.result;
+      setAvatarPngDataUrl(e.target.result);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleExportPNG = () => {
-    // Create a canvas and draw the pixel avatar
-    const canvas = document.createElement('canvas');
-    const scale = 2; // Export at 2x size (200x200) - smaller scale since base is already 100x100
-    canvas.width = AVATAR_SIZE * scale;
-    canvas.height = AVATAR_SIZE * scale;
-    const ctx = canvas.getContext('2d');
-    
-    // Draw each pixel as a scaled rectangle
-    ctx.imageSmoothingEnabled = false;
-    for (let row = 0; row < AVATAR_SIZE; row++) {
-      for (let col = 0; col < AVATAR_SIZE; col++) {
-        const pixel = workingAvatar[row][col];
-        ctx.fillStyle = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3] / 255})`;
-        ctx.fillRect(col * scale, row * scale, scale, scale);
-      }
-    }
-    
-    // Convert to blob and download
-    canvas.toBlob((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${characterData?.name || 'character'}_avatar.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 'image/png');
-  };
-
-  const handleExportHexToken = () => {
-    // Create a canvas for the hexagonal token
-    const canvas = document.createElement('canvas');
-    const scale = 4; // Higher resolution for token
-    const hexSize = AVATAR_SIZE * scale / 2; // Half of avatar size as hex radius
-    
-    // Calculate hexagon dimensions
-    const hexWidth = hexSize * Math.sqrt(3);
-    const hexHeight = hexSize * 2;
-    
-    // Add padding around the hexagon
-    const padding = 20;
-    canvas.width = hexWidth + padding * 2;
-    canvas.height = hexHeight + padding * 2;
-    const ctx = canvas.getContext('2d');
-    
-    // Transparent background for token overlay
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Enable anti-aliasing for smooth edges
-    ctx.imageSmoothingEnabled = true;
-    
-    // Center coordinates
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    
-    // Create hexagon clipping path (flat-top orientation)
-    ctx.save();
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 3) * i + Math.PI / 2; // Start from top
-      const x = centerX + hexSize * Math.cos(angle);
-      const y = centerY + hexSize * Math.sin(angle);
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-    ctx.closePath();
-    ctx.clip();
-    
-    // Draw the pixel avatar scaled to fit within the hexagon
-    ctx.imageSmoothingEnabled = false;
-    const avatarScale = (hexSize * 2) / AVATAR_SIZE;
-    const avatarOffset = centerX - (AVATAR_SIZE * avatarScale) / 2;
-    
-    for (let row = 0; row < AVATAR_SIZE; row++) {
-      for (let col = 0; col < AVATAR_SIZE; col++) {
-        const pixel = workingAvatar[row][col];
-        if (pixel[3] > 0) { // Only draw non-transparent pixels
-          ctx.fillStyle = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3] / 255})`;
-          ctx.fillRect(
-            avatarOffset + col * avatarScale,
-            avatarOffset + row * avatarScale,
-            avatarScale,
-            avatarScale
-          );
-        }
-      }
-    }
-    
-    ctx.restore();
-    
-    // Draw hexagon border with glow effect
-    ctx.shadowColor = 'rgba(100, 200, 255, 0.6)';
-    ctx.shadowBlur = 10;
-    ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 3) * i + Math.PI / 2;
-      const x = centerX + hexSize * Math.cos(angle);
-      const y = centerY + hexSize * Math.sin(angle);
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-    ctx.closePath();
-    ctx.stroke();
-    
-    // Convert to blob and download
-    canvas.toBlob((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${characterData?.name || 'character'}_hex_token.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 'image/png');
-  };
 
   // Hex Grid Exporter Functions
   const initializeHexGrid = (rows, cols) => {
@@ -1130,7 +1112,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     setHexGrid(initializeHexGrid(hexGridSize.rows, hexGridSize.cols));
   };
 
-  const handleExportHexGrid = () => {
+  const handleExportHexGrid = async () => {
     const { rows, cols } = hexGridSize;
     const hexSize = hexExportSize;
     
@@ -1179,66 +1161,68 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       ctx.stroke();
     };
     
-    // Helper to draw character avatar in hexagon
-    const drawCharacterInHex = (cx, cy, size) => {
-      // Create clipping path
-      ctx.save();
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i + Math.PI / 2;
-        const x = cx + size * Math.cos(angle);
-        const y = cy + size * Math.sin(angle);
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.closePath();
-      ctx.clip();
-      
-      // Draw avatar
-      ctx.imageSmoothingEnabled = false;
-      const avatarScale = (size * 2) / AVATAR_SIZE;
-      const avatarOffset = cx - (AVATAR_SIZE * avatarScale) / 2;
-      const avatarOffsetY = cy - (AVATAR_SIZE * avatarScale) / 2;
-      
-      for (let row = 0; row < AVATAR_SIZE; row++) {
-        for (let col = 0; col < AVATAR_SIZE; col++) {
-          const pixel = workingAvatar[row][col];
-          if (pixel[3] > 0) {
-            ctx.fillStyle = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3] / 255})`;
-            ctx.fillRect(
-              avatarOffset + col * avatarScale,
-              avatarOffsetY + row * avatarScale,
-              avatarScale,
-              avatarScale
-            );
+    // Helper to draw character avatar in hexagon - just use PNG as background
+    const drawCharacterInHex = async (cx, cy, size) => {
+      // Draw hexagon filled with avatar PNG
+      if (avatarPngDataUrl) {
+        try {
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = avatarPngDataUrl;
+          });
+          
+          // Create clipping path for hexagon
+          ctx.save();
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i + Math.PI / 2;
+            const x = cx + size * Math.cos(angle);
+            const y = cy + size * Math.sin(angle);
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
           }
+          ctx.closePath();
+          ctx.clip();
+          
+          // Draw PNG as background filling the hex
+          ctx.imageSmoothingEnabled = false;
+          const imgSize = size * 2;
+          ctx.drawImage(img, cx - imgSize / 2, cy - imgSize / 2, imgSize, imgSize);
+          
+          ctx.restore();
+          
+          // Draw hexagon border with glow
+          ctx.shadowColor = 'rgba(100, 200, 255, 0.6)';
+          ctx.shadowBlur = 8;
+          ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i + Math.PI / 2;
+            const x = cx + size * Math.cos(angle);
+            const y = cy + size * Math.sin(angle);
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+          ctx.closePath();
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        } catch (err) {
+          // Fallback: draw empty hex with placeholder
+          drawHexagon(cx, cy, size, 'rgba(100, 200, 255, 0.3)', 'rgba(100, 200, 255, 0.9)', true);
         }
+      } else {
+        // No avatar, draw placeholder hex
+        drawHexagon(cx, cy, size, 'rgba(100, 200, 255, 0.3)', 'rgba(100, 200, 255, 0.9)', true);
       }
-      
-      ctx.restore();
-      
-      // Draw border with glow
-      ctx.shadowColor = 'rgba(100, 200, 255, 0.6)';
-      ctx.shadowBlur = 8;
-      ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i + Math.PI / 2;
-        const x = cx + size * Math.cos(angle);
-        const y = cy + size * Math.sin(angle);
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.closePath();
-      ctx.stroke();
-      ctx.shadowBlur = 0;
     };
     
     // Draw hexagons
@@ -1255,7 +1239,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         
         if (isCharacterPosition) {
           // Draw character avatar
-          drawCharacterInHex(cx, cy, hexSize);
+          await drawCharacterInHex(cx, cy, hexSize);
         } else if (cell?.filled) {
           // Draw filled hexagon
           drawHexagon(cx, cy, hexSize, cell.color, cell.color, true);
@@ -1280,12 +1264,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
   };
 
   const openCustomizeModal = () => {
-    const avatar = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : workingAvatar;
-    setWorkingAvatar(avatar);
     setWorkingFolderColor(customization?.folderColor || workingFolderColor || '');
-    const baseColor = customization?.folderColor || workingFolderColor || brushColor || '#000000';
-    setBrushColor(baseColor);
-    addRecentColor(baseColor);
     setCustomizeError(null);
     setCustomizeTab('general');
     // Initialize hex grid if not already initialized
@@ -1349,6 +1328,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     setCustomizeSaving(true);
     setCustomizeError(null);
     try {
+      // Save customization with PNG data URL
       const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterData.name)}/customization`, {
         method: 'POST',
         headers: {
@@ -1356,7 +1336,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         },
         body: JSON.stringify({
           folderColor: workingFolderColor || null,
-          avatar: normalizeAvatarMatrix(workingAvatar)
+          avatarPng: avatarPngDataUrl
         })
       });
 
@@ -1367,18 +1347,12 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
 
       const data = await response.json();
       const saved = data?.customization || {};
-      const normalizedAvatar = normalizeAvatarMatrix(saved.avatar || workingAvatar);
-      const record = {
-        ...saved,
-        folderColor: saved.folderColor || workingFolderColor || '',
-        avatar: normalizedAvatar
-      };
 
-      setCustomization(record);
+      setCustomization(saved);
+      setAvatarPngDataUrl(saved.avatarPng || avatarPngDataUrl);
       setCustomizationLoadedFor(characterData.name);
-      setWorkingAvatar(normalizedAvatar);
-      setWorkingFolderColor(record.folderColor || '');
-      addRecentColor(record.folderColor || workingFolderColor);
+      setWorkingFolderColor(saved.folderColor || workingFolderColor || '');
+      addRecentColor(saved.folderColor || workingFolderColor);
       setShowCustomizeModal(false);
     } catch (err) {
       console.error('Error saving customization:', err);
@@ -1388,21 +1362,180 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }
   };
 
+  // Load ALL moves from general Bending Rules folder
+  const loadAllBendingMoves = async () => {
+    // Only load once (cache it)
+    if (allMovesByType) return;
+    
+    console.log('Loading all bending moves from general Rules folder...');
+    
+    try {
+      const basePath = `Rules/Bending Rules`;
+      const elements = ['Air', 'Water', 'Earth', 'Fire', 'Spirit'];
+      const aggregated = { action: [], bonus: [], reaction: [], danger: [] };
+      
+      for (const element of elements) {
+        const elementPath = `${basePath}/${element}/${element}bending Moves`;
+        
+        console.log(`Checking element path: ${elementPath}`);
+        
+        try {
+          // List all level folders
+          const levelListResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(elementPath)}`);
+          console.log(`Response for ${element}:`, levelListResp.status);
+          if (!levelListResp.ok) continue;
+          
+          const levelListData = await levelListResp.json();
+          
+          const levelFolders = (levelListData.entries || []).filter(entry => 
+            entry.type === 'dir' || entry.isDirectory === true
+          );
+          
+          console.log(`Found ${levelFolders.length} level folders for ${element}:`, levelFolders.map(f => f.name));
+          
+          for (const levelFolder of levelFolders) {
+            const levelPath = `${elementPath}/${levelFolder.name}`;
+            
+            try {
+              const fileListResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(levelPath)}`);
+              if (!fileListResp.ok) continue;
+              
+              const fileListData = await fileListResp.json();
+              const files = (fileListData.entries || []).filter(entry => 
+                entry.type === 'file' && entry.name.endsWith('.md')
+              );
+              
+              for (const fileEntry of files) {
+                const fullPath = `${levelPath}/${fileEntry.name}`;
+                
+                try {
+                  const fileResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(fullPath)}`);
+                  if (!fileResp.ok) continue;
+                  
+                  const fileData = await fileResp.json();
+                  const summary = parseMoveSummary(
+                    fileData.content || '',
+                    element.toLowerCase(),
+                    null, // No specific action type in general folder
+                    fullPath
+                  );
+                  
+                  // Determine action type from metadata or tags
+                  let key = 'action'; // default
+                  
+                  // Check metadata for "Type" field
+                  if (summary.metadata) {
+                    const typeField = Object.keys(summary.metadata).find(k => 
+                      k.toLowerCase() === 'type' || k.toLowerCase() === 'action type'
+                    );
+                    if (typeField) {
+                      const typeValue = summary.metadata[typeField].toLowerCase();
+                      if (typeValue.includes('bonus')) key = 'bonus';
+                      else if (typeValue.includes('danger')) key = 'danger';
+                      else if (typeValue.includes('reaction')) key = 'reaction';
+                      else key = 'action';
+                    }
+                  }
+                  
+                  // Fallback to tags if metadata doesn't have type
+                  if (key === 'action' && summary.tags) {
+                    if (summary.tags.some(t => t.toLowerCase().includes('bonus_action'))) key = 'bonus';
+                    else if (summary.tags.some(t => t.toLowerCase().includes('danger'))) key = 'danger';
+                    else if (summary.tags.some(t => t.toLowerCase().includes('reaction'))) key = 'reaction';
+                  }
+                  
+                  aggregated[key].push({
+                    ...summary,
+                    name: prettifyMoveName(fileEntry.name),
+                    path: fullPath,
+                    isLearned: false, // Not learned by default for general moves
+                    isLevel1: summary.level === 1
+                  });
+                } catch (err) {
+                  console.error('Error loading move file:', fullPath, err);
+                }
+              }
+            } catch (err) {
+              console.error('Error loading level folder:', levelPath, err);
+            }
+          }
+        } catch (err) {
+          console.error('Error loading element moves:', elementPath, err);
+        }
+      }
+      
+      // Sort by element, then level, then name
+      Object.keys(aggregated).forEach(key => {
+        aggregated[key].sort((a, b) => {
+          if (a.element !== b.element) return (a.element || '').localeCompare(b.element || '');
+          const levelA = a.level ?? 999;
+          const levelB = b.level ?? 999;
+          if (levelA !== levelB) return levelA - levelB;
+          return a.name.localeCompare(b.name);
+        });
+      });
+      
+      console.log('Loaded all bending moves:', {
+        actions: aggregated.action.length,
+        bonus: aggregated.bonus.length,
+        reactions: aggregated.reaction.length,
+        danger: aggregated.danger.length
+      });
+      
+      setAllMovesByType(aggregated);
+    } catch (err) {
+      console.error('Error loading all bending moves:', err);
+    }
+  };
+
   const loadBendingMoves = async (characterName) => {
     if (!characterName) {
       setMovesByType({ action: [], bonus: [], reaction: [], danger: [] });
+      setLearnedMoves(new Set());
       return;
     }
     
     try {
       setMovesLoading(true);
       setMovesError(null);
+      
+      // Load learned moves from JSON file
+      const learnedSet = new Set();
+      try {
+        let learnedPath;
+        
+        // For NPCs, use temp token learned moves JSON
+        if (isNpcSheet && file?.path) {
+          learnedPath = file.path
+            .replace(/_character_sheet\.md$/, '_learned_moves.json')
+            .replace(/\.md$/, '_learned_moves.json');
+        } else {
+          // For PCs, use standard learned moves JSON
+          learnedPath = `PCs/${characterName}/${characterName}_learned_moves.json`;
+        }
+        
+        const learnedResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(learnedPath)}`);
+        if (learnedResp.ok) {
+          const learnedData = await learnedResp.json();
+          const content = learnedData.content || '{}';
+          const parsed = JSON.parse(content);
+          const moves = Array.isArray(parsed) ? parsed : (parsed.moves || []);
+          moves.forEach(move => {
+            // Normalize move name to lowercase without extension
+            const normalized = move.toLowerCase().replace(/\.md$/i, '');
+            learnedSet.add(normalized);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading learned moves:', err);
+      }
+      setLearnedMoves(learnedSet);
+      
       const basePath = `PCs/${characterName}/Bending Rules - ${characterName}/by Action Type`;
       const typeFolders = {
         action: 'Action',
         bonus: 'Bonus Action',
-        reaction: 'Reaction',
-        danger: 'Danger Sense Reaction'
+        reaction: 'Reaction'
       };
       
       const aggregated = { action: [], bonus: [], reaction: [], danger: [] };
@@ -1411,7 +1544,10 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         const folderPath = `${basePath}/${folderName}`;
         try {
           const listResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(folderPath)}`);
-          if (!listResp.ok) continue;
+          if (!listResp.ok) {
+            // Folder doesn't exist (character has no moves of this type) - this is expected, skip silently
+            continue;
+          }
           const listData = await listResp.json();
           const files = (listData.entries || []).filter(entry => (entry.type || '').toLowerCase().includes('file'));
           
@@ -1427,10 +1563,25 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                 folderName,
                 fullPath
               );
-              aggregated[key].push({
+              
+              // Extract move name without character suffix for learned check
+              const baseName = fileEntry.name.replace(/\s*-\s*[^-]+\.md$/i, '').toLowerCase();
+              const isLevel1 = summary.level === 1;
+              const isLearned = learnedSet.has(baseName);
+              
+              // Check if this is a Danger Sense Reaction (from Reaction folder)
+              const isDangerSense = key === 'reaction' && summary.tags?.some(tag => 
+                tag.toLowerCase().includes('danger_sense_reaction')
+              );
+              
+              const targetKey = isDangerSense ? 'danger' : key;
+              
+              aggregated[targetKey].push({
                 ...summary,
                 name: prettifyMoveName(fileEntry.name, characterName),
-                path: fullPath
+                path: fullPath,
+                isLearned: isLevel1 || isLearned,
+                isLevel1
               });
             } catch (err) {
               console.error('Error loading bending move file:', err);
@@ -1583,12 +1734,18 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         }
         
         const cells = row.split('|').map(cell => cell.trim()).filter(Boolean);
-        if (cells.length >= 2 && cells[0] !== 'Water charge type') {
+        if (cells.length >= 2 && cells[0] !== 'Water charge type' && cells[1] !== 'value') {
           const chargeName = cells[0];
           const chargeValue = cells[1];
           data.waterCharges[chargeName] = chargeValue;
         }
       });
+    }
+
+    // Remove any invalid header entries that might have slipped through
+    delete data.waterCharges['Water charge type'];
+    if (data.waterCharges['value']) {
+      delete data.waterCharges['value'];
     }
 
     // Ensure bonus slots/charges exist even if zero so the UI can display and edit them
@@ -1698,6 +1855,14 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         }
       }
     });
+
+    // Create bendingLevels object for easy lookup by element name
+    data.bendingLevels = {};
+    if (data.bending && data.bending.elements) {
+      data.bending.elements.forEach(elem => {
+        data.bendingLevels[elem.element.toLowerCase()] = elem.level;
+      });
+    }
 
     return data;
   };
@@ -2054,6 +2219,100 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     setPinnedMoves(prev => prev.filter(m => m.path !== path));
   };
 
+  const handleLearnMove = async (move) => {
+    if (!characterData?.name) return;
+    
+    try {
+      const characterName = characterData.name;
+      let learnedPath;
+      
+      // For NPCs, use temp token learned moves JSON
+      if (isNpcSheet && file?.path) {
+        learnedPath = file.path
+          .replace(/_character_sheet\.md$/, '_learned_moves.json')
+          .replace(/\.md$/, '_learned_moves.json');
+      } else {
+        // For PCs, use standard learned moves JSON
+        learnedPath = `PCs/${characterName}/${characterName}_learned_moves.json`;
+      }
+      
+      // Load current learned moves
+      let currentMoves = [];
+      try {
+        const learnedResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(learnedPath)}`);
+        if (learnedResp.ok) {
+          const learnedData = await learnedResp.json();
+          const content = learnedData.content || '{}';
+          const parsed = JSON.parse(content);
+          currentMoves = Array.isArray(parsed) ? parsed : (parsed.moves || []);
+        }
+      } catch (err) {
+        console.error('Error loading learned moves:', err);
+      }
+      
+      // Extract move base name (without character suffix)
+      const moveBaseName = move.name.replace(/\s*-\s*[^-]+$/, '');
+      
+      // Toggle learned status
+      const isCurrentlyLearned = currentMoves.some(m => 
+        m.toLowerCase().replace(/\.md$/i, '') === moveBaseName.toLowerCase()
+      );
+      
+      let updatedMoves;
+      if (isCurrentlyLearned) {
+        // Unlearn: remove from list
+        updatedMoves = currentMoves.filter(m => 
+          m.toLowerCase().replace(/\.md$/i, '') !== moveBaseName.toLowerCase()
+        );
+      } else {
+        // Learn: add to list
+        updatedMoves = [...currentMoves, moveBaseName];
+      }
+      
+      // Save updated learned moves
+      const updatedData = {
+        moves: updatedMoves,
+        _comment: isNpcSheet 
+          ? "Learned moves for this NPC"
+          : "Add move names here (without .md extension) for moves this character has learned above level 1",
+        lastUpdated: new Date().toISOString()
+      };
+      
+      const saveResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(learnedPath)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: JSON.stringify(updatedData, null, 2) })
+      });
+      
+      if (!saveResp.ok) {
+        throw new Error('Failed to save learned moves');
+      }
+      
+      // Reload moves to reflect changes
+      await loadBendingMoves(characterName);
+      
+    } catch (err) {
+      console.error('Error toggling learned move:', err);
+      alert('Failed to update learned moves. Please try again.');
+    }
+  };
+
+  // Toggle handlers with mutual exclusion logic
+  const handleToggleShowLearnable = (checked) => {
+    setShowLearnableMoves(checked);
+    if (checked) {
+      setShowAllMoves(false); // Turn off "Show All" when "Show Learnable" is enabled
+    }
+  };
+
+  const handleToggleShowAll = (checked) => {
+    setShowAllMoves(checked);
+    if (checked) {
+      setShowLearnableMoves(false); // Turn off "Show Learnable" when "Show All" is enabled
+      loadAllBendingMoves(); // Load all moves from general Bending Rules folder
+    }
+  };
+
   const toggleMoveExpanded = (movePath) => {
     setExpandedMoves(prev => {
       const newSet = new Set(prev);
@@ -2095,21 +2354,28 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     return teamupDetails.length > 0 ? teamupDetails : null;
   };
 
-  // Extract cost information from move slots
+  // Extract cost information from move slots and deduplicate (case-insensitive)
   const getMoveCosts = (move) => {
     if (!move.slots || move.slots.length === 0) return [];
     
-    const costs = [];
-    move.slots.forEach(slotStr => {
-      // Parse patterns like "Airbending slot (3)" or "Spiritbending slot"
-      const match = slotStr.match(/(.+?)\s*(?:\((\d+)\))?$/);
+    // Use reduce to deduplicate by slot name (case-insensitive, keep first occurrence)
+    const costsMap = move.slots.reduce((acc, slotStr) => {
+      // Strip double brackets [[...]] if present
+      const cleanedStr = slotStr.replace(/\[\[|\]\]/g, '');
+      const match = cleanedStr.match(/(.+?)\s*(?:\((\d+)\))?$/);
       if (match) {
         const slotName = match[1].trim();
+        const slotNameLower = slotName.toLowerCase();
         const amount = match[2] ? parseInt(match[2]) : 1;
-        costs.push({ name: slotName, amount, original: slotStr });
+        // Only keep the first occurrence of each slot name (case-insensitive)
+        if (!acc[slotNameLower]) {
+          acc[slotNameLower] = { name: slotName, amount, original: slotStr };
+        }
       }
-    });
-    return costs;
+      return acc;
+    }, {});
+    
+    return Object.values(costsMap);
   };
 
   // Consume resources for a move
@@ -2125,11 +2391,15 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       costs.forEach(cost => {
         const amount = customAmounts?.[cost.name] || cost.amount;
         
-        // Find matching consumable
-        const consumableIndex = consumables.findIndex(c => 
-          c.name.toLowerCase().includes(cost.name.toLowerCase()) ||
-          cost.name.toLowerCase().includes(c.name.toLowerCase())
-        );
+        // Normalize cost name for matching (remove underscores, lowercase)
+        const normalizedCostName = cost.name.toLowerCase().replace(/_/g, ' ');
+        
+        // Find matching consumable by normalizing both names
+        const consumableIndex = consumables.findIndex(c => {
+          const normalizedConsumableName = c.name.toLowerCase().replace(/_/g, ' ');
+          return normalizedConsumableName.includes(normalizedCostName) ||
+                 normalizedCostName.includes(normalizedConsumableName);
+        });
         
         if (consumableIndex !== -1) {
           const consumable = consumables[consumableIndex];
@@ -2161,7 +2431,19 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
   const handleUseMove = (move) => {
     const costs = getMoveCosts(move);
     
-    if (costs.length === 0) {
+    // Check if this is a water move OR if any costs mention water charges
+    const isWaterMove = move.element && move.element.toLowerCase() === 'water';
+    const hasWaterCosts = costs.some(cost => {
+      const normalized = cost.name.toLowerCase().replace(/_/g, ' ');
+      return normalized.includes('water') && normalized.includes('charge');
+    });
+    
+    // Check if move has water element in tags (for teamup moves)
+    const hasWaterTag = move.tags && move.tags.some(tag => tag.toLowerCase().includes('water'));
+    
+    const shouldShowWaterCharges = isWaterMove || hasWaterCosts || hasWaterTag;
+    
+    if (costs.length === 0 && !shouldShowWaterCharges) {
       // No cost, just log it
       setUsedMoves(prev => [...prev, { 
         move, 
@@ -2171,50 +2453,531 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       return;
     }
 
-    // Check if move has multiple costs or if user might want to customize
-    if (costs.length === 1 && costs[0].amount === 1) {
-      // Simple single cost - consume directly
-      consumeMoveResources(move);
-      setUsedMoves(prev => [...prev, { 
-        move, 
-        costs: costs.map(c => ({ ...c, consumed: c.amount })), 
-        timestamp: Date.now() 
-      }]);
-    } else {
-      // Ask user for amounts
-      const customAmounts = {};
-      let shouldConsume = true;
+    // Expand water charges into separate waterbottle and environmental options
+    const expandedCosts = [];
+    const initialAmounts = {};
+    
+    if (shouldShowWaterCharges && characterData && characterData.consumables) {
+      // For water moves, always show waterbottle and environmental as separate options
+      const waterbottleConsumable = characterData.consumables.find(c => 
+        c && c.name && c.name.toLowerCase().includes('waterbottle')
+      );
+      const environmentalConsumable = characterData.consumables.find(c => 
+        c && c.name && c.name.toLowerCase().includes('environmental') && c.name.toLowerCase().includes('water')
+      );
       
-      for (const cost of costs) {
-        const prompt = `${move.name} uses "${cost.original}". How many to consume? (default: ${cost.amount})`;
-        const input = window.prompt(prompt, cost.amount);
+      if (waterbottleConsumable) {
+        expandedCosts.push({
+          name: waterbottleConsumable.name,
+          amount: 999, // No fixed max, user decides
+          original: 'Water_charge',
+          isWaterCharge: true
+        });
+        initialAmounts[waterbottleConsumable.name] = 0;
+      }
+      
+      if (environmentalConsumable) {
+        expandedCosts.push({
+          name: environmentalConsumable.name,
+          amount: 999,
+          original: 'Water_charge',
+          isWaterCharge: true
+        });
+        initialAmounts[environmentalConsumable.name] = 0;
+      }
+    } else {
+      // Non-water moves: handle normally
+      costs.forEach(cost => {
+        expandedCosts.push(cost);
         
-        if (input === null) {
-          // User cancelled
-          shouldConsume = false;
-          break;
+        let defaultAmount = cost.amount;
+        
+        // Set smart default for bending slots
+        if (characterData && characterData.consumables && Array.isArray(characterData.consumables)) {
+          const normalizedCostName = cost.name.toLowerCase().replace(/_/g, ' ');
+          const matchingConsumables = characterData.consumables.filter(c => {
+            if (!c || !c.name) return false;
+            const normalizedConsumableName = c.name.toLowerCase().replace(/_/g, ' ');
+            return normalizedConsumableName.includes(normalizedCostName) ||
+                   normalizedCostName.includes(normalizedConsumableName);
+          });
+          
+          if (matchingConsumables.length > 0) {
+            const consumable = matchingConsumables[0];
+            if (consumable && typeof consumable.current === 'number') {
+              const halfCurrent = Math.ceil(consumable.current / 2);
+              defaultAmount = Math.min(halfCurrent, cost.amount);
+            }
+          }
         }
         
-        const amount = parseInt(input) || cost.amount;
-        customAmounts[cost.name] = amount;
-        cost.consumed = amount;
-      }
-      
-      if (shouldConsume) {
-        consumeMoveResources(move, customAmounts);
-        setUsedMoves(prev => [...prev, { 
-          move, 
-          costs, 
-          timestamp: Date.now() 
-        }]);
-      }
+        initialAmounts[cost.name] = defaultAmount;
+      });
     }
+    
+    // Open modal for user to customize amounts
+    setUseMoveData({ move, costs: expandedCosts });
+    setCustomCostAmounts(initialAmounts);
+    setShowUseMoveModal(true);
+  };
+
+  const handleConfirmUseMove = () => {
+    if (!useMoveData) return;
+    
+    const { move, costs } = useMoveData;
+    
+    // Update costs with consumed amounts
+    const updatedCosts = costs.map(cost => ({
+      ...cost,
+      consumed: customCostAmounts[cost.name] || cost.amount
+    }));
+    
+    consumeMoveResources(move, customCostAmounts);
+    setUsedMoves(prev => [...prev, { 
+      move, 
+      costs: updatedCosts, 
+      timestamp: Date.now() 
+    }]);
+    
+    // Close modal and reset
+    setShowUseMoveModal(false);
+    setUseMoveData(null);
+    setCustomCostAmounts({});
+  };
+
+  const handleCancelUseMove = () => {
+    setShowUseMoveModal(false);
+    setUseMoveData(null);
+    setCustomCostAmounts({});
   };
 
   // Clear used moves log (e.g., when taking rest or new turn)
   const clearUsedMoves = () => {
     setUsedMoves([]);
   };
+
+  // Load and evaluate secondary stat templates (mirrors recreate_pcs.py logic)
+  const loadSecondaryStatTemplates = async () => {
+    try {
+      const basePath = 'variable/secondary_stat';
+      const resp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(basePath)}`);
+      if (!resp.ok) return {};
+      
+      const data = await resp.json();
+      const files = (data.entries || []).filter(entry => 
+        entry.type === 'file' && entry.name.endsWith('.md')
+      );
+      
+      const templates = {};
+      for (const fileEntry of files) {
+        try {
+          const filePath = `${basePath}/${fileEntry.name}`;
+          const fileResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(filePath)}`);
+          if (!fileResp.ok) continue;
+          
+          const fileData = await fileResp.json();
+          const content = fileData.content || '';
+          
+          // Extract formula (first non-empty, non-comment line)
+          const lines = content.split('\n')
+            .filter(l => l.trim() && !l.trim().startsWith('#'));
+          if (lines.length === 0) continue;
+          
+          let formula = lines[0].trim();
+          // Unescape markdown-escaped operators
+          formula = formula.replace(/\\([^\w\s])/g, '$1');
+          // Remove leading '=' if present
+          formula = formula.replace(/^\s*=\s*/, '');
+          
+          const stem = fileEntry.name.replace(/\.md$/, '');
+          templates[stem.toLowerCase()] = formula;
+        } catch (err) {
+          console.warn(`Failed to load secondary stat template ${fileEntry.name}:`, err);
+        }
+      }
+      
+      return templates;
+    } catch (err) {
+      console.warn('Failed to load secondary stat templates:', err);
+      return {};
+    }
+  };
+
+  // Evaluate a formula with variable substitution
+  const evaluateFormula = (formula, variables) => {
+    if (!formula) return 0;
+    
+    // Replace [[variable_name]] tokens with values
+    let expr = formula;
+    const tokenPattern = /\[\[\s*([^\]]+)\s*\]\]/g;
+    expr = expr.replace(tokenPattern, (match, varName) => {
+      const normalized = varName.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+      const value = variables[normalized];
+      return value !== undefined ? value : '0';
+    });
+    
+    // Simple eval for math expressions (safe for controlled formulas)
+    try {
+      // Remove dice notation for static calculation (1d20 -> 10 average)
+      expr = expr.replace(/(\d+)d(\d+)/gi, (match, count, sides) => {
+        const c = parseInt(count) || 1;
+        const s = parseInt(sides) || 20;
+        return Math.floor(c * (s + 1) / 2); // average value
+      });
+      
+      // Evaluate as JavaScript expression
+      const result = Function('"use strict"; return (' + expr + ')')();
+      return typeof result === 'number' && !isNaN(result) ? result : 0;
+    } catch (err) {
+      console.warn(`Failed to evaluate formula "${formula}" -> "${expr}":`, err);
+      return 0;
+    }
+  };
+
+  // Calculate all secondary stats iteratively (mirrors recreate_pcs.py compute_secondaries)
+  const calculateSecondaryStats = async (coreStats, bendingLevels, cl, rolled_hp) => {
+    const templates = await loadSecondaryStatTemplates();
+    
+    // Build initial variable map (lowercase, normalized keys)
+    const variables = {
+      str: coreStats.Strength || 0,
+      strength: coreStats.Strength || 0,
+      dex: coreStats.Dexterity || 0,
+      dexterity: coreStats.Dexterity || 0,
+      con: coreStats.Constitution || 0,
+      constitution: coreStats.Constitution || 0,
+      int: coreStats.Intelligence || 0,
+      intelligence: coreStats.Intelligence || 0,
+      wis: coreStats.Wisdom || 0,
+      wisdom: coreStats.Wisdom || 0,
+      cha: coreStats.Charisma || 0,
+      charisma: coreStats.Charisma || 0,
+      riz: coreStats.Charisma || 0, // alias
+      air: bendingLevels.air || 0,
+      water: bendingLevels.water || 0,
+      earth: bendingLevels.earth || 0,
+      fire: bendingLevels.fire || 0,
+      spirit: bendingLevels.spirit || 0,
+      cl: cl,
+      rolled_hp: rolled_hp,
+      'rolled.hp': rolled_hp
+    };
+    
+    // Iteratively evaluate templates (up to 6 passes to resolve dependencies)
+    const maxPasses = 6;
+    for (let pass = 0; pass < maxPasses; pass++) {
+      let changed = false;
+      
+      for (const [name, formula] of Object.entries(templates)) {
+        const oldValue = variables[name];
+        const newValue = evaluateFormula(formula, variables);
+        
+        if (oldValue !== newValue) {
+          variables[name] = newValue;
+          // Also store variants for lookup
+          const underscored = name.replace(/\s+/g, '_');
+          const dotted = name.replace(/\s+/g, '.');
+          variables[underscored] = newValue;
+          variables[dotted] = newValue;
+          changed = true;
+        }
+      }
+      
+      if (!changed) break; // converged
+    }
+    
+    return variables;
+  };
+
+  const randomizeNpcStats = useCallback(async () => {
+    const rollStat = () => 1 + Math.floor(Math.random() * 10); // 1-10
+    const newCore = {
+      Strength: rollStat(),
+      Dexterity: rollStat(),
+      Constitution: rollStat(),
+      Intelligence: rollStat(),
+      Wisdom: rollStat(),
+      Charisma: rollStat()
+    };
+    // Always use manual element levels (default to 0 if not set)
+    const elements = ['air', 'water', 'earth', 'fire', 'spirit'];
+    const bendingLevels = {};
+    const bendingElements = [];
+    
+    // Map of elements to their associated core stats for attack rolls
+    const statMap = {
+      air: 'Dexterity',
+      water: 'Intelligence',
+      earth: 'Strength',
+      fire: 'Wisdom',
+      spirit: 'Wisdom'
+    };
+    
+    elements.forEach(el => {
+      const manualLevel = parseInt(npcElementLevels[el]);
+      const level = (manualLevel >= 0 && manualLevel <= 10) ? manualLevel : 0;
+      bendingLevels[el] = level;
+      
+      // Build the bending.elements structure with attack rolls and DCs
+      const coreStat = newCore[statMap[el]] || 0;
+      const attackRoll = `1d20 + ${level} + ${coreStat}`;
+      const dc = `${level} + ${coreStat}`;
+      
+      bendingElements.push({
+        element: el.charAt(0).toUpperCase() + el.slice(1),
+        level: level,
+        attackRoll: attackRoll,
+        dc: dc
+      });
+    });
+    
+    const cl = Object.values(bendingLevels).reduce((sum, v) => sum + v, 0);
+    const rolled_hp = cl > 0 ? cl * (6 + Math.floor(Math.random() * 5)) : 10; // 6-10 per level, or min 10 if cl=0
+    const con = newCore.Constitution || 0;
+    const max_hp = (rolled_hp + (con * cl)) * 2; // matches max_hp.md formula
+
+    // Calculate all secondary stats using templates
+    const secondaryStats = await calculateSecondaryStats(newCore, bendingLevels, cl, rolled_hp);
+    
+    // Load environmental water charge from global variable
+    let envWaterCharge = '0/0';
+    try {
+      const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable/environmental_water_charge`);
+      if (envResponse.ok) {
+        const envData = await envResponse.json();
+        envWaterCharge = `${envData.current}/${envData.max}`;
+      }
+    } catch (err) {
+      console.warn('Failed to load environmental water charge:', err);
+    }
+    
+    // Extract specific secondary stats for character sheet sections
+    const defensive = {
+      Evasion: secondaryStats.evasion || 0,
+      Barrier: secondaryStats.barrier || 0,
+      'General Armor': secondaryStats['general_armor'] || secondaryStats.general_armor || 0,
+      'Physical Armor': secondaryStats['physical_armor'] || secondaryStats.physical_armor || 0,
+      'Fire Armor': secondaryStats['fire_armor'] || secondaryStats.fire_armor || 0,
+      'Ice Armor': secondaryStats['ice_armor'] || secondaryStats.ice_armor || 0,
+      'Spirit Armor': secondaryStats['spirit_armor'] || secondaryStats.spirit_armor || 0
+    };
+    
+    const slots = {};
+    
+    // Only add slots that have values > 0
+    const airSlot = secondaryStats['airbending_slot'] || secondaryStats.airbending_slot || 0;
+    if (airSlot > 0) {
+      slots['Airbending slot'] = `${airSlot}/${airSlot}`;
+    }
+    
+    const earthSlot = secondaryStats['earthbending_slot'] || secondaryStats.earthbending_slot || 0;
+    if (earthSlot > 0) {
+      slots['Earthbending slot'] = `${earthSlot}/${earthSlot}`;
+    }
+    
+    const fireSlot = secondaryStats['firebending_slot'] || secondaryStats.firebending_slot || 0;
+    if (fireSlot > 0) {
+      slots['Firebending slot'] = `${fireSlot}/${fireSlot}`;
+    }
+    
+    const spiritSlot = secondaryStats['spiritbending_slot'] || secondaryStats.spiritbending_slot || 0;
+    if (spiritSlot > 0) {
+      slots['Spirit bending slot'] = `${spiritSlot}/${spiritSlot}`;
+    }
+    
+    // Always include bonus bending slots (can be 0)
+    slots['Bonus bending slots'] = secondaryStats['bonus_bending_slots'] || secondaryStats.bonus_bending_slots || 0;
+    
+    const waterCharges = {
+      'Environmental water charge': envWaterCharge
+    };
+    
+    // Only add Waterbottle charge if character has water level > 0
+    const waterbottleCharge = secondaryStats['waterbottle_charge'] || secondaryStats.waterbottle_charge || 0;
+    if (waterbottleCharge > 0) {
+      waterCharges['Waterbottle charge'] = `0/${waterbottleCharge}`;
+    }
+    
+    // Always include bonus water charges
+    waterCharges['Bonus water charges'] = secondaryStats['bonus_water_charges'] || secondaryStats.bonus_water_charges || 0;
+
+    // Build consumables array from slots and waterCharges
+    const consumables = [];
+    const bonusSlotNames = ['Bonus air slots', 'Bonus earth slots', 'Bonus fire slots', 'Bonus spirit slots', 'Bonus bending slots'];
+    
+    Object.entries(slots).forEach(([key, value]) => {
+      if (bonusSlotNames.includes(key)) return;
+      
+      const slashMatch = String(value).match(/^(\d+)\s*\/\s*(\d+)$/);
+      if (slashMatch) {
+        consumables.push({
+          name: key,
+          max: parseInt(slashMatch[2]),
+          current: parseInt(slashMatch[1]),
+          type: 'slot'
+        });
+      } else {
+        const numValue = parseInt(value);
+        if (!isNaN(numValue) && numValue > 0) {
+          consumables.push({
+            name: key,
+            max: numValue,
+            current: numValue,
+            type: 'slot'
+          });
+        }
+      }
+    });
+    
+    Object.entries(waterCharges).forEach(([key, value]) => {
+      // Skip Bonus water charges - shown separately
+      if (key === 'Bonus water charges') return;
+      
+      const slashMatch = String(value).match(/^(\d+)\s*\/\s*(\d+)$/);
+      if (slashMatch) {
+        consumables.push({
+          name: key,
+          max: parseInt(slashMatch[2]),
+          current: parseInt(slashMatch[1]),
+          type: key === 'Environmental water charge' ? 'environmental' : 'water',
+          isGlobal: key === 'Environmental water charge' // Mark as global so it saves differently
+        });
+      } else {
+        const numValue = parseInt(value);
+        if (!isNaN(numValue) && numValue > 0) {
+          consumables.push({
+            name: key,
+            max: numValue,
+            current: numValue,
+            type: 'water'
+          });
+        }
+      }
+    });
+
+    setCharacterData(prev => ({
+      ...prev,
+      coreStats: { ...(prev.coreStats || {}), ...newCore },
+      bendingLevels,
+      bending: {
+        totalLevel: cl,
+        elements: bendingElements
+      },
+      vitals: {
+        ...(prev.vitals || {}),
+        rolled_hp,
+        max_hp,
+        current_hp: max_hp,
+        cl,
+        Initiative: secondaryStats.initiative || '1d20',
+        Movement: secondaryStats.movement || 5
+      },
+      defense: { ...(prev.defense || {}), ...defensive },
+      defensive: { ...(prev.defensive || {}), ...defensive },
+      slots: { ...(prev.slots || {}), ...slots },
+      waterCharges: waterCharges, // Don't merge with prev - use new values directly
+      consumables,
+      conditions: prev.conditions || {},
+      secondaryStats // store all calculated stats for reference
+    }));
+    
+    // Auto-save after randomizing to persist stats to markdown file
+    setTimeout(() => handleSave(), 100);
+  }, [setCharacterData, npcElementLevels, handleSave]);
+
+  const randomizeNpcLearnedMoves = useCallback(async () => {
+    try {
+      if (!allMovesByType) {
+        await loadAllBendingMoves();
+      }
+      const pool = Object.values(allMovesByType || {}).flat();
+      if (!pool.length) return;
+      
+      // Get character's bending levels from current characterData
+      const charBendingLevels = characterData?.bendingLevels || {};
+      const charBending = characterData?.bending?.elements || [];
+      
+      // Filter moves by: (1) character has that element, (2) move level <= character's element level
+      const allowedMoves = pool.filter(move => {
+        // Extract element from tags (e.g., #air, #water, #earth, #fire, #spirit)
+        const moveTags = move.tags || [];
+        const moveElements = moveTags
+          .filter(tag => ['air', 'water', 'earth', 'fire', 'spirit'].includes(tag.toLowerCase()))
+          .map(tag => tag.toLowerCase());
+        
+        // Extract level requirement from tags (e.g., #Level1, #Level2)
+        const levelTag = moveTags.find(tag => tag.toLowerCase().match(/level\d+/));
+        const moveLevel = levelTag ? parseInt(levelTag.match(/\d+/)?.[0]) : 1;
+        
+        // Allow move if character has at least one of the move's elements at sufficient level
+        const hasElement = moveElements.some(element => {
+          const charLevel = charBendingLevels[element] || 0;
+          return charLevel >= moveLevel;
+        });
+        
+        // Also allow utility moves (#Level1 utility moves with multiple elements)
+        const isUtility = moveTags.some(tag => tag.toLowerCase() === 'utility');
+        if (isUtility && moveLevel === 1) {
+          // Utility moves allowed if character has any bending
+          const hasSomeBending = Object.values(charBendingLevels).some(lvl => lvl > 0);
+          return hasSomeBending;
+        }
+        
+        return hasElement;
+      });
+      
+      if (!allowedMoves.length) {
+        console.warn('No moves available for this character\'s bending levels');
+        return;
+      }
+      
+      const pickCount = Math.min(allowedMoves.length, Math.max(3, Math.floor(Math.random() * 6)));
+      const shuffled = [...allowedMoves].sort(() => Math.random() - 0.5);
+      const chosen = shuffled.slice(0, pickCount);
+      const chosenPaths = chosen.map(m => m.path || m.name).filter(Boolean);
+      
+      // For NPCs, save to learned_moves JSON file alongside temp character sheet
+      if (isNpcSheet && file?.path) {
+        try {
+          // Convert sheet path to learned moves JSON path
+          // e.g., NPCs/temp_token_123_soldier_character_sheet.md -> NPCs/temp_token_123_soldier_learned_moves.json
+          const learnedMovesPath = file.path
+            .replace(/_character_sheet\.md$/, '_learned_moves.json')
+            .replace(/\.md$/, '_learned_moves.json');
+          
+          const learnedMovesData = {
+            moves: chosenPaths,
+            _comment: 'Learned moves for this NPC (automatically generated)',
+            lastUpdated: new Date().toISOString()
+          };
+          
+          const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(learnedMovesPath)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: JSON.stringify(learnedMovesData, null, 2) })
+          });
+          
+          if (response.ok) {
+            console.log('✅ Saved NPC learned moves to', learnedMovesPath);
+            // Normalize move paths to match loadBendingMoves format (lowercase, no .md)
+            const normalizedPaths = chosenPaths.map(path => path.toLowerCase().replace(/\.md$/i, ''));
+            setLearnedMoves(new Set(normalizedPaths));
+            setPinnedMoves(chosen);
+          } else {
+            console.warn('Failed to save NPC learned moves JSON');
+          }
+        } catch (err) {
+          console.error('Failed to save NPC learned moves:', err);
+        }
+      } else {
+        // For regular PCs, just update state (they use existing learned_moves.json)
+        setPinnedMoves(chosen);
+        setLearnedMoves(new Set(chosenPaths));
+      }
+    } catch (err) {
+      console.warn('Randomize NPC moves failed', err);
+    }
+  }, [allMovesByType, loadAllBendingMoves, characterData, isNpcSheet, file?.path]);
 
   if (loading) {
     return (
@@ -2308,7 +3071,6 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     c.name.toLowerCase().includes('water') && c.name.toLowerCase().includes('charge')
   );
   const accentColor = workingFolderColor || customization?.folderColor || '#888888';
-  const avatarForHeader = customization?.avatar || workingAvatar;
 
   return (
     <div className={`character-sheet ${lightMode ? 'light-mode' : ''}`}>
@@ -2316,7 +3078,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         <div className="character-title">
           <PixelAvatar
             className="character-avatar-preview"
-            pixels={avatarForHeader}
+            avatarPng={avatarPngDataUrl}
             size={64}
             borderColor={accentColor}
             placeholderLabel={characterData.name?.[0] || 'C'}
@@ -2339,32 +3101,18 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </div>
         <div className="header-buttons">
           <button 
-            onClick={() => setShowReactionsModal(true)} 
+            onClick={() => setShowMyMovesModal(true)} 
             className="ghost-button"
-            title="Open reactions & danger sense reactions"
+            title="View and manage all your moves"
             style={{
-              background: `linear-gradient(135deg, ${ACTION_COLORS['Reaction']} 0%, ${ACTION_COLORS['Danger Sense Reaction']} 100%)`,
+              background: `linear-gradient(135deg, ${ACTION_COLORS['Action']} 0%, ${ACTION_COLORS['Reaction']} 100%)`,
               color: '#fff',
               fontWeight: '600',
               border: 'none',
               boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
             }}
           >
-            Reactions
-          </button>
-          <button 
-            onClick={() => setShowPlanModal(true)} 
-            className="ghost-button"
-            title={isBleedingOut ? "Plan your turn with actions (no bonus actions while bleeding out)" : "Plan your turn with actions and bonus actions"}
-            style={{
-              background: `linear-gradient(135deg, ${ACTION_COLORS['Action']} 0%, ${ACTION_COLORS['Bonus Action']} 100%)`,
-              color: '#fff',
-              fontWeight: '600',
-              border: 'none',
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
-            }}
-          >
-            Plan turn
+            My Moves
           </button>
           <button 
             onClick={async () => {
@@ -2402,6 +3150,189 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           {saving && <span className="auto-save-indicator">Saving...</span>}
         </div>
       </div>
+
+      {isNpcSheet && (
+        <div className="npc-control-hub" style={{
+          background: 'linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, rgba(230, 126, 34, 0.15) 100%)',
+          border: '2px solid rgba(231, 76, 60, 0.3)',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '20px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '12px'
+          }}>
+            <span style={{
+              fontSize: '20px',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+            }}>⚔️</span>
+            <h3 style={{
+              margin: 0,
+              color: lightMode ? '#2c3e50' : '#ecf0f1',
+              fontSize: '16px',
+              fontWeight: '700',
+              letterSpacing: '0.5px'
+            }}>NPC Quick Actions</h3>
+          </div>
+          
+          {/* Element Level Inputs */}
+          <div style={{
+            marginBottom: '16px',
+            padding: '12px',
+            background: 'rgba(0, 0, 0, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: '600',
+              color: lightMode ? '#34495e' : '#bdc3c7',
+              marginBottom: '10px',
+              letterSpacing: '0.3px'
+            }}>
+              Set Element Levels (0-10, required)
+            </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: '8px'
+            }}>
+              {['air', 'water', 'earth', 'fire', 'spirit'].map(element => (
+                <div key={element} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <label style={{
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    color: ELEMENT_COLORS[element],
+                    textTransform: 'capitalize',
+                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                  }}>
+                    {element}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    value={npcElementLevels[element]}
+                    onChange={(e) => setNpcElementLevels(prev => ({
+                      ...prev,
+                      [element]: e.target.value
+                    }))}
+                    placeholder="0"
+                    style={{
+                      padding: '6px 8px',
+                      borderRadius: '4px',
+                      border: `2px solid ${ELEMENT_COLORS[element]}`,
+                      background: lightMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.3)',
+                      color: lightMode ? '#2c3e50' : '#ecf0f1',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      textAlign: 'center',
+                      outline: 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.boxShadow = `0 0 8px ${ELEMENT_COLORS[element]}`;
+                      e.target.style.transform = 'scale(1.05)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.boxShadow = 'none';
+                      e.target.style.transform = 'scale(1)';
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '12px'
+          }}>
+            <button
+              onClick={randomizeNpcStats}
+              style={{
+                padding: '12px 20px',
+                background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                border: '2px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 8px rgba(231, 76, 60, 0.3)',
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.3px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 12px rgba(231, 76, 60, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(231, 76, 60, 0.3)';
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>🎲</span>
+              Randomize Stats
+            </button>
+            <button
+              onClick={randomizeNpcLearnedMoves}
+              style={{
+                padding: '12px 20px',
+                background: 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
+                border: '2px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 8px rgba(230, 126, 34, 0.3)',
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.3px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 12px rgba(230, 126, 34, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(230, 126, 34, 0.3)';
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>⚡</span>
+              Randomize Learned Moves
+            </button>
+          </div>
+          <div style={{
+            marginTop: '12px',
+            padding: '8px 12px',
+            background: 'rgba(0, 0, 0, 0.1)',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: lightMode ? '#555' : '#bbb',
+            fontStyle: 'italic'
+          }}>
+            💡 Use these tools to quickly generate battle-ready NPCs with randomized stats and moves
+          </div>
+        </div>
+      )}
 
       {showCustomizeModal && (
         <div className="modal-overlay" onClick={() => setShowCustomizeModal(false)}>
@@ -2465,21 +3396,6 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                       <div className="meta-value">PCs/{characterData.name || 'Character'}/</div>
                     </div>
                   </div>
-
-                  <h4>Avatar preview</h4>
-                  <div className="avatar-preview-row">
-                    <PixelAvatar
-                      pixels={workingAvatar}
-                      size={100}
-                      borderColor={accentColor}
-                      placeholderLabel={characterData.name?.[0] || 'C'}
-                      background={hexToRgba(accentColor || '#888888', 0.2)}
-                    />
-                    <div className="avatar-preview-meta">
-                      <div className="meta-label">{AVATAR_SIZE} × {AVATAR_SIZE} pixels</div>
-                      <div className="meta-value">Click and drag in the grid to paint. Right-click or hold Alt to erase.</div>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -2487,126 +3403,67 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             {customizeTab === 'avatar' && (
               <div className="customize-grid">
                 <div className="customize-column">
-                  <h4>Import or paint</h4>
-                  <div className="brush-controls">
-                    <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>
-                      Import PNG Image
-                    </label>
+                  <h4>Avatar Upload</h4>
+                  <div style={{ marginBottom: '20px' }}>
+                    {avatarPngDataUrl && (
+                      <div style={{ marginBottom: '15px', textAlign: 'center' }}>
+                        <PixelAvatar
+                          avatarPng={avatarPngDataUrl}
+                          size={100}
+                          borderColor={accentColor}
+                          placeholderLabel={characterData.name?.[0] || 'C'}
+                          background={hexToRgba(accentColor || '#888888', 0.2)}
+                        />
+                      </div>
+                    )}
                     <input
                       type="file"
-                      accept="image/png,image/jpeg,image/jpg,image/gif"
+                      accept="image/png"
                       onChange={handleImportPNG}
+                      style={{ display: 'none' }}
+                      id="avatar-upload"
+                    />
+                    <label
+                      htmlFor="avatar-upload"
                       style={{
-                        marginBottom: '16px',
-                        padding: '8px',
-                        border: lightMode ? '1px solid #d6d6d6' : '1px solid #3e3e42',
-                        borderRadius: '6px',
-                        backgroundColor: lightMode ? '#fff' : 'rgba(255,255,255,0.05)',
-                        color: lightMode ? '#2c3e50' : '#ecf0f1',
-                        width: '100%',
-                        cursor: 'pointer'
-                      }}
-                    />
-                    <div style={{ 
-                      fontSize: '11px', 
-                      opacity: 0.7, 
-                      marginBottom: '16px',
-                      padding: '8px',
-                      backgroundColor: lightMode ? '#e3f2fd' : 'rgba(78, 201, 176, 0.1)',
-                      borderRadius: '4px',
-                      border: lightMode ? '1px solid #90caf9' : '1px solid rgba(78, 201, 176, 0.3)'
-                    }}>
-                      💡 Tip: Images will be scaled to {AVATAR_SIZE}×{AVATAR_SIZE} pixels. For best results, use small square images.
-                    </div>
-                    
-                    <h4 style={{ marginTop: '20px', marginBottom: '12px' }}>Brush & palette</h4>
-                    <label>Brush</label>
-                    <input
-                      type="color"
-                      value={brushColor}
-                      onChange={(e) => {
-                        setBrushColor(e.target.value);
-                        addRecentColor(e.target.value);
-                      }}
-                    />
-                    <label>Opacity {Math.round(brushAlpha * 100)}%</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={brushAlpha}
-                      onChange={(e) => setBrushAlpha(parseFloat(e.target.value))}
-                    />
-                    {renderColorPickers({
-                      title: 'Standard palette',
-                      selectedColor: brushColor,
-                      onSelect: (c) => {
-                        setBrushColor(c);
-                        addRecentColor(c);
-                      }
-                    })}
-                    <button className="ghost-button" onClick={handleClearAvatar}>
-                      Clear avatar
-                    </button>
-                    <button 
-                      className="ghost-button" 
-                      onClick={handleExportPNG}
-                      style={{
-                        background: '#2ecc71',
+                        display: 'block',
+                        padding: '12px',
+                        backgroundColor: '#4ec9b0',
                         color: '#fff',
+                        textAlign: 'center',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
                         fontWeight: '600',
-                        border: 'none'
+                        marginBottom: '10px'
                       }}
                     >
-                      ⬇️ Export as PNG
-                    </button>
-                    <button 
-                      className="ghost-button" 
-                      onClick={handleExportHexToken}
-                      style={{
-                        background: '#3498db',
-                        color: '#fff',
-                        fontWeight: '600',
-                        border: 'none'
-                      }}
-                    >
-                      ⬡ Export Hex Token
-                    </button>
+                      📁 Upload PNG (100×100)
+                    </label>
+                    {avatarPngDataUrl && (
+                      <button
+                        onClick={() => setAvatarPngDataUrl(null)}
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          backgroundColor: '#e74856',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: '600'
+                        }}
+                      >
+                        🗑️ Remove Avatar
+                      </button>
+                    )}
                   </div>
-                </div>
-                <div className="customize-column">
-                  <h4>Avatar painter</h4>
-                  <div
-                    className="avatar-editor-grid"
-                    onContextMenu={(e) => e.preventDefault()}
-                  >
-                    {workingAvatar.map((row, rIdx) => (
-                      <div key={`row-${rIdx}`} className="avatar-editor-row">
-                        {row.map((pixel, cIdx) => (
-                          <div
-                            key={`pix-${rIdx}-${cIdx}`}
-                            className="avatar-editor-cell"
-                            style={{ backgroundColor: pixelToCssRgba(pixel) }}
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setIsPaintingAvatar(true);
-                              const erase = e.altKey || e.button === 2;
-                              setAvatarEraseMode(erase);
-                              handleAvatarPaint(rIdx, cIdx, erase);
-                            }}
-                            onMouseEnter={() => {
-                              if (isPaintingAvatar) {
-                                handleAvatarPaint(rIdx, cIdx, avatarEraseMode);
-                              }
-                            }}
-                          />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="avatar-editor-hint">
-                    Tip: Hold Alt or right-click to erase pixels. Use the slider to add transparency.
+                  <div style={{ fontSize: '13px', color: '#888', lineHeight: '1.5' }}>
+                    <strong>Tips:</strong>
+                    <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
+                      <li>Recommended size: 100×100 pixels</li>
+                      <li>PNG format with transparency supported</li>
+                      <li>Use pixel art for best results</li>
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -2932,28 +3789,11 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </div>
       )}
 
-      {/* Reactions Modal */}
-      <ReactionsModal
-        isOpen={showReactionsModal}
-        onClose={() => setShowReactionsModal(false)}
-        movesByType={movesByType}
-        bendingSlotConsumables={bendingSlotConsumables}
-        waterChargeConsumables={waterChargeConsumables}
-        expandedMoves={expandedMoves}
-        onToggleExpand={toggleMoveExpanded}
-        onPinMove={handlePinMove}
-        pinnedMoves={pinnedMoves}
-        movesLoading={movesLoading}
-        movesError={movesError}
-        lightMode={lightMode}
-        characterData={{ pixels: avatarForHeader }}
-      />
-
-      {/* Plan Turn Modal */}
-      <PlanTurnModal
-        isOpen={showPlanModal}
-        onClose={() => setShowPlanModal(false)}
-        movesByType={movesByType}
+      {/* My Moves Modal */}
+      <MyMovesModal
+        isOpen={showMyMovesModal}
+        onClose={() => setShowMyMovesModal(false)}
+        movesByType={filteredMovesByType}
         bendingSlotConsumables={bendingSlotConsumables}
         waterChargeConsumables={waterChargeConsumables}
         usedMoves={usedMoves}
@@ -2962,13 +3802,255 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         onToggleExpand={toggleMoveExpanded}
         onPinMove={handlePinMove}
         pinnedMoves={pinnedMoves}
+        onLearnMove={handleLearnMove}
         onUseMove={handleUseMove}
+        totalLearnedMovesCount={(() => {
+          const allMoves = [
+            ...(movesByType.action || []),
+            ...(movesByType.bonus || []),
+            ...(movesByType.reaction || []),
+            ...(movesByType.danger || [])
+          ];
+          const uniqueMoves = new Map();
+          allMoves.forEach(move => {
+            if (move.isLearned && !move.isLevel1) {
+              uniqueMoves.set(move.path, move);
+            }
+          });
+          return uniqueMoves.size;
+        })()}
+        maxLearnedMoves={maxLearnedMoves}
         movesLoading={movesLoading}
         movesError={movesError}
         lightMode={lightMode}
-        characterData={{ pixels: avatarForHeader }}
+        characterData={{ 
+          avatarPng: avatarPngDataUrl,
+          bendingLevels: {
+            air: characterData?.bendingLevels?.air || 0,
+            water: characterData?.bendingLevels?.water || 0,
+            earth: characterData?.bendingLevels?.earth || 0,
+            fire: characterData?.bendingLevels?.fire || 0,
+            spirit: characterData?.bendingLevels?.spirit || 0
+          }
+        }}
         isBleedingOut={isBleedingOut}
+        showLearnableMoves={showLearnableMoves}
+        onToggleShowLearnable={handleToggleShowLearnable}
+        showAllMoves={showAllMoves}
+        onToggleShowAll={handleToggleShowAll}
       />
+
+      {/* Use Move Modal */}
+      {showUseMoveModal && useMoveData && (
+        <div className="modal-overlay" onClick={handleCancelUseMove}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h3>Use Move: {useMoveData.move.name}</h3>
+              <button className="ghost-button" onClick={handleCancelUseMove}>Close</button>
+            </div>
+            
+            <div style={{ padding: '16px 0' }}>
+              <p style={{ 
+                marginBottom: '16px', 
+                color: lightMode ? '#666' : '#aaa',
+                fontSize: '14px'
+              }}>
+                Adjust the amount of resources to consume:
+              </p>
+              
+              {useMoveData.costs.map((cost, idx) => {
+                const element = getElementFromName(cost.name);
+                const elementColor = element ? ELEMENT_COLORS[element] : '#3498db';
+                const currentValue = customCostAmounts[cost.name] !== undefined ? customCostAmounts[cost.name] : cost.amount;
+                
+                // Find the consumable to get current/max values (normalize names for matching)
+                const normalizedCostName = cost.name.toLowerCase().replace(/_/g, ' ');
+                const consumable = characterData.consumables.find(c => {
+                  const normalizedConsumableName = c.name.toLowerCase().replace(/_/g, ' ');
+                  return normalizedConsumableName.includes(normalizedCostName) ||
+                         normalizedCostName.includes(normalizedConsumableName);
+                });
+                
+                // For water charges, show indication if this is optional (user chooses source)
+                const isWaterCharge = cost.isWaterCharge || false;
+                
+                return (
+                  <div 
+                    key={idx}
+                    style={{
+                      marginBottom: '16px',
+                      padding: '12px',
+                      backgroundColor: lightMode ? '#f9f9f9' : 'rgba(255,255,255,0.05)',
+                      borderRadius: '8px',
+                      border: `2px solid ${elementColor}`
+                    }}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ 
+                          fontWeight: '600',
+                          color: elementColor,
+                          fontSize: '14px'
+                        }}>
+                          {cost.name.replace(/charge$/i, 'charges')}
+                        </span>
+                        {isWaterCharge && (
+                          <div style={{ 
+                            fontSize: '11px',
+                            color: lightMode ? '#888' : '#999',
+                            marginTop: '2px'
+                          }}>
+                            Choose amount from this water source
+                          </div>
+                        )}
+                      </div>
+                      {consumable && (
+                        <span style={{ 
+                          fontSize: '12px',
+                          color: lightMode ? '#666' : '#aaa'
+                        }}>
+                          Available: {consumable.current} / {consumable.max}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <button
+                        onClick={() => {
+                          const newValue = Math.max(0, currentValue - 1);
+                          setCustomCostAmounts(prev => ({
+                            ...prev,
+                            [cost.name]: newValue
+                          }));
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          backgroundColor: lightMode ? '#e0e0e0' : '#3e3e42',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          color: lightMode ? '#333' : '#e0e0e0'
+                        }}
+                      >
+                        −
+                      </button>
+                      
+                      <input
+                        type="number"
+                        min="0"
+                        max={consumable?.current || 999}
+                        value={currentValue}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0;
+                          setCustomCostAmounts(prev => ({
+                            ...prev,
+                            [cost.name]: Math.max(0, value)
+                          }));
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          textAlign: 'center',
+                          border: `2px solid ${elementColor}`,
+                          borderRadius: '6px',
+                          backgroundColor: lightMode ? '#fff' : '#2a2a2a',
+                          color: elementColor
+                        }}
+                      />
+                      
+                      <button
+                        onClick={() => {
+                          const maxValue = consumable?.current || 999;
+                          const newValue = Math.min(maxValue, currentValue + 1);
+                          setCustomCostAmounts(prev => ({
+                            ...prev,
+                            [cost.name]: newValue
+                          }));
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          backgroundColor: lightMode ? '#e0e0e0' : '#3e3e42',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          color: lightMode ? '#333' : '#e0e0e0'
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+                    
+                    <div style={{
+                      marginTop: '8px',
+                      fontSize: '12px',
+                      color: lightMode ? '#999' : '#666',
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}>
+                      <span>Available: {consumable?.current || 0}</span>
+                      <span>Max per move: {consumable ? Math.ceil(consumable.current / 2) : 0}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                marginTop: '24px'
+              }}>
+                <button
+                  onClick={handleCancelUseMove}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    backgroundColor: lightMode ? '#e0e0e0' : '#3e3e42',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: lightMode ? '#333' : '#e0e0e0'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmUseMove}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    backgroundColor: '#2ecc71',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Use Move
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={`character-layout ${pinnedMovesCollapsed ? 'pinned-collapsed' : ''}`}>
         <div className="character-main">
@@ -3785,7 +4867,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             marginBottom: resourcesCollapsed ? '0' : '16px'
           }}
         >
-          <span>Bending Slots, Water Charges & Consumable Resources</span>
+          <span>Bending Slots and Water Charges</span>
           <span style={{ fontSize: '14px', opacity: 0.7 }}>
             {resourcesCollapsed ? '▼' : '▲'}
           </span>
@@ -3794,9 +4876,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         {!resourcesCollapsed && (
           <>
             <p className="section-note">
-          You can always only use maximum half of your current Bending slots 
-          (rounded up so if you have 3 left you can either spend 2 and then 1 or only 1 but 3 times).
-          You can use maximum of 2 * water level water charges for any Move.
+          You can use maximum half of your current Bending slots or water charges (rounded up).
         </p>
         
         {/* Collapsible Bonus Resources Section - Only shows when there are non-zero bonus resources */}
@@ -4100,8 +5180,252 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   </div>
                 );
               })}
+            {/* Also render non-consumable water charges */}
+            {Object.entries(characterData.waterCharges || {})
+              .filter(([key, value]) => {
+                // Exclude these specific entries
+                if (key === 'Water charge type' || key === 'value') return false;
+                if (key === 'Bonus water charges') return false;
+                
+                // Exclude water charges in "current/max" format (tracked by checkboxes)
+                const slashMatch = String(value).match(/^\d+\s*\/\s*\d+$/);
+                if (slashMatch) return false;
+                
+                const numValue = parseInt(value);
+                return isNaN(numValue) || numValue <= 0 || value === '';
+              })
+              .map(([key, value]) => {
+                const tooltip = getStatTooltip(key);
+                return (
+                  <div key={key} className="stat-card">
+                    <label title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                      {key}
+                    </label>
+                    <input
+                      type="text"
+                      value={value}
+                      onChange={(e) => updateWaterCharge(key, e.target.value)}
+                      className="stat-input"
+                    />
+                  </div>
+                );
+              })}
           </div>
         )}
+          </>
+        )}
+      </section>
+
+      {/* Moves Section */}
+      <section className="character-section">
+        <h2 
+          onClick={() => setMovesCollapsed(!movesCollapsed)}
+          style={{ 
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            userSelect: 'none',
+            marginBottom: movesCollapsed ? '0' : '16px'
+          }}
+        >
+          <span>
+            Moves
+            {movesCollapsed && (
+              <span style={{
+                fontSize: '14px',
+                fontWeight: 'normal',
+                opacity: 0.7,
+                marginLeft: '8px'
+              }}>
+                ({(() => {
+                  const allMoves = [
+                    ...(movesByType.action || []),
+                    ...(movesByType.bonus || []),
+                    ...(movesByType.reaction || []),
+                    ...(movesByType.danger || [])
+                  ];
+                  const uniqueMoves = new Map();
+                  allMoves.forEach(move => {
+                    if (move.isLearned && !move.isLevel1) {
+                      uniqueMoves.set(move.path, move);
+                    }
+                  });
+                  return uniqueMoves.size;
+                })()} learned)
+              </span>
+            )}
+          </span>
+          <span style={{ fontSize: '14px', opacity: 0.7 }}>
+            {movesCollapsed ? '▼' : '▲'}
+          </span>
+        </h2>
+        
+        {!movesCollapsed && (
+          <>
+            {movesLoading ? (
+              <p className="muted-text">Loading moves...</p>
+            ) : movesError ? (
+              <p className="error-text">{movesError}</p>
+            ) : (
+              <>
+                {/* Mode Selector */}
+                <div style={{
+                  marginBottom: '16px',
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ fontSize: '13px', color: '#888' }}>
+                    Learned: {(() => {
+                      const allMoves = [
+                        ...(movesByType.action || []),
+                        ...(movesByType.bonus || []),
+                        ...(movesByType.reaction || []),
+                        ...(movesByType.danger || [])
+                      ];
+                      const uniqueMoves = new Map();
+                      allMoves.forEach(move => {
+                        if (move.isLearned && !move.isLevel1) {
+                          uniqueMoves.set(move.path, move);
+                        }
+                      });
+                      return uniqueMoves.size;
+                    })()}
+                    {maxLearnedMoves !== null ? ` / ${maxLearnedMoves}` : ''}
+                  </span>
+                  
+                  <div style={{
+                    display: 'flex',
+                    backgroundColor: lightMode ? '#e0e0e0' : '#2a2a2a',
+                    borderRadius: '6px',
+                    padding: '2px',
+                    gap: '2px'
+                  }}>
+                    <button
+                      onClick={() => {
+                        handleToggleShowLearnable(false);
+                        handleToggleShowAll(false);
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: !showLearnableMoves && !showAllMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                        color: !showLearnableMoves && !showAllMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                        fontWeight: !showLearnableMoves && !showAllMoves ? '600' : '400'
+                      }}
+                    >
+                      My Moves
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleToggleShowLearnable(true);
+                        handleToggleShowAll(false);
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: showLearnableMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                        color: showLearnableMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                        fontWeight: showLearnableMoves ? '600' : '400'
+                      }}
+                    >
+                      Learnable
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleToggleShowLearnable(false);
+                        handleToggleShowAll(true);
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: showAllMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                        color: showAllMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                        fontWeight: showAllMoves ? '600' : '400'
+                      }}
+                    >
+                      All Moves
+                    </button>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <ActionPanel
+                  title="Actions"
+                  moves={filteredMovesByType.action || []}
+                  expandedMoves={expandedMoves}
+                  onToggleExpand={toggleMoveExpanded}
+                  onPinMove={handlePinMove}
+                  pinnedMoves={pinnedMoves}
+                  onLearnMove={handleLearnMove}
+                  onUseMove={handleUseMove}
+                  showUseButton={true}
+                  lightMode={lightMode}
+                  characterData={characterData}
+                />
+
+                {/* Bonus Actions */}
+                {!isBleedingOut && (
+                  <ActionPanel
+                    title="Bonus Actions"
+                    moves={filteredMovesByType.bonus || []}
+                    expandedMoves={expandedMoves}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPinMove={handlePinMove}
+                    pinnedMoves={pinnedMoves}
+                    onLearnMove={handleLearnMove}
+                    onUseMove={handleUseMove}
+                    showUseButton={true}
+                    lightMode={lightMode}
+                    characterData={characterData}
+                  />
+                )}
+
+                {/* Reactions */}
+                <ActionPanel
+                  title="Reactions"
+                  moves={filteredMovesByType.reaction || []}
+                  expandedMoves={expandedMoves}
+                  onToggleExpand={toggleMoveExpanded}
+                  onPinMove={handlePinMove}
+                  pinnedMoves={pinnedMoves}
+                  onLearnMove={handleLearnMove}
+                  onUseMove={handleUseMove}
+                  showUseButton={true}
+                  lightMode={lightMode}
+                  characterData={characterData}
+                />
+
+                {/* Danger Sense Reactions */}
+                <ActionPanel
+                  title="Danger Sense Reactions"
+                  moves={filteredMovesByType.danger || []}
+                  expandedMoves={expandedMoves}
+                  onToggleExpand={toggleMoveExpanded}
+                  onPinMove={handlePinMove}
+                  pinnedMoves={pinnedMoves}
+                  onLearnMove={handleLearnMove}
+                  onUseMove={handleUseMove}
+                  showUseButton={true}
+                  lightMode={lightMode}
+                  characterData={characterData}
+                />
+              </>
+            )}
           </>
         )}
       </section>
@@ -4207,7 +5531,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                     onPin={null}
                     isPinned={true}
                     lightMode={lightMode}
-                    characterData={{ pixels: avatarForHeader }}
+                    characterData={characterData}
                   />
                 </div>
               )}
@@ -4235,7 +5559,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                     onPin={null} // No pin button on already pinned moves
                     isPinned={true}
                     lightMode={lightMode}
-                    characterData={{ pixels: avatarForHeader }}
+                    characterData={characterData}
                   />
                   <button 
                     className="close-button" 

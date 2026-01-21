@@ -58,13 +58,19 @@ Total Bending Level: 3
 | Paralysed     | no  |
 | Prone         | no  |
 | Slowed        | no  |
+| Exhausted     | no  |
+| Empowered     | no  |
+| Quickened     | no  |
+| Armor Surge   | no  |
+| Barrier Surge | no  |
+| Harmonic Flow | no  |
 
 
 
 ## Bending Slots
 You can always only use maximum half of you current Bending slots (rounded up so if you have 3 left you can either spend 2 and then 1 or only 1 but 3 times)
 
-| Slot                   | 1/1 |
+| Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
 | <details><summary>Bonus air slots</summary>0/0</details> | |
 | Firebending slot       |                       6/6 |

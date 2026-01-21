@@ -1,0 +1,9 @@
+{
+  "moves": [
+    "Gravel Vortex",
+    "Wind Spear",
+    "Pressure Burst"
+  ],
+  "_comment": "Add move names here (without .md extension) for moves this character has learned above level 1",
+  "lastUpdated": "2026-01-21T22:08:53.120Z"
+}

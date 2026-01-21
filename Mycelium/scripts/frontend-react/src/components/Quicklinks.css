@@ -2,7 +2,8 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
   color: #e0e0e0;
 }
 
@@ -168,14 +169,27 @@
 @media (max-width: 768px) {
   .quicklinks-container {
     padding: 1rem;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .quicklinks-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
   }
 
   .quicklinks-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+
+  .quicklinks-section {
+    margin-bottom: 2rem;
   }
 
   .quicklinks-section h2 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
   }
 
   .quicklinks-grid {
@@ -184,7 +198,56 @@
   }
 
   .quicklink-button {
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .quicklink-icon {
+    font-size: 1.25rem;
+  }
+
+  .quicklink-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .quicklinks-container {
+    padding: 0.75rem;
+  }
+
+  .quicklinks-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .quicklinks-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .quicklinks-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .quicklinks-section h2 {
+    font-size: 1rem;
+  }
+
+  .quicklink-button {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9rem;
+    gap: 0.5rem;
+  }
+
+  .quicklink-icon {
+    font-size: 1.1rem;
+  }
+
+  .quicklink-avatar {
+    width: 36px !important;
+    height: 36px !important;
   }
 }
 

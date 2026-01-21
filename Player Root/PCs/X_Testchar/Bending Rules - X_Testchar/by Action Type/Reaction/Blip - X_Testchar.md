@@ -1,7 +1,7 @@
 #Reaction_X_Testchar 
 
 - Target Range: Touch
-- Effect Range: [[Spiritbending slot]] (20)
+- Effect Range: [[Spiritbending slot]] (60)
 - [[Spirit Attack Roll]] (1d20 + 20 + 5) (If the target is unwilling)
 
 

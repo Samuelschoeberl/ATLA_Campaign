@@ -12,7 +12,7 @@ Reaction: Must be initiated by a Firebender in line of sight
     
 
 
-#Level1 
+#Level2 
 #earth
 #fire 
 

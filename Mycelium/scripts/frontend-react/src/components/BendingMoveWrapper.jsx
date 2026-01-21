@@ -27,6 +27,8 @@ const ACTION_COLORS = {
  * @param {Function} onToggleExpand - Callback when expand/collapse is clicked
  * @param {Function} onPin - Callback when pin button is clicked
  * @param {boolean} isPinned - Whether the move is currently pinned
+ * @param {Function} onLearn - Callback when learn/unlearn button is clicked
+ * @param {boolean} isLearned - Whether the move is currently learned
  * @param {Function} onUse - Optional callback when use button is clicked
  * @param {boolean} showUseButton - Whether to show the "Use" button
  * @param {boolean} lightMode - Whether light mode is active
@@ -37,6 +39,8 @@ const BendingMoveWrapper = ({
   onToggleExpand, 
   onPin,
   isPinned = false,
+  onLearn,
+  isLearned = true,
   onUse,
   showUseButton = false,
   lightMode = false,
@@ -53,18 +57,89 @@ const BendingMoveWrapper = ({
   const elementColor = move.element ? ELEMENT_COLORS[move.element.toLowerCase()] || '#3498db' : '#3498db';
   const actionColor = move.actionType ? ACTION_COLORS[move.actionType] || '#3498db' : '#3498db';
 
-  // Extract cost information from move slots
-  const costs = move.slots && move.slots.length > 0 
-    ? move.slots.map(slotStr => {
-        const match = slotStr.match(/(.+?)\s*(?:\((\d+)\))?$/);
-        if (match) {
-          const slotName = match[1].trim();
-          const amount = match[2] ? parseInt(match[2]) : 1;
-          return { name: slotName, amount };
+  // Check if character meets the requirements to learn this move
+  const canLearnMove = () => {
+    if (move.level === undefined || move.level === null) return true;
+    if (!characterData?.bendingLevels) return true;
+    
+    // Check if this is a teamup move with multiple elements
+    const isTeamup = move.tags && move.tags.some(tag => tag.toLowerCase().includes('teamup'));
+    
+    if (isTeamup) {
+      // Extract all element tags from the move
+      const elementTags = ['air', 'water', 'earth', 'fire', 'spirit'];
+      const moveElements = elementTags.filter(element => 
+        move.tags.some(tag => tag.toLowerCase().includes(element))
+      );
+      
+      // For teamup moves, character needs ANY of the elements at the required level
+      if (moveElements.length > 0) {
+        return moveElements.some(element => {
+          const elementLevel = characterData.bendingLevels[element] || 0;
+          return elementLevel >= move.level;
+        });
+      }
+    }
+    
+    // For non-teamup moves, check the single element
+    if (!move.element) return true;
+    const elementLevel = characterData.bendingLevels[move.element.toLowerCase()] || 0;
+    return elementLevel >= move.level;
+  };
+
+  const meetsRequirements = canLearnMove();
+  const learnButtonDisabled = !meetsRequirements;
+
+  // Generate display costs based on the move's element with current values
+  const displayCosts = [];
+  if (move.element) {
+    const elementLower = move.element.toLowerCase();
+    
+    if (elementLower === 'water') {
+      // Water moves show both waterbottle and environmental charges
+      if (characterData && characterData.consumables) {
+        const waterbottleConsumable = characterData.consumables.find(c => 
+          c && c.name && c.name.toLowerCase().includes('waterbottle')
+        );
+        const environmentalConsumable = characterData.consumables.find(c => 
+          c && c.name && c.name.toLowerCase().includes('environmental') && c.name.toLowerCase().includes('water')
+        );
+        if (waterbottleConsumable) {
+          displayCosts.push({ 
+            name: 'Waterbottle charges', 
+            current: waterbottleConsumable.current || 0,
+            max: waterbottleConsumable.max || 0
+          });
         }
-        return null;
-      }).filter(Boolean)
-    : [];
+        if (environmentalConsumable) {
+          displayCosts.push({ 
+            name: 'Environmental water charges', 
+            current: environmentalConsumable.current || 0,
+            max: environmentalConsumable.max || 0
+          });
+        }
+      }
+    } else {
+      // Other elements show their bending slots
+      const elementName = move.element.charAt(0).toUpperCase() + move.element.slice(1);
+      const slotName = `${elementName}bending slot`;
+      let currentSlots = 0;
+      let maxSlots = 0;
+      
+      if (characterData && characterData.consumables) {
+        const slotConsumable = characterData.consumables.find(c => 
+          c && c.name && c.name.toLowerCase().includes(elementLower) && 
+          c.name.toLowerCase().includes('slot')
+        );
+        if (slotConsumable) {
+          currentSlots = slotConsumable.current || 0;
+          maxSlots = slotConsumable.max || 0;
+        }
+      }
+      
+      displayCosts.push({ name: slotName, current: currentSlots, max: maxSlots });
+    }
+  }
 
   // Extract teamup info
   const teamupInfo = move.tags && move.tags.some(tag => tag.toLowerCase().startsWith('teamup'))
@@ -84,6 +159,11 @@ const BendingMoveWrapper = ({
   const handleCardClick = (e) => {
     // Don't toggle if clicking on buttons
     if (e.target.closest('button')) return;
+    
+    // Don't toggle if user is selecting text
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) return;
+    
     onToggleExpand(move.path);
   };
 
@@ -153,8 +233,8 @@ const BendingMoveWrapper = ({
               )}
               
               {/* Cost indicator - just show if it has cost */}
-              {costs.length > 0 && (
-                <span style={{ fontSize: '11px', opacity: 0.7 }} title={costs.map(c => `${c.amount}×${c.name}`).join(', ')}>
+              {displayCosts.length > 0 && (
+                <span style={{ fontSize: '11px', opacity: 0.7 }} title={displayCosts.map(c => `${c.name}: ${c.current}/${c.max}`).join(', ')}>
                   💎
                 </span>
               )}
@@ -163,6 +243,63 @@ const BendingMoveWrapper = ({
 
           {/* Right side: Action buttons */}
           <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+            {onLearn && !move.isLevel1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!learnButtonDisabled) {
+                    onLearn(move);
+                  }
+                }}
+                disabled={learnButtonDisabled}
+                style={{
+                  padding: '4px 6px',
+                  fontSize: '12px',
+                  backgroundColor: learnButtonDisabled
+                    ? (lightMode ? '#e0e0e0' : '#2a2a2a')
+                    : isLearned 
+                      ? hexToRgba('#2ecc71', 0.3)
+                      : 'transparent',
+                  border: learnButtonDisabled
+                    ? '1px solid #666'
+                    : isLearned 
+                      ? '1px solid #2ecc71' 
+                      : '1px solid #999',
+                  borderRadius: '4px',
+                  cursor: learnButtonDisabled ? 'not-allowed' : 'pointer',
+                  color: learnButtonDisabled
+                    ? '#666'
+                    : isLearned 
+                      ? '#2ecc71' 
+                      : (lightMode ? '#666' : '#999'),
+                  transition: 'all 0.2s',
+                  opacity: learnButtonDisabled ? 0.4 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!learnButtonDisabled) {
+                    e.target.style.color = isLearned ? '#27ae60' : '#2ecc71';
+                    e.target.style.backgroundColor = hexToRgba('#2ecc71', 0.2);
+                    e.target.style.borderColor = '#2ecc71';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!learnButtonDisabled) {
+                    e.target.style.color = isLearned ? '#2ecc71' : (lightMode ? '#666' : '#999');
+                    e.target.style.backgroundColor = isLearned ? hexToRgba('#2ecc71', 0.3) : 'transparent';
+                    e.target.style.borderColor = isLearned ? '#2ecc71' : '#999';
+                  }
+                }}
+                title={
+                  learnButtonDisabled 
+                    ? `Requires ${move.element} level ${move.level}` 
+                    : isLearned 
+                      ? "Unlearn this move" 
+                      : "Learn this move"
+                }
+              >
+                {isLearned ? '✓' : '📖'}
+              </button>
+            )}
             {onPin && (
               <button
                 onClick={(e) => {
@@ -199,30 +336,6 @@ const BendingMoveWrapper = ({
                 📌
               </button>
             )}
-            {showUseButton && onUse && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onUse(move);
-                }}
-                style={{
-                  padding: '4px 10px',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  backgroundColor: '#2ecc71',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#27ae60'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#2ecc71'}
-                title="Use this move"
-              >
-                Use
-              </button>
-            )}
           </div>
         </>
       )}
@@ -248,6 +361,68 @@ const BendingMoveWrapper = ({
               {move.name}
             </h4>
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              {onLearn && !move.isLevel1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!learnButtonDisabled) {
+                      onLearn(move);
+                    }
+                  }}
+                  disabled={learnButtonDisabled}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    backgroundColor: learnButtonDisabled
+                      ? (lightMode ? '#e0e0e0' : '#2a2a2a')
+                      : isLearned 
+                        ? hexToRgba('#2ecc71', 0.3)
+                        : (lightMode ? '#f0f0f0' : '#3e3e42'),
+                    border: learnButtonDisabled
+                      ? '1px solid #666'
+                      : isLearned 
+                        ? '1px solid #2ecc71' 
+                        : '1px solid #999',
+                    borderRadius: '4px',
+                    cursor: learnButtonDisabled ? 'not-allowed' : 'pointer',
+                    color: learnButtonDisabled
+                      ? '#666'
+                      : isLearned 
+                        ? '#2ecc71' 
+                        : (lightMode ? '#333' : '#e0e0e0'),
+                    transition: 'all 0.2s',
+                    opacity: learnButtonDisabled ? 0.4 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!learnButtonDisabled) {
+                      e.target.style.backgroundColor = hexToRgba('#2ecc71', 0.2);
+                      e.target.style.color = isLearned ? '#27ae60' : '#2ecc71';
+                      e.target.style.borderColor = '#2ecc71';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!learnButtonDisabled) {
+                      e.target.style.backgroundColor = isLearned 
+                        ? hexToRgba('#2ecc71', 0.3)
+                        : (lightMode ? '#f0f0f0' : '#3e3e42');
+                      e.target.style.color = isLearned 
+                        ? '#2ecc71' 
+                        : (lightMode ? '#333' : '#e0e0e0');
+                      e.target.style.borderColor = isLearned ? '#2ecc71' : '#999';
+                    }
+                  }}
+                  title={
+                    learnButtonDisabled 
+                      ? `Requires ${move.element} level ${move.level}` 
+                      : isLearned 
+                        ? "Unlearn this move" 
+                        : "Learn this move"
+                  }
+                >
+                  {isLearned ? '✓ Learned' : '📖 Learn'}
+                </button>
+              )}
               {onPin && (
                 <button
                   onClick={(e) => {
@@ -383,15 +558,14 @@ const BendingMoveWrapper = ({
           </div>
 
           {/* Cost Info */}
-          {costs.length > 0 && (
+          {displayCosts.length > 0 && (
             <div style={{
-              fontSize: '12px',
-              opacity: 0.8,
-              fontStyle: 'italic',
-              marginBottom: '12px',
-              color: lightMode ? '#666' : '#aaa'
+              fontSize: '11px',
+              opacity: 0.7,
+              marginBottom: '8px',
+              color: lightMode ? '#666' : '#999'
             }}>
-              💎 Cost: {costs.map(c => `${c.amount} × ${c.name}`).join(', ')}
+              {displayCosts.map(c => `${c.name}: ${c.current}/${c.max}`).join('; ')}
             </div>
           )}
 

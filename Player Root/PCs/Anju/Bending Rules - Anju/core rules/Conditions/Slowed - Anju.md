@@ -1,3 +1,4 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Anju or #reactions_Anju (including #Danger_Sense_Reaction_Anju). ( #Action_Anju is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
-#condition_Anju
+#condition_Anju #Curse_Anju #general_Anju
+

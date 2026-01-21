@@ -1,7 +1,7 @@
 #Action_Ash 
 
 - Range: self
-- Duration: [[Spiritbending slot]] (1) rounds.
+- Duration: [[Spiritbending slot]] (3) rounds.
 
 **Effect**:
 Lets you perceive spiritual energy.

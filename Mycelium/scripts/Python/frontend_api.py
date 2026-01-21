@@ -152,6 +152,7 @@ def load_character_customization(name: str):
             'name': raw.get('name') or name,
             'folderColor': folder_color,
             'avatar': avatar,
+            'avatarPng': raw.get('avatarPng'),  # Include PNG avatar path
             'updated_at': raw.get('updated_at') or datetime.utcnow().isoformat() + 'Z'
         }
     except Exception:
@@ -176,13 +177,83 @@ def load_all_customizations():
     return out
 
 
-def save_character_customization(name: str, folder_color, avatar):
+def save_character_customization(name: str, folder_color, avatar, avatar_png=None):
     """Persist a customization entry and return the normalized payload."""
+    import base64
     slug = _safe_character_slug(name)
+    
+    # Save PNG as actual file if provided
+    avatar_png_path = None
+    if avatar_png:
+        try:
+            # Extract base64 data from data URL
+            if avatar_png.startswith('data:image/png;base64,'):
+                base64_data = avatar_png.split(',', 1)[1]
+            else:
+                base64_data = avatar_png
+            
+            # Decode and save to character's folder
+            png_data = base64.b64decode(base64_data)
+            
+            # Strip color profiles using PIL - aggressive re-encoding
+            from PIL import Image
+            import io
+            img = Image.open(io.BytesIO(png_data))
+            
+            # Log what we're removing
+            if img.info.get('icc_profile'):
+                print(f"Stripping ICC profile from {name}")
+            if 'sRGB' in img.info:
+                print(f"Stripping sRGB chunk from {name}")
+            
+            # Create completely clean image
+            # Force mode conversion to drop all metadata
+            if img.mode == 'RGBA' or 'transparency' in img.info:
+                # Keep transparency if present
+                clean_mode = 'RGBA'
+                new_img = Image.new('RGBA', img.size, (0, 0, 0, 0))
+                new_img.paste(img, (0, 0), img if img.mode == 'RGBA' else None)
+            else:
+                # Convert to RGB, no alpha
+                clean_mode = 'RGB'
+                if img.mode != 'RGB':
+                    new_img = img.convert('RGB')
+                else:
+                    new_img = img.copy()
+                # Re-paste to clean all metadata
+                clean_img = Image.new('RGB', new_img.size)
+                clean_img.paste(new_img)
+                new_img = clean_img
+            
+            # Save with ZERO metadata - this is the key
+            output = io.BytesIO()
+            new_img.save(output, format='PNG', optimize=False, save_all=False)
+            cleaned_png_data = output.getvalue()
+            
+            # Find character folder (PCs/CharacterName/)
+            player_root = get_player_root_base()
+            char_folder = player_root / 'PCs' / name
+            
+            # Create folder if it doesn't exist
+            char_folder.mkdir(parents=True, exist_ok=True)
+            
+            png_file = char_folder / f"{name}_avatar.png"
+            png_file.write_bytes(cleaned_png_data)
+            # Store relative path
+            avatar_png_path = f"PCs/{name}/{name}_avatar.png"
+            print(f"Saved avatar PNG (all metadata stripped) to: {png_file}")
+        except Exception as e:
+            print(f"Error saving PNG file: {e}")
+            import traceback
+            traceback.print_exc()
+            # Continue with data URL if file save fails
+            avatar_png_path = avatar_png
+    
     payload = {
         'name': name,
         'folderColor': folder_color if folder_color else None,
         'avatar': normalize_avatar_matrix(avatar),
+        'avatarPng': avatar_png_path,  # Store file path instead of data URL
         'updated_at': datetime.utcnow().isoformat() + 'Z'
     }
     target = get_customization_dir().joinpath(f"{slug}.json")
@@ -680,6 +751,44 @@ def player_root(subpath):
         direct_serve_extensions = image_extensions | {'.html', '.htm'}
         
         if file_ext in direct_serve_extensions:
+            # For PNG files, strip color profiles on-the-fly before serving
+            if file_ext == '.png' and request.method == 'GET':
+                try:
+                    from PIL import Image
+                    import io
+                    
+                    # Load PNG
+                    img = Image.open(str(target))
+                    
+                    # Strip ALL metadata by re-creating image
+                    if img.mode == 'RGBA' or 'transparency' in img.info:
+                        clean_img = Image.new('RGBA', img.size, (0, 0, 0, 0))
+                        clean_img.paste(img, (0, 0), img if img.mode == 'RGBA' else None)
+                    else:
+                        clean_img = Image.new('RGB', img.size)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
+                        clean_img.paste(img)
+                    
+                    # Encode to PNG with NO metadata
+                    output = io.BytesIO()
+                    clean_img.save(output, format='PNG', optimize=False, save_all=False)
+                    output.seek(0)
+                    
+                    response = send_file(
+                        output,
+                        mimetype='image/png',
+                        download_name=target.name,
+                        conditional=False
+                    )
+                    response.headers['Access-Control-Allow-Origin'] = '*'
+                    response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
+                    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+                    return response
+                except Exception as e:
+                    print(f"PNG stripping failed, serving raw: {e}")
+                    # Fall through to normal serving
+            
             # Serve image and HTML files directly
             try:
                 # Determine mimetype
@@ -1765,6 +1874,7 @@ def character_customization(name):
                 'name': name,
                 'folderColor': None,
                 'avatar': default_avatar_matrix(),
+                'avatarPng': None,
                 'updated_at': None
             }
         return jsonify(data)
@@ -1772,12 +1882,18 @@ def character_customization(name):
     body = request.get_json() or {}
     folder_color = body.get('folderColor') or body.get('folder_color')
     avatar = body.get('avatar')
+    avatar_png = body.get('avatarPng')
 
     if folder_color and not _is_valid_hex_color(folder_color):
         return jsonify({'error': 'folderColor must be a hex string like #aabbcc'}), 400
 
     try:
-        payload = save_character_customization(name, folder_color, avatar or default_avatar_matrix())
+        payload = save_character_customization(
+            name, 
+            folder_color, 
+            avatar or default_avatar_matrix(),
+            avatar_png
+        )
         return jsonify({'success': True, 'customization': payload})
     except Exception as e:
         return jsonify({'error': f'Failed to save customization: {e}'}), 500
@@ -1856,7 +1972,7 @@ def get_file_content(filepath):
     image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'}
     
     if file_ext in image_extensions:
-        # Serve image files directly
+        # Serve image files directly, stripping PNG profiles on-the-fly
         mimetype_map = {
             '.jpg': 'image/jpeg',
             '.jpeg': 'image/jpeg',
@@ -1868,6 +1984,39 @@ def get_file_content(filepath):
             '.ico': 'image/x-icon',
         }
         mimetype = mimetype_map.get(file_ext, 'application/octet-stream')
+
+        # For PNGs, strip metadata/ICC profiles to avoid color shifts (same as player_root handler)
+        if file_ext == '.png' and request.method == 'GET':
+            try:
+                from PIL import Image
+                import io
+
+                img = Image.open(str(target))
+                if img.mode == 'RGBA' or 'transparency' in img.info:
+                    clean_img = Image.new('RGBA', img.size, (0, 0, 0, 0))
+                    clean_img.paste(img, (0, 0), img if img.mode == 'RGBA' else None)
+                else:
+                    clean_img = Image.new('RGB', img.size)
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    clean_img.paste(img)
+
+                output = io.BytesIO()
+                clean_img.save(output, format='PNG', optimize=False, save_all=False)
+                output.seek(0)
+
+                response = send_file(
+                    output,
+                    mimetype='image/png',
+                    download_name=target.name,
+                    conditional=False
+                )
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                response.headers['Cache-Control'] = 'public, max-age=3600'
+                return response
+            except Exception as e:
+                print(f"PNG stripping failed for /file: {e}")
+                # Fall through to normal serving
         
         try:
             response = send_file(

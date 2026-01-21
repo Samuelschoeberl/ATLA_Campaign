@@ -1,14 +1,101 @@
 .battlemap-viewer {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  height: 100%;
-  max-height: 100vh;
-  padding: 16px;
+  gap: 8px;
+  height: 100vh;
+  width: 100%;
+  padding: 12px;
   background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
   border-radius: 12px;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
+  position: relative;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+/* Resizable panel styles */
+.resizable-panel {
+  position: relative;
+  minHeight: 100px;
+  resize: vertical;
+  border: 2px solid rgba(52, 152, 219, 0.3);
+  borderRadius: 8px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease;
+  marginBottom: 4px;
+}
+
+.resizable-panel:hover {
+  border-color: rgba(52, 152, 219, 0.5);
+}
+
+.resizable-panel::-webkit-resizer {
+  background: linear-gradient(135deg, transparent 50%, rgba(52, 152, 219, 0.7) 50%);
+  border-radius: 0 0 6px 0;
+  border: 2px solid rgba(52, 152, 219, 0.9);
+  width: 16px;
+  height: 16px;
+}
+
+.resizable-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.resizable-panel::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+}
+
+.resizable-panel::-webkit-scrollbar-thumb {
+  background: rgba(52, 152, 219, 0.4);
+  border-radius: 5px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.resizable-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 152, 219, 0.6);
+}
+
+/* Custom resize handle */
+.resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, rgba(52, 152, 219, 0.3) 50%);
+  border-radius: 0 0 8px 0;
+  z-index: 10;
+}
+
+.resize-handle:hover {
+  background: linear-gradient(135deg, transparent 50%, rgba(52, 152, 219, 0.6) 50%);
+}
+
+/* Scrollable toolbar content */
+.toolbar-content {
+  /* Removed max-height and overflow to allow parent scrolling */
+}
+
+.toolbar-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.toolbar-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.toolbar-content::-webkit-scrollbar-thumb {
+  background: rgba(52, 152, 219, 0.3);
+  border-radius: 4px;
+}
+
+.toolbar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 152, 219, 0.5);
 }
 
 /* Custom scrollbar styling */
@@ -42,3 +129,190 @@
   }
 }
 
+/* CSS-only effect animations for hexes - hardware accelerated */
+@keyframes flicker {
+  0%, 100% { fill-opacity: 0.4; }
+  25% { fill-opacity: 0.7; }
+  50% { fill-opacity: 0.5; }
+  75% { fill-opacity: 0.8; }
+}
+
+@keyframes pulse-ice {
+  0%, 100% { fill-opacity: 0.4; }
+  50% { fill-opacity: 0.7; }
+}
+
+@keyframes bubble {
+  0%, 100% { fill-opacity: 0.5; }
+  33% { fill-opacity: 0.7; }
+  66% { fill-opacity: 0.6; }
+}
+
+@keyframes spark {
+  0%, 90%, 100% { fill-opacity: 0.5; }
+  5%, 15% { fill-opacity: 0.9; }
+}
+
+@keyframes wave {
+  0%, 100% { fill-opacity: 0.6; }
+  50% { fill-opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0%, 100% { fill-opacity: 0.5; }
+  50% { fill-opacity: 0.8; }
+}
+
+@keyframes swirl {
+  0%, 100% { fill-opacity: 0.4; }
+  50% { fill-opacity: 0.6; }
+}
+
+@keyframes flow {
+  0%, 100% { fill-opacity: 0.5; }
+  50% { fill-opacity: 0.7; }
+}
+
+.hex-effect-fire {
+  animation: flicker 1.5s ease-in-out infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-ice {
+  animation: pulse-ice 2s ease-in-out infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-poison {
+  animation: bubble 2.5s ease-in-out infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-lightning {
+  animation: spark 0.8s linear infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-darkness {
+  animation: wave 3s ease-in-out infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-healing {
+  animation: shimmer 1.8s ease-in-out infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-air {
+  animation: swirl 2.2s ease-in-out infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-water {
+  animation: flow 2.5s ease-in-out infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-blood {
+  animation: wave 2s ease-in-out infinite;
+  will-change: fill-opacity;
+}
+
+.hex-effect-earth {
+  fill-opacity: 0.6;
+}
+
+/* Smooth button interactions */
+button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Tool button animations */
+@keyframes toolSelect {
+  0% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.1) translateY(-3px); }
+  100% { transform: scale(1.05) translateY(-2px); }
+}
+
+/* Hex grid smooth transitions */
+.hex-grid-cell {
+  transition: fill 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 0.2s ease-out,
+              opacity 0.3s ease-out;
+}
+
+/* Token smooth movements */
+.battlemap-token {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease-out;
+  will-change: transform;
+}
+
+.battlemap-token:hover {
+  filter: drop-shadow(0 4px 12px rgba(52, 152, 219, 0.6));
+}
+
+/* Measurement line animation */
+@keyframes dashOffset {
+  to {
+    stroke-dashoffset: 24;
+  }
+}
+
+.measurement-line {
+  animation: dashOffset 0.8s linear infinite;
+}
+
+/* Ripple effect for clicks */
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
+}
+
+/* Modal and overlay animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Performance optimizations */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hardware acceleration for animated elements */
+.animated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}

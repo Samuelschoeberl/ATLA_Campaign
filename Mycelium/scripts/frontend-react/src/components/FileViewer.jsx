@@ -25,7 +25,10 @@ const FileViewer = ({ file, lightMode = false, onFileSelect, advancedMode = fals
   const isMarkdown = file?.name.endsWith('.md');
   const isImage = file ? /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(file.name) : false;
   const isHtml = file ? /\.(html|htm)$/i.test(file.name) : false;
-  const isCharacterSheet = file ? file.name.toLowerCase().includes('character sheet') : false;
+  const isCharacterSheet = file ? (() => {
+    const lower = file.name.toLowerCase();
+    return lower.includes('character sheet') || lower.includes('character_sheet');
+  })() : false;
   const isInitiativeTracker = file ? file.name === 'Initiative Tracker.md' : false;
   const isStatOverview = file ? file.name === 'stat_overview.md' : false;
   const isQuicklinks = file ? file.name === 'Quicklinks.md' : false;
@@ -479,7 +482,12 @@ const FileViewer = ({ file, lightMode = false, onFileSelect, advancedMode = fals
   if (isBattlemap) {
     return (
       <div className={`file-viewer ${lightMode ? 'light-mode' : ''}`}>
-        <BattlemapViewer filePath={file.path} content={content} advancedMode={advancedMode} />
+        <BattlemapViewer
+          filePath={file.path}
+          content={content}
+          advancedMode={advancedMode}
+          onFileSelect={onFileSelect}
+        />
       </div>
     );
   }

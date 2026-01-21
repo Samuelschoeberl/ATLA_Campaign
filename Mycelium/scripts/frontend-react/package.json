@@ -17,7 +17,14 @@
     "test:analyze": "./test-with-analysis.sh",
     "test:analyze:headed": "./test-with-analysis.sh --headed",
     "test:extract": "node extract-test-results.js",
-    "test:extract:failed": "node extract-test-results.js --failed-only"
+    "test:extract:failed": "node extract-test-results.js --failed-only",
+    "test:stability": "PATH=/usr/local/bin:$PATH playwright test tests/e2e/stability-10-clients.spec.js tests/e2e/race-conditions.spec.js --workers=1",
+    "test:stability:headed": "PATH=/usr/local/bin:$PATH playwright test tests/e2e/stability-10-clients.spec.js tests/e2e/race-conditions.spec.js --workers=1 --headed",
+    "test:stability:ui": "PATH=/usr/local/bin:$PATH playwright test tests/e2e/stability-10-clients.spec.js tests/e2e/race-conditions.spec.js --ui",
+    "test:10-clients": "PATH=/usr/local/bin:$PATH playwright test tests/e2e/stability-10-clients.spec.js --workers=1",
+    "test:race": "PATH=/usr/local/bin:$PATH playwright test tests/e2e/race-conditions.spec.js --workers=1",
+    "test:sync": "PATH=/usr/local/bin:$PATH playwright test tests/e2e/sync-basic.spec.js tests/e2e/scalability-sync.spec.js tests/e2e/speed-multiclient.spec.js --workers=1",
+    "test:all-multi": "PATH=/usr/local/bin:$PATH playwright test tests/e2e/stability-10-clients.spec.js tests/e2e/race-conditions.spec.js tests/e2e/sync-basic.spec.js tests/e2e/scalability-sync.spec.js tests/e2e/speed-multiclient.spec.js --workers=1"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -25,6 +32,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "animejs": "^4.2.2",
     "dompurify": "^3.0.6",
     "flask": "^0.2.10",
     "marked": "^9.1.6",

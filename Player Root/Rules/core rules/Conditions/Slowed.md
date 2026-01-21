@@ -1,3 +1,3 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions or #reactions (including #Danger_Sense_Reaction). ( #Action is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
 #condition #Curse #general

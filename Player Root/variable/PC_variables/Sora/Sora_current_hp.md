@@ -1,3 +1,3 @@
 32
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#vitality #current_variable #variable_Sora #character_stat_Sora #character_stats_Sora #secondary_stat_Sora

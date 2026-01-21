@@ -24,6 +24,8 @@ const ELEMENT_COLORS = {
  * @param {boolean} movesLoading - Whether moves are loading
  * @param {string} movesError - Error message if moves failed to load
  * @param {boolean} lightMode - Whether light mode is active
+ * @param {boolean} showAllMoves - Whether to show all moves or only learned ones
+ * @param {Function} onToggleShowAll - Callback to toggle show all moves
  */
 const ReactionsModal = ({
   isOpen,
@@ -35,10 +37,17 @@ const ReactionsModal = ({
   onToggleExpand,
   onPinMove,
   pinnedMoves = [],
+  onLearnMove,
   movesLoading,
   movesError,
   lightMode = false,
-  characterData = null
+  characterData = null,
+  showLearnableMoves = false,
+  onToggleShowLearnable,
+  showAllMoves = false,
+  onToggleShowAll,
+  totalLearnedMovesCount = 0,
+  maxLearnedMoves = null
 }) => {
   if (!isOpen) return null;
 
@@ -57,7 +66,77 @@ const ReactionsModal = ({
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Reactions & Danger Sense</h3>
-          <button className="ghost-button" onClick={onClose}>Close</button>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <span style={{ fontSize: '13px', color: '#888', marginRight: '4px' }}>
+              Learned: {totalLearnedMovesCount}{maxLearnedMoves !== null ? ` / ${maxLearnedMoves}` : ''}
+            </span>
+            <div style={{
+              display: 'flex',
+              backgroundColor: lightMode ? '#e0e0e0' : '#2a2a2a',
+              borderRadius: '6px',
+              padding: '2px',
+              gap: '2px'
+            }}>
+              <button
+                onClick={() => {
+                  onToggleShowLearnable && onToggleShowLearnable(false);
+                  onToggleShowAll && onToggleShowAll(false);
+                }}
+                style={{
+                  padding: '4px 12px',
+                  fontSize: '12px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: !showLearnableMoves && !showAllMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                  color: !showLearnableMoves && !showAllMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                  fontWeight: !showLearnableMoves && !showAllMoves ? '600' : '400'
+                }}
+              >
+                My Moves
+              </button>
+              <button
+                onClick={() => {
+                  onToggleShowLearnable && onToggleShowLearnable(true);
+                  onToggleShowAll && onToggleShowAll(false);
+                }}
+                style={{
+                  padding: '4px 12px',
+                  fontSize: '12px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: showLearnableMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                  color: showLearnableMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                  fontWeight: showLearnableMoves ? '600' : '400'
+                }}
+              >
+                Learnable
+              </button>
+              <button
+                onClick={() => {
+                  onToggleShowLearnable && onToggleShowLearnable(false);
+                  onToggleShowAll && onToggleShowAll(true);
+                }}
+                style={{
+                  padding: '4px 12px',
+                  fontSize: '12px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: showAllMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                  color: showAllMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                  fontWeight: showAllMoves ? '600' : '400'
+                }}
+              >
+                All Moves
+              </button>
+            </div>
+            <button className="ghost-button" onClick={onClose}>Close</button>
+          </div>
         </div>
         
         {/* Bending Slots Summary */}
@@ -106,6 +185,7 @@ const ReactionsModal = ({
               onToggleExpand={onToggleExpand}
               onPinMove={onPinMove}
               pinnedMoves={pinnedMoves}
+              onLearnMove={onLearnMove}
               lightMode={lightMode}
               characterData={characterData}
             />
@@ -116,6 +196,7 @@ const ReactionsModal = ({
               onToggleExpand={onToggleExpand}
               onPinMove={onPinMove}
               pinnedMoves={pinnedMoves}
+              onLearnMove={onLearnMove}
               lightMode={lightMode}
               characterData={characterData}
             />
