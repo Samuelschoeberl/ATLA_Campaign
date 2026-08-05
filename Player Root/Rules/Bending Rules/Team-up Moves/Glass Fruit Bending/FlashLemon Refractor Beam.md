@@ -19,6 +19,6 @@ Focused light is amplified by mirrored shards into a blinding beam.
 #teamup
 #fire 
 #earth
-#Level1 
+#Level2 
 #signature_move
 #Puy 

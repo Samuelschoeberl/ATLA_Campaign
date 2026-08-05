@@ -58,6 +58,12 @@ Total Bending Level: 3
 | Paralysed     | no  |
 | Prone         | no  |
 | Slowed        | no  |
+| Exhausted     | no  |
+| Empowered     | no  |
+| Quickened     | no  |
+| Armor Surge   | no  |
+| Barrier Surge | no  |
+| Harmonic Flow | no  |
 
 
 

@@ -24,6 +24,7 @@ VITAL_BLOCK = [
 
 
 def ensure_vital(path: Path) -> bool:
+    """Insert the Vital Stats table into a character sheet if it is missing."""
     try:
         txt = path.read_text(encoding='utf-8')
     except Exception:
@@ -62,6 +63,7 @@ def ensure_vital(path: Path) -> bool:
 
 
 def main():
+    """Run the vital stats insertion against every PC sheet under Players Part/PCs."""
     pcs_root = Path('Players Part/PCs')
     if not pcs_root.exists():
         print('Players Part/PCs not found; nothing to do')

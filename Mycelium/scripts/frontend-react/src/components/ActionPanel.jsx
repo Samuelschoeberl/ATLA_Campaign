@@ -18,6 +18,7 @@ const ELEMENT_COLORS = {
  * @param {Function} onToggleExpand - Callback to toggle move expansion
  * @param {Function} onPinMove - Callback to pin a move
  * @param {Array} pinnedMoves - Array of currently pinned moves
+ * @param {Function} onLearnMove - Callback to learn/unlearn a move
  * @param {Function} onUseMove - Optional callback when a move is used
  * @param {boolean} showUseButton - Whether to show "Use" buttons
  * @param {boolean} lightMode - Whether light mode is active
@@ -29,6 +30,7 @@ const ActionPanel = ({
   onToggleExpand,
   onPinMove,
   pinnedMoves = [],
+  onLearnMove,
   onUseMove,
   showUseButton = false,
   lightMode = false,
@@ -104,6 +106,8 @@ const ActionPanel = ({
                 onToggleExpand={onToggleExpand}
                 onPin={onPinMove}
                 isPinned={pinnedMoves.some(pm => pm.path === move.path)}
+                onLearn={onLearnMove}
+                isLearned={move.isLearned}
                 onUse={showUseButton && onUseMove ? onUseMove : undefined}
                 showUseButton={showUseButton}
                 lightMode={lightMode}

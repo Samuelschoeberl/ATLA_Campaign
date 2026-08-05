@@ -1,9 +1,11 @@
+"""Helpers to guarantee specific hashtag markers exist inside a markdown file."""
 from pathlib import Path
 import re
 from typing import List, Optional, Sequence
 
 
 def load_text(path: Path) -> Optional[str]:
+    """Read file contents, trying UTF-8 first and falling back to latin-1."""
     try:
         return path.read_text(encoding='utf-8')
     except Exception:
@@ -14,6 +16,7 @@ def load_text(path: Path) -> Optional[str]:
 
 
 def write_text_with_backup(path: Path, text: str, backup_suffix: Optional[str], color: bool) -> None:
+    """Write text to disk, optionally saving the previous version with a suffix."""
     # minimal safe writer with optional backup
     if backup_suffix:
         bak = path.with_name(path.name + backup_suffix)
@@ -25,6 +28,7 @@ def write_text_with_backup(path: Path, text: str, backup_suffix: Optional[str], 
 
 
 def extract_hashtags(text: str) -> List[str]:
+    """Return a list of hashtag tokens (without the '#') from the given text."""
     if not text:
         return []
     tags = re.findall(r"(?<!\w)#([A-Za-z0-9_\-/']+)", text)

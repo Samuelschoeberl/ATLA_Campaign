@@ -18,6 +18,7 @@ class FullAnalysisScorer:
     """Combines uniqueness, balance, and simplicity scores using ML"""
     
     def __init__(self):
+        """Load parameters and lazily initialize the ML model if available."""
         self.params = self._load_params()
         self.model = None
         if TF_AVAILABLE:

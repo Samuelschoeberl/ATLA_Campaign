@@ -22,6 +22,7 @@ class BalanceScorer:
     """Calculate balance scores for bending moves using ML or rule-based methods."""
     
     def __init__(self, model_path=None, tuned_params_path=None):
+        """Set up optional ML model paths and initialize feature defaults."""
         self.model = None
         self.model_path = model_path
         self.tuned_params = None

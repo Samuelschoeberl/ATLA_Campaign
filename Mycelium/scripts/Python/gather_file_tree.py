@@ -1,3 +1,4 @@
+"""Utilities to read markdown/text files from a vault while stripping Obsidian syntax."""
 from pathlib import Path
 import os
 import fnmatch
@@ -9,6 +10,7 @@ DEFAULT_EXCLUDES = {".git", "node_modules", ".obsidian", "__pycache__", "venv", 
 
 
 def load_text(path: Path) -> Optional[str]:
+    """Read text from disk, returning None if the file cannot be loaded."""
     try:
         return path.read_text(encoding="utf-8", errors='replace')
     except Exception:
@@ -16,6 +18,7 @@ def load_text(path: Path) -> Optional[str]:
 
 
 def unobsidify(text: str) -> str:
+    """Strip Obsidian-specific markup and normalize whitespace."""
     if not text:
         return text
     s = text
@@ -27,6 +30,7 @@ def unobsidify(text: str) -> str:
     s = re.sub(r'\[\[([^\]]+)\]\]', r'\1', s)
 
     def _collapse_code(m: re.Match) -> str:
+        """Replace a code block with a short inline representation."""
         body = m.group(2) or ''
         for ln in body.splitlines():
             ln = ln.strip()
@@ -45,6 +49,7 @@ def unobsidify(text: str) -> str:
 
 
 def gather_file_tree(root: Path, exts=None, excludes=None, include_gitignored: bool = False) -> Tuple[Dict[str,int], Dict[str,str], Dict[str,str]]:
+    """Walk the filesystem and return size/content maps for selected files."""
     if exts is None:
         exts = {'.md', '.markdown', '.txt'}
     if excludes is None:
@@ -69,6 +74,7 @@ def gather_file_tree(root: Path, exts=None, excludes=None, include_gitignored: b
             git_patterns = []
 
     def matches_gitignore(rel_str: str, parts: List[str]) -> bool:
+        """Return True if the given path should be skipped per .gitignore."""
         for pat in git_patterns:
             p = pat.strip()
             if not p:

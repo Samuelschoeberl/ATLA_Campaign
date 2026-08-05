@@ -20,6 +20,7 @@ class FullAnalysisTuner:
     """Tunes full analysis scorer parameters for optimal distribution"""
     
     def __init__(self):
+        """Initialize scorer instances and storage for loaded moves."""
         self.moves_data = []
         self.balance_scorer = get_balance_scorer()
         self.simplicity_scorer = get_simplicity_scorer()

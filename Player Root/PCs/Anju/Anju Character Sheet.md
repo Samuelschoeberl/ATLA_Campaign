@@ -6,7 +6,7 @@ Name: Anju
 | key               |                 value |
 | ----------------- | --------------------: |
 | max_hp            |                    38 |
-| current_hp        |                    38 |
+| current_hp        | 0 |
 | Initiative        |              1d20 + 1 |
 | Movement          |                     5 |
 | ready             |                    no |
@@ -55,7 +55,9 @@ Total Bending Level: 3
 | Paralysed     | no  |
 | Prone         | no  |
 | Slowed        | no  |
+| Exhausted     | no  |
 | Empowered     | no  |
+| Quickened     | no  |
 | Armor Surge   | no  |
 | Barrier Surge | no  |
 | Harmonic Flow | no  |
@@ -69,7 +71,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | ---------------------- | ------------------------: |
 | <details><summary>Bonus air slots</summary>0/0</details> | |
 | <details><summary>Bonus fire slots</summary>0/0</details> | |
-| Earthbending slot      |                       3/3 |
+| Earthbending slot      |                       1/3 |
 | <details><summary>Bonus earth slots</summary>0/0</details> | |
 | <details><summary>Bonus spirit slots</summary>0/0</details> | |
 
@@ -78,7 +80,7 @@ You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Waterbottle charge         |                            4/4 |
+| Waterbottle charge         |                            2/4 |
 | <details><summary>Bonus water charges</summary>0/0</details> | |
 
 

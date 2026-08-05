@@ -27,6 +27,7 @@ OUT_FILE = PC_DIR / "stat_overview.md"
 
 
 def read_text(p: Path):
+    """Read text from a path, returning an empty string on failure."""
     try:
         return p.read_text(encoding="utf-8")
     except Exception:
@@ -62,6 +63,7 @@ def extract_first_value_and_tags_from_env(text: str):
 
 
 def extract_first_value_from_env(text: str):
+    """Return the first non-tag, non-empty line from an environmental file."""
     # prefer the first non-empty, non-comment line that looks like a value
     # handle both plain text and markdown code blocks
     in_code_block = False
@@ -95,6 +97,7 @@ ENV_HINT = re.compile(r"environmental[_\.\s]?water[_\.\s]?charge", re.I)
 
 
 def row_to_kv(line: str):
+    """Parse a table row or key:value line into a (key, value) pair."""
     # Try to parse a markdown table row like: | key | value |
     parts = [p.strip() for p in line.split("|") if p.strip()]
     if len(parts) >= 2:
@@ -124,6 +127,7 @@ def normalize_key(line: str):
 
 
 def find_matching_lines(text: str):
+    """Collect lines that include canonical stat keys or environmental hints."""
     found = []
     for line in text.splitlines():
         # check canonical keys
@@ -139,6 +143,7 @@ def find_matching_lines(text: str):
 
 
 def gather_environmentals():
+    """Gather environmental variable values and tags for inclusion in the table."""
     out = []
     if not ENV_DIR.exists():
         return out
@@ -433,6 +438,7 @@ def gather_pc_stats():
 
 
 def also_find_global_files():
+    """Search the repo for ad-hoc files that match canonical stat names."""
     # catch loose files like Rules/Evasion.md or Player Root/variable/current_hp.md
     extras = []
     # look for filenames that match key hints anywhere in the repo
@@ -449,6 +455,7 @@ def also_find_global_files():
 
 
 def render_markdown(envs, pcs, extras):
+    """Render the overview markdown content for globals, PCs, and extra files."""
     lines = []
     # Use the user-specified header/template
     lines.append("# Stat Overview\n")
@@ -516,6 +523,7 @@ def render_markdown(envs, pcs, extras):
 
 
 def main():
+    """Generate stat_overview.md by aggregating PC sheets and environmental vars."""
     envs = gather_environmentals()
     pcs = gather_pc_stats()
     extras = also_find_global_files()

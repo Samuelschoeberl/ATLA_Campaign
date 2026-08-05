@@ -10,7 +10,6 @@ High on the outer cliffs of Omashu and the surrounding valley grow the rare **Gl
 
 Local legend says the **Earth Lion Turtle** left these trees here, believing their presence would help the people **grow with stone, not just build from it**.
 
-[[Player Root]]
 
 #earth
 

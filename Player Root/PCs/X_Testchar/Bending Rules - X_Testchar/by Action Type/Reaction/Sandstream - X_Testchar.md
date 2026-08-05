@@ -9,7 +9,7 @@
 - One Earthbender shoots Y Sand Projectiles (rolls the Damage roll) and the Airbender controlls them to home to the X Targets)
 
 
-#Level1_X_Testchar
+#Level2_X_Testchar
 #air_X_Testchar
 #earth_X_Testchar
 #teamup_X_Testchar

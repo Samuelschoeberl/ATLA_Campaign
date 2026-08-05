@@ -1,3 +1,4 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Tiebeediy or #reactions_Tiebeediy (including #Danger_Sense_Reaction_Tiebeediy). ( #Action_Tiebeediy is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
-#condition_Tiebeediy
+#condition_Tiebeediy #Curse_Tiebeediy #general_Tiebeediy
+

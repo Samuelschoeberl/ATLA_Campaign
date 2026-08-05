@@ -1,3 +1,4 @@
+"""Ensure generated character sheets place stats into the right sections."""
 import tempfile
 from pathlib import Path
 import shutil
@@ -16,6 +17,7 @@ write_character_files = recreate_pcs.write_character_files
 
 
 def test_placement_core_and_vital(tmp_path):
+    """Generated sheet should populate core and vital stat placeholders."""
     out_root = tmp_path.joinpath('PCs')
     out_root.mkdir()
     # create a minimal template with markers
@@ -54,6 +56,7 @@ def test_placement_core_and_vital(tmp_path):
 
 
 def teardown_module(module):
+    """Remove the temporary template created during the test run."""
     # cleanup the template we wrote
     tpl_dir = ROOT.joinpath('Mycelium', 'data', 'template')
     tpl_path = tpl_dir.joinpath('template_Character_Sheet.md')

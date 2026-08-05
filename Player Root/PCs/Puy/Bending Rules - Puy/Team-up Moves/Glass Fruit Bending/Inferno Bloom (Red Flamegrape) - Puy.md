@@ -12,7 +12,7 @@ Reaction: Must be initiated by a Firebender in line of sight
     
 
 
-#Level1_Puy 
+#Level2_Puy 
 #earth_Puy
 #fire_Puy 
 

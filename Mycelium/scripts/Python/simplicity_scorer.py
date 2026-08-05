@@ -11,6 +11,7 @@ class SimplicityScorer:
     """Scores moves based on simplicity, clarity, and brevity"""
     
     def __init__(self):
+        """Load tuned parameter defaults for simplicity scoring."""
         self.params = self._load_params()
     
     def _load_params(self):

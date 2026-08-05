@@ -1,3 +1,3 @@
-38
+0
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#variable #character_stat_Anju #character_stats_Anju

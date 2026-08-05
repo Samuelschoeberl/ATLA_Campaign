@@ -11,6 +11,7 @@ const FileExplorer = ({ lightMode, onToggleTheme, gmMode, onToggleGmMode }) => {
   const [advancedMode, setAdvancedMode] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isTreeCollapsed, setIsTreeCollapsed] = useState(true);
   const fileTreeRef = useRef(null);
 
   // Automatically open Quicklinks.md on initial load
@@ -148,18 +149,37 @@ const FileExplorer = ({ lightMode, onToggleTheme, gmMode, onToggleGmMode }) => {
 
   return (
     <div className={`file-explorer ${lightMode ? 'light-mode' : ''}`}>
-      <div className="file-explorer-sidebar">
-        <FileTree 
+      <div className="file-explorer-sidebar" style={{ width: isTreeCollapsed ? 0 : undefined, borderRight: isTreeCollapsed ? 'none' : undefined, overflow: 'hidden' }}>
+        <FileTree
           ref={fileTreeRef}
           onFileSelect={handleFileSelect}
           lightMode={lightMode}
           advancedMode={advancedMode}
           onFileUpdate={handleFileUpdate}
           selectedFile={selectedFile}
+          isCollapsed={false}
+          onToggleCollapse={() => setIsTreeCollapsed(true)}
         />
       </div>
       <div className="file-explorer-main">
         <div className="file-explorer-header">
+          {isTreeCollapsed && (
+            <button
+              onClick={() => setIsTreeCollapsed(false)}
+              title="Show File Tree"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: lightMode ? '#333' : '#ccc',
+                fontSize: '16px',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                marginRight: 'auto',
+              }}
+            >
+              ▶
+            </button>
+          )}
           <SearchBar onFileSelect={handleFileSelect} lightMode={lightMode} />
           {advancedMode && (
             <button 

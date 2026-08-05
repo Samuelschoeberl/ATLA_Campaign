@@ -1,1 +1,0 @@
-The party met in sandlocke city and got to know each other and some highranking officials of the [[Lotus]] Organisation

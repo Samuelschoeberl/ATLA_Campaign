@@ -1,3 +1,4 @@
+"""Build a lightweight graph representation from markdown files and their wiki-links."""
 from pathlib import Path
 import re
 from typing import Sequence, List, Dict, Tuple, Set
@@ -5,6 +6,7 @@ from collections import defaultdict
 
 
 def load_text(path: Path) -> str:
+    """Read file contents, returning an empty string on failure."""
     try:
         return path.read_text(encoding='utf-8', errors='replace')
     except Exception:
@@ -12,17 +14,20 @@ def load_text(path: Path) -> str:
 
 
 def get_graph_excludes(root: Path) -> List[str]:
+    """List folder names that should be skipped when building the graph."""
     # Best-effort: no external config; exclude Mycelium by default
     return ['Mycelium']
 
 
 def build_graph(roots: Sequence[Path], candidate_files: Sequence[Path]) -> dict:
+    """Create node/edge structures linking parent/child relations and wiki-links."""
     root = Path(roots[0]) if roots else Path('.')
     nodes = {}
     edges: List[dict] = []
     seen_edges: Set[Tuple[str, str, str]] = set()
 
     def add_edge(src: str, dst: str, typ: str) -> None:
+        """Add an edge if we have not already recorded that relationship."""
         key = (src, dst, typ)
         if key in seen_edges:
             return

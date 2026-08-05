@@ -19,7 +19,7 @@ Focused light is amplified by mirrored shards into a blinding beam.
 #teamup_Puy
 #fire_Puy 
 #earth_Puy
-#Level1_Puy 
+#Level2_Puy 
 #signature_move_Puy
 #Puy_Puy 
 

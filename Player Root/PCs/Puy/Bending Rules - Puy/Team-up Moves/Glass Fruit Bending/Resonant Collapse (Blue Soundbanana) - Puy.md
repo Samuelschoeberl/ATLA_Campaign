@@ -13,7 +13,7 @@ A soundblast builds from multiple frequencies and shatters the ground.
 	- Targets in area must make CON save of X\*2 or take **Xd6 thunder damage** and fall prone
 	- Earth terrain in the zone becomes **difficult terrain**
 
-#Level1_Puy 
+#Level2_Puy 
 #earth_Puy
 #air_Puy 
 

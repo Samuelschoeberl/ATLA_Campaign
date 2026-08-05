@@ -1,3 +1,4 @@
+"""Lightweight Flask launcher that serves the frontend and supporting assets."""
 from flask import Flask, send_from_directory, send_file, request, g
 from flask_cors import CORS
 from pathlib import Path
@@ -22,25 +23,35 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-# Try to import the blueprint from a few sensible locations so running
-# the launcher as a script, module, or from a different cwd still works.
+# The route modules (routes_files.py, routes_sheets.py, etc.) that
+# frontend_api.py registers all use plain, unqualified imports of each other
+# (`import resource_cache`, `from frontend_api import bp`, ...) rather than
+# package-relative ones, so they behave identically no matter which of the
+# three import strategies below ends up succeeding. That requires this
+# directory itself to be on sys.path *before* frontend_api is imported, not
+# only as a fallback once the package-style import has already failed.
+scripts_python_dir = Path(__file__).resolve().parent
+if str(scripts_python_dir) not in sys.path:
+    sys.path.insert(0, str(scripts_python_dir))
+
+# Import the blueprint. This MUST be the bare/flat form (`import
+# frontend_api`, not `Mycelium.scripts.Python.frontend_api`): frontend_api.py
+# registers its route modules (routes_files.py, routes_sheets.py, ...) via
+# plain `import routes_x` + `from frontend_api import bp`, which only resolve
+# to the *same* module instance/Blueprint object if frontend_api itself was
+# loaded under the bare top-level name `frontend_api` — loading it under the
+# dotted package name first and this bare form second would silently create
+# two separate module instances with two separate Blueprint objects, and the
+# route modules would register onto the wrong one.
 bp = None
 try:
-    # Prefer package-style import when available
-    from Mycelium.scripts.Python.frontend_api import bp as _bp
+    from frontend_api import bp as _bp
     bp = _bp
 except Exception:
-    try:
-        # Fallback to same-directory import (when running this file directly)
-        from frontend_api import bp as _bp2  # file is in same directory
-        bp = _bp2
-    except Exception:
-        # Final attempt: add the scripts/Python dir to sys.path and import
-        scripts_python_dir = Path(__file__).resolve().parent
-        if str(scripts_python_dir) not in sys.path:
-            sys.path.insert(0, str(scripts_python_dir))
-        from frontend_api import bp as _bp3
-        bp = _bp3
+    # Fallback for the rare case this directory isn't on sys.path yet for
+    # some other reason (shouldn't happen given the insert above).
+    from Mycelium.scripts.Python.frontend_api import bp as _bp2
+    bp = _bp2
 
 # create app without default static folder to serve our frontend dir explicitly
 app = Flask(__name__, static_folder=None)
@@ -310,8 +321,12 @@ def log_viewer_page():
     """
     return html
 
-# serve the lightweight frontend files from scripts/frontend
-FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
+# serve the React frontend files from scripts/frontend-react
+# Prefer the built dist/ folder (works when served by Flask alone); fall back to
+# the project root so the Vite dev server can still be used for local development.
+_FRONTEND_BASE = Path(__file__).resolve().parents[1] / "frontend-react"
+_FRONTEND_DIST = _FRONTEND_BASE / "dist"
+FRONTEND_DIR = _FRONTEND_DIST if _FRONTEND_DIST.is_dir() else _FRONTEND_BASE
 
 # ---- Targeted static asset helpers and routes (favicon/logo fallbacks) ----
 def _safe_send_path(candidate_path: Path):
@@ -325,6 +340,7 @@ def _safe_send_path(candidate_path: Path):
 
 @app.route('/favicon.ico')
 def serve_favicon():
+    """Serve a favicon from common repo locations."""
     # Try a few common locations; fall back to the repository logo
     candidates = [
         FRONTEND_DIR / 'favicon.ico',
@@ -343,6 +359,7 @@ def serve_favicon():
 @app.route('/Logo.png')
 @app.route('/Mycelium/Logo.png')
 def serve_logo_png():
+    """Serve the project logo from whichever canonical path exists."""
     # Map generic Logo.png requests to the canonical repo logo file when present
     candidates = [
         REPO_ROOT / 'Mycelium' / 'Mycelium Logo.png',
@@ -360,6 +377,7 @@ def serve_logo_png():
 @app.route("/", defaults={"path": "index.html"})
 @app.route("/<path:path>")
 def serve_frontend(path):
+    """Serve frontend assets, falling back to index.html for SPA routes."""
     # Build a prioritized list of candidate paths to try for this request.
     # Start by URL-decoding and normalizing the incoming path, then include
     # variants (original, double-decoded, %20->space, basename fallbacks).
@@ -368,6 +386,7 @@ def serve_frontend(path):
     original = (path or "").lstrip('/')
     candidates = []
     def add_once(p):
+        """Insert a candidate path only if it has not been tried yet."""
         if not p:
             return
         pp = Path(p).as_posix()
@@ -450,6 +469,7 @@ def serve_frontend(path):
 # Dedicated, robust handler for files under /Mycelium/
 @app.route('/Mycelium/<path:subpath>')
 def serve_mycelium(subpath):
+    """Serve files from the Mycelium/ directory with basic decoding."""
     # subpath may be percent-encoded; decode and try to serve the file from
     # the repository's Mycelium directory.
     try:
@@ -474,6 +494,39 @@ def serve_mycelium(subpath):
     from werkzeug.exceptions import NotFound
     raise NotFound()
 
+
+def _bootstrap_runtime():
+    """Rebuild the SQLite runtime DB from the vault, then start the
+    variable-sync background thread. Called once before the server starts
+    serving requests, from both the reloader-child branch and the normal
+    startup path below.
+
+    The variable-sync watcher (`sync_variables_direct_edit.py --watch`) used
+    to run as a fully separate OS process, started by start_game.sh, with no
+    coordination against Flask-thread writes to the same files. It's now a
+    daemon thread inside this same process instead, so its writes go through
+    the same resource_cache per-path locks and publish the same SSE
+    file_changed events as everything else. Set ENABLE_VARIABLE_SYNC=0 to
+    disable it (e.g. in tests).
+    """
+    try:
+        from rebuild_database import rebuild_all
+        rebuild_all()
+    except Exception as e:
+        print(f"Warning: rebuild_database failed at startup ({e}); the SQLite runtime DB may be stale/empty until manually rebuilt with `python3 Mycelium/scripts/Python/rebuild_database.py`")
+
+    if os.environ.get('ENABLE_VARIABLE_SYNC', '1') == '1':
+        try:
+            import threading as _threading
+            from sync_variables_direct_edit import watch_mode
+            interval = int(os.environ.get('VARIABLE_SYNC_INTERVAL', '10'))
+            t = _threading.Thread(target=watch_mode, kwargs={'interval': interval, 'verbose': False}, daemon=True, name='variable-sync')
+            t.start()
+            print(f"Started variable-sync background thread (interval={interval}s; folded in from the old standalone --watch process)")
+        except Exception as e:
+            print(f"Warning: could not start variable-sync background thread: {e}")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "9002"))
 
@@ -493,6 +546,7 @@ if __name__ == "__main__":
         if no_reload:
             # Parent intended no-reload; child should not proceed
             raise SystemExit(0)
+        _bootstrap_runtime()
         app.run(host="0.0.0.0", port=port, debug=True)
         raise SystemExit(0)
 
@@ -505,6 +559,7 @@ if __name__ == "__main__":
     force_kill = env_force_kill or auto_enable or (not __import__('sys').stdin.isatty())
 
     def find_listeners(p: int):
+        """Return processes listening on the given port using lsof."""
         import subprocess
         try:
             out = subprocess.check_output(["lsof", "-i", f":{p}", "-sTCP:LISTEN"], stderr=subprocess.DEVNULL, text=True)
@@ -554,6 +609,7 @@ if __name__ == "__main__":
 
             # wait for the port to free up, with retries
             def still_listening():
+                """Check whether the port is still in use after signals."""
                 return bool(find_listeners(port))
 
             wait_seconds = 5
@@ -584,10 +640,14 @@ if __name__ == "__main__":
             raise SystemExit(1)
         
         
-    # Allow starting without the werkzeug reloader for stable single-process runs
-    no_reload = os.environ.get('NO_RELOAD', '0') == '1'
-    debug_mode = not no_reload
-    
+    # Reloader is off by default for stability when remote clients are connected.
+    # Set DEV_RELOAD=1 to re-enable it during local Python development.
+    use_reloader = os.environ.get('DEV_RELOAD', '0') == '1'
+    # NO_RELOAD kept as a legacy alias
+    if os.environ.get('NO_RELOAD', '0') == '1':
+        use_reloader = False
+    debug_mode = os.environ.get('DEBUG', '0') == '1'
+
     # Ensure cwd is repo root for subprocess calls
     try:
         os.chdir(str(REPO_ROOT))
@@ -617,4 +677,21 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Failed to spawn Wikigraphs on startup: {e}")
 
-    app.run(host="0.0.0.0", port=port, debug=debug_mode, use_reloader=debug_mode)
+    _bootstrap_runtime()
+
+    if debug_mode or use_reloader:
+        # Local iteration: keep Werkzeug's dev server so the reloader works.
+        app.run(host="0.0.0.0", port=port, debug=debug_mode, threaded=True, use_reloader=use_reloader)
+    else:
+        # A live session can hold several long-lived SSE connections
+        # (/api/events) for hours; waitress gives real thread-pool control
+        # instead of Werkzeug's dev-server/reloader loop. 8 threads is
+        # generous headroom over the expected 3-10 concurrent players plus a
+        # handful of SSE connections.
+        try:
+            from waitress import serve as _waitress_serve
+            print(f"Starting production server (waitress) on http://0.0.0.0:{port} ...")
+            _waitress_serve(app, host="0.0.0.0", port=port, threads=8)
+        except ImportError:
+            print("waitress not installed (see requirements.txt: pip install -r requirements.txt) -- falling back to Flask's dev server.")
+            app.run(host="0.0.0.0", port=port, debug=debug_mode, threaded=True, use_reloader=False)

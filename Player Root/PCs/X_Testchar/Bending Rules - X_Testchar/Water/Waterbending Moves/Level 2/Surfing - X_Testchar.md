@@ -7,7 +7,7 @@
 
 You can use 1 [[Water_charge]] (40) to create an icy surface of 5 meters.
 
-#Level3_X_Testchar
+#Level2_X_Testchar
 #water_X_Testchar
 
 

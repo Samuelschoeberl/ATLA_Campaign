@@ -1,3 +1,4 @@
-A dazed creatures can't use any #Actions_Ash or #reactions_Ash (including #Danger_Sense_Reaction_Ash). ( #Bonus_Action_Ash is allowed)
+Blocks #reactions_Ash (including #Danger_Sense_Reaction_Ash). 
 
-#condition_Ash
+#condition_Ash #Curse_Ash #general_Ash
+

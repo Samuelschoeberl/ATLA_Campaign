@@ -1,0 +1,3 @@
+0
+
+#show_if_fire_ge_1 #variable_DMs_Spirit #character_stat_DMs_Spirit #character_stats_DMs_Spirit #secondary_stat_DMs_Spirit

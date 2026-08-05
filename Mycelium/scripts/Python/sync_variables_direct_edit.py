@@ -15,6 +15,11 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple, Union
 
+try:
+    import resource_cache as _resource_cache
+except Exception:
+    _resource_cache = None
+
 # Setup paths
 ROOT = Path(__file__).resolve().parents[3]
 PCS_DIR = ROOT.joinpath('Player Root', 'PCs')
@@ -160,12 +165,34 @@ def read_variable_file(var_file: Path) -> Optional[Any]:
     return None
 
 
+def _write_locked_and_publish(path: Path, content: str) -> None:
+    """Write a file under its resource_cache per-path lock and publish a
+    file_changed SSE event, so this background thread's writes (now folded
+    into the Flask process, see run_backend.py) can't race a direct Flask
+    request-thread write to the same file, and other clients see the change
+    without waiting for their next poll."""
+    if _resource_cache is not None:
+        with _resource_cache.get_lock(path):
+            path.write_text(content, encoding='utf-8')
+        try:
+            rel = str(path.relative_to(ROOT).as_posix())
+        except Exception:
+            rel = str(path)
+        try:
+            import events as _events
+            _events.publish('file_changed', path=rel, version=_resource_cache.compute_version(content))
+        except Exception:
+            pass
+    else:
+        path.write_text(content, encoding='utf-8')
+
+
 def write_variable_file(var_file: Path, value: Any, tags: List[str]):
     """Write a variable file."""
     var_file.parent.mkdir(parents=True, exist_ok=True)
     tag_str = ' '.join(tags) if tags else '#variable'
     content = f'{value}\n\n{tag_str}\n'
-    var_file.write_text(content, encoding='utf-8')
+    _write_locked_and_publish(var_file, content)
 
 
 def find_and_update_table_cell(file_path: Path, var_stem: str, new_value: Any, pc_name: Optional[str] = None, verbose: bool = False) -> bool:
@@ -293,8 +320,8 @@ def find_and_update_table_cell(file_path: Path, var_stem: str, new_value: Any, p
                 break
     
     if updated:
-        file_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
-    
+        _write_locked_and_publish(file_path, '\n'.join(lines) + '\n')
+
     return updated
 
 
@@ -864,6 +891,7 @@ def watch_mode(interval: int = 10, verbose: bool = False):
 
 
 def main():
+    """Run one-time sync or watch mode based on CLI options."""
     import argparse
     
     parser = argparse.ArgumentParser(description='Direct sync - edit table cells in place')

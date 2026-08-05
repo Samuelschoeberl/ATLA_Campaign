@@ -6,7 +6,7 @@
 - **Duration**: [[water]] rounds (while you concentrate)
 
 **Effect**:
-- On a failed save, the creature falls Prone and becomes [[slowed]].
+- On a failed save, the creature falls Prone and becomes [[Exhausted]].
 - Creatures with [[water]] levels has advantage on the saving throw.
 
 

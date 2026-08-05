@@ -1,3 +1,3 @@
-2222
+2600
 
-#variable #environmental_variables #character_stat #character_stats #secondary_stat
+#vitality #current_variable #variable_X_Testchar #character_stat_X_Testchar #character_stats_X_Testchar #secondary_stat_X_Testchar

@@ -15,7 +15,7 @@ Stick and grow trapping enemies and reshaping the terrain.
 	- If X ≥ 10, brambles regenerate once with half hitpoints if destroyed
 
 
-#Level1_Puy 
+#Level2_Puy 
 #earth_Puy
 #water_Puy 
 #teamup_Puy

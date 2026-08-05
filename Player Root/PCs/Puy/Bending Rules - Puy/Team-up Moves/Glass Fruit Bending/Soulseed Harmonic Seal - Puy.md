@@ -16,7 +16,7 @@ X = y\*z
     
 
 
-#Level1_Puy 
+#Level2_Puy 
 #earth_Puy
 #teamup_Puy
 #signature_move_Puy

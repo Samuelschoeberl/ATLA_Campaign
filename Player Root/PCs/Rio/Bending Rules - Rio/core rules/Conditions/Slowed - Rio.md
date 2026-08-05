@@ -1,3 +1,4 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Rio or #reactions_Rio (including #Danger_Sense_Reaction_Rio). ( #Action_Rio is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
-#condition_Rio
+#condition_Rio #Curse_Rio #general_Rio
+

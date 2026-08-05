@@ -5,23 +5,23 @@ Name: Mahogany
 
 | key               |                 value |
 | ----------------- | --------------------: |
-| max_hp            |            26 |
-| current_hp        |        26 |
-| Chaos energy      |      0 |
-| Initiative        |        1d20 + 4 |
-| Movement          |          8 |
-
+| max_hp            |                    26 |
+| current_hp        |                    26 |
+| Chaos energy      |                     0 |
+| Initiative        |              1d20 + 4 |
+| Movement          |                     8 |
 | ready             |                    no |
+
 ## Core Stats
 
 | Stat         |   Value |
 | ------------ | ------: |
-| Strength     | 3 |
-| Dexterity    | 4 |
-| Constitution | 1 |
-| Intelligence | 2 |
-| Wisdom       | 3 |
-| Charisma     | 2 |
+| Strength     |       3 |
+| Dexterity    |       4 |
+| Constitution |       1 |
+| Intelligence |       2 |
+| Wisdom       |       3 |
+| Charisma     |       2 |
 
 ## Bending Levels
 
@@ -29,20 +29,39 @@ Total Bending Level: 3
 
 | Element |      Level | Attack Roll            | DC                   |
 | ------- | ---------: | ---------------------- | -------------------- |
-| Air     |    1 | 1d20 + 1 + 4    | 5    |
-| Spirit  | 2 | 1d20 + 2 + 3 | 5 |
+| Air     |          1 | 1d20 + 1 + 4           | 5                    |
+| Spirit  |          2 | 1d20 + 2 + 3           | 5                    |
 
 ## Defensive
 
 | key            |               Base |
 | -------------- | -----------------: |
-| Evasion        |        15 |
-| Barrier        |        0 |
-| General Armor  |  0 |
-| Physical Armor | 0 |
-| Fire Armor     |     0 |
-| Ice Armor      |      0 |
-| Spirit Armor   |   2 |
+| Evasion        |                 15 |
+| Barrier        |                  0 |
+| General Armor  |                  0 |
+| Physical Armor |                  0 |
+| Fire Armor     |                  0 |
+| Ice Armor      |                  0 |
+| Spirit Armor   |                  2 |
+
+
+## Conditions
+
+| Condition     | Active |
+| ------------- | :----: |
+| Bleeding out  | no  |
+| Blinded       | no  |
+| Dazed         | no  |
+| Immobilised   | no  |
+| Paralysed     | no  |
+| Prone         | no  |
+| Slowed        | no  |
+| Exhausted     | no  |
+| Empowered     | no  |
+| Quickened     | no  |
+| Armor Surge   | no  |
+| Barrier Surge | no  |
+| Harmonic Flow | no  |
 
 
 
@@ -51,12 +70,12 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Airbending slot        |       3/3 |
+| Airbending slot        |                       3/3 |
 | <details><summary>Bonus air slots</summary>0/0</details> | |
-| Danger Sense Reactions | 1/1 |
+| Danger Sense Reactions |                       1/1 |
 | <details><summary>Bonus fire slots</summary>0/0</details> | |
 | <details><summary>Bonus earth slots</summary>0/0</details> | |
-| Spiritbending slot     |    2/2 |
+| Spiritbending slot     |                       2/2 |
 | <details><summary>Bonus spirit slots</summary>0/0</details> | |
 
 ## Water charges
@@ -64,18 +83,8 @@ You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Environmental water charge | 4/4 |
 | <details><summary>Bonus water charges</summary>0/0</details> | |
 
 
 
 #Mahogany #Character_Sheet
-
-> WARNING: The following character stats could not be placed by context and were appended:
-| Bonus bending slots | 0 |
-| Charisma | 2 |
-| Constitution | 1 |
-| Dexterity | 4 |
-| Intelligence | 2 |
-| Strength | 3 |
-| Wisdom | 3 |

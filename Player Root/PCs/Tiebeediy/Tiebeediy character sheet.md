@@ -48,7 +48,7 @@ Total Bending Level: 3
 ## Bending Slots
 You can always only use maximum half of you current Bending slots (rounded up so if you have 3 left you can either spend 2 and then 1 or only 1 but 3 times)
 
-| Slot                   |                    Amount |
+| Slot                   | 2/2 |
 | ---------------------- | ------------------------: |
 | <details><summary>Bonus air slots</summary>0/0</details> | |
 | <details><summary>Bonus fire slots</summary>0/0</details> | |
@@ -70,6 +70,7 @@ You can use maximum of 2 \* water level water charges for any Move.
 #Tiebeediy #Character_Sheet
 
 > WARNING: The following character stats could not be placed by context and were appended:
+| Amount of learned moves | 3 |
 | Bonus bending slots | 0 |
 | Charisma | 5 |
 | Constitution | 3 |

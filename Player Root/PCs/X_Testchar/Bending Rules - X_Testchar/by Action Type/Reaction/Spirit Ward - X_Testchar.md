@@ -5,7 +5,7 @@
 - Duration: [[Spiritbending slot]] (20) rounds.
 
 **Effect**:
-Provides [[Spiritbending slot]] (20)d8  [[General Armor]] (20), [[Player Root/Rules/Evasion]] (0),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[Spiritbending slot]] (20) rounds.
+Provides [[Spiritbending slot]] (20)d8  [[General Armor]] (20), [[Evasion]] (32),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[Spiritbending slot]] (20) rounds.
 
 
 Tags:

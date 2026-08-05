@@ -29,4 +29,4 @@ These are **powerful, multi-element, terrain-altering** moves that consume Glass
 
 #signature_move_Puy
 #Puy_Puy 
-#Level1_Puy 
+#Level2_Puy 

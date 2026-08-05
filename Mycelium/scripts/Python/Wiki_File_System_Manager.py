@@ -30,6 +30,7 @@ DEFAULT_EXCLUDES = {".git", "node_modules", ".obsidian", "__pycache__", "venv", 
 
 # ANSI color codes for terminal output
 class Colors:
+    """ANSI escape sequences grouped for readability when printing."""
     RESET = "\033[0m"
     DIM = "\033[2m"
     BOLD = "\033[1m"
@@ -145,6 +146,7 @@ def make_replacer(
         pattern = re.compile(escaped, flags)
         
         def repl_func(match):
+            """Wrap the matched text in [[...]] unless it is already linked."""
             s = match.string
             start, end = match.start(), match.end()
             

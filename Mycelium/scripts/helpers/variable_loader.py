@@ -119,21 +119,21 @@ def fetch_variable(identifier: str, root: str | Path = '.') -> Dict[str, int]:
     # identifier may be a tag '#Variable' -> return all variable files
     if identifier.strip() == '#Variable' or identifier.strip().lower() == 'variable':
         res: Dict[str, int] = {}
-    for f in iter_md_files(rootp):
+        for f in iter_md_files(rootp):
             try:
                 txt = f.read_text(encoding='utf-8')
             except Exception:
                 continue
             if '#Variable' in txt:
-                    parsed = _parse_two_col_table(f)
-                    for k, v in parsed.items():
-                        m = re.search(r'(-?\d+)', v)
-                        if not m:
-                            continue
-                        try:
-                            res[k] = int(m.group(1))
-                        except Exception:
-                            continue
+                parsed = _parse_two_col_table(f)
+                for k, v in parsed.items():
+                    m = re.search(r'(-?\d+)', v)
+                    if not m:
+                        continue
+                    try:
+                        res[k] = int(m.group(1))
+                    except Exception:
+                        continue
         return res
 
     fpath = _find_variable_file(identifier, rootp)

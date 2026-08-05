@@ -1,3 +1,4 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Puy or #reactions_Puy (including #Danger_Sense_Reaction_Puy). ( #Action_Puy is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
-#condition_Puy
+#condition_Puy #Curse_Puy #general_Puy
+

@@ -4,6 +4,7 @@ import './BendingMove.css';
 import { API_BASE_URL } from '../config/api';
 import ShapeshiftingForm from './ShapeshiftingForm';
 import HexGridSVG from './HexGridSVG';
+import { fetchCharacterSheet } from '../utils/characterSheetParser';
 
 const ELEMENT_COLORS = {
   fire: '#ffb3b3',
@@ -14,16 +15,21 @@ const ELEMENT_COLORS = {
 };
 
 const AREA_PATTERNS = {
+  // Cone: expands from 1 hex to wider spread (matches BattlemapViewer cone brush)
+  // Pattern expands symmetrically: 1 -> 2 -> 3 hexes
+  // Offset compensates for HexGridSVG's automatic tessellation (odd rows shift right by half-width)
   cone: [
-    { count: 1, offset: 2 },
-    { count: 2, offset: 1 },
-    { count: 3, offset: 0 }
+    { count: 1, offset: 0 },   // Row 0 (even): 1 hex at center (origin)
+    { count: 2, offset: -1 },  // Row 1 (odd): 2 hexes, offset -1 to counter tessellation shift
+    { count: 3, offset: 0 }    // Row 2 (even): 3 hexes at wide end, centered
   ],
+  // Sphere/burst: circular pattern around a point
   sphere: [
     { count: 2, offset: 1 },
     { count: 3, offset: 0 },
     { count: 2, offset: 1 }
   ],
+  // Aura: larger circular area around caster
   aura: [
     { count: 1, offset: 2 },
     { count: 3, offset: 1 },
@@ -31,26 +37,32 @@ const AREA_PATTERNS = {
     { count: 3, offset: 1 },
     { count: 1, offset: 2 }
   ],
+  // Line: straight line of hexes
   line: [
     { count: 5, offset: 0 }
   ],
+  // Wall: two parallel rows
   wall: [
     { count: 4, offset: 0 },
     { count: 4, offset: 0 }
   ],
+  // Cluster: scattered hexes
   cluster: [
     { count: 1, offset: 2 },
     { count: 2, offset: 1 },
     { count: 2, offset: 1 },
     { count: 1, offset: 2 }
   ],
+  // Self: single hex (the caster)
   self: [
     { count: 1, offset: 0 }
   ],
+  // Melee: hexes immediately adjacent to caster (all 6 surrounding hexes in proper hex grid)
+  // This represents a proper hex ring around center hex
   melee: [
-    { count: 1, offset: 1 },
-    { count: 2, offset: 0 },
-    { count: 1, offset: 1 }
+    { count: 2, offset: 1 },  // Row 0 (even): 2 hexes above center
+    { count: 3, offset: 0 },  // Row 1 (odd): 3 hexes including sides (tessellation places them correctly)
+    { count: 2, offset: 1 }   // Row 2 (even): 2 hexes below center
   ]
 };
 
@@ -218,12 +230,46 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
   const [error, setError] = useState(null);
   const [useMarkdown, setUseMarkdown] = useState(false);
   const [showRawMarkdown, setShowRawMarkdown] = useState(false);
+  const [loadedCharacterData, setLoadedCharacterData] = useState(null);
+  const [characterSheet, setCharacterSheet] = useState(null);
 
   useEffect(() => {
     if (file) {
       loadBendingMove();
     }
   }, [file]);
+
+  // Extract character name from filename like "Fireball - Ash.md"
+  const extractCharacterName = (fileName) => {
+    if (!fileName) return null;
+    // Remove .md extension
+    const withoutExt = fileName.replace(/\.md$/i, '');
+    // Look for pattern "Move Name - Character Name"
+    const match = withoutExt.match(/\s+-\s+(.+)$/);
+    return match ? match[1].trim() : null;
+  };
+
+  // Load character customization data for avatar and full sheet data
+  const loadCharacterCustomization = async (characterName) => {
+    if (!characterName) return;
+    
+    try {
+      // Load avatar customization
+      const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterName)}/customization`);
+      if (response.ok) {
+        const data = await response.json();
+        setLoadedCharacterData({ pixels: data.avatar });
+      }
+      
+      // Load full character sheet for slot values
+      const sheet = await fetchCharacterSheet(characterName, API_BASE_URL);
+      if (sheet) {
+        setCharacterSheet(sheet);
+      }
+    } catch (err) {
+      console.error('Error loading character data:', err);
+    }
+  };
 
   const loadBendingMove = async () => {
     try {
@@ -242,6 +288,12 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
       const data = await response.json();
       setContent(data.content || '');
       const parsed = parseBendingMove(data.content || '');
+      
+      // Extract character name from filename and load their customization
+      const characterName = extractCharacterName(file.name);
+      if (characterName) {
+        await loadCharacterCustomization(characterName);
+      }
       
       // If parsing failed or didn't find structure, fall back to markdown
       if (!parsed || Object.keys(parsed.metadata).length === 0) {
@@ -294,12 +346,14 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
       tag.toLowerCase().includes('bonus')
     );
 
-    // Extract level from tags
+    // Extract level from tags and remove from tags array to avoid duplication
     const levelTag = data.tags.find(tag => tag.toLowerCase().match(/level\d+/));
     if (levelTag) {
       const levelMatch = levelTag.match(/level(\d+)/i);
       if (levelMatch) {
         data.metadata.Level = levelMatch[1];
+        // Remove the level tag from tags array to avoid showing it twice
+        data.tags = data.tags.filter(tag => tag.toLowerCase() !== levelTag.toLowerCase());
       }
     }
 
@@ -407,8 +461,10 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
   const processText = (text) => {
     if (!text) return null;
     
-    // Match [[variable]] (value) pattern and dice notation
-    const variableRegex = /\[\[([^\]]+)\]\]\s*\(([^)]+)\)/g;
+    // Match [[variable]] (value) pattern for slots/variables with values
+    // Match [[variable]] pattern for wiki-style links (conditions, etc.)
+    const variableWithValueRegex = /\[\[([^\]]+)\]\]\s*\(([^)]+)\)/g;
+    const wikiLinkRegex = /\[\[([^\]]+)\]\]/g;
     const diceRegex = /\b(\d+d\d+(?:\s*[+\-]\s*\d+)*)\b/gi;
     
     // First, clean up Obsidian escape characters
@@ -426,56 +482,87 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
       .replace(/__(.+?)__/g, '$1')
       .replace(/_([^_\s][^_]*?[^_\s])_/g, '$1');
     
-    // Build an array of parts (text, variable, or dice)
+    // Build an array of parts (text, variable, wikiLink, or dice)
     const parts = [];
     let lastIndex = 0;
     
-    // First pass: Extract variables and mark their positions
+    // First pass: Extract variables with values [[var]] (value)
     const varMatches = [];
     let varMatch;
-    const varRegex = new RegExp(variableRegex.source, variableRegex.flags);
-    while ((varMatch = varRegex.exec(processedText)) !== null) {
+    const varWithValueRegex = new RegExp(variableWithValueRegex.source, variableWithValueRegex.flags);
+    while ((varMatch = varWithValueRegex.exec(processedText)) !== null) {
       varMatches.push({
         start: varMatch.index,
         end: varMatch.index + varMatch[0].length,
         name: varMatch[1],
         value: varMatch[2],
+        type: 'variable',
         fullMatch: varMatch[0]
       });
     }
     
-    // Process text with variables
-    varMatches.forEach((vm, vmIdx) => {
-      // Add text before this variable
-      if (vm.start > lastIndex) {
-        const textBefore = processedText.substring(lastIndex, vm.start);
+    // Second pass: Extract wiki-style links [[link]] that aren't already matched as variables
+    const wikiMatches = [];
+    let wikiMatch;
+    const wikiRegex = new RegExp(wikiLinkRegex.source, wikiLinkRegex.flags);
+    while ((wikiMatch = wikiRegex.exec(processedText)) !== null) {
+      // Check if this position is already covered by a variable match
+      const isAlreadyMatched = varMatches.some(vm => 
+        wikiMatch.index >= vm.start && wikiMatch.index < vm.end
+      );
+      if (!isAlreadyMatched) {
+        wikiMatches.push({
+          start: wikiMatch.index,
+          end: wikiMatch.index + wikiMatch[0].length,
+          name: wikiMatch[1],
+          type: 'wikiLink',
+          fullMatch: wikiMatch[0]
+        });
+      }
+    }
+    
+    // Combine and sort all matches by position
+    const allMatches = [...varMatches, ...wikiMatches].sort((a, b) => a.start - b.start);
+    
+    // Process text with all matches
+    allMatches.forEach((match) => {
+      // Add text before this match
+      if (match.start > lastIndex) {
+        const textBefore = processedText.substring(lastIndex, match.start);
         parts.push({ type: 'text', content: textBefore });
       }
       
-      // Add the variable
-      parts.push({
-        type: 'variable',
-        name: vm.name,
-        value: vm.value
-      });
+      // Add the match
+      if (match.type === 'variable') {
+        parts.push({
+          type: 'variable',
+          name: match.name,
+          value: match.value
+        });
+      } else if (match.type === 'wikiLink') {
+        parts.push({
+          type: 'wikiLink',
+          name: match.name
+        });
+      }
       
-      lastIndex = vm.end;
+      lastIndex = match.end;
     });
     
-    // If variables were found, add any remaining text after the last variable
-    // If no variables found, add all text as one part
-    if (varMatches.length > 0) {
+    // Add any remaining text after the last match, or all text if no matches
+    if (allMatches.length > 0) {
       if (lastIndex < processedText.length) {
         parts.push({ type: 'text', content: processedText.substring(lastIndex) });
       }
     } else {
+      // If no matches found, add all text as one part
       parts.push({ type: 'text', content: processedText });
     }
     
-    // Second pass: Split text parts by dice notation
+    // Third pass: Split text parts by dice notation
     const finalParts = [];
     parts.forEach(part => {
-      if (part.type === 'variable') {
+      if (part.type === 'variable' || part.type === 'wikiLink') {
         finalParts.push(part);
       } else if (part.type === 'text') {
         // Split by dice notation
@@ -495,11 +582,23 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
       if (part.type === 'dice') {
         return <DiceRollText key={idx} text={part.content} />;
       } else if (part.type === 'variable') {
+        // Variables with explicit values: display name, show value in tooltip
+        let actualValue = part.value;
+        if (characterSheet?.bendingSlots) {
+          // Try to match slot name (e.g., "Firebending_slot" or "firebending slot")
+          const slotKey = Object.keys(characterSheet.bendingSlots).find(key => 
+            key.toLowerCase().replace(/[_\s]+/g, '') === part.name.toLowerCase().replace(/[_\s]+/g, '')
+          );
+          if (slotKey) {
+            actualValue = characterSheet.bendingSlots[slotKey];
+          }
+        }
+        
         return (
           <span 
             key={idx}
             className="variable-reference"
-            title={`${part.name}: ${part.value}`}
+            title={`${part.name}: ${actualValue}`}
             style={{
               backgroundColor: hexToRgba('#3498db', 0.2),
               padding: '2px 6px',
@@ -508,7 +607,26 @@ const BendingMove = ({ file, lightMode = false, characterData = null }) => {
               cursor: 'help'
             }}
           >
-            {part.name}: {part.value}
+            {part.name}
+          </span>
+        );
+      } else if (part.type === 'wikiLink') {
+        // Wiki-style links (conditions, etc.): display the link name
+        return (
+          <span 
+            key={idx}
+            className="wiki-link"
+            title={`Link to: ${part.name}`}
+            style={{
+              backgroundColor: hexToRgba('#9b59b6', 0.15),
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontWeight: '500',
+              cursor: 'help',
+              fontStyle: 'italic'
+            }}
+          >
+            {part.name}
           </span>
         );
       } else {
@@ -649,6 +767,9 @@ const getActionTypeFromTags = (tags) => {
   const actionType = getActionTypeFromTags(moveData.tags);
   const moveName = file.name ? file.name.replace('.md', '') : 'Bending Move';
   
+  // Use loaded character data if available, otherwise fall back to prop
+  const activeCharacterData = loadedCharacterData || characterData;
+  
   const renderAreaPreview = (areaInfo, rangeMultiplier = 0) => {
     if (!areaInfo) return null;
 
@@ -665,7 +786,8 @@ const getActionTypeFromTags = (tags) => {
           opacity={opacity}
           lightMode={lightMode}
           range={rangeMultiplier}
-          characterData={characterData}
+          characterData={activeCharacterData}
+          patternType={areaInfo.type}
         />
       </div>
     );
@@ -885,7 +1007,10 @@ const getActionTypeFromTags = (tags) => {
       {/* Raw Markdown Section - for debugging */}
       <section className="move-section">
         <div 
-          onClick={() => setShowRawMarkdown(!showRawMarkdown)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowRawMarkdown(!showRawMarkdown);
+          }}
           style={{ 
             borderBottom: `2px solid ${elementColor}`,
             paddingBottom: '10px',
@@ -926,7 +1051,7 @@ const getActionTypeFromTags = (tags) => {
               animation: 'slideDown 0.3s ease-out'
             }}
           >
-            {moveData.rawContent}
+            {moveData?.rawContent || content || 'No content available'}
           </pre>
         )}
       </section>

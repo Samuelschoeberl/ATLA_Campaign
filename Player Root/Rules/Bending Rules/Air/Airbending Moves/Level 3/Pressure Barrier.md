@@ -11,7 +11,7 @@ The effect ends when the target leaves the radius.
 
 
 #Level3
-#earth 
+#air  
 
 
 

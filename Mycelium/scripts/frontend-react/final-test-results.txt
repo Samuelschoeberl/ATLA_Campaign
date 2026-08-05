@@ -1,0 +1,953 @@
+
+> mycelium-frontend-react@1.0.0 test
+> PATH=/usr/local/bin:$PATH playwright test
+
+
+Running 74 tests using 1 worker
+
+  ✓   1 [chromium] › tests/e2e/character-sheet.spec.js:11:3 › Character Sheet › can load a character sheet (13.4s)
+  ✓   2 [chromium] › tests/e2e/character-sheet.spec.js:43:3 › Character Sheet › character stats display correctly (12.3s)
+  ✓   3 [chromium] › tests/e2e/character-sheet.spec.js:71:3 › Character Sheet › can switch between characters (8.5s)
+  ✓   4 [chromium] › tests/e2e/character-sheet.spec.js:91:3 › Character Sheet › character JSON data loads correctly (563ms)
+BROWSER CONSOLE: [vite] connecting...
+BROWSER CONSOLE: [vite] connected.
+BROWSER CONSOLE: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+
+=== POLLING CONFIGURATION ===
+Found log: [90mundefined[39m
+All logs: []
+WARNING: No polling interval log found!
+This means the component might be using OLD cached code
+BROWSER CONSOLE: Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+BROWSER CONSOLE: Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+BROWSER CONSOLE: Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+BROWSER CONSOLE: Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+BROWSER CONSOLE: Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+BROWSER CONSOLE: Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+  ✓   5 [chromium] › tests/e2e/check-polling.spec.js:5:1 › check actual polling interval in browser (10.0s)
+Found 0 file items with .file-item
+Found 13 file items with .file-tree-item
+File 0: "▶📁character_customizations"
+File 1: "▶📁deleted"
+File 2: "▶📁Maps"
+File 3: "▶📁NPCs"
+File 4: "▶📁Organisations"
+File 5: "▶📁PCs"
+File 6: "▶📁Rules"
+File 7: "▶📁Story"
+File 8: "▶📁variable"
+File 9: "📄.DS_Store"
+File 10: "⬇Initiative Tracker.md✏️"
+File 11: "⬇pc_primary_stats.md✏️"
+File 12: "⬇Quicklinks.md✏️"
+
+Initiative Tracker matches: 1
+Initiative Tracker text: "⬇Initiative Tracker.md✏️"
+
+Any text containing "Initiative": 2
+  - "Initiative Tracker.md"
+  - "Initiative Tracker"
+  ✓   6 [chromium] › tests/e2e/debug-file-tree.spec.js:6:3 › Debug File Tree › check what files are visible (8.6s)
+Looking for Initiative Tracker...
+Initiative Tracker visible: true
+Clicked Initiative Tracker
+Initiative tracker container visible: true
+✓ Initiative Tracker loaded successfully!
+  ✓   7 [chromium] › tests/e2e/debug-file-tree.spec.js:45:3 › Debug File Tree › check if Initiative Tracker loads (20.6s)
+Dice roller not immediately visible - may need to open panel
+  ✓   8 [chromium] › tests/e2e/dice-roller.spec.js:11:3 › Dice Roller › dice roller component renders (6.8s)
+  ✓   9 [chromium] › tests/e2e/dice-roller.spec.js:31:3 › Dice Roller › can roll dice (6.9s)
+  ✓  10 [chromium] › tests/e2e/dice-roller.spec.js:51:3 › Dice Roller › dice roller handles multiple rolls (7.0s)
+  ✓  11 [chromium] › tests/e2e/dice-roller.spec.js:71:3 › Dice Roller › roll results are valid numbers (6.3s)
+⚠️  Console errors detected:
+  1. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  2. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  3. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  4. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  5. Failed to load resource: net::ERR_FAILED
+  6. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  7. Failed to load resource: net::ERR_FAILED
+  8. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  9. Failed to load resource: net::ERR_FAILED
+  10. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  11. Failed to load resource: net::ERR_FAILED
+  12. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  13. Failed to load resource: net::ERR_FAILED
+  14. Failed to load resource: net::ERR_FAILED
+  15. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  16. Failed to load resource: net::ERR_FAILED
+  17. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  ✓  12 [chromium] › tests/e2e/error-handling.spec.js:8:3 › Error Handling › handles network failures gracefully (4.3s)
+⚠️  Console errors detected:
+  1. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  2. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  3. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  4. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  ✓  13 [chromium] › tests/e2e/error-handling.spec.js:23:3 › Error Handling › handles malformed API responses (5.1s)
+⚠️  Console errors detected:
+  1. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  2. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  3. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  4. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  5. Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+  ✓  14 [chromium] › tests/e2e/error-handling.spec.js:43:3 › Error Handling › handles 500 server errors gracefully (4.2s)
+  ✓  15 [chromium] › tests/e2e/error-handling.spec.js:63:3 › Error Handling › handles missing files gracefully (6.8s)
+⚠️  Console errors detected:
+  1. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  2. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  3. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  4. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  ✓  16 [chromium] › tests/e2e/error-handling.spec.js:73:3 › Error Handling › handles rapid navigation (5.3s)
+⚠️  Console errors detected:
+  1. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  2. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  3. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  4. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  5. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  6. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  7. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  8. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  9. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  10. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  ✓  17 [chromium] › tests/e2e/error-handling.spec.js:90:3 › Error Handling › handles page reload during API call (5.1s)
+  ✓  18 [chromium] › tests/e2e/example-patterns.spec.js:15:3 › Example: Key Testing Patterns › Pattern 1: Basic page load with error detection (1.8s)
+  ✓  19 [chromium] › tests/e2e/example-patterns.spec.js:28:3 › Example: Key Testing Patterns › Pattern 2: Testing API integration (3.5s)
+  ✓  20 [chromium] › tests/e2e/example-patterns.spec.js:45:3 › Example: Key Testing Patterns › Pattern 3: Testing user interactions (6.9s)
+  ✓  21 [chromium] › tests/e2e/example-patterns.spec.js:64:3 › Example: Key Testing Patterns › Pattern 4: Checking for specific errors (6.8s)
+⚠️  Console errors detected:
+  1. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  2. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  3. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  4. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  ✓  22 [chromium] › tests/e2e/example-patterns.spec.js:88:3 › Example: Key Testing Patterns › Pattern 5: Testing error handling (5.2s)
+⚠️  Console errors detected:
+  1. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  2. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  3. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  4. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  5. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  6. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  7. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  8. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  9. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  10. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  11. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  12. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  13. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  14. Error loading root directory: TypeError: Failed to fetch
+    at loadRootDirectory (http://localhost:5173/src/components/FileTree.jsx:65:30)
+    at http://localhost:5173/src/components/FileTree.jsx:37:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  15. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  16. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  17. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  18. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  19. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  ✓  23 [chromium] › tests/e2e/example-patterns.spec.js:106:3 › Example: Key Testing Patterns › Pattern 6: Testing navigation flows (6.2s)
+  ✓  24 [chromium] › tests/e2e/example-patterns.spec.js:125:3 › Example: Key Testing Patterns › Pattern 7: Waiting for async operations (1.9s)
+⚠️  Console errors detected:
+  1. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  2. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11317:13)
+    at recursivelyTraverseReconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11240:11)
+  3. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/FileTree.jsx:42:30)
+    at http://localhost:5173/src/components/FileTree.jsx:38:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11201:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  4. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  5. Error loading character customizations: TypeError: Failed to fetch
+    at loadCustomizations (http://localhost:5173/src/components/Quicklinks.jsx:65:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:33:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  6. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  ✓  25 [chromium] › tests/e2e/example-patterns.spec.js:142:3 › Example: Key Testing Patterns › Pattern 8: Testing with different viewports (2.2s)
+Console Errors: []
+Page Errors: []
+Failed Requests: []
+  ✓  26 [chromium] › tests/e2e/example-patterns.spec.js:158:3 › Example: Key Testing Patterns › Pattern 9: Inspecting errorTracker manually (7.1s)
+  ✓  27 [chromium] › tests/e2e/file-explorer.spec.js:11:3 › File Explorer › file explorer renders without errors (7.7s)
+  ✓  28 [chromium] › tests/e2e/file-explorer.spec.js:25:3 › File Explorer › can fetch and display file list from backend (3.7s)
+  ✓  29 [chromium] › tests/e2e/file-explorer.spec.js:41:3 › File Explorer › clicking a folder expands it (8.4s)
+  ✓  30 [chromium] › tests/e2e/file-explorer.spec.js:64:3 › File Explorer › clicking a markdown file loads its content (10.1s)
+  ✓  31 [chromium] › tests/e2e/file-explorer.spec.js:105:3 › File Explorer › handles file not found gracefully (567ms)
+⚠️  Console errors detected:
+  1. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11033:13)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11010:13)
+  2. Error loading file colors: TypeError: Failed to fetch
+  3. Error loading file colors: TypeError: Failed to fetch
+  4. Error loading file colors: TypeError: Failed to fetch
+    at loadFileColors (http://localhost:5173/src/components/Quicklinks.jsx:54:30)
+    at http://localhost:5173/src/components/Quicklinks.jsx:32:5
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:18567:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:9465:60)
+    at reconnectPassiveEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:11273:13)
+    at doubleInvokeEffectsOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13339:135)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:997:72)
+    at recursivelyTraverseAndDoubleInvokeEffectsInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=37094c7c:13312:78)
+  ✓  32 [chromium] › tests/e2e/gm-mode.spec.js:8:3 › Game Master Mode › GM mode can be accessed (7.7s)
+  ✓  33 [chromium] › tests/e2e/gm-mode.spec.js:31:3 › Game Master Mode › GM mode shows additional controls (3.8s)
+  ✓  34 [chromium] › tests/e2e/gm-mode.spec.js:43:3 › Game Master Mode › can access NPC files in GM mode (3.2s)
+  ✓  35 [chromium] › tests/e2e/gm-mode.spec.js:60:3 › Game Master Mode › initiative tracker works in GM mode (3.3s)
+  ✓  36 [chromium] › tests/e2e/gm-mode.spec.js:75:3 › Game Master Mode › GM mode can switch back to player mode (7.9s)
+  ✓  37 [chromium] › tests/e2e/routing.spec.js:8:3 › App Loading › home page loads successfully (1.9s)
+  ✘  38 [chromium] › tests/e2e/scalability-sync.spec.js:12:3 › Multi-Client Synchronization › battlemap updates sync across multiple clients in real-time (4.5s)
+  ✓  39 [chromium] › tests/e2e/scalability-sync.spec.js:72:3 › Multi-Client Synchronization › initiative tracker syncs across clients with near real-time latency (4.8s)
+  ✓  40 [chromium] › tests/e2e/scalability-sync.spec.js:120:3 › Multi-Client Synchronization › character sheet updates sync with acceptable delay (13.5s)
+  ✓  41 [chromium] › tests/e2e/scalability-sync.spec.js:182:3 › Concurrent Access Stress Tests › handles 5 clients simultaneously accessing file explorer (7.7s)
+  ✓  42 [chromium] › tests/e2e/scalability-sync.spec.js:220:3 › Concurrent Access Stress Tests › handles concurrent file reads without conflicts (16.6s)
+  ✓  43 [chromium] › tests/e2e/scalability-sync.spec.js:270:3 › Concurrent Access Stress Tests › handles rapid successive updates without data corruption (12.7s)
+  ✓  44 [chromium] › tests/e2e/scalability-sync.spec.js:312:3 › Data Consistency Tests › prevents race conditions in file updates (13.2s)
+  ✓  45 [chromium] › tests/e2e/scalability-sync.spec.js:373:3 › Data Consistency Tests › maintains data integrity during network delays (7.5s)
+  ✓  46 [chromium] › tests/e2e/scalability-sync.spec.js:418:3 › Data Consistency Tests › recovers from temporary backend failures (10.1s)
+  ✓  47 [chromium] › tests/e2e/scalability-sync.spec.js:465:3 › Performance Under Load › maintains responsive UI with 10 open clients (27.1s)
+  ✓  48 [chromium] › tests/e2e/scalability-sync.spec.js:511:3 › Performance Under Load › handles large file operations efficiently (12.1s)
+  ✓  49 [chromium] › tests/e2e/server-integration.spec.js:7:3 › Server Integration › backend server responds to API requests (951ms)
+  ✓  50 [chromium] › tests/e2e/server-integration.spec.js:18:3 › Server Integration › frontend loads without errors (2.2s)
+  ✓  51 [chromium] › tests/e2e/server-integration.spec.js:30:3 › Server Integration › frontend can fetch from backend API (4.4s)
+  ✓  52 [chromium] › tests/e2e/server-integration.spec.js:48:3 › Server Integration › no CORS errors when frontend calls backend (4.0s)
+  ✓  53 [chromium] › tests/e2e/server-integration.spec.js:66:3 › Server Integration › backend serves static assets correctly (2.2s)
+✓ Successfully navigated to Initiative Tracker
+  ✓  54 [chromium] › tests/e2e/simple-speed-test.spec.js:15:3 › Simple Speed Test › can navigate to Initiative Tracker (12.7s)
+✓ Loaded 9 characters
+  ✓  55 [chromium] › tests/e2e/simple-speed-test.spec.js:25:3 › Simple Speed Test › can load character data (18.1s)
+  ✘  56 [chromium] › tests/e2e/simple-speed-test.spec.js:37:3 › Simple Speed Test › Next Turn button works (22.8s)
+  ✘  57 [chromium] › tests/e2e/simple-speed-test.spec.js:68:3 › Simple Speed Test › measures sync time between two clients (42.8s)
+Starting with 9 existing characters
+Client 1 round before: 18
+Client 2 round before: 18
+Client 1 round after clicks: 20
+Round changed from 18 to 19! Sync time: 118779ms
+Sync completed successfully in 118779ms
+  ✘  58 [chromium] › tests/e2e/speed-multiclient.spec.js:64:5 › Multi-Client Communication Speed Tests › InitiativeTracker Multi-Client Speed › should sync next turn action within 2s across 2 clients (2.3m)
+  -  59 [chromium] › tests/e2e/speed-multiclient.spec.js:152:10 › Multi-Client Communication Speed Tests › InitiativeTracker Multi-Client Speed › should sync character addition within 3s across 3 clients
+  -  60 [chromium] › tests/e2e/speed-multiclient.spec.js:228:5 › Multi-Client Communication Speed Tests › InitiativeTracker Multi-Client Speed › should handle rapid next turn clicks without sync conflicts
+  -  61 [chromium] › tests/e2e/speed-multiclient.spec.js:272:5 › Multi-Client Communication Speed Tests › InitiativeTracker Multi-Client Speed › should sync HP changes within 2s across clients
+  -  62 [chromium] › tests/e2e/speed-multiclient.spec.js:331:5 › Multi-Client Communication Speed Tests › BattlemapViewer Multi-Client Speed › should sync token placement within 1.5s across 2 clients
+  -  63 [chromium] › tests/e2e/speed-multiclient.spec.js:378:5 › Multi-Client Communication Speed Tests › BattlemapViewer Multi-Client Speed › should sync hex painting within 1.5s across 3 clients
+  -  64 [chromium] › tests/e2e/speed-multiclient.spec.js:428:5 › Multi-Client Communication Speed Tests › BattlemapViewer Multi-Client Speed › should sync token movement within 1.5s across clients
+  -  65 [chromium] › tests/e2e/speed-multiclient.spec.js:484:5 › Multi-Client Communication Speed Tests › BattlemapViewer Multi-Client Speed › should handle rapid hex painting without data loss
+  -  66 [chromium] › tests/e2e/speed-multiclient.spec.js:525:5 › Multi-Client Communication Speed Tests › BattlemapViewer Multi-Client Speed › should sync effect changes within 1.5s
+  -  67 [chromium] › tests/e2e/speed-multiclient.spec.js:573:5 › Multi-Client Communication Speed Tests › Performance Benchmarks › InitiativeTracker: measure average sync latency over 20 operations
+  -  68 [chromium] › tests/e2e/speed-multiclient.spec.js:618:5 › Multi-Client Communication Speed Tests › Performance Benchmarks › BattlemapViewer: measure throughput for 50 hex operations
+  ✓  69 [chromium] › tests/e2e/sync-basic.spec.js:9:3 › Basic Multi-Client Tests › two clients can load the application simultaneously (3.3s)
+  ✓  70 [chromium] › tests/e2e/sync-basic.spec.js:46:3 › Basic Multi-Client Tests › two clients can access the same file without conflicts (19.1s)
+  ✓  71 [chromium] › tests/e2e/sync-basic.spec.js:109:3 › Basic Multi-Client Tests › three clients can navigate file tree independently (10.3s)
+  ✓  72 [chromium] › tests/e2e/sync-basic.spec.js:160:3 › Concurrent Access Tests › handles 5 clients connecting sequentially (16.5s)
+  ✓  73 [chromium] › tests/e2e/sync-basic.spec.js:200:3 › Concurrent Access Tests › file reads complete within acceptable time under load (13.4s)
+  ✓  74 [chromium] › tests/e2e/sync-basic.spec.js:245:3 › Data Consistency › API responds consistently to multiple clients (3.1s)
+
+
+  1) [chromium] › tests/e2e/scalability-sync.spec.js:12:3 › Multi-Client Synchronization › battlemap updates sync across multiple clients in real-time 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m200[39m
+    Received:   [31m1646[39m
+
+      55 |
+      56 |       // Real-time sync should be fast (< 200ms including network)
+    > 57 |       expect(syncTime).toBeLessThan(200);
+         |                        ^
+      58 |       
+      59 |       // Check tokens are visible on other clients
+      60 |       if (await token.isVisible({ timeout: 1000 })) {
+        at /Users/samuelschoberl/projects/ATLA_Campaign/Mycelium/scripts/frontend-react/tests/e2e/scalability-sync.spec.js:57:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/scalability-sync-Multi-Cli-20124-ltiple-clients-in-real-time-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/scalability-sync-Multi-Cli-20124-ltiple-clients-in-real-time-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/simple-speed-test.spec.js:37:3 › Simple Speed Test › Next Turn button works 
+
+    TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('.initiative-item') to be visible[22m
+    [2m    - locator resolved to 9 elements. Proceeding with the first one: <div class="initiative-item   ">…</div>[22m
+
+
+      37 |   test('Next Turn button works', async ({ page }) => {
+      38 |     await navigateToInitiativeTracker(page);
+    > 39 |     await page.waitForSelector('.initiative-item', { timeout: 5000 });
+         |                ^
+      40 |     
+      41 |     // Wait for a character to have current-turn class (should be immediate, but React needs render cycle)
+      42 |     await page.waitForSelector('.initiative-item.current-turn', { timeout: 2000 });
+        at /Users/samuelschoberl/projects/ATLA_Campaign/Mycelium/scripts/frontend-react/tests/e2e/simple-speed-test.spec.js:39:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/simple-speed-test-Simple-Speed-Test-Next-Turn-button-works-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/simple-speed-test-Simple-Speed-Test-Next-Turn-button-works-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/simple-speed-test-Simple-Speed-Test-Next-Turn-button-works-chromium/error-context.md
+
+  3) [chromium] › tests/e2e/simple-speed-test.spec.js:68:3 › Simple Speed Test › measures sync time between two clients 
+
+    TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('.initiative-item.current-turn') to be visible[22m
+    [2m    - locator resolved to visible <div class="initiative-item current-turn  ">…</div>[22m
+
+
+      80 |       await page1.waitForSelector('.initiative-item', { timeout: 5000 });
+      81 |       await page2.waitForSelector('.initiative-item', { timeout: 5000 });
+    > 82 |       await page1.waitForSelector('.initiative-item.current-turn', { timeout: 5000 });
+         |                   ^
+      83 |       await page2.waitForSelector('.initiative-item.current-turn', { timeout: 5000 });
+      84 |       
+      85 |       console.log('Both clients ready');
+        at /Users/samuelschoberl/projects/ATLA_Campaign/Mycelium/scripts/frontend-react/tests/e2e/simple-speed-test.spec.js:82:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/simple-speed-test-Simple-S-739c2-nc-time-between-two-clients-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/speed-multiclient.spec.js:64:5 › Multi-Client Communication Speed Tests › InitiativeTracker Multi-Client Speed › should sync next turn action within 2s across 2 clients 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m30000[39m
+    Received:   [31m118779[39m
+
+      141 |       // More generous timeout while server updates propagate
+      142 |       // Should be < 2000ms with optimizations, but allow up to 30s for now
+    > 143 |       expect(syncTime).toBeLessThan(30000);
+          |                        ^
+      144 |
+      145 |       await context1.close();
+      146 |       await context2.close();
+        at /Users/samuelschoberl/projects/ATLA_Campaign/Mycelium/scripts/frontend-react/tests/e2e/speed-multiclient.spec.js:143:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/speed-multiclient-Multi-Cl-93dff--within-2s-across-2-clients-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/speed-multiclient-Multi-Cl-93dff--within-2s-across-2-clients-chromium/error-context.md
+
+  4 failed
+    [chromium] › tests/e2e/scalability-sync.spec.js:12:3 › Multi-Client Synchronization › battlemap updates sync across multiple clients in real-time 
+    [chromium] › tests/e2e/simple-speed-test.spec.js:37:3 › Simple Speed Test › Next Turn button works 
+    [chromium] › tests/e2e/simple-speed-test.spec.js:68:3 › Simple Speed Test › measures sync time between two clients 
+    [chromium] › tests/e2e/speed-multiclient.spec.js:64:5 › Multi-Client Communication Speed Tests › InitiativeTracker Multi-Client Speed › should sync next turn action within 2s across 2 clients 
+  1 skipped
+  9 did not run
+  60 passed (11.5m)
+
+[36m  Serving HTML report at http://localhost:9323. Press Ctrl+C to quit.[39m

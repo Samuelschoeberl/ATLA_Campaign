@@ -3,7 +3,7 @@ import './FileTree.css';
 import { getLighterColor, hexToRgba } from '../utils/colorUtils';
 import { API_BASE_URL } from '../config/api';
 
-const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode = false, advancedMode = false, onFileUpdate, selectedFile = null }, ref) => {
+const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode = false, advancedMode = false, onFileUpdate, selectedFile = null, isCollapsed = false, onToggleCollapse }, ref) => {
   const [rootItems, setRootItems] = useState([]);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [folderContents, setFolderContents] = useState({});
@@ -12,10 +12,10 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
   const [generatingGraphs, setGeneratingGraphs] = useState(new Set());
   const [deletingFiles, setDeletingFiles] = useState(new Set());
   const [creatingFileIn, setCreatingFileIn] = useState(null);
+  const [creatingFolderIn, setCreatingFolderIn] = useState(null);
   const [editingFile, setEditingFile] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [savingFile, setSavingFile] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     loadRootDirectory();
@@ -312,6 +312,44 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
     }
   };
 
+  const handleCreateFolder = async (folderPath, event) => {
+    event.stopPropagation();
+
+    const folderName = prompt('Enter the name for the new folder:');
+    if (!folderName) return;
+
+    if (folderName.includes('/') || folderName.includes('\\') || folderName.includes('..')) {
+      alert('❌ Invalid folder name. Cannot contain /, \\, or ..');
+      return;
+    }
+
+    setCreatingFolderIn(folderPath);
+
+    try {
+      const backendPath = `Player Root/${folderPath}`;
+      const response = await fetch(`${API_BASE_URL}/api/create-folder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folderPath: backendPath, foldername: folderName }),
+      });
+
+      if (response.ok) {
+        alert(`✅ Folder "${folderName}" created successfully!`);
+        await loadFolderContents(folderPath);
+        const newExpandedFolders = new Set(expandedFolders);
+        newExpandedFolders.add(folderPath);
+        setExpandedFolders(newExpandedFolders);
+      } else {
+        const error = await response.json();
+        alert(`❌ Failed to create folder: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      alert(`❌ Failed to create folder: ${error.message}`);
+    } finally {
+      setCreatingFolderIn(null);
+    }
+  };
+
   const handleEditFile = async (filePath, event) => {
     event.stopPropagation(); // Prevent file selection when clicking the button
     
@@ -482,7 +520,7 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
               {generatingGraphs.has(itemPath) ? '⏳' : '📊'}
             </button>
           )}
-          {advancedMode && isFolder && (
+          {isFolder && (
             <button
               onClick={(e) => handleCreateFile(itemPath, e)}
               disabled={creatingFileIn === itemPath}
@@ -502,6 +540,28 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
               }}
             >
               {creatingFileIn === itemPath ? '⏳' : '➕'}
+            </button>
+          )}
+          {isFolder && (
+            <button
+              onClick={(e) => handleCreateFolder(itemPath, e)}
+              disabled={creatingFolderIn === itemPath}
+              title="Create new folder inside this folder"
+              style={{
+                padding: '2px 8px',
+                marginLeft: '4px',
+                background: creatingFolderIn === itemPath ? '#555' : '#ff9800',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '3px',
+                cursor: creatingFolderIn === itemPath ? 'wait' : 'pointer',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                opacity: creatingFolderIn === itemPath ? 0.6 : 1,
+                transition: 'opacity 0.2s'
+              }}
+            >
+              {creatingFolderIn === itemPath ? '⏳' : '📁+'}
             </button>
           )}
           {!isFolder && item.name.endsWith('.md') && (
@@ -558,13 +618,13 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
   };
 
   return (
-    <div className={`file-tree ${isCollapsed ? 'collapsed' : ''} ${lightMode ? 'light-mode' : ''}`} style={{ 
-      background: lightMode ? '#f5f5f5' : '#252526', 
-      color: lightMode ? '#333' : '#ccc', 
+    <div className={`file-tree ${lightMode ? 'light-mode' : ''}`} style={{
+      background: lightMode ? '#f5f5f5' : '#252526',
+      color: lightMode ? '#333' : '#ccc',
       height: '100%',
-      width: isCollapsed ? '50px' : '300px',
-      minWidth: isCollapsed ? '50px' : '250px',
-      maxWidth: isCollapsed ? '50px' : '500px',
+      width: '300px',
+      minWidth: '250px',
+      maxWidth: '500px',
       display: 'flex',
       flexDirection: 'column',
       transition: 'all 0.3s ease'
@@ -581,16 +641,16 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
         alignItems: 'center',
         cursor: 'pointer'
       }}
-      onClick={() => setIsCollapsed(!isCollapsed)}
+      onClick={onToggleCollapse}
       >
         <h3 style={{ margin: 0, fontSize: '16px' }}>Files</h3>
-        <button 
+        <button
           className="collapse-btn"
           onClick={(e) => {
             e.stopPropagation();
-            setIsCollapsed(!isCollapsed);
+            onToggleCollapse?.();
           }}
-          aria-label={isCollapsed ? "Expand" : "Collapse"}
+          aria-label="Collapse"
           style={{
             background: 'transparent',
             border: 'none',
@@ -600,26 +660,24 @@ const FileTree = forwardRef(({ onFileSelect, onNavigate, currentPath, lightMode 
             padding: '4px 8px'
           }}
         >
-          {isCollapsed ? '▶' : '◀'}
+          ◀
         </button>
       </div>
-      {!isCollapsed && (
-        <div className="file-tree-content" style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '8px 0'
-        }}>
-          {loading ? (
-            <div className="loading" style={{ padding: '16px', color: '#888' }}>Loading...</div>
-          ) : rootItems.length === 0 ? (
-            <div className="loading" style={{ padding: '16px', color: '#888' }}>No items found</div>
-          ) : (
-            <div className="file-tree-items">
-              {rootItems.map(item => renderItem(item, '', 0))}
-            </div>
-          )}
-        </div>
-      )}
+      <div className="file-tree-content" style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '8px 0'
+      }}>
+        {loading ? (
+          <div className="loading" style={{ padding: '16px', color: '#888' }}>Loading...</div>
+        ) : rootItems.length === 0 ? (
+          <div className="loading" style={{ padding: '16px', color: '#888' }}>No items found</div>
+        ) : (
+          <div className="file-tree-items">
+            {rootItems.map(item => renderItem(item, '', 0))}
+          </div>
+        )}
+      </div>
       
       {/* File Editor Modal */}
       {editingFile && (

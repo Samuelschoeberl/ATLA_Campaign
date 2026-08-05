@@ -562,6 +562,52 @@ def compute_secondaries(kv: Dict[str, Any], templates: Dict[str, str], passes: i
     return kv_local
 
 
+def load_learned_moves(name: str, out_root: Path) -> set:
+    """Load the list of learned moves for a character from their learned_moves.json file.
+    
+    Creates an empty learned_moves.json file if it doesn't exist yet.
+    Returns a set of move filenames (stems, without .md extension) that the character has learned.
+    """
+    safe = re.sub(r"[^A-Za-z0-9_\-]", '_', name)
+    pc_dir = out_root.joinpath(safe)
+    pc_dir.mkdir(parents=True, exist_ok=True)
+    learned_file = pc_dir.joinpath(f"{safe}_learned_moves.json")
+    
+    if not learned_file.exists():
+        # Create an empty learned moves file as a template
+        try:
+            import json
+            template_data = {
+                "moves": [],
+                "_comment": "Add move names here (without .md extension) for moves this character has learned above level 1"
+            }
+            with open(learned_file, 'w', encoding='utf-8') as f:
+                json.dump(template_data, f, indent=2, ensure_ascii=False)
+            print(f"Created empty learned moves file: {learned_file}")
+        except Exception as e:
+            print(f"WARNING: Failed to create learned moves file for {name}: {e}")
+        return set()
+    
+    try:
+        import json
+        with open(learned_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Support both list format ["move1", "move2"] and dict format {"moves": ["move1", "move2"]}
+        if isinstance(data, list):
+            learned = data
+        elif isinstance(data, dict) and 'moves' in data:
+            learned = data['moves']
+        else:
+            learned = []
+        
+        # Normalize to lowercase stems without extension
+        return {Path(m).stem.lower() if isinstance(m, str) else str(m).lower() for m in learned}
+    except Exception as e:
+        print(f"WARNING: Failed to load learned moves for {name}: {e}")
+        return set()
+
+
 def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List[str], secondary_templates: Dict[str, str], out_root: Path, var_root: Optional[Path] = None, primary_tags: Optional[Dict[str, List[str]]] = None, secondary_tags: Optional[Dict[str, List[str]]] = None, verbose: bool = False, suppress_warnings: Optional[set] = None, environmental_keys: Optional[set] = None) -> None:
     safe = re.sub(r"[^A-Za-z0-9_\-]", '_', name)
     tag_suffix = f"_{safe}"
@@ -576,6 +622,9 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
             return f"#{tag_body}{tag_suffix}"
 
         return tag_pattern.sub(_replace_tag, text)
+    
+    # Load the character's learned moves
+    learned_moves = load_learned_moves(name, out_root)
 
     pc_dir = out_root.joinpath(safe)
     pc_dir.mkdir(parents=True, exist_ok=True)
@@ -951,6 +1000,24 @@ def write_character_files(name: str, kv_all: Dict[str, Any], primary_names: List
                     if not element_tags or not level_matches:
                         # skip files that don't declare element and level tags
                         continue
+
+                    # Check if this is a level 1 move (automatically learned as base kit)
+                    is_level_1 = False
+                    for lm in level_matches:
+                        lo = int(lm[0])
+                        hi = int(lm[1]) if lm[1] else None
+                        # Level 1 if it starts at 1 (e.g., #level1 or #level1-3)
+                        if lo == 1:
+                            is_level_1 = True
+                            break
+                    
+                    # Check if this move is in the character's learned moves list
+                    move_stem = p.stem.lower()
+                    # NOTE: Backend no longer filters - frontend handles "Show All Moves" toggle
+                    # All moves are copied to character folders, frontend filters based on isLearned
+                    # if not is_level_1 and move_stem not in learned_moves:
+                    #     # Character hasn't learned this move yet (and it's not a level 1 base move), skip it
+                    #     continue
 
                     if '#signature_move' in tags_in_file:
                         pc_tag = f"#{normalize_name(name)}"

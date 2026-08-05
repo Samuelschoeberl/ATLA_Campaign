@@ -1,0 +1,81 @@
+.character-token {
+  display: inline-block;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  will-change: transform;
+}
+
+.character-token:hover {
+  transform: scale(1.08) translateY(-2px);
+  z-index: 100;
+  filter: drop-shadow(0 4px 12px rgba(52, 152, 219, 0.4));
+}
+
+.character-token.selected {
+  z-index: 150;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(52, 152, 219, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(52, 152, 219, 0.9));
+  }
+}
+
+.token-overlay {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.hp-text {
+  font-family: 'Courier New', monospace;
+  user-select: none;
+}
+
+.condition-tooltip {
+  animation: tooltipSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes tooltipSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* Condition ring hover effect */
+.character-token svg path[stroke] {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              stroke-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.character-token:hover svg path[stroke] {
+  opacity: 1 !important;
+  stroke-width: 4;
+}
+
+/* HP bar smooth transitions */
+.hp-bar-path {
+  transition: d 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              fill 0.3s ease-out;
+}
+
+/* Token glow effect */
+.token-overlay {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: filter 0.3s ease;
+}
+
+.character-token:hover .token-overlay {
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+}
+}

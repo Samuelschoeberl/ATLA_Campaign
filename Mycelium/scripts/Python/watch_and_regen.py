@@ -24,13 +24,18 @@ checks so it works on all platforms without extra packages.
 from __future__ import annotations
 # reuse shared helpers
 from pathlib import Path
-import argparse
+import threading
 import time
-import sys
 from typing import Dict, Optional
 import hashlib
 import re
 import ast
+
+try:
+    import resource_cache as _resource_cache
+except Exception:
+    _resource_cache = None
+
 from .common import (
     ROOT,
     _safe_rel,
@@ -55,6 +60,24 @@ from .common import (
 _recently_written: Dict[Path, float] = {}
 # record of last authoritative write time per candidate stem
 _last_authoritative: Dict[str, float] = {}
+# Guards both dicts above -- propagate_environmental_from_sheet() can now be
+# called concurrently from Flask request threads (routes_sheets.update_sheet)
+# and, previously, from this module's own standalone watch loop (removed --
+# see outdated/backend-dead-code-2026-08/README.md). Two concurrent sheet
+# saves touching these dicts with no lock was a real race under Flask's
+# threaded=True.
+_state_lock = threading.Lock()
+
+
+def _write_locked(path: Path, content: str) -> None:
+    """Write a file under its resource_cache per-path lock, if available,
+    so this can't interleave with a direct Flask-thread write or the
+    folded-in variable-sync background thread touching the same file."""
+    if _resource_cache is not None:
+        with _resource_cache.get_lock(path):
+            path.write_text(content, encoding='utf-8')
+    else:
+        path.write_text(content, encoding='utf-8')
 
 
 # local aliases to keep older variable names working
@@ -78,6 +101,7 @@ def _extract_show_if_condition_from_tags(tags: set) -> Optional[tuple]:
 
 
 def _is_in_environmental_folder(template_path: Path, vars_root: Path) -> bool:
+    """Check whether a template resides under an environmental folder."""
     try:
         rel = template_path.relative_to(vars_root)
         return 'environmental' in [p.lower() for p in rel.parts]
@@ -129,6 +153,7 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
             new_content = f"{val}\n\n#variable #secondary_stat #template #environmental_variables\n"
             # read canonical existing numeric value
             def _read_canonical(p: Path) -> Optional[str]:
+                """Read the canonical value from a variable file."""
                 try:
                     if p.exists():
                         txt = p.read_text(encoding='utf-8')
@@ -142,6 +167,7 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
                 return None
 
             def _norm_num(s: Optional[str]) -> Optional[float]:
+                """Normalize a numeric-ish string to a float."""
                 if s is None:
                     return None
                 try:
@@ -173,9 +199,10 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
                 print('[DRY] would set canonical', _safe_rel(global_var), 'to', val)
             else:
                 try:
-                    global_var.write_text(new_content, encoding='utf-8')
-                    _recently_written[global_var] = time.time()
-                    _last_authoritative[cand] = time.time()
+                    _write_locked(global_var, new_content)
+                    with _state_lock:
+                        _recently_written[global_var] = time.time()
+                        _last_authoritative[cand] = time.time()
                     print('Updated environmental variable file:', _safe_rel(global_var))
                 except Exception as e:
                     print('Failed to write canonical var', global_var, e)
@@ -218,9 +245,10 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
                     if new_txt != txt:
                         try:
                             b = sheet.with_suffix('.md.bak')
-                            b.write_text(txt, encoding='utf-8')
-                            sheet.write_text(new_txt, encoding='utf-8')
-                            _recently_written[sheet] = time.time()
+                            _write_locked(b, txt)
+                            _write_locked(sheet, new_txt)
+                            with _state_lock:
+                                _recently_written[sheet] = time.time()
                             print('Propagated', display, '->', _safe_rel(sheet))
                         except Exception:
                             pass
@@ -239,9 +267,10 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
                         if new_txt != txt:
                             try:
                                 b = sheet.with_suffix('.md.bak')
-                                b.write_text(txt, encoding='utf-8')
-                                sheet.write_text(new_txt, encoding='utf-8')
-                                _recently_written[sheet] = time.time()
+                                _write_locked(b, txt)
+                                _write_locked(sheet, new_txt)
+                                with _state_lock:
+                                    _recently_written[sheet] = time.time()
                                 print('Propagated (stem) ', display, '->', _safe_rel(sheet))
                             except Exception:
                                 pass
@@ -265,11 +294,13 @@ def propagate_environmental_from_sheet(sheet_path: Path, vars_root: Path, pcs_di
 
 
 def _eval_expr_local(expr: str) -> Optional[float]:
+    """Evaluate a tiny arithmetic expression used in markdown computed files."""
     try:
         node = ast.parse(expr, mode='eval')
     except Exception:
         return None
     def _eval(n):
+        """Recursively evaluate AST nodes in a safe subset."""
         if isinstance(n, ast.Expression):
             return _eval(n.body)
         if isinstance(n, ast.Constant):
@@ -306,6 +337,7 @@ def _eval_expr_local(expr: str) -> Optional[float]:
 
 
 def _touch_or_update_dependent_files(changed_path: Path, vars_root: Path) -> None:
+    """Touch files that reference a variable or recompute simple expressions."""
     # reuse a lightweight approach similar to watch_env_and_regen
     try:
         display = changed_path.stem.replace('_', ' ')
@@ -352,6 +384,7 @@ def _touch_or_update_dependent_files(changed_path: Path, vars_root: Path) -> Non
                         expr = s.lstrip('=')
                         # replace [[Token]] with numeric values
                         def sub_token(m):
+                            """Swap in numeric values for [[var]] tokens before eval."""
                             raw = m.group(1).strip()
                             key = re.sub(r'[^A-Za-z0-9_\-]', '_', raw).lower()
                             v = vars_map.get(key)
@@ -386,6 +419,7 @@ def _touch_or_update_dependent_files(changed_path: Path, vars_root: Path) -> Non
 
 
 def pc_element_level(pc_dir: Path, element: str) -> float:
+    """Return a PC's element level by reading variables or sheet tables."""
     # try to read the per-PC variables file first
     safe = pc_dir.name
     vars_path = pc_dir.joinpath(f"{safe}_variables.md")
@@ -459,295 +493,25 @@ def pc_references_env(pc_dir: Path, cand: str, display_name: str) -> bool:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description='Watch PC sheets and re-run generator for changed PC')
-    p.add_argument('--interval', type=float, default=2.0, help='Poll interval seconds')
-    p.add_argument('--pcs-dir', default='Player Root/PCs', help='Repo-relative PCs folder')
-    p.add_argument('--script', default='Mycelium/scripts/python/recreate_pcs.py', help='Path to recreate_pcs.py')
-    p.add_argument('--create-placeholders', action='store_true', help='Forward --create-placeholders to generator')
-    p.add_argument('--debounce', type=float, default=1.0, help='Seconds minimum between re-runs for the same PC')
-    p.add_argument('--dry-run', action='store_true', help='Do not actually run generator')
-    args = p.parse_args()
+    """Deprecated: the standalone polling watch loop that used to live here
+    has been removed as part of the backend sync rework (see
+    outdated/backend-dead-code-2026-08/README.md). It was never actually
+    launched by start_game.sh or run_backend.py -- only this module's
+    `propagate_environmental_from_sheet()` function was ever live, called
+    synchronously from the Flask request thread in routes_sheets.update_sheet()
+    with proper per-path locking (see _write_locked/_state_lock above).
 
-    pcs_dir = ROOT.joinpath(args.pcs_dir)
-    script = ROOT.joinpath(args.script)
-    if not script.exists():
-        print('ERROR: generator script not found:', script)
-        sys.exit(1)
-
-    last_mtimes = scan_sheet_files(pcs_dir)
-    # keep last file contents to avoid retriggering when mtimes change but
-    # content is identical (editors that touch mtimes or generators that
-    # rewrite files without content change can cause duplicates)
-    last_contents: Dict[Path, str] = {}
-    for p in list(last_mtimes.keys()):
-        try:
-            last_contents[p] = p.read_text(encoding='utf-8')
-        except Exception:
-            last_contents[p] = ''
-    last_run: Dict[str, float] = {}
-    print('Watching', pcs_dir, 'every', args.interval, 's; generator:', script)
-    try:
-        while True:
-            time.sleep(args.interval)
-            current = scan_sheet_files(pcs_dir)
-            # detect added/changed files and group by PC so we only run once per PC per scan
-            changed_by_pc: Dict[str, list] = {}
-            for path, mtime in current.items():
-                prev = last_mtimes.get(path)
-                # ignore changes we just wrote ourselves within a short grace
-                recent = _recently_written.get(path)
-                if recent is not None and mtime <= recent + 1.5:
-                    # consider this a self-write; update bookkeeping and skip
-                    last_mtimes[path] = mtime
-                    continue
-                if prev is None or mtime > prev + 1e-6:
-                    # check content change to avoid duplicate triggers when mtime
-                    # changed but content stayed the same
-                    try:
-                        cur_txt = path.read_text(encoding='utf-8')
-                    except Exception:
-                        cur_txt = ''
-                    old_txt = last_contents.get(path)
-                    if old_txt is not None and cur_txt == old_txt:
-                        # update mtime bookkeeping but skip as content didn't change
-                        last_mtimes[path] = mtime
-                        continue
-                    # record new content
-                    last_contents[path] = cur_txt
-                    pc_name = name_from_sheet(path)
-                    changed_by_pc.setdefault(pc_name, []).append(path)
-
-            if changed_by_pc:
-                # load environmental templates map once
-                vars_root = ROOT.joinpath('Player Root', 'variable')
-                env_templates = load_environmental_templates(vars_root)
-            # prevent handling the same environmental candidate multiple times in one scan
-            processed_candidates = set()
-            for pc_name, paths in changed_by_pc.items():
-                now = time.time()
-                lr = last_run.get(pc_name, 0)
-                if now - lr < args.debounce:
-                    if args.dry_run:
-                        print('Debounced regen for', pc_name)
-                    continue
-                print('Change detected for PC', pc_name)
-                # For each changed sheet path for this PC, parse possible environmental variable rows
-                for p in paths:
-                    # parse sheet table rows
-                    vars_found = parse_sheet_for_vars(p)
-                    for display, val in vars_found.items():
-                        # normalize display to candidate stems
-                        stem = display.lower().replace(' ', '_')
-                        candidates = [stem, stem.rstrip('s'), stem + 's']
-                        for cand in candidates:
-                            # skip if we've already handled this candidate in this scan
-                            if cand in processed_candidates:
-                                continue
-                            if cand not in env_templates:
-                                continue
-                            # canonical path
-                            tpl = env_templates.get(cand)
-                            canonical_stem = tpl.stem if (tpl is not None) else cand
-                            global_var = vars_root.joinpath(canonical_stem + '.md')
-                            # build canonical content we would write
-                            new_content = f"{val}\n\n#variable #secondary_stat #template #environmental_variables\n"
-                            # read canonical existing numeric value (if any)
-                            def _read_canonical(p: Path) -> Optional[str]:
-                                try:
-                                    if p.exists():
-                                        txt = p.read_text(encoding='utf-8')
-                                        # try fenced block first
-                                        m = re.search(r'```markdown\n(.*?)\n\n', txt, flags=re.S)
-                                        if m:
-                                            return m.group(1).strip()
-                                        # fallback: first non-tag line
-                                        lines = [l.strip() for l in txt.splitlines() if l.strip() and not l.strip().startswith('#')]
-                                        return lines[0] if lines else ''
-                                except Exception:
-                                    return None
-                                return None
-
-                            # Only check the global environmental variable file
-                            canon_val = _read_canonical(global_var)
-                            # normalize numeric strings for compare
-                            def _norm_num(s: Optional[str]) -> Optional[float]:
-                                if s is None:
-                                    return None
-                                try:
-                                    return float(re.sub(r'[^0-9.+-]', '', str(s)) or 0)
-                                except Exception:
-                                    try:
-                                        m = re.search(r'[-+]?[0-9]*\.?[0-9]+', str(s))
-                                        if m:
-                                            return float(m.group(0))
-                                    except Exception:
-                                        return None
-                                return None
-
-                            try:
-                                sheet_num = _norm_num(val)
-                            except Exception:
-                                sheet_num = None
-                            canon_num = _norm_num(canon_val)
-
-                            # If canonical exists and equals sheet value, nothing to do
-                            if canon_num is not None and sheet_num is not None and canon_num == sheet_num:
-                                # nothing changed
-                                if args.dry_run:
-                                    print('[DRY] canonical matches sheet for', cand)
-                                continue
-
-                            # If canonical file was updated more recently than this sheet, skip overwrite.
-                            try:
-                                sheet_mtime = p.stat().st_mtime
-                            except Exception:
-                                sheet_mtime = time.time()
-                            canon_mtime = None
-                            try:
-                                if global_var.exists():
-                                    canon_mtime = global_var.stat().st_mtime
-                            except Exception:
-                                canon_mtime = None
-                            last_auth = _last_authoritative.get(cand)
-                            # If canonical has a newer authoritative timestamp, don't let this sheet overwrite it
-                            if last_auth is not None and sheet_mtime <= last_auth + 0.01:
-                                if args.dry_run:
-                                    print('[DRY] skipping overwrite for', cand, 'because canonical was updated more recently')
-                                continue
-
-                            # At this point: sheet value differs from canonical (or no canonical present)
-                            # Treat the sheet value as authoritative: write canonical files and propagate
-                            if args.dry_run:
-                                print('[DRY] would set canonical', global_var.relative_to(ROOT), 'to', val)
-                            else:
-                                try:
-                                    global_var.write_text(new_content, encoding='utf-8')
-                                    _recently_written[global_var] = time.time()
-                                    # mark last authoritative update for this candidate
-                                    _last_authoritative[cand] = time.time()
-                                    print('Updated environmental variable file:', global_var.relative_to(ROOT))
-                                except Exception as e:
-                                    print('Failed to write canonical var', global_var, e)
-                            # propagate this value into other character sheets: replace matching table rows
-                            for other_pc in pcs_dir.iterdir():
-                                if not other_pc.is_dir():
-                                    continue
-                                if other_pc.name == pc_name:
-                                    continue
-                                sheet_path = other_pc.joinpath(f"{other_pc.name} character sheet.md")
-                                if not sheet_path.exists():
-                                    continue
-                                try:
-                                    txt = sheet_path.read_text(encoding='utf-8')
-                                except Exception:
-                                    continue
-                                # replace a table row that begins with the display name
-                                pat = re.compile(r"(?im)^(\|\s*" + re.escape(display) + r"\s*\|)\s*([^|]+)\|", flags=re.M)
-                                m = pat.search(txt)
-                                # check show_if tags on the canonical template (if any)
-                                show_if = None
-                                try:
-                                    tpl = env_templates.get(cand)
-                                    if tpl and tpl.exists():
-                                        ttxt = tpl.read_text(encoding='utf-8')
-                                        tagset = {t.lower() for t in re.findall(r"#[-\w]+", ttxt)}
-                                        show_if = _extract_show_if_condition_from_tags(tagset)
-                                except Exception:
-                                    show_if = None
-
-                                if m:
-                                    # construct replacement row preserving spacing style
-                                    # if a show_if condition is present, ensure this PC meets it
-                                    if show_if is not None:
-                                        elem, op, thresh = show_if
-                                        if pc_element_level(other_pc, elem) < thresh:
-                                            # skip propagation for this PC
-                                            continue
-                                    new_row = f"| {display} | {val} |"
-                                    new_txt = pat.sub(new_row, txt, count=1)
-                                    if new_txt != txt:
-                                        try:
-                                            # backup and write
-                                            b = sheet_path.with_suffix('.md.bak')
-                                            b.write_text(txt, encoding='utf-8')
-                                            sheet_path.write_text(new_txt, encoding='utf-8')
-                                            _recently_written[sheet_path] = time.time()
-                                            print('Propagated', display, '->', _safe_rel(sheet_path))
-                                        except Exception:
-                                            pass
-                                else:
-                                    # also attempt to find stem-like rows (water_charge etc.)
-                                    short = stem
-                                    pat2 = re.compile(r"(?im)^\|\s*([^|]*" + re.escape(short) + r"[^|]*)\|\s*([^|]+)\|", flags=re.M)
-                                    m2 = pat2.search(txt)
-                                    if m2:
-                                        new_row = f"| {m2.group(1).strip()} | {val} |"
-                                        new_txt = pat2.sub(new_row, txt, count=1)
-                                        if new_txt != txt:
-                                            try:
-                                                # respect show_if for stem-based matches too
-                                                if show_if is not None:
-                                                    elem, op, thresh = show_if
-                                                    if pc_element_level(other_pc, elem) < thresh:
-                                                        continue
-                                                b = sheet_path.with_suffix('.md.bak')
-                                                b.write_text(txt, encoding='utf-8')
-                                                sheet_path.write_text(new_txt, encoding='utf-8')
-                                                _recently_written[sheet_path] = time.time()
-                                                print('Propagated (stem) ', display, '->', _safe_rel(sheet_path))
-                                            except Exception:
-                                                pass
-                            # After propagating into other sheets, print the canonical file
-                            try:
-                                if global_var.exists():
-                                    try:
-                                        txt = global_var.read_text(encoding='utf-8')
-                                    except Exception:
-                                        txt = '<failed to read>'
-                                    print('Canonical file', _safe_rel(global_var), 'now contains:')
-                                    print(txt)
-                                else:
-                                    if args.dry_run:
-                                        print('[DRY] Canonical file (would be)', _safe_rel(global_var), 'with content:')
-                                        print(new_content)
-                            except Exception as e:
-                                print('Failed to print canonical file after propagation:', e)
-                            # mark this candidate as handled for this scan
-                            processed_candidates.add(cand)
-                            # trigger regenerations for all PCs with this element >= 1
-                            # infer element from stem (e.g., environmental_water_charge -> water)
-                            elem = None
-                            for e in ('air', 'water', 'earth', 'fire', 'spirit'):
-                                if e in cand:
-                                    elem = e
-                                    break
-                            if elem:
-                                # regenerate only PCs that both have elem level >=1
-                                # and appear to reference this environmental variable
-                                for pc_dir in pcs_dir.iterdir():
-                                    if not pc_dir.is_dir():
-                                        continue
-                                    target_pc = pc_dir.name
-                                    # avoid regenerating the same PC twice here
-                                    if target_pc == pc_name:
-                                        continue
-                                    lvl = pc_element_level(pc_dir, elem)
-                                    if lvl < 1:
-                                        continue
-                                    # only regenerate if the PC references this env var
-                                    if not pc_references_env(pc_dir, cand, display):
-                                        continue
-                                    run_generator(script, target_pc, args.create_placeholders, args.dry_run)
-                                    # refresh mtime so generator-written sheet doesn't immediately re-trigger
-                                    _refresh_last_mtime_for_pc(pcs_dir, last_mtimes, target_pc)
-                # now run generator for the PC that changed
-                run_generator(script, pc_name, args.create_placeholders, args.dry_run)
-                _refresh_last_mtime_for_pc(pcs_dir, last_mtimes, pc_name)
-                last_run[pc_name] = time.time()
-            # detect removed files (so they don't trigger later)
-            last_mtimes = current
-    except KeyboardInterrupt:
-        print('\nStopped watching')
+    Kept as a stub (rather than deleted) so `python3 watch_and_regen.py` still
+    exits cleanly instead of erroring, in case anything still invokes it
+    directly out of habit.
+    """
+    print(
+        "watch_and_regen.py's standalone watch loop has been removed -- it was "
+        "dead code (never launched in production). Its only live function, "
+        "propagate_environmental_from_sheet(), is still called directly from "
+        "the Flask backend on every character-sheet save. See "
+        "outdated/backend-dead-code-2026-08/README.md for details."
+    )
 
 
 if __name__ == '__main__':

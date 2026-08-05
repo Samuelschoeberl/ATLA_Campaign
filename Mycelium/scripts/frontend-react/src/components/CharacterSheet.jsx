@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { hexToRgba } from '../utils/colorUtils';
 import './CharacterSheet.css';
 import { API_BASE_URL } from '../config/api';
@@ -9,16 +9,17 @@ import BendingMoveWrapper from './BendingMoveWrapper';
 import PinnedMoveSlimBar from './PinnedMoveSlimBar';
 import ActionPanel from './ActionPanel';
 import PlanTurnModal from './PlanTurnModal';
-import ReactionsModal from './ReactionsModal';
+import MyMovesModal from './MyMovesModal';
 import { useReadyState } from '../context/ReadyStateContext';
 import PixelAvatar from './PixelAvatar';
 import {
-  AVATAR_SIZE,
-  createEmptyAvatar,
-  normalizeAvatarMatrix,
-  rgbaArrayFromHex,
-  pixelToCssRgba
+  AVATAR_SIZE
 } from '../utils/avatarUtils';
+import {
+  subscribe as subscribeToVaultPath,
+  patchSheetFields,
+  saveResource,
+} from '../data/vaultResource';
 
 const CONDITION_NAMES = [
   'Bleeding out',
@@ -28,7 +29,9 @@ const CONDITION_NAMES = [
   'Paralysed',
   'Prone',
   'Slowed',
+  'Exhausted',
   'Empowered',
+  'Quickened',
   'Armor Surge',
   'Barrier Surge',
   'Harmonic Flow'];
@@ -230,40 +233,60 @@ const DiceRollText = ({ text }) => {
   const [vitalsCollapsed, setVitalsCollapsed] = useState(false);
   const [conditionsCollapsed, setConditionsCollapsed] = useState(true);
   const [stressLevelCollapsed, setStressLevelCollapsed] = useState(true);
+  const [npcElementLevels, setNpcElementLevels] = useState({ air: '', water: '', earth: '', fire: '', spirit: '' });
   const [coreStatsCollapsed, setCoreStatsCollapsed] = useState(true);
   const [bendingLevelsCollapsed, setBendingLevelsCollapsed] = useState(true);
   const [defenseCollapsed, setDefenseCollapsed] = useState(true);
   const [resourcesCollapsed, setResourcesCollapsed] = useState(false);
   const [bonusResourcesCollapsed, setBonusResourcesCollapsed] = useState(true);
+  const [waterChargesCollapsed, setWaterChargesCollapsed] = useState(true);
+  const [hoveredSection, setHoveredSection] = useState(null);
+  const [movesCollapsed, setMovesCollapsed] = useState(true);
   const [pinnedMovesCollapsed, setPinnedMovesCollapsed] = useState(true);
   const [expandedPinnedMoveInSlim, setExpandedPinnedMoveInSlim] = useState(null); // Track which move is expanded in slim view
   const [conditionDescriptions, setConditionDescriptions] = useState({});
   const [conditionMetadata, setConditionMetadata] = useState({});
   const [conditionFilter, setConditionFilter] = useState({ boon: true, curse: true, general: true, specific: true });
   const [movesByType, setMovesByType] = useState({ action: [], bonus: [], reaction: [], danger: [] });
+  const [allMovesByType, setAllMovesByType] = useState(null); // Cache of ALL moves from general Bending Rules
   const [movesLoading, setMovesLoading] = useState(false);
   const [movesError, setMovesError] = useState(null);
-  const [showReactionsModal, setShowReactionsModal] = useState(false);
-  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showMyMovesModal, setShowMyMovesModal] = useState(false);
   const [pinnedMoves, setPinnedMoves] = useState([]);
   const [movesLoadedFor, setMovesLoadedFor] = useState(null);
   const [expandedMoves, setExpandedMoves] = useState(new Set());
   const [usedMoves, setUsedMoves] = useState([]); // Track moves used this turn with their costs
+  const [learnedMoves, setLearnedMoves] = useState(new Set()); // Moves the character has learned (from JSON file)
+  const [showLearnableMoves, setShowLearnableMoves] = useState(false); // Toggle to show moves character can learn based on their level
+  const [showAllMoves, setShowAllMoves] = useState(false); // Toggle to show ALL moves from all elements/levels regardless of character level
+  const [inlineVisibleTypes, setInlineVisibleTypes] = useState({ action: true, bonus: true, reaction: true, danger: true });
+  const [inlineVisibleLevels, setInlineVisibleLevels] = useState({ 1: true, 2: true, 3: true, 4: true, 5: true, 6: true });
+  const [maxLearnedMoves, setMaxLearnedMoves] = useState(null); // Maximum number of learned moves from pc_primary_stats.md
+  const [showUseMoveModal, setShowUseMoveModal] = useState(false);
+  const [useMoveData, setUseMoveData] = useState(null);
+  const [customCostAmounts, setCustomCostAmounts] = useState({});
   const [customization, setCustomization] = useState(null);
   const [customizationLoadedFor, setCustomizationLoadedFor] = useState(null);
+  const [avatarPngDataUrl, setAvatarPngDataUrl] = useState(null); // PNG data URL for avatar display
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
-  const [workingAvatar, setWorkingAvatar] = useState(createEmptyAvatar());
   const [workingFolderColor, setWorkingFolderColor] = useState('');
-  const [brushColor, setBrushColor] = useState('#000000');
-  const [brushAlpha, setBrushAlpha] = useState(1);
   const [customizeSaving, setCustomizeSaving] = useState(false);
   const [customizeError, setCustomizeError] = useState(null);
-  const [isPaintingAvatar, setIsPaintingAvatar] = useState(false);
-  const [avatarEraseMode, setAvatarEraseMode] = useState(false);
   const [recentColors, setRecentColors] = useState([]);
-  const [customizeTab, setCustomizeTab] = useState('general'); // general | avatar
+  const [customizeTab, setCustomizeTab] = useState('general'); // general | avatar | hexExporter
   const [deathSaveSuccesses, setDeathSaveSuccesses] = useState(0);
   const [deathSaveFailures, setDeathSaveFailures] = useState(0);
+  const [showAvatarPopup, setShowAvatarPopup] = useState(false);
+
+  // Hex grid exporter state
+  const [hexGridSize, setHexGridSize] = useState({ rows: 5, cols: 5 });
+  const [hexGrid, setHexGrid] = useState([]);
+  const [isPaintingHex, setIsPaintingHex] = useState(false);
+  const [hexEraseMode, setHexEraseMode] = useState(false);
+  const [hexBrushColor, setHexBrushColor] = useState('#3498db');
+  const [showCharacterInHex, setShowCharacterInHex] = useState(true);
+  const [hexCharacterPosition, setHexCharacterPosition] = useState({ row: 2, col: 2 });
+  const [hexExportSize, setHexExportSize] = useState(40); // Hex size in pixels
 
   const STANDARD_COLORS = [
     '#ff6b6b', '#ffb347', '#ffd166', '#9b59b6', '#6c5ce7', '#3498db',
@@ -274,9 +297,20 @@ const DiceRollText = ({ text }) => {
   const saveTimeoutRef = useRef(null);
   const initialLoadRef = useRef(true);
   const lastReadyUpdateRef = useRef(0); // Track last ready update timestamp
+  const sheetVersionRef = useRef(null); // Last-known server content-hash version, for conflict-aware saves
+  const lastSavedEnvWaterChargeRef = useRef(null); // Skip the environmental PUT unless it actually changed
+  const isLearningMoveRef = useRef(false);
+  const allMovesLoadingRef = useRef(false);
   
   // Ready state from context
   const { setReady, isReady } = useReadyState();
+
+  // Detect if this is an NPC sheet (temp token) - must be computed early before useEffects
+  const isNpcSheet = useMemo(() => {
+    const lowerPath = (file?.path || '').toLowerCase();
+    const lowerName = (file?.name || '').toLowerCase();
+    return lowerPath.includes('temp_token') || lowerName.includes('temp_token') || lowerPath.includes('/npcs/');
+  }, [file?.path, file?.name]);
 
   // Stat calculation tooltips - based on game mechanics from recreate_pcs.py and rule definitions
   const statTooltips = {
@@ -611,7 +645,9 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         'Paralysed': 'Paralysed.md',
         'Prone': 'Prone.md',
         'Slowed': 'Slowed.md',
+        'Exhausted': 'Exhausted.md',
         'Empowered': 'Empowered.md',
+        'Quickened': 'Quickened.md',
         'Armor Surge': 'Armor_Surge.md',
         'Barrier Surge': 'Barrier_Surge.md',
         'Harmonic Flow': 'Harmonic_Flow.md',
@@ -671,7 +707,6 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       initialLoadRef.current = true;
       setCustomization(null);
       setCustomizationLoadedFor(null);
-      setWorkingAvatar(createEmptyAvatar());
       setWorkingFolderColor('');
       loadCharacterSheet();
     }
@@ -685,10 +720,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       return;
     }
     
-    if (characterName !== movesLoadedFor) {
-      loadBendingMoves(characterName);
+    // Wait for characterData to be loaded before loading moves (needed for bending level filtering)
+    if (!characterData?.bendingLevels) {
+      return;
     }
-  }, [file, movesLoadedFor]);
+    
+    if (characterName !== movesLoadedFor) {
+      // For NPCs (temp token sheets), use general bending rules instead of character-specific folders
+      const isNpc = file?.path?.includes('temp_token_') || false;
+      if (isNpc) {
+        loadAllBendingMoves();
+        setMovesLoadedFor(characterName);
+      } else {
+        loadBendingMoves(characterName);
+      }
+    }
+  }, [file, movesLoadedFor, characterData?.bendingLevels]);
 
   useEffect(() => {
     const name = characterData?.name || getCharacterNameFromPath(file?.path);
@@ -697,81 +744,48 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     loadCustomization(name);
   }, [characterData?.name, file]);
 
-  // Periodic check for ready state updates every 10 seconds
+  // Ready-state sync: used to poll this same file every 10 seconds just to
+  // re-check one row. Now subscribed to vaultResource instead -- the backend
+  // publishes a `file_changed` SSE event for this path whenever anyone
+  // (including another tab/player) saves it, and vaultResource refetches +
+  // notifies only then, instead of blind-polling on a timer.
   useEffect(() => {
     if (!file || !characterData?.name) {
       return;
     }
 
-    const intervalId = setInterval(async () => {
-      // Skip if currently saving to avoid race conditions
-      if (saving) {
-        return;
-      }
-      
-      const now = Date.now();
-      const lastUpdate = lastReadyUpdateRef.current;
-      const timeSince = now - lastUpdate;
-      
-      // Skip if we recently updated ready state (within last 3 seconds)
-      if (timeSince < 3000) {
-        return;
-      }
+    const applyReadyFromContent = (content) => {
+      // Skip if currently saving to avoid stomping our own optimistic state,
+      // or if we recently updated ready state ourselves (within 3s).
+      if (saving) return;
+      if (Date.now() - lastReadyUpdateRef.current < 3000) return;
 
-      try {
-        const normalizedPath = (file.path || '').replace(/^Player Root\//i, '');
-        const segments = normalizedPath.split('/').map(s => encodeURIComponent(s)).join('/');
-        const url = `${API_BASE_URL}/player_root/${segments}`;
-        
-        const response = await fetch(url, { cache: 'no-store' });
-        if (response.ok) {
-          const data = await response.json();
-          const content = data.content || '';
-          
-          // Parse only the ready state from Vitals section
-          const lines = content.split('\n');
-          let inVitals = false;
-          for (const line of lines) {
-            if (line.includes('## Vitals')) {
-              inVitals = true;
-              continue;
-            }
-            if (inVitals && line.startsWith('##')) {
-              break;
-            }
-            if (inVitals && line.includes('| ready')) {
-              const parts = line.split('|').map(p => p.trim());
-              if (parts.length >= 3) {
-                const readyValue = parts[2].toLowerCase();
-                const isReadyFromFile = readyValue === 'yes';
-                const currentState = isReady(characterData.name);
-                // Only update if different from current state
-                if (currentState !== isReadyFromFile) {
-                  setReady(characterData.name, isReadyFromFile);
-                }
-              }
-              break;
+      const lines = (content || '').split('\n');
+      let inVitals = false;
+      for (const line of lines) {
+        if (line.includes('## Vitals')) {
+          inVitals = true;
+          continue;
+        }
+        if (inVitals && line.startsWith('##')) {
+          break;
+        }
+        if (inVitals && line.includes('| ready')) {
+          const parts = line.split('|').map(p => p.trim());
+          if (parts.length >= 3) {
+            const isReadyFromFile = parts[2].toLowerCase() === 'yes';
+            if (isReady(characterData.name) !== isReadyFromFile) {
+              setReady(characterData.name, isReadyFromFile);
             }
           }
+          break;
         }
-      } catch (error) {
-        console.error('Error checking ready state:', error);
       }
-    }, 10000); // Check every 10 seconds
-
-    return () => clearInterval(intervalId);
-  }, [file, characterData?.name, isReady, setReady, saving]);
-
-  // Stop avatar painting when mouse is released outside the grid
-  useEffect(() => {
-    const stopPainting = () => setIsPaintingAvatar(false);
-    const clearFlags = () => {
-      setIsPaintingAvatar(false);
-      setAvatarEraseMode(false);
     };
-    window.addEventListener('mouseup', clearFlags);
-    return () => window.removeEventListener('mouseup', clearFlags);
-  }, []);
+
+    const unsubscribe = subscribeToVaultPath(file.path, ({ content }) => applyReadyFromContent(content));
+    return unsubscribe;
+  }, [file, characterData?.name, isReady, setReady, saving]);
 
   // Auto-save effect with debouncing
   useEffect(() => {
@@ -804,6 +818,182 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     };
   }, [characterData]);
 
+  // Auto-collapse water charges panel for characters with no water level
+  useEffect(() => {
+    const waterLevel = characterData?.bendingLevels?.water ?? 0;
+    setWaterChargesCollapsed(waterLevel === 0);
+  }, [characterData?.bendingLevels?.water]);
+
+  // Memoized filtered moves for performance - only recalculate when movesByType or toggles change
+  const filteredMovesByType = useMemo(() => {
+    // Determine which move source to use
+    let sourceMoves = movesByType;
+    
+    // For NPCs, "Show All Moves", or "Show Learnable Moves", use allMovesByType
+    if ((isNpcSheet || showAllMoves || showLearnableMoves) && allMovesByType) {
+      // Update isLearned status based on learnedMoves set
+      sourceMoves = {
+        action: (allMovesByType.action || []).map(move => {
+          // Extract just the filename without path or extension for learned check
+          const fileName = move.path.split('/').pop().toLowerCase().replace(/\.md$/i, '');
+          return {
+            ...move,
+            isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(fileName)
+          };
+        }),
+        bonus: (allMovesByType.bonus || []).map(move => {
+          const fileName = move.path.split('/').pop().toLowerCase().replace(/\.md$/i, '');
+          return {
+            ...move,
+            isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(fileName)
+          };
+        }),
+        reaction: (allMovesByType.reaction || []).map(move => {
+          const fileName = move.path.split('/').pop().toLowerCase().replace(/\.md$/i, '');
+          return {
+            ...move,
+            isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(fileName)
+          };
+        }),
+        danger: (allMovesByType.danger || []).map(move => {
+          const fileName = move.path.split('/').pop().toLowerCase().replace(/\.md$/i, '');
+          return {
+            ...move,
+            isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(fileName)
+          };
+        })
+      };
+    }
+    
+    const filterMove = (move) => {
+      // If "All Moves" is on, show everything with no filtering
+      if (showAllMoves) {
+        return true;
+      }
+      
+      // If "Show Learnable Moves" is on, show moves character can learn (based on their level)
+      if (showLearnableMoves) {
+        // Hide level 1 moves FIRST (they're always learned, not "learnable")
+        if (move.isLevel1 || move.level === 1) return false;
+        
+        // Show if already learned
+        if (move.isLearned) return true;
+        
+        // For learnable moves, check if character meets requirements
+        if (!move.level) return false;
+        
+        // Check if this is a teamup move with multiple elements
+        const isTeamup = move.tags && move.tags.some(tag => tag.toLowerCase().includes('teamup'));
+
+        if (isTeamup) {
+          // Extract all element tags from the move
+          const knownElements = ['air', 'water', 'earth', 'fire', 'spirit'];
+          let moveElements = knownElements.filter(element =>
+            move.tags.some(tag => tag.toLowerCase().includes(element))
+          );
+
+          // For same-element teamups (e.g. water+water), the element may not appear
+          // explicitly in tags — fall back to move.element or path
+          if (moveElements.length === 0) {
+            const pathElement = move.path
+              ? knownElements.find(e => move.path.toLowerCase().includes(`/${e}/`))
+              : null;
+            const fallbackEl = (move.element || pathElement || '').toLowerCase();
+            if (fallbackEl) moveElements = [fallbackEl];
+          }
+
+          // For teamup moves, character needs ANY of the elements at the required level
+          if (moveElements.length > 0) {
+            return moveElements.some(element => {
+              const charLevel = characterData?.bendingLevels?.[element] || 0;
+              return charLevel >= move.level;
+            });
+          }
+          return false;
+        }
+
+        // For non-teamup moves, check the single element
+        if (!move.element) return false;
+        const charLevel = characterData?.bendingLevels?.[move.element.toLowerCase()] || 0;
+        return charLevel >= move.level;
+      }
+      
+      // Default: only show learned moves
+      return move.isLearned;
+    };
+    
+    const filtered = {
+      action: (sourceMoves.action || []).filter(filterMove),
+      bonus: (sourceMoves.bonus || []).filter(filterMove),
+      reaction: (sourceMoves.reaction || []).filter(filterMove),
+      danger: (sourceMoves.danger || []).filter(filterMove)
+    };
+    
+    console.log('Filtered moves:', {
+      showAllMoves,
+      showLearnableMoves,
+      sourceMovesCount: {
+        action: sourceMoves.action?.length || 0,
+        bonus: sourceMoves.bonus?.length || 0,
+        reaction: sourceMoves.reaction?.length || 0,
+        danger: sourceMoves.danger?.length || 0
+      },
+      filteredCount: {
+        action: filtered.action.length,
+        bonus: filtered.bonus.length,
+        reaction: filtered.reaction.length,
+        danger: filtered.danger.length
+      }
+    });
+    
+    return filtered;
+  }, [movesByType, allMovesByType, showAllMoves, showLearnableMoves, characterData?.bendingLevels, isNpcSheet, learnedMoves]);
+
+  const loadMaxLearnedMoves = async (characterName) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/player_root/pc_primary_stats.md`, { cache: 'no-store' });
+      if (!response.ok) {
+        console.error('Failed to fetch pc_primary_stats.md');
+        return;
+      }
+      
+      const data = await response.json();
+      const content = data.content || '';
+      
+      // Parse markdown table to find character's max learned moves
+      const lines = content.split('\n');
+      const headerIndex = lines.findIndex(line => line.includes('| Name'));
+      if (headerIndex === -1) return;
+      
+      // Find column index for "Amount of Learned Moves"
+      const headerCells = lines[headerIndex].split('|').map(c => c.trim()).filter(Boolean);
+      const maxMovesColIndex = headerCells.findIndex(h => h === 'Amount of Learned Moves');
+      if (maxMovesColIndex === -1) return;
+      
+      // Find character row
+      for (let i = headerIndex + 2; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim() || !line.includes('|')) continue;
+        
+        const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+        if (cells.length === 0) continue;
+        
+        // Extract character name (remove [[ ]] if present)
+        const nameCellRaw = cells[0];
+        const nameMatch = nameCellRaw.match(/\[\[(.+?)\]\]/);
+        const nameInTable = nameMatch ? nameMatch[1] : nameCellRaw;
+        
+        if (nameInTable === characterName) {
+          const maxMoves = parseInt(cells[maxMovesColIndex]) || 0;
+          setMaxLearnedMoves(maxMoves);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error loading max learned moves:', err);
+    }
+  };
+
   const loadCharacterSheet = async () => {
     try {
       setLoading(true);
@@ -821,10 +1011,11 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       
       const data = await response.json();
       setContent(data.content || '');
-      
+      sheetVersionRef.current = data.version || data.hash || null;
+
       // Parse character sheet
       const parsedData = parseCharacterSheet(data.content || '');
-      
+
       // Update ready state from the parsed vitals
       if (parsedData.vitals.ready) {
         const isReadyFromFile = parsedData.vitals.ready.toLowerCase() === 'yes';
@@ -832,18 +1023,19 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         // Remove ready from vitals since it's stored in context
         delete parsedData.vitals.ready;
       }
-      
+
       // Fetch environmental water charge from global file
       try {
         const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable/environmental_water_charge`);
         if (envResponse.ok) {
           const envData = await envResponse.json();
-          
+          lastSavedEnvWaterChargeRef.current = `${envData.current}/${envData.max}`;
+
           // Remove any existing environmental water charge from consumables
           parsedData.consumables = parsedData.consumables.filter(
             c => c.name !== 'Environmental water charge'
           );
-          
+
           // Add the global environmental water charge
           parsedData.consumables.push({
             name: 'Environmental water charge',
@@ -860,6 +1052,11 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         console.error('Error loading environmental water charge:', envErr);
       }
       
+      // Load max learned moves from pc_primary_stats.md
+      if (parsedData.name) {
+        loadMaxLearnedMoves(parsedData.name);
+      }
+      
       setCharacterData(parsedData);
     } catch (err) {
       setError(err.message);
@@ -874,20 +1071,39 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterName)}/customization`);
       if (response.ok) {
         const data = await response.json();
-        const normalizedAvatar = normalizeAvatarMatrix(data.avatar || createEmptyAvatar());
-        const record = {
-          ...data,
-          avatar: normalizedAvatar,
-          folderColor: data.folderColor || ''
-        };
-        setCustomization(record);
-        setCustomizationLoadedFor(characterName);
-        if (!showCustomizeModal) {
-          setWorkingAvatar(normalizedAvatar);
-          setWorkingFolderColor(record.folderColor || '');
+        setCustomization(data);
+        
+        // Load avatar PNG - if it's a file path, fetch it from the server
+        if (data.avatarPng) {
+          if (data.avatarPng.startsWith('data:image')) {
+            // It's a data URL, use directly
+            setAvatarPngDataUrl(data.avatarPng);
+          } else {
+            // It's a file path, fetch from server
+            try {
+              const imgResponse = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(data.avatarPng)}`);
+              if (imgResponse.ok) {
+                // Convert blob to base64 data URL
+                const blob = await imgResponse.blob();
+                const reader = new FileReader();
+                const dataUrl = await new Promise((resolve, reject) => {
+                  reader.onloadend = () => resolve(reader.result);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(blob);
+                });
+                setAvatarPngDataUrl(dataUrl);
+              }
+            } catch (err) {
+              console.error('Error loading avatar PNG file:', err);
+            }
+          }
+        } else {
+          setAvatarPngDataUrl(null);
         }
-        if (record.folderColor) {
-          addRecentColor(record.folderColor);
+        
+        setCustomizationLoadedFor(characterName);
+        if (data.folderColor) {
+          addRecentColor(data.folderColor);
         }
       }
     } catch (err) {
@@ -896,86 +1112,203 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }
   };
 
-  const handleAvatarPaint = (row, col, erase = false) => {
-    setWorkingAvatar(prev => {
-      const base = normalizeAvatarMatrix(prev);
-      const updated = base.map(r => r.map(px => [...px]));
-      updated[row][col] = erase ? [0, 0, 0, 0] : rgbaArrayFromHex(brushColor, brushAlpha);
-      return updated;
-    });
-  };
-
-  const handleClearAvatar = () => {
-    setWorkingAvatar(createEmptyAvatar());
-  };
-
   const handleImportPNG = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        // Create a canvas to read pixel data
-        const canvas = document.createElement('canvas');
-        canvas.width = AVATAR_SIZE;
-        canvas.height = AVATAR_SIZE;
-        const ctx = canvas.getContext('2d');
-        
-        // Draw the image scaled to fit the canvas
-        ctx.imageSmoothingEnabled = false; // Preserve pixel art style
-        ctx.drawImage(img, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
-        
-        // Extract pixel data
-        const imageData = ctx.getImageData(0, 0, AVATAR_SIZE, AVATAR_SIZE);
-        const newAvatar = [];
-        
-        for (let row = 0; row < AVATAR_SIZE; row++) {
-          const rowData = [];
-          for (let col = 0; col < AVATAR_SIZE; col++) {
-            const idx = (row * AVATAR_SIZE + col) * 4;
-            rowData.push([
-              imageData.data[idx],     // R
-              imageData.data[idx + 1], // G
-              imageData.data[idx + 2], // B
-              imageData.data[idx + 3]  // A
-            ]);
-          }
-          newAvatar.push(rowData);
-        }
-        
-        setWorkingAvatar(newAvatar);
-      };
-      img.src = e.target.result;
+      setAvatarPngDataUrl(e.target.result);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleExportPNG = () => {
-    // Create a canvas and draw the pixel avatar
+
+  // Hex Grid Exporter Functions
+  const initializeHexGrid = (rows, cols) => {
+    const grid = [];
+    for (let r = 0; r < rows; r++) {
+      const row = [];
+      for (let c = 0; c < cols; c++) {
+        row.push({ filled: false, color: '#3498db' });
+      }
+      grid.push(row);
+    }
+    return grid;
+  };
+
+  const handleHexGridSizeChange = (rows, cols) => {
+    setHexGridSize({ rows, cols });
+    setHexGrid(initializeHexGrid(rows, cols));
+    // Center character position
+    setHexCharacterPosition({ 
+      row: Math.floor(rows / 2), 
+      col: Math.floor(cols / 2) 
+    });
+  };
+
+  const handleHexPaint = (row, col, erase = false) => {
+    setHexGrid(prev => {
+      const updated = prev.map((r, rIdx) => 
+        r.map((cell, cIdx) => {
+          if (rIdx === row && cIdx === col) {
+            return erase ? { filled: false, color: '#3498db' } : { filled: true, color: hexBrushColor };
+          }
+          return cell;
+        })
+      );
+      return updated;
+    });
+  };
+
+  const handleClearHexGrid = () => {
+    setHexGrid(initializeHexGrid(hexGridSize.rows, hexGridSize.cols));
+  };
+
+  const handleExportHexGrid = async () => {
+    const { rows, cols } = hexGridSize;
+    const hexSize = hexExportSize;
+    
+    // Calculate hexagon dimensions
+    const hexWidth = hexSize * Math.sqrt(3);
+    const hexHeight = hexSize * 2;
+    const horizSpacing = hexWidth;
+    const vertSpacing = hexSize * 1.5;
+    
+    // Calculate canvas size
+    const padding = 40;
+    const canvasWidth = cols * horizSpacing + (hexWidth / 2) + padding * 2;
+    const canvasHeight = rows * vertSpacing + (hexHeight / 4) + padding * 2;
+    
     const canvas = document.createElement('canvas');
-    const scale = 2; // Export at 2x size (200x200) - smaller scale since base is already 100x100
-    canvas.width = AVATAR_SIZE * scale;
-    canvas.height = AVATAR_SIZE * scale;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
     const ctx = canvas.getContext('2d');
     
-    // Draw each pixel as a scaled rectangle
-    ctx.imageSmoothingEnabled = false;
-    for (let row = 0; row < AVATAR_SIZE; row++) {
-      for (let col = 0; col < AVATAR_SIZE; col++) {
-        const pixel = workingAvatar[row][col];
-        ctx.fillStyle = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3] / 255})`;
-        ctx.fillRect(col * scale, row * scale, scale, scale);
+    // Transparent background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    
+    // Helper function to draw a hexagon
+    const drawHexagon = (cx, cy, size, fillColor, strokeColor, filled) => {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i + Math.PI / 2;
+        const x = cx + size * Math.cos(angle);
+        const y = cy + size * Math.sin(angle);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.closePath();
+      
+      if (filled) {
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+      }
+      
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    };
+    
+    // Helper to draw character avatar in hexagon - just use PNG as background
+    const drawCharacterInHex = async (cx, cy, size) => {
+      // Draw hexagon filled with avatar PNG
+      if (avatarPngDataUrl) {
+        try {
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = avatarPngDataUrl;
+          });
+          
+          // Create clipping path for hexagon
+          ctx.save();
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i + Math.PI / 2;
+            const x = cx + size * Math.cos(angle);
+            const y = cy + size * Math.sin(angle);
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+          ctx.closePath();
+          ctx.clip();
+          
+          // Draw PNG as background filling the hex
+          ctx.imageSmoothingEnabled = false;
+          const imgSize = size * 2;
+          ctx.drawImage(img, cx - imgSize / 2, cy - imgSize / 2, imgSize, imgSize);
+          
+          ctx.restore();
+          
+          // Draw hexagon border with glow
+          ctx.shadowColor = 'rgba(100, 200, 255, 0.6)';
+          ctx.shadowBlur = 8;
+          ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i + Math.PI / 2;
+            const x = cx + size * Math.cos(angle);
+            const y = cy + size * Math.sin(angle);
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+          ctx.closePath();
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        } catch (err) {
+          // Fallback: draw empty hex with placeholder
+          drawHexagon(cx, cy, size, 'rgba(100, 200, 255, 0.3)', 'rgba(100, 200, 255, 0.9)', true);
+        }
+      } else {
+        // No avatar, draw placeholder hex
+        drawHexagon(cx, cy, size, 'rgba(100, 200, 255, 0.3)', 'rgba(100, 200, 255, 0.9)', true);
+      }
+    };
+    
+    // Draw hexagons
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const cy = row * vertSpacing + padding + hexSize;
+        const tessellationOffset = (row % 2 === 1) ? (hexWidth / 2) : 0;
+        const cx = col * horizSpacing + padding + (hexWidth / 2) + tessellationOffset;
+        
+        const cell = hexGrid[row]?.[col];
+        const isCharacterPosition = showCharacterInHex && 
+                                    row === hexCharacterPosition.row && 
+                                    col === hexCharacterPosition.col;
+        
+        if (isCharacterPosition) {
+          // Draw character avatar
+          await drawCharacterInHex(cx, cy, hexSize);
+        } else if (cell?.filled) {
+          // Draw filled hexagon
+          drawHexagon(cx, cy, hexSize, cell.color, cell.color, true);
+        } else {
+          // Draw empty hexagon outline
+          drawHexagon(cx, cy, hexSize, 'transparent', 'rgba(150, 150, 150, 0.3)', false);
+        }
       }
     }
     
-    // Convert to blob and download
+    // Export
     canvas.toBlob((blob) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${characterData?.name || 'character'}_avatar.png`;
+      a.download = `${characterData?.name || 'hex'}_grid_${rows}x${cols}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -984,14 +1317,13 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
   };
 
   const openCustomizeModal = () => {
-    const avatar = customization?.avatar ? normalizeAvatarMatrix(customization.avatar) : workingAvatar;
-    setWorkingAvatar(avatar);
     setWorkingFolderColor(customization?.folderColor || workingFolderColor || '');
-    const baseColor = customization?.folderColor || workingFolderColor || brushColor || '#000000';
-    setBrushColor(baseColor);
-    addRecentColor(baseColor);
     setCustomizeError(null);
     setCustomizeTab('general');
+    // Initialize hex grid if not already initialized
+    if (hexGrid.length === 0) {
+      setHexGrid(initializeHexGrid(hexGridSize.rows, hexGridSize.cols));
+    }
     setShowCustomizeModal(true);
   };
 
@@ -1049,6 +1381,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     setCustomizeSaving(true);
     setCustomizeError(null);
     try {
+      // Save customization with PNG data URL
       const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterData.name)}/customization`, {
         method: 'POST',
         headers: {
@@ -1056,7 +1389,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         },
         body: JSON.stringify({
           folderColor: workingFolderColor || null,
-          avatar: normalizeAvatarMatrix(workingAvatar)
+          avatarPng: avatarPngDataUrl
         })
       });
 
@@ -1067,18 +1400,12 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
 
       const data = await response.json();
       const saved = data?.customization || {};
-      const normalizedAvatar = normalizeAvatarMatrix(saved.avatar || workingAvatar);
-      const record = {
-        ...saved,
-        folderColor: saved.folderColor || workingFolderColor || '',
-        avatar: normalizedAvatar
-      };
 
-      setCustomization(record);
+      setCustomization(saved);
+      setAvatarPngDataUrl(saved.avatarPng || avatarPngDataUrl);
       setCustomizationLoadedFor(characterData.name);
-      setWorkingAvatar(normalizedAvatar);
-      setWorkingFolderColor(record.folderColor || '');
-      addRecentColor(record.folderColor || workingFolderColor);
+      setWorkingFolderColor(saved.folderColor || workingFolderColor || '');
+      addRecentColor(saved.folderColor || workingFolderColor);
       setShowCustomizeModal(false);
     } catch (err) {
       console.error('Error saving customization:', err);
@@ -1088,21 +1415,213 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }
   };
 
+  // Load ALL moves from general Bending Rules folder
+  const loadAllBendingMoves = async () => {
+    // Only load once (cache it); guard against concurrent calls
+    if (allMovesByType || allMovesLoadingRef.current) return;
+    allMovesLoadingRef.current = true;
+
+    console.log('Loading all bending moves from general Rules folder...');
+
+    try {
+      const basePath = `Rules/Bending Rules`;
+      const elements = ['Air', 'Water', 'Earth', 'Fire', 'Spirit'];
+      const aggregated = { action: [], bonus: [], reaction: [], danger: [] };
+      
+      for (const element of elements) {
+        const elementPath = `${basePath}/${element}/${element}bending Moves`;
+        
+        console.log(`Checking element path: ${elementPath}`);
+        
+        try {
+          // List all level folders
+          const levelListResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(elementPath)}`);
+          console.log(`Response for ${element}:`, levelListResp.status);
+          if (!levelListResp.ok) continue;
+          
+          const levelListData = await levelListResp.json();
+          
+          const levelFolders = (levelListData.entries || []).filter(entry => 
+            entry.type === 'dir' || entry.isDirectory === true
+          );
+          
+          console.log(`Found ${levelFolders.length} level folders for ${element}:`, levelFolders.map(f => f.name));
+          
+          for (const levelFolder of levelFolders) {
+            const levelPath = `${elementPath}/${levelFolder.name}`;
+            
+            try {
+              const fileListResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(levelPath)}`);
+              if (!fileListResp.ok) continue;
+              
+              const fileListData = await fileListResp.json();
+              const files = (fileListData.entries || []).filter(entry => 
+                entry.type === 'file' && entry.name.endsWith('.md')
+              );
+              
+              for (const fileEntry of files) {
+                const fullPath = `${levelPath}/${fileEntry.name}`;
+                
+                try {
+                  const fileResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(fullPath)}`);
+                  if (!fileResp.ok) continue;
+                  
+                  const fileData = await fileResp.json();
+                  const summary = parseMoveSummary(
+                    fileData.content || '',
+                    element.toLowerCase(),
+                    null, // No specific action type in general folder
+                    fullPath
+                  );
+                  
+                  // Determine action type from metadata or tags
+                  let key = 'action'; // default
+                  
+                  // Check metadata for "Type" field
+                  if (summary.metadata) {
+                    const typeField = Object.keys(summary.metadata).find(k => 
+                      k.toLowerCase() === 'type' || k.toLowerCase() === 'action type'
+                    );
+                    if (typeField) {
+                      const typeValue = summary.metadata[typeField].toLowerCase();
+                      if (typeValue.includes('bonus')) key = 'bonus';
+                      else if (typeValue.includes('danger')) key = 'danger';
+                      else if (typeValue.includes('reaction')) key = 'reaction';
+                      else key = 'action';
+                    }
+                  }
+                  
+                  // Fallback to tags if metadata doesn't have type
+                  if (key === 'action' && summary.tags) {
+                    if (summary.tags.some(t => t.toLowerCase().includes('bonus_action'))) key = 'bonus';
+                    else if (summary.tags.some(t => t.toLowerCase().includes('danger'))) key = 'danger';
+                    else if (summary.tags.some(t => t.toLowerCase().includes('reaction'))) key = 'reaction';
+                  }
+                  
+                  // Check if this is a signature move for a specific character
+                  // For NPCs and "Show All Moves", we still want to exclude character-specific signature moves
+                  // unless they're for the current character (if we have one)
+                  const isSignatureMove = summary.tags?.some(tag => tag.toLowerCase() === 'signature_move');
+                  let shouldSkip = false;
+                  
+                  if (isSignatureMove) {
+                    // Extract potential character name tags (excluding common tags)
+                    const characterTagsInMove = summary.tags?.filter(tag => {
+                      const lowerTag = tag.toLowerCase();
+                      if (['signature_move', 'action', 'bonus_action', 'reaction', 'danger_sense_reaction',
+                           'fire', 'water', 'air', 'earth', 'spirit', 
+                           'level1', 'level2', 'level3', 'level4', 'level5',
+                           'level_1', 'level_2', 'level_3', 'level_4', 'level_5'].includes(lowerTag)) {
+                        return false;
+                      }
+                      return true;
+                    });
+                    
+                    // If there are character-specific tags, mark as character-specific signature move
+                    // For "Show All Moves" view, we can show these but mark them somehow
+                    // For now, we'll include them but could add a flag if needed
+                    if (characterTagsInMove && characterTagsInMove.length > 0) {
+                      // Add character info to the summary so it can be displayed
+                      summary.signatureFor = characterTagsInMove;
+                    }
+                  }
+                  
+                  if (!shouldSkip) {
+                    aggregated[key].push({
+                      ...summary,
+                      name: prettifyMoveName(fileEntry.name),
+                      path: fullPath,
+                      isLearned: false, // Not learned by default for general moves
+                      isLevel1: summary.level === 1
+                    });
+                  }
+                } catch (err) {
+                  console.error('Error loading move file:', fullPath, err);
+                }
+              }
+            } catch (err) {
+              console.error('Error loading level folder:', levelPath, err);
+            }
+          }
+        } catch (err) {
+          console.error('Error loading element moves:', elementPath, err);
+        }
+      }
+      
+      // Sort by element, then level, then name
+      Object.keys(aggregated).forEach(key => {
+        aggregated[key].sort((a, b) => {
+          if (a.element !== b.element) return (a.element || '').localeCompare(b.element || '');
+          const levelA = a.level ?? 999;
+          const levelB = b.level ?? 999;
+          if (levelA !== levelB) return levelA - levelB;
+          return a.name.localeCompare(b.name);
+        });
+      });
+      
+      console.log('Loaded all bending moves:', {
+        actions: aggregated.action.length,
+        bonus: aggregated.bonus.length,
+        reactions: aggregated.reaction.length,
+        danger: aggregated.danger.length
+      });
+      
+      setAllMovesByType(aggregated);
+    } catch (err) {
+      console.error('Error loading all bending moves:', err);
+    } finally {
+      allMovesLoadingRef.current = false;
+    }
+  };
+
   const loadBendingMoves = async (characterName) => {
     if (!characterName) {
       setMovesByType({ action: [], bonus: [], reaction: [], danger: [] });
+      setLearnedMoves(new Set());
       return;
     }
     
     try {
       setMovesLoading(true);
       setMovesError(null);
+      
+      // Load learned moves from JSON file
+      const learnedSet = new Set();
+      try {
+        let learnedPath;
+        
+        // For NPCs, use temp token learned moves JSON
+        if (isNpcSheet && file?.path) {
+          learnedPath = file.path
+            .replace(/_character_sheet\.md$/, '_learned_moves.json')
+            .replace(/\.md$/, '_learned_moves.json');
+        } else {
+          // For PCs, use standard learned moves JSON
+          learnedPath = `PCs/${characterName}/${characterName}_learned_moves.json`;
+        }
+        
+        const learnedResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(learnedPath)}`);
+        if (learnedResp.ok) {
+          const learnedData = await learnedResp.json();
+          const content = learnedData.content || '{}';
+          const parsed = JSON.parse(content);
+          const moves = Array.isArray(parsed) ? parsed : (parsed.moves || []);
+          moves.forEach(move => {
+            // Normalize move name to lowercase without extension
+            const normalized = move.toLowerCase().replace(/\.md$/i, '');
+            learnedSet.add(normalized);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading learned moves:', err);
+      }
+      setLearnedMoves(learnedSet);
+      
       const basePath = `PCs/${characterName}/Bending Rules - ${characterName}/by Action Type`;
       const typeFolders = {
         action: 'Action',
         bonus: 'Bonus Action',
-        reaction: 'Reaction',
-        danger: 'Danger Sense Reaction'
+        reaction: 'Reaction'
       };
       
       const aggregated = { action: [], bonus: [], reaction: [], danger: [] };
@@ -1111,7 +1630,10 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         const folderPath = `${basePath}/${folderName}`;
         try {
           const listResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(folderPath)}`);
-          if (!listResp.ok) continue;
+          if (!listResp.ok) {
+            // Folder doesn't exist (character has no moves of this type) - this is expected, skip silently
+            continue;
+          }
           const listData = await listResp.json();
           const files = (listData.entries || []).filter(entry => (entry.type || '').toLowerCase().includes('file'));
           
@@ -1127,10 +1649,25 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                 folderName,
                 fullPath
               );
-              aggregated[key].push({
+              
+              // Extract move name without character suffix for learned check
+              const baseName = fileEntry.name.replace(/\s*-\s*[^-]+\.md$/i, '').toLowerCase();
+              const isLevel1 = summary.level === 1;
+              const isLearned = learnedSet.has(baseName);
+              
+              // Check if this is a Danger Sense Reaction (from Reaction folder)
+              const isDangerSense = key === 'reaction' && summary.tags?.some(tag => 
+                tag.toLowerCase().includes('danger_sense_reaction')
+              );
+              
+              const targetKey = isDangerSense ? 'danger' : key;
+              
+              aggregated[targetKey].push({
                 ...summary,
                 name: prettifyMoveName(fileEntry.name, characterName),
-                path: fullPath
+                path: fullPath,
+                isLearned: isLevel1 || isLearned,
+                isLevel1
               });
             } catch (err) {
               console.error('Error loading bending move file:', err);
@@ -1138,6 +1675,130 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           }
         } catch (err) {
           console.error('Error loading bending moves folder:', err);
+        }
+      }
+      
+      // Load global moves from Rules/Bending Rules/ filtered by character's bending types and levels
+      const bendingLevels = characterData?.bendingLevels || {};
+      const elements = ['Air', 'Water', 'Earth', 'Fire', 'Spirit'];
+      
+      console.log('Loading global moves for character with bending levels:', bendingLevels);
+      
+      for (const element of elements) {
+        const elementLower = element.toLowerCase();
+        const charLevel = bendingLevels[elementLower] || 0;
+        
+        // Skip if character doesn't have this bending type
+        if (charLevel === 0) continue;
+        
+        console.log(`Loading ${element} moves up to level ${charLevel}`);
+        
+        // Load moves for each level up to character's level
+        for (let level = 1; level <= charLevel; level++) {
+          const globalPath = `Rules/Bending Rules/${element}/${element}bending Moves/Level ${level}`;
+          
+          try {
+            const listResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(globalPath)}`);
+            if (!listResp.ok) continue;
+            
+            const listData = await listResp.json();
+            const files = (listData.entries || []).filter(entry => (entry.type || '').toLowerCase().includes('file'));
+            
+            console.log(`Found ${files.length} files in ${globalPath}:`, files.map(f => f.name));
+            
+            for (const fileEntry of files) {
+              const fullPath = `${globalPath}/${fileEntry.name}`;
+              
+              try {
+                const fileResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(fullPath)}`);
+                if (!fileResp.ok) continue;
+                
+                const fileData = await fileResp.json();
+                const summary = parseMoveSummary(
+                  fileData.content || '',
+                  elementLower,
+                  null, // Will determine action type from tags
+                  fullPath
+                );
+                
+                // Determine action type from tags
+                let actionType = 'action'; // default
+                const tags = summary.tags || [];
+                const tagStr = tags.join(' ').toLowerCase();
+                
+                if (tagStr.includes('danger_sense_reaction')) {
+                  actionType = 'danger';
+                } else if (tagStr.includes('reaction')) {
+                  actionType = 'reaction';
+                } else if (tagStr.includes('bonus_action') || tagStr.includes('bonus action')) {
+                  actionType = 'bonus';
+                }
+                
+                // Extract move base name for learned check
+                const baseName = fileEntry.name.replace(/\.md$/i, '').toLowerCase();
+                const isLevel1 = level === 1;
+                const isLearned = learnedSet.has(baseName);
+                
+                // Check if this is a signature move for another character
+                const isSignatureMove = summary.tags?.some(tag => tag.toLowerCase() === 'signature_move');
+                let isForAnotherCharacter = false;
+                
+                if (isSignatureMove) {
+                  // If it's a signature move, check if it's tagged for a different character
+                  // Look for character name tags (tags that match known character names)
+                  const characterTagsInMove = summary.tags?.filter(tag => {
+                    // Skip common tags that aren't character names
+                    const lowerTag = tag.toLowerCase();
+                    if (['signature_move', 'action', 'bonus_action', 'reaction', 'danger_sense_reaction',
+                         'fire', 'water', 'air', 'earth', 'spirit', 
+                         'level1', 'level2', 'level3', 'level4', 'level5',
+                         'level_1', 'level_2', 'level_3', 'level_4', 'level_5'].includes(lowerTag)) {
+                      return false;
+                    }
+                    return true;
+                  });
+                  
+                  // If there are character tags and none match the current character, skip this move
+                  if (characterTagsInMove && characterTagsInMove.length > 0) {
+                    const currentCharLower = characterName.toLowerCase();
+                    const hasMatchingCharTag = characterTagsInMove.some(tag => 
+                      tag.toLowerCase() === currentCharLower
+                    );
+                    
+                    if (!hasMatchingCharTag) {
+                      isForAnotherCharacter = true;
+                      console.log(`⏭️ Skipped ${fileEntry.name} - signature move for another character (${characterTagsInMove.join(', ')})`);
+                    }
+                  }
+                }
+                
+                // Check if this move already exists (character-specific version takes precedence)
+                const existingMove = aggregated[actionType].find(m => 
+                  m.name.toLowerCase().includes(baseName)
+                );
+                
+                console.log(`Processing ${fileEntry.name}: element=${summary.element}, level=${summary.level}, actionType=${actionType}, isLevel1=${isLevel1}, isLearned=${isLearned}, existingMove=${!!existingMove}, isSignatureMove=${isSignatureMove}, isForAnotherCharacter=${isForAnotherCharacter}`);
+                
+                if (!existingMove && !isForAnotherCharacter) {
+                  aggregated[actionType].push({
+                    ...summary,
+                    name: fileEntry.name.replace(/\.md$/i, ''),
+                    path: fullPath,
+                    isLearned: isLevel1 || isLearned,
+                    isLevel1,
+                    isGlobal: true // Mark as global move
+                  });
+                  console.log(`✅ Added ${fileEntry.name} to ${actionType} moves`);
+                } else if (existingMove) {
+                  console.log(`⏭️ Skipped ${fileEntry.name} - already exists in ${actionType}`);
+                }
+              } catch (err) {
+                console.error('Error loading global bending move file:', err);
+              }
+            }
+          } catch (err) {
+            // Global folder doesn't exist for this element/level - expected, skip silently
+          }
         }
       }
       
@@ -1150,6 +1811,14 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           return a.name.localeCompare(b.name);
         });
       });
+      
+      console.log('Final aggregated moves before setting state:', {
+        action: aggregated.action.length,
+        bonus: aggregated.bonus.length,
+        reaction: aggregated.reaction.length,
+        danger: aggregated.danger.length
+      });
+      console.log('Danger moves:', aggregated.danger.map(m => ({ name: m.name, isLearned: m.isLearned, isLevel1: m.isLevel1 })));
       
       setMovesByType(aggregated);
       setMovesLoadedFor(characterName);
@@ -1283,12 +1952,18 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         }
         
         const cells = row.split('|').map(cell => cell.trim()).filter(Boolean);
-        if (cells.length >= 2 && cells[0] !== 'Water charge type') {
+        if (cells.length >= 2 && cells[0] !== 'Water charge type' && cells[1] !== 'value') {
           const chargeName = cells[0];
           const chargeValue = cells[1];
           data.waterCharges[chargeName] = chargeValue;
         }
       });
+    }
+
+    // Remove any invalid header entries that might have slipped through
+    delete data.waterCharges['Water charge type'];
+    if (data.waterCharges['value']) {
+      delete data.waterCharges['value'];
     }
 
     // Ensure bonus slots/charges exist even if zero so the UI can display and edit them
@@ -1398,6 +2073,14 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         }
       }
     });
+
+    // Create bendingLevels object for easy lookup by element name
+    data.bendingLevels = {};
+    if (data.bending && data.bending.elements) {
+      data.bending.elements.forEach(elem => {
+        data.bendingLevels[elem.element.toLowerCase()] = elem.level;
+      });
+    }
 
     return data;
   };
@@ -1534,40 +2217,50 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       setError(null);
 
       const markdown = serializeCharacterSheet(characterData, overrideReadyState);
-      
-      const normalizedPath = (file.path || '').replace(/^Player Root\//i, '');
-      const segments = normalizedPath.split('/').map(s => encodeURIComponent(s)).join('/');
-      const url = `${API_BASE_URL}/player_root/${segments}`;
 
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: markdown })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to save file: ${response.status}`);
+      // Version-aware save: if another tab/player saved this sheet since we
+      // last loaded/saved it, the server rejects with a conflict instead of
+      // silently letting whichever tab's save lands last win. There's no
+      // field-level merge here yet (that's Phase 3, once the monolith is
+      // split) -- as a stopgap we take the server's version as the new
+      // baseline and let the in-memory characterData (which the user is
+      // still actively editing) win on the *next* autosave tick, rather than
+      // blocking the UI on a manual merge prompt.
+      const result = await saveResource(file.path, markdown, sheetVersionRef.current);
+      if (result.conflict) {
+        console.warn('Character sheet save conflict for', file.path, '-- adopting server version as new baseline; next autosave will re-apply local edits.');
+        sheetVersionRef.current = result.serverVersion;
+      } else {
+        sheetVersionRef.current = result.version;
       }
 
-      // Also save environmental water charge if it changed
+      // Also save environmental water charge, but only if it actually
+      // changed since we last saved it -- this used to fire unconditionally
+      // on every unrelated sheet save, racing another character's
+      // concurrent edit to the same shared global resource.
       const envWaterCharge = characterData.consumables.find(c => c.name === 'Environmental water charge' && c.isGlobal);
       if (envWaterCharge) {
-        try {
-          const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: 'environmental_water_charge',
-              current: envWaterCharge.current,
-              max: envWaterCharge.max
-            })
-          });
-          
-          if (!envResponse.ok) {
-            console.error('Failed to save environmental water charge');
+        const envKey = `${envWaterCharge.current}/${envWaterCharge.max}`;
+        if (envKey !== lastSavedEnvWaterChargeRef.current) {
+          try {
+            const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: 'environmental_water_charge',
+                current: envWaterCharge.current,
+                max: envWaterCharge.max
+              })
+            });
+
+            if (!envResponse.ok) {
+              console.error('Failed to save environmental water charge');
+            } else {
+              lastSavedEnvWaterChargeRef.current = envKey;
+            }
+          } catch (envErr) {
+            console.error('Error saving environmental water charge:', envErr);
           }
-        } catch (envErr) {
-          console.error('Error saving environmental water charge:', envErr);
         }
       }
 
@@ -1583,10 +2276,25 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }
   };
 
-  const handleRest = () => {
+  const handleRest = async () => {
     if (!confirm('Reset all consumable resources to maximum? This simulates a rest.')) {
       return;
     }
+
+    // Recalculate defensive stats using the same logic as character sheet recreation
+    const cl = characterData.vitals?.cl || Object.values(characterData.bendingLevels || {}).reduce((sum, v) => sum + v, 0);
+    const rolled_hp = characterData.vitals?.rolled_hp || 0;
+    const secondaryStats = await calculateSecondaryStats(characterData.coreStats || {}, characterData.bendingLevels || {}, cl, rolled_hp);
+
+    const defensive = {
+      Evasion: secondaryStats.evasion || 0,
+      Barrier: secondaryStats.barrier || 0,
+      'General Armor': secondaryStats['general_armor'] || secondaryStats.general_armor || 0,
+      'Physical Armor': secondaryStats['physical_armor'] || secondaryStats.physical_armor || 0,
+      'Fire Armor': secondaryStats['fire_armor'] || secondaryStats.fire_armor || 0,
+      'Ice Armor': secondaryStats['ice_armor'] || secondaryStats.ice_armor || 0,
+      'Spirit Armor': secondaryStats['spirit_armor'] || secondaryStats.spirit_armor || 0
+    };
 
     setCharacterData(prev => {
       // Reset all consumables to their max values
@@ -1618,7 +2326,9 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         consumables,
         slots,
         waterCharges,
-        vitals
+        vitals,
+        defense: { ...(prev.defense || {}), ...defensive },
+        defensive: { ...(prev.defensive || {}), ...defensive }
       };
     });
 
@@ -1632,6 +2342,24 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       ...prev,
       vitals: { ...prev.vitals, [key]: value }
     }));
+
+    // HP is the single hottest-contention field in the app -- two tabs on
+    // the same character (or the GM adjusting HP via the initiative
+    // tracker/battlemap while the player's sheet is open) used to only ever
+    // reconcile via the 1s-debounced full-document save with no version
+    // check at all. Fire the DB-backed PATCH immediately, in parallel with
+    // (ahead of) the regular debounced full-sheet save below, so this
+    // specific field is protected by a real transaction instead of relying
+    // on whichever tab's full-document overwrite lands last.
+    if ((key === 'current_hp' || key === 'max_hp') && characterData?.name) {
+      const field = key === 'current_hp' ? 'currentHp' : 'maxHp';
+      const numeric = parseFloat(value);
+      if (!Number.isNaN(numeric)) {
+        patchSheetFields(characterData.name, { [field]: numeric }).catch((e) =>
+          console.error('Immediate HP patch failed (full-sheet autosave will still catch up):', e)
+        );
+      }
+    }
   };
 
   const updateCoreStat = (key, value) => {
@@ -1754,6 +2482,105 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     setPinnedMoves(prev => prev.filter(m => m.path !== path));
   };
 
+  const handleLearnMove = async (move) => {
+    if (!characterData?.name) return;
+    if (isLearningMoveRef.current) return;
+    isLearningMoveRef.current = true;
+
+    try {
+      const characterName = characterData.name;
+      let learnedPath;
+      
+      // For NPCs, use temp token learned moves JSON
+      if (isNpcSheet && file?.path) {
+        learnedPath = file.path
+          .replace(/_character_sheet\.md$/, '_learned_moves.json')
+          .replace(/\.md$/, '_learned_moves.json');
+      } else {
+        // For PCs, use standard learned moves JSON
+        learnedPath = `PCs/${characterName}/${characterName}_learned_moves.json`;
+      }
+      
+      // Load current learned moves
+      let currentMoves = [];
+      try {
+        const learnedResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(learnedPath)}`);
+        if (learnedResp.ok) {
+          const learnedData = await learnedResp.json();
+          const content = learnedData.content || '{}';
+          const parsed = JSON.parse(content);
+          currentMoves = Array.isArray(parsed) ? parsed : (parsed.moves || []);
+        }
+      } catch (err) {
+        console.error('Error loading learned moves:', err);
+      }
+      
+      // Extract move base name (without character suffix)
+      const moveBaseName = move.name.replace(/\s*-\s*[^-]+$/, '');
+      
+      // Toggle learned status
+      const isCurrentlyLearned = currentMoves.some(m => 
+        m.toLowerCase().replace(/\.md$/i, '') === moveBaseName.toLowerCase()
+      );
+      
+      let updatedMoves;
+      if (isCurrentlyLearned) {
+        // Unlearn: remove from list
+        updatedMoves = currentMoves.filter(m => 
+          m.toLowerCase().replace(/\.md$/i, '') !== moveBaseName.toLowerCase()
+        );
+      } else {
+        // Learn: add to list
+        updatedMoves = [...currentMoves, moveBaseName];
+      }
+      
+      // Save updated learned moves
+      const updatedData = {
+        moves: updatedMoves,
+        _comment: isNpcSheet 
+          ? "Learned moves for this NPC"
+          : "Add move names here (without .md extension) for moves this character has learned above level 1",
+        lastUpdated: new Date().toISOString()
+      };
+      
+      const saveResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(learnedPath)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: JSON.stringify(updatedData, null, 2) })
+      });
+      
+      if (!saveResp.ok) {
+        throw new Error('Failed to save learned moves');
+      }
+      
+      // Reload moves to reflect changes
+      await loadBendingMoves(characterName);
+
+    } catch (err) {
+      console.error('Error toggling learned move:', err);
+      alert('Failed to update learned moves. Please try again.');
+    } finally {
+      isLearningMoveRef.current = false;
+    }
+  };
+
+  // Toggle handlers with mutual exclusion logic
+  const handleToggleShowLearnable = (checked) => {
+    setShowLearnableMoves(checked);
+    if (checked) {
+      setShowAllMoves(false); // Turn off "Show All" when "Show Learnable" is enabled
+      loadAllBendingMoves(); // Need all moves to determine what's learnable
+    }
+  };
+
+  const handleToggleShowAll = (checked) => {
+    setShowAllMoves(checked);
+    if (checked) {
+      setShowLearnableMoves(false); // Turn off "Show Learnable" when "Show All" is enabled
+      loadAllBendingMoves(); // Load all moves from general Bending Rules folder
+    }
+  };
+
   const toggleMoveExpanded = (movePath) => {
     setExpandedMoves(prev => {
       const newSet = new Set(prev);
@@ -1795,21 +2622,28 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     return teamupDetails.length > 0 ? teamupDetails : null;
   };
 
-  // Extract cost information from move slots
+  // Extract cost information from move slots and deduplicate (case-insensitive)
   const getMoveCosts = (move) => {
     if (!move.slots || move.slots.length === 0) return [];
     
-    const costs = [];
-    move.slots.forEach(slotStr => {
-      // Parse patterns like "Airbending slot (3)" or "Spiritbending slot"
-      const match = slotStr.match(/(.+?)\s*(?:\((\d+)\))?$/);
+    // Use reduce to deduplicate by slot name (case-insensitive, keep first occurrence)
+    const costsMap = move.slots.reduce((acc, slotStr) => {
+      // Strip double brackets [[...]] if present
+      const cleanedStr = slotStr.replace(/\[\[|\]\]/g, '');
+      const match = cleanedStr.match(/(.+?)\s*(?:\((\d+)\))?$/);
       if (match) {
         const slotName = match[1].trim();
+        const slotNameLower = slotName.toLowerCase();
         const amount = match[2] ? parseInt(match[2]) : 1;
-        costs.push({ name: slotName, amount, original: slotStr });
+        // Only keep the first occurrence of each slot name (case-insensitive)
+        if (!acc[slotNameLower]) {
+          acc[slotNameLower] = { name: slotName, amount, original: slotStr };
+        }
       }
-    });
-    return costs;
+      return acc;
+    }, {});
+    
+    return Object.values(costsMap);
   };
 
   // Consume resources for a move
@@ -1825,11 +2659,15 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       costs.forEach(cost => {
         const amount = customAmounts?.[cost.name] || cost.amount;
         
-        // Find matching consumable
-        const consumableIndex = consumables.findIndex(c => 
-          c.name.toLowerCase().includes(cost.name.toLowerCase()) ||
-          cost.name.toLowerCase().includes(c.name.toLowerCase())
-        );
+        // Normalize cost name for matching (remove underscores, lowercase)
+        const normalizedCostName = cost.name.toLowerCase().replace(/_/g, ' ');
+        
+        // Find matching consumable by normalizing both names
+        const consumableIndex = consumables.findIndex(c => {
+          const normalizedConsumableName = c.name.toLowerCase().replace(/_/g, ' ');
+          return normalizedConsumableName.includes(normalizedCostName) ||
+                 normalizedCostName.includes(normalizedConsumableName);
+        });
         
         if (consumableIndex !== -1) {
           const consumable = consumables[consumableIndex];
@@ -1861,7 +2699,19 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
   const handleUseMove = (move) => {
     const costs = getMoveCosts(move);
     
-    if (costs.length === 0) {
+    // Check if this is a water move OR if any costs mention water charges
+    const isWaterMove = move.element && move.element.toLowerCase() === 'water';
+    const hasWaterCosts = costs.some(cost => {
+      const normalized = cost.name.toLowerCase().replace(/_/g, ' ');
+      return normalized.includes('water') && normalized.includes('charge');
+    });
+    
+    // Check if move has water element in tags (for teamup moves)
+    const hasWaterTag = move.tags && move.tags.some(tag => tag.toLowerCase().includes('water'));
+    
+    const shouldShowWaterCharges = isWaterMove || hasWaterCosts || hasWaterTag;
+    
+    if (costs.length === 0 && !shouldShowWaterCharges) {
       // No cost, just log it
       setUsedMoves(prev => [...prev, { 
         move, 
@@ -1871,50 +2721,531 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       return;
     }
 
-    // Check if move has multiple costs or if user might want to customize
-    if (costs.length === 1 && costs[0].amount === 1) {
-      // Simple single cost - consume directly
-      consumeMoveResources(move);
-      setUsedMoves(prev => [...prev, { 
-        move, 
-        costs: costs.map(c => ({ ...c, consumed: c.amount })), 
-        timestamp: Date.now() 
-      }]);
-    } else {
-      // Ask user for amounts
-      const customAmounts = {};
-      let shouldConsume = true;
+    // Expand water charges into separate waterbottle and environmental options
+    const expandedCosts = [];
+    const initialAmounts = {};
+    
+    if (shouldShowWaterCharges && characterData && characterData.consumables) {
+      // For water moves, always show waterbottle and environmental as separate options
+      const waterbottleConsumable = characterData.consumables.find(c => 
+        c && c.name && c.name.toLowerCase().includes('waterbottle')
+      );
+      const environmentalConsumable = characterData.consumables.find(c => 
+        c && c.name && c.name.toLowerCase().includes('environmental') && c.name.toLowerCase().includes('water')
+      );
       
-      for (const cost of costs) {
-        const prompt = `${move.name} uses "${cost.original}". How many to consume? (default: ${cost.amount})`;
-        const input = window.prompt(prompt, cost.amount);
+      if (waterbottleConsumable) {
+        expandedCosts.push({
+          name: waterbottleConsumable.name,
+          amount: 999, // No fixed max, user decides
+          original: 'Water_charge',
+          isWaterCharge: true
+        });
+        initialAmounts[waterbottleConsumable.name] = 0;
+      }
+      
+      if (environmentalConsumable) {
+        expandedCosts.push({
+          name: environmentalConsumable.name,
+          amount: 999,
+          original: 'Water_charge',
+          isWaterCharge: true
+        });
+        initialAmounts[environmentalConsumable.name] = 0;
+      }
+    } else {
+      // Non-water moves: handle normally
+      costs.forEach(cost => {
+        expandedCosts.push(cost);
         
-        if (input === null) {
-          // User cancelled
-          shouldConsume = false;
-          break;
+        let defaultAmount = cost.amount;
+        
+        // Set smart default for bending slots
+        if (characterData && characterData.consumables && Array.isArray(characterData.consumables)) {
+          const normalizedCostName = cost.name.toLowerCase().replace(/_/g, ' ');
+          const matchingConsumables = characterData.consumables.filter(c => {
+            if (!c || !c.name) return false;
+            const normalizedConsumableName = c.name.toLowerCase().replace(/_/g, ' ');
+            return normalizedConsumableName.includes(normalizedCostName) ||
+                   normalizedCostName.includes(normalizedConsumableName);
+          });
+          
+          if (matchingConsumables.length > 0) {
+            const consumable = matchingConsumables[0];
+            if (consumable && typeof consumable.current === 'number') {
+              const halfCurrent = Math.ceil(consumable.current / 2);
+              defaultAmount = Math.min(halfCurrent, cost.amount);
+            }
+          }
         }
         
-        const amount = parseInt(input) || cost.amount;
-        customAmounts[cost.name] = amount;
-        cost.consumed = amount;
-      }
-      
-      if (shouldConsume) {
-        consumeMoveResources(move, customAmounts);
-        setUsedMoves(prev => [...prev, { 
-          move, 
-          costs, 
-          timestamp: Date.now() 
-        }]);
-      }
+        initialAmounts[cost.name] = defaultAmount;
+      });
     }
+    
+    // Open modal for user to customize amounts
+    setUseMoveData({ move, costs: expandedCosts });
+    setCustomCostAmounts(initialAmounts);
+    setShowUseMoveModal(true);
+  };
+
+  const handleConfirmUseMove = () => {
+    if (!useMoveData) return;
+    
+    const { move, costs } = useMoveData;
+    
+    // Update costs with consumed amounts
+    const updatedCosts = costs.map(cost => ({
+      ...cost,
+      consumed: customCostAmounts[cost.name] || cost.amount
+    }));
+    
+    consumeMoveResources(move, customCostAmounts);
+    setUsedMoves(prev => [...prev, { 
+      move, 
+      costs: updatedCosts, 
+      timestamp: Date.now() 
+    }]);
+    
+    // Close modal and reset
+    setShowUseMoveModal(false);
+    setUseMoveData(null);
+    setCustomCostAmounts({});
+  };
+
+  const handleCancelUseMove = () => {
+    setShowUseMoveModal(false);
+    setUseMoveData(null);
+    setCustomCostAmounts({});
   };
 
   // Clear used moves log (e.g., when taking rest or new turn)
   const clearUsedMoves = () => {
     setUsedMoves([]);
   };
+
+  // Load and evaluate secondary stat templates (mirrors recreate_pcs.py logic)
+  const loadSecondaryStatTemplates = async () => {
+    try {
+      const basePath = 'variable/secondary_stat';
+      const resp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(basePath)}`);
+      if (!resp.ok) return {};
+      
+      const data = await resp.json();
+      const files = (data.entries || []).filter(entry => 
+        entry.type === 'file' && entry.name.endsWith('.md')
+      );
+      
+      const templates = {};
+      for (const fileEntry of files) {
+        try {
+          const filePath = `${basePath}/${fileEntry.name}`;
+          const fileResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(filePath)}`);
+          if (!fileResp.ok) continue;
+          
+          const fileData = await fileResp.json();
+          const content = fileData.content || '';
+          
+          // Extract formula (first non-empty, non-comment line)
+          const lines = content.split('\n')
+            .filter(l => l.trim() && !l.trim().startsWith('#'));
+          if (lines.length === 0) continue;
+          
+          let formula = lines[0].trim();
+          // Unescape markdown-escaped operators
+          formula = formula.replace(/\\([^\w\s])/g, '$1');
+          // Remove leading '=' if present
+          formula = formula.replace(/^\s*=\s*/, '');
+          
+          const stem = fileEntry.name.replace(/\.md$/, '');
+          templates[stem.toLowerCase()] = formula;
+        } catch (err) {
+          console.warn(`Failed to load secondary stat template ${fileEntry.name}:`, err);
+        }
+      }
+      
+      return templates;
+    } catch (err) {
+      console.warn('Failed to load secondary stat templates:', err);
+      return {};
+    }
+  };
+
+  // Evaluate a formula with variable substitution
+  const evaluateFormula = (formula, variables) => {
+    if (!formula) return 0;
+    
+    // Replace [[variable_name]] tokens with values
+    let expr = formula;
+    const tokenPattern = /\[\[\s*([^\]]+)\s*\]\]/g;
+    expr = expr.replace(tokenPattern, (match, varName) => {
+      const normalized = varName.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+      const value = variables[normalized];
+      return value !== undefined ? value : '0';
+    });
+    
+    // Simple eval for math expressions (safe for controlled formulas)
+    try {
+      // Remove dice notation for static calculation (1d20 -> 10 average)
+      expr = expr.replace(/(\d+)d(\d+)/gi, (match, count, sides) => {
+        const c = parseInt(count) || 1;
+        const s = parseInt(sides) || 20;
+        return Math.floor(c * (s + 1) / 2); // average value
+      });
+      
+      // Evaluate as JavaScript expression
+      const result = Function('"use strict"; return (' + expr + ')')();
+      return typeof result === 'number' && !isNaN(result) ? result : 0;
+    } catch (err) {
+      console.warn(`Failed to evaluate formula "${formula}" -> "${expr}":`, err);
+      return 0;
+    }
+  };
+
+  // Calculate all secondary stats iteratively (mirrors recreate_pcs.py compute_secondaries)
+  const calculateSecondaryStats = async (coreStats, bendingLevels, cl, rolled_hp) => {
+    const templates = await loadSecondaryStatTemplates();
+    
+    // Build initial variable map (lowercase, normalized keys)
+    const variables = {
+      str: coreStats.Strength || 0,
+      strength: coreStats.Strength || 0,
+      dex: coreStats.Dexterity || 0,
+      dexterity: coreStats.Dexterity || 0,
+      con: coreStats.Constitution || 0,
+      constitution: coreStats.Constitution || 0,
+      int: coreStats.Intelligence || 0,
+      intelligence: coreStats.Intelligence || 0,
+      wis: coreStats.Wisdom || 0,
+      wisdom: coreStats.Wisdom || 0,
+      cha: coreStats.Charisma || 0,
+      charisma: coreStats.Charisma || 0,
+      riz: coreStats.Charisma || 0, // alias
+      air: bendingLevels.air || 0,
+      water: bendingLevels.water || 0,
+      earth: bendingLevels.earth || 0,
+      fire: bendingLevels.fire || 0,
+      spirit: bendingLevels.spirit || 0,
+      cl: cl,
+      rolled_hp: rolled_hp,
+      'rolled.hp': rolled_hp
+    };
+    
+    // Iteratively evaluate templates (up to 6 passes to resolve dependencies)
+    const maxPasses = 6;
+    for (let pass = 0; pass < maxPasses; pass++) {
+      let changed = false;
+      
+      for (const [name, formula] of Object.entries(templates)) {
+        const oldValue = variables[name];
+        const newValue = evaluateFormula(formula, variables);
+        
+        if (oldValue !== newValue) {
+          variables[name] = newValue;
+          // Also store variants for lookup
+          const underscored = name.replace(/\s+/g, '_');
+          const dotted = name.replace(/\s+/g, '.');
+          variables[underscored] = newValue;
+          variables[dotted] = newValue;
+          changed = true;
+        }
+      }
+      
+      if (!changed) break; // converged
+    }
+    
+    return variables;
+  };
+
+  const randomizeNpcStats = useCallback(async () => {
+    const rollStat = () => 1 + Math.floor(Math.random() * 10); // 1-10
+    const newCore = {
+      Strength: rollStat(),
+      Dexterity: rollStat(),
+      Constitution: rollStat(),
+      Intelligence: rollStat(),
+      Wisdom: rollStat(),
+      Charisma: rollStat()
+    };
+    // Always use manual element levels (default to 0 if not set)
+    const elements = ['air', 'water', 'earth', 'fire', 'spirit'];
+    const bendingLevels = {};
+    const bendingElements = [];
+    
+    // Map of elements to their associated core stats for attack rolls
+    const statMap = {
+      air: 'Dexterity',
+      water: 'Intelligence',
+      earth: 'Strength',
+      fire: 'Wisdom',
+      spirit: 'Wisdom'
+    };
+    
+    elements.forEach(el => {
+      const manualLevel = parseInt(npcElementLevels[el]);
+      const level = (manualLevel >= 0 && manualLevel <= 10) ? manualLevel : 0;
+      bendingLevels[el] = level;
+      
+      // Build the bending.elements structure with attack rolls and DCs
+      const coreStat = newCore[statMap[el]] || 0;
+      const attackRoll = `1d20 + ${level} + ${coreStat}`;
+      const dc = `${level} + ${coreStat}`;
+      
+      bendingElements.push({
+        element: el.charAt(0).toUpperCase() + el.slice(1),
+        level: level,
+        attackRoll: attackRoll,
+        dc: dc
+      });
+    });
+    
+    const cl = Object.values(bendingLevels).reduce((sum, v) => sum + v, 0);
+    const rolled_hp = cl > 0 ? cl * (6 + Math.floor(Math.random() * 5)) : 10; // 6-10 per level, or min 10 if cl=0
+    const con = newCore.Constitution || 0;
+    const max_hp = (rolled_hp + (con * cl)) * 2; // matches max_hp.md formula
+
+    // Calculate all secondary stats using templates
+    const secondaryStats = await calculateSecondaryStats(newCore, bendingLevels, cl, rolled_hp);
+    
+    // Load environmental water charge from global variable
+    let envWaterCharge = '0/0';
+    try {
+      const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable/environmental_water_charge`);
+      if (envResponse.ok) {
+        const envData = await envResponse.json();
+        envWaterCharge = `${envData.current}/${envData.max}`;
+      }
+    } catch (err) {
+      console.warn('Failed to load environmental water charge:', err);
+    }
+    
+    // Extract specific secondary stats for character sheet sections
+    const defensive = {
+      Evasion: secondaryStats.evasion || 0,
+      Barrier: secondaryStats.barrier || 0,
+      'General Armor': secondaryStats['general_armor'] || secondaryStats.general_armor || 0,
+      'Physical Armor': secondaryStats['physical_armor'] || secondaryStats.physical_armor || 0,
+      'Fire Armor': secondaryStats['fire_armor'] || secondaryStats.fire_armor || 0,
+      'Ice Armor': secondaryStats['ice_armor'] || secondaryStats.ice_armor || 0,
+      'Spirit Armor': secondaryStats['spirit_armor'] || secondaryStats.spirit_armor || 0
+    };
+    
+    const slots = {};
+    
+    // Only add slots that have values > 0
+    const airSlot = secondaryStats['airbending_slot'] || secondaryStats.airbending_slot || 0;
+    if (airSlot > 0) {
+      slots['Airbending slot'] = `${airSlot}/${airSlot}`;
+    }
+    
+    const earthSlot = secondaryStats['earthbending_slot'] || secondaryStats.earthbending_slot || 0;
+    if (earthSlot > 0) {
+      slots['Earthbending slot'] = `${earthSlot}/${earthSlot}`;
+    }
+    
+    const fireSlot = secondaryStats['firebending_slot'] || secondaryStats.firebending_slot || 0;
+    if (fireSlot > 0) {
+      slots['Firebending slot'] = `${fireSlot}/${fireSlot}`;
+    }
+    
+    const spiritSlot = secondaryStats['spiritbending_slot'] || secondaryStats.spiritbending_slot || 0;
+    if (spiritSlot > 0) {
+      slots['Spirit bending slot'] = `${spiritSlot}/${spiritSlot}`;
+    }
+    
+    // Always include bonus bending slots (can be 0)
+    slots['Bonus bending slots'] = secondaryStats['bonus_bending_slots'] || secondaryStats.bonus_bending_slots || 0;
+    
+    const waterCharges = {
+      'Environmental water charge': envWaterCharge
+    };
+    
+    // Only add Waterbottle charge if character has water level > 0
+    const waterbottleCharge = secondaryStats['waterbottle_charge'] || secondaryStats.waterbottle_charge || 0;
+    if (waterbottleCharge > 0) {
+      waterCharges['Waterbottle charge'] = `0/${waterbottleCharge}`;
+    }
+    
+    // Always include bonus water charges
+    waterCharges['Bonus water charges'] = secondaryStats['bonus_water_charges'] || secondaryStats.bonus_water_charges || 0;
+
+    // Build consumables array from slots and waterCharges
+    const consumables = [];
+    const bonusSlotNames = ['Bonus air slots', 'Bonus earth slots', 'Bonus fire slots', 'Bonus spirit slots', 'Bonus bending slots'];
+    
+    Object.entries(slots).forEach(([key, value]) => {
+      if (bonusSlotNames.includes(key)) return;
+      
+      const slashMatch = String(value).match(/^(\d+)\s*\/\s*(\d+)$/);
+      if (slashMatch) {
+        consumables.push({
+          name: key,
+          max: parseInt(slashMatch[2]),
+          current: parseInt(slashMatch[1]),
+          type: 'slot'
+        });
+      } else {
+        const numValue = parseInt(value);
+        if (!isNaN(numValue) && numValue > 0) {
+          consumables.push({
+            name: key,
+            max: numValue,
+            current: numValue,
+            type: 'slot'
+          });
+        }
+      }
+    });
+    
+    Object.entries(waterCharges).forEach(([key, value]) => {
+      // Skip Bonus water charges - shown separately
+      if (key === 'Bonus water charges') return;
+      
+      const slashMatch = String(value).match(/^(\d+)\s*\/\s*(\d+)$/);
+      if (slashMatch) {
+        consumables.push({
+          name: key,
+          max: parseInt(slashMatch[2]),
+          current: parseInt(slashMatch[1]),
+          type: key === 'Environmental water charge' ? 'environmental' : 'water',
+          isGlobal: key === 'Environmental water charge' // Mark as global so it saves differently
+        });
+      } else {
+        const numValue = parseInt(value);
+        if (!isNaN(numValue) && numValue > 0) {
+          consumables.push({
+            name: key,
+            max: numValue,
+            current: numValue,
+            type: 'water'
+          });
+        }
+      }
+    });
+
+    setCharacterData(prev => ({
+      ...prev,
+      coreStats: { ...(prev.coreStats || {}), ...newCore },
+      bendingLevels,
+      bending: {
+        totalLevel: cl,
+        elements: bendingElements
+      },
+      vitals: {
+        ...(prev.vitals || {}),
+        rolled_hp,
+        max_hp,
+        current_hp: max_hp,
+        cl,
+        Initiative: secondaryStats.initiative || '1d20',
+        Movement: secondaryStats.movement || 5
+      },
+      defense: { ...(prev.defense || {}), ...defensive },
+      defensive: { ...(prev.defensive || {}), ...defensive },
+      slots: { ...(prev.slots || {}), ...slots },
+      waterCharges: waterCharges, // Don't merge with prev - use new values directly
+      consumables,
+      conditions: prev.conditions || {},
+      secondaryStats // store all calculated stats for reference
+    }));
+    
+    // Auto-save after randomizing to persist stats to markdown file
+    setTimeout(() => handleSave(), 100);
+  }, [setCharacterData, npcElementLevels, handleSave]);
+
+  const randomizeNpcLearnedMoves = useCallback(async () => {
+    try {
+      if (!allMovesByType) {
+        await loadAllBendingMoves();
+      }
+      const pool = Object.values(allMovesByType || {}).flat();
+      if (!pool.length) return;
+      
+      // Get character's bending levels from current characterData
+      const charBendingLevels = characterData?.bendingLevels || {};
+      const charBending = characterData?.bending?.elements || [];
+      
+      // Filter moves by: (1) character has that element, (2) move level <= character's element level
+      const allowedMoves = pool.filter(move => {
+        // Extract element from tags (e.g., #air, #water, #earth, #fire, #spirit)
+        const moveTags = move.tags || [];
+        const moveElements = moveTags
+          .filter(tag => ['air', 'water', 'earth', 'fire', 'spirit'].includes(tag.toLowerCase()))
+          .map(tag => tag.toLowerCase());
+        
+        // Extract level requirement from tags (e.g., #Level1, #Level2)
+        const levelTag = moveTags.find(tag => tag.toLowerCase().match(/level\d+/));
+        const moveLevel = levelTag ? parseInt(levelTag.match(/\d+/)?.[0]) : 1;
+        
+        // Allow move if character has at least one of the move's elements at sufficient level
+        const hasElement = moveElements.some(element => {
+          const charLevel = charBendingLevels[element] || 0;
+          return charLevel >= moveLevel;
+        });
+        
+        // Also allow utility moves (#Level1 utility moves with multiple elements)
+        const isUtility = moveTags.some(tag => tag.toLowerCase() === 'utility');
+        if (isUtility && moveLevel === 1) {
+          // Utility moves allowed if character has any bending
+          const hasSomeBending = Object.values(charBendingLevels).some(lvl => lvl > 0);
+          return hasSomeBending;
+        }
+        
+        return hasElement;
+      });
+      
+      if (!allowedMoves.length) {
+        console.warn('No moves available for this character\'s bending levels');
+        return;
+      }
+      
+      const pickCount = Math.min(allowedMoves.length, Math.max(3, Math.floor(Math.random() * 6)));
+      const shuffled = [...allowedMoves].sort(() => Math.random() - 0.5);
+      const chosen = shuffled.slice(0, pickCount);
+      const chosenPaths = chosen.map(m => m.path || m.name).filter(Boolean);
+      
+      // For NPCs, save to learned_moves JSON file alongside temp character sheet
+      if (isNpcSheet && file?.path) {
+        try {
+          // Convert sheet path to learned moves JSON path
+          // e.g., NPCs/temp_token_123_soldier_character_sheet.md -> NPCs/temp_token_123_soldier_learned_moves.json
+          const learnedMovesPath = file.path
+            .replace(/_character_sheet\.md$/, '_learned_moves.json')
+            .replace(/\.md$/, '_learned_moves.json');
+          
+          const learnedMovesData = {
+            moves: chosenPaths,
+            _comment: 'Learned moves for this NPC (automatically generated)',
+            lastUpdated: new Date().toISOString()
+          };
+          
+          const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(learnedMovesPath)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: JSON.stringify(learnedMovesData, null, 2) })
+          });
+          
+          if (response.ok) {
+            console.log('✅ Saved NPC learned moves to', learnedMovesPath);
+            // Normalize move paths to match loadBendingMoves format (lowercase, no .md)
+            const normalizedPaths = chosenPaths.map(path => path.toLowerCase().replace(/\.md$/i, ''));
+            setLearnedMoves(new Set(normalizedPaths));
+            setPinnedMoves(chosen);
+          } else {
+            console.warn('Failed to save NPC learned moves JSON');
+          }
+        } catch (err) {
+          console.error('Failed to save NPC learned moves:', err);
+        }
+      } else {
+        // For regular PCs, just update state (they use existing learned_moves.json)
+        setPinnedMoves(chosen);
+        setLearnedMoves(new Set(chosenPaths));
+      }
+    } catch (err) {
+      console.warn('Randomize NPC moves failed', err);
+    }
+  }, [allMovesByType, loadAllBendingMoves, characterData, isNpcSheet, file?.path]);
 
   if (loading) {
     return (
@@ -2008,20 +3339,168 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     c.name.toLowerCase().includes('water') && c.name.toLowerCase().includes('charge')
   );
   const accentColor = workingFolderColor || customization?.folderColor || '#888888';
-  const avatarForHeader = customization?.avatar || workingAvatar;
+
+  const renderSectionPreview = (sectionId) => {
+    const ELEM_ICONS = { air: '🌬️', water: '💧', earth: '🪨', fire: '🔥', spirit: '👻' };
+    const ELEM_COLORS = ELEMENT_COLORS;
+
+    switch (sectionId) {
+      case 'vitals': {
+        const cur = parseFloat(characterData.vitals?.current_hp) || 0;
+        const max = parseFloat(characterData.vitals?.max_hp) || 1;
+        const pct = Math.max(0, Math.min(100, (cur / max) * 100));
+        const barColor = pct > 50 ? '#4caf76' : pct > 25 ? '#e6a817' : '#e05252';
+        const init = characterData.vitals?.initiative ?? '—';
+        const eva = characterData.vitals?.evasion ?? characterData.defense?.Evasion ?? '—';
+        const mov = characterData.vitals?.movement ?? '—';
+        return (
+          <>
+            <div className="preview-hp-bar"><div className="preview-hp-bar-fill" style={{ width: `${pct}%`, background: barColor }} /></div>
+            <div className="preview-row">
+              <div className="preview-stat"><span className="preview-stat-label">HP</span><span className="preview-stat-value" style={{ color: barColor }}>{cur}/{max}</span></div>
+              <div className="preview-stat"><span className="preview-stat-label">Init</span><span className="preview-stat-value">{init}</span></div>
+              <div className="preview-stat"><span className="preview-stat-label">Eva</span><span className="preview-stat-value">{eva}</span></div>
+              <div className="preview-stat"><span className="preview-stat-label">Move</span><span className="preview-stat-value">{mov}</span></div>
+            </div>
+          </>
+        );
+      }
+      case 'stress': {
+        const cur = parseFloat(characterData.vitals?.['Stress Level'] || characterData.vitals?.['stress level']) || 0;
+        const max = parseFloat(characterData.vitals?.['Max Stress Level'] || characterData.vitals?.['max stress level']) || 10;
+        const pct = max > 0 ? (cur / max) * 100 : 0;
+        const barColor = pct > 66 ? '#e05252' : pct > 33 ? '#e6a817' : '#4caf76';
+        return (
+          <>
+            <div className="preview-hp-bar"><div className="preview-hp-bar-fill" style={{ width: `${pct}%`, background: barColor }} /></div>
+            <div className="preview-row">
+              <div className="preview-stat"><span className="preview-stat-label">Stress</span><span className="preview-stat-value" style={{ color: barColor }}>{cur} / {max}</span></div>
+            </div>
+          </>
+        );
+      }
+      case 'conditions': {
+        const condColors = { 'Bleeding out': '#e05252', 'Blinded': '#9b8fa0', 'Dazed': '#7a9abf', 'Immobilised': '#8c6b3e', 'Paralysed': '#6a5acd', 'Prone': '#a0896b', 'Slowed': '#5f8fa0', 'Exhausted': '#7a7a7a', 'Empowered': '#4caf76', 'Quickened': '#3498db', 'Armor Surge': '#c8f0a6', 'Barrier Surge': '#91bbff', 'Harmonic Flow': '#ffcaf4' };
+        const active = visibleActiveConditions;
+        if (active.length === 0) return <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>No active conditions</span>;
+        return (
+          <div className="preview-row">
+            {active.map(c => (
+              <span key={c} className="preview-pill" style={{ background: hexToRgba(condColors[c] || '#888', 0.22), color: condColors[c] || '#ccc', border: `1px solid ${hexToRgba(condColors[c] || '#888', 0.4)}` }}>
+                {c}
+              </span>
+            ))}
+          </div>
+        );
+      }
+      case 'coreStats': {
+        const stats = characterData.coreStats || {};
+        return (
+          <div className="preview-row" style={{ justifyContent: 'space-between' }}>
+            {Object.entries(stats).map(([key, val]) => (
+              <div key={key} className="preview-stat">
+                <span className="preview-stat-label">{key.slice(0, 3)}</span>
+                <span className="preview-stat-value">{val}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      case 'bendingLevels': {
+        const levels = characterData.bendingLevels || {};
+        return (
+          <div className="preview-row">
+            {Object.entries(levels).map(([elem, lvl]) => (
+              lvl > 0 ? (
+                <span key={elem} className="preview-pill" style={{ background: hexToRgba(ELEM_COLORS[elem] || '#888', 0.18), color: ELEM_COLORS[elem] || '#ccc', border: `1px solid ${hexToRgba(ELEM_COLORS[elem] || '#888', 0.4)}` }}>
+                  {ELEM_ICONS[elem]} {elem.charAt(0).toUpperCase() + elem.slice(1)} {lvl}
+                </span>
+              ) : (
+                <span key={elem} className="preview-pill" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {ELEM_ICONS[elem]} {elem.charAt(0).toUpperCase() + elem.slice(1)} —
+                </span>
+              )
+            ))}
+          </div>
+        );
+      }
+      case 'defense': {
+        const def = characterData.defense || {};
+        return (
+          <div className="preview-row" style={{ gap: '12px' }}>
+            {Object.entries(def).map(([key, val]) => (
+              <div key={key} className="preview-stat">
+                <span className="preview-stat-label">{key.replace(' Armor', '').replace('General', 'Gen').replace('Physical', 'Phys').replace('Spirit', 'Spr')}</span>
+                <span className="preview-stat-value">{val}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      case 'resources': {
+        const slots = characterData.consumables.filter(c => c.type === 'slot');
+        if (slots.length === 0) return <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>No slots</span>;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {slots.map(s => {
+              const elem = Object.keys(ELEM_COLORS).find(e => s.name.toLowerCase().includes(e));
+              const color = elem ? ELEM_COLORS[elem] : '#3498db';
+              return (
+                <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', width: '80px', textAlign: 'right' }}>{s.name.replace(' slot', '')}</span>
+                  <div className="preview-mini-bar">
+                    {Array.from({ length: s.max }, (_, i) => (
+                      <div key={i} className="preview-mini-pip" style={{ background: i < s.current ? hexToRgba(color, 0.85) : 'rgba(255,255,255,0.1)', border: `1px solid ${i < s.current ? color : 'rgba(255,255,255,0.15)'}` }} />
+                    ))}
+                  </div>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{s.current}/{s.max}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+      case 'moves': {
+        const counts = {
+          Actions: (movesByType.action || []).filter(m => m.isLearned).length,
+          Bonus: (movesByType.bonus || []).filter(m => m.isLearned).length,
+          Reactions: (movesByType.reaction || []).filter(m => m.isLearned).length,
+        };
+        return (
+          <div className="preview-row">
+            {Object.entries(counts).map(([label, count]) => (
+              <div key={label} className="preview-stat">
+                <span className="preview-stat-label">{label}</span>
+                <span className="preview-stat-value">{count}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className={`character-sheet ${lightMode ? 'light-mode' : ''}`}>
       <div className="character-header">
         <div className="character-title">
-          <PixelAvatar
-            className="character-avatar-preview"
-            pixels={avatarForHeader}
-            size={64}
-            borderColor={accentColor}
-            placeholderLabel={characterData.name?.[0] || 'C'}
-            background={lightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}
-          />
+          <div 
+            className="character-avatar-wrapper"
+            onClick={() => avatarPngDataUrl && setShowAvatarPopup(true)}
+            style={{ cursor: avatarPngDataUrl ? 'pointer' : 'default' }}
+            title={avatarPngDataUrl ? 'Click to view full size' : ''}
+          >
+            <PixelAvatar
+              className="character-avatar-preview"
+              avatarPng={avatarPngDataUrl}
+              size={64}
+              borderColor={accentColor}
+              placeholderLabel={characterData.name?.[0] || 'C'}
+              background={lightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}
+            />
+          </div>
           <h1>{characterData.name || 'Character Sheet'}</h1>
           <button
             onClick={openCustomizeModal}
@@ -2039,32 +3518,18 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </div>
         <div className="header-buttons">
           <button 
-            onClick={() => setShowReactionsModal(true)} 
+            onClick={() => setShowMyMovesModal(true)} 
             className="ghost-button"
-            title="Open reactions & danger sense reactions"
+            title="View and manage all your moves"
             style={{
-              background: `linear-gradient(135deg, ${ACTION_COLORS['Reaction']} 0%, ${ACTION_COLORS['Danger Sense Reaction']} 100%)`,
+              background: `linear-gradient(135deg, ${ACTION_COLORS['Action']} 0%, ${ACTION_COLORS['Reaction']} 100%)`,
               color: '#fff',
               fontWeight: '600',
               border: 'none',
               boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
             }}
           >
-            Reactions
-          </button>
-          <button 
-            onClick={() => setShowPlanModal(true)} 
-            className="ghost-button"
-            title={isBleedingOut ? "Plan your turn with actions (no bonus actions while bleeding out)" : "Plan your turn with actions and bonus actions"}
-            style={{
-              background: `linear-gradient(135deg, ${ACTION_COLORS['Action']} 0%, ${ACTION_COLORS['Bonus Action']} 100%)`,
-              color: '#fff',
-              fontWeight: '600',
-              border: 'none',
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
-            }}
-          >
-            Plan turn
+            My Moves
           </button>
           <button 
             onClick={async () => {
@@ -2074,6 +3539,13 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
               lastReadyUpdateRef.current = Date.now();
               // Update context immediately for UI responsiveness
               setReady(characterData?.name, newReadyState);
+              // Immediate DB-backed patch (other tabs/the initiative tracker
+              // see this via SSE right away) ahead of the full-document save.
+              if (characterData?.name) {
+                patchSheetFields(characterData.name, { ready: newReadyState }).catch((e) =>
+                  console.error('Immediate ready-state patch failed (full-sheet save will still catch up):', e)
+                );
+              }
               // Save to file with the explicit new state to avoid race conditions
               await handleSave(newReadyState);
             }}
@@ -2103,6 +3575,189 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </div>
       </div>
 
+      {isNpcSheet && (
+        <div className="npc-control-hub" style={{
+          background: 'linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, rgba(230, 126, 34, 0.15) 100%)',
+          border: '2px solid rgba(231, 76, 60, 0.3)',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '20px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '12px'
+          }}>
+            <span style={{
+              fontSize: '20px',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+            }}>⚔️</span>
+            <h3 style={{
+              margin: 0,
+              color: lightMode ? '#2c3e50' : '#ecf0f1',
+              fontSize: '16px',
+              fontWeight: '700',
+              letterSpacing: '0.5px'
+            }}>NPC Quick Actions</h3>
+          </div>
+          
+          {/* Element Level Inputs */}
+          <div style={{
+            marginBottom: '16px',
+            padding: '12px',
+            background: 'rgba(0, 0, 0, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: '600',
+              color: lightMode ? '#34495e' : '#bdc3c7',
+              marginBottom: '10px',
+              letterSpacing: '0.3px'
+            }}>
+              Set Element Levels (0-10, required)
+            </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: '8px'
+            }}>
+              {['air', 'water', 'earth', 'fire', 'spirit'].map(element => (
+                <div key={element} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <label style={{
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    color: ELEMENT_COLORS[element],
+                    textTransform: 'capitalize',
+                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                  }}>
+                    {element}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    value={npcElementLevels[element]}
+                    onChange={(e) => setNpcElementLevels(prev => ({
+                      ...prev,
+                      [element]: e.target.value
+                    }))}
+                    placeholder="0"
+                    style={{
+                      padding: '6px 8px',
+                      borderRadius: '4px',
+                      border: `2px solid ${ELEMENT_COLORS[element]}`,
+                      background: lightMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.3)',
+                      color: lightMode ? '#2c3e50' : '#ecf0f1',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      textAlign: 'center',
+                      outline: 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.boxShadow = `0 0 8px ${ELEMENT_COLORS[element]}`;
+                      e.target.style.transform = 'scale(1.05)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.boxShadow = 'none';
+                      e.target.style.transform = 'scale(1)';
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '12px'
+          }}>
+            <button
+              onClick={randomizeNpcStats}
+              style={{
+                padding: '12px 20px',
+                background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                border: '2px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 8px rgba(231, 76, 60, 0.3)',
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.3px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 12px rgba(231, 76, 60, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(231, 76, 60, 0.3)';
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>🎲</span>
+              Randomize Stats
+            </button>
+            <button
+              onClick={randomizeNpcLearnedMoves}
+              style={{
+                padding: '12px 20px',
+                background: 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
+                border: '2px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 8px rgba(230, 126, 34, 0.3)',
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.3px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 12px rgba(230, 126, 34, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(230, 126, 34, 0.3)';
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>⚡</span>
+              Randomize Learned Moves
+            </button>
+          </div>
+          <div style={{
+            marginTop: '12px',
+            padding: '8px 12px',
+            background: 'rgba(0, 0, 0, 0.1)',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: lightMode ? '#555' : '#bbb',
+            fontStyle: 'italic'
+          }}>
+            💡 Use these tools to quickly generate battle-ready NPCs with randomized stats and moves
+          </div>
+        </div>
+      )}
+
       {showCustomizeModal && (
         <div className="modal-overlay" onClick={() => setShowCustomizeModal(false)}>
           <div className="modal customize-modal" onClick={(e) => e.stopPropagation()}>
@@ -2127,6 +3782,12 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                 onClick={() => setCustomizeTab('avatar')}
               >
                 Avatar Painter
+              </button>
+              <button
+                className={`customize-tab ${customizeTab === 'hexExporter' ? 'active' : ''}`}
+                onClick={() => setCustomizeTab('hexExporter')}
+              >
+                ⬡ Hex Grid Exporter
               </button>
             </div>
 
@@ -2159,21 +3820,6 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                       <div className="meta-value">PCs/{characterData.name || 'Character'}/</div>
                     </div>
                   </div>
-
-                  <h4>Avatar preview</h4>
-                  <div className="avatar-preview-row">
-                    <PixelAvatar
-                      pixels={workingAvatar}
-                      size={100}
-                      borderColor={accentColor}
-                      placeholderLabel={characterData.name?.[0] || 'C'}
-                      background={hexToRgba(accentColor || '#888888', 0.2)}
-                    />
-                    <div className="avatar-preview-meta">
-                      <div className="meta-label">{AVATAR_SIZE} × {AVATAR_SIZE} pixels</div>
-                      <div className="meta-value">Click and drag in the grid to paint. Right-click or hold Alt to erase.</div>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -2181,114 +3827,375 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             {customizeTab === 'avatar' && (
               <div className="customize-grid">
                 <div className="customize-column">
-                  <h4>Import or paint</h4>
-                  <div className="brush-controls">
-                    <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>
-                      Import PNG Image
-                    </label>
+                  <h4>Avatar Upload</h4>
+                  <div style={{ marginBottom: '20px' }}>
+                    {avatarPngDataUrl && (
+                      <div style={{ marginBottom: '15px', textAlign: 'center' }}>
+                        <PixelAvatar
+                          avatarPng={avatarPngDataUrl}
+                          size={100}
+                          borderColor={accentColor}
+                          placeholderLabel={characterData.name?.[0] || 'C'}
+                          background={hexToRgba(accentColor || '#888888', 0.2)}
+                        />
+                      </div>
+                    )}
                     <input
                       type="file"
-                      accept="image/png,image/jpeg,image/jpg,image/gif"
+                      accept="image/png"
                       onChange={handleImportPNG}
+                      style={{ display: 'none' }}
+                      id="avatar-upload"
+                    />
+                    <label
+                      htmlFor="avatar-upload"
                       style={{
-                        marginBottom: '16px',
-                        padding: '8px',
-                        border: lightMode ? '1px solid #d6d6d6' : '1px solid #3e3e42',
-                        borderRadius: '6px',
-                        backgroundColor: lightMode ? '#fff' : 'rgba(255,255,255,0.05)',
-                        color: lightMode ? '#2c3e50' : '#ecf0f1',
-                        width: '100%',
-                        cursor: 'pointer'
+                        display: 'block',
+                        padding: '12px',
+                        backgroundColor: '#4ec9b0',
+                        color: '#fff',
+                        textAlign: 'center',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        marginBottom: '10px'
                       }}
-                    />
-                    <div style={{ 
-                      fontSize: '11px', 
-                      opacity: 0.7, 
-                      marginBottom: '16px',
-                      padding: '8px',
-                      backgroundColor: lightMode ? '#e3f2fd' : 'rgba(78, 201, 176, 0.1)',
-                      borderRadius: '4px',
-                      border: lightMode ? '1px solid #90caf9' : '1px solid rgba(78, 201, 176, 0.3)'
-                    }}>
-                      💡 Tip: Images will be scaled to {AVATAR_SIZE}×{AVATAR_SIZE} pixels. For best results, use small square images.
+                    >
+                      📁 Upload PNG (100×100)
+                    </label>
+                    {avatarPngDataUrl && (
+                      <button
+                        onClick={() => setAvatarPngDataUrl(null)}
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          backgroundColor: '#e74856',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: '600'
+                        }}
+                      >
+                        🗑️ Remove Avatar
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#888', lineHeight: '1.5' }}>
+                    <strong>Tips:</strong>
+                    <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
+                      <li>Recommended size: 100×100 pixels</li>
+                      <li>PNG format with transparency supported</li>
+                      <li>Use pixel art for best results</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {customizeTab === 'hexExporter' && (
+              <div className="customize-grid">
+                <div className="customize-column">
+                  <h4>⬡ Hex Grid Settings</h4>
+                  
+                  {/* Grid Size Controls */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                      Grid Size
+                    </label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '12px', color: '#888' }}>Rows</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={hexGridSize.rows}
+                          onChange={(e) => handleHexGridSizeChange(parseInt(e.target.value) || 1, hexGridSize.cols)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid #3e3e42',
+                            background: '#2a2a2a',
+                            color: '#e0e0e0'
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '12px', color: '#888' }}>Columns</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={hexGridSize.cols}
+                          onChange={(e) => handleHexGridSizeChange(hexGridSize.rows, parseInt(e.target.value) || 1)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid #3e3e42',
+                            background: '#2a2a2a',
+                            color: '#e0e0e0'
+                          }}
+                        />
+                      </div>
                     </div>
-                    
-                    <h4 style={{ marginTop: '20px', marginBottom: '12px' }}>Brush & palette</h4>
-                    <label>Brush</label>
-                    <input
-                      type="color"
-                      value={brushColor}
-                      onChange={(e) => {
-                        setBrushColor(e.target.value);
-                        addRecentColor(e.target.value);
-                      }}
-                    />
-                    <label>Opacity {Math.round(brushAlpha * 100)}%</label>
+                  </div>
+
+                  {/* Hex Export Size */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                      Hex Size (pixels): {hexExportSize}
+                    </label>
                     <input
                       type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={brushAlpha}
-                      onChange={(e) => setBrushAlpha(parseFloat(e.target.value))}
+                      min="20"
+                      max="100"
+                      value={hexExportSize}
+                      onChange={(e) => setHexExportSize(parseInt(e.target.value))}
+                      style={{ width: '100%' }}
                     />
-                    {renderColorPickers({
-                      title: 'Standard palette',
-                      selectedColor: brushColor,
-                      onSelect: (c) => {
-                        setBrushColor(c);
-                        addRecentColor(c);
-                      }
-                    })}
-                    <button className="ghost-button" onClick={handleClearAvatar}>
-                      Clear avatar
+                  </div>
+
+                  {/* Color Picker */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                      Brush Color
+                    </label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={hexBrushColor}
+                        onChange={(e) => setHexBrushColor(e.target.value)}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <div style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        background: '#2a2a2a',
+                        borderRadius: '4px',
+                        fontFamily: 'monospace',
+                        fontSize: '14px'
+                      }}>
+                        {hexBrushColor}
+                      </div>
+                    </div>
+                    
+                    {/* Quick color palette */}
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                      {STANDARD_COLORS.slice(0, 12).map((color) => (
+                        <div
+                          key={color}
+                          onClick={() => setHexBrushColor(color)}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            backgroundColor: color,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            border: hexBrushColor === color ? '3px solid #fff' : '1px solid #555',
+                            transition: 'transform 0.1s',
+                          }}
+                          onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
+                          onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Character Toggle */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={showCharacterInHex}
+                        onChange={(e) => setShowCharacterInHex(e.target.checked)}
+                      />
+                      <span>Show Character Avatar in Grid</span>
+                    </label>
+                  </div>
+
+                  {/* Character Position */}
+                  {showCharacterInHex && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                        Character Position
+                      </label>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '12px', color: '#888' }}>Row</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max={hexGridSize.rows - 1}
+                            value={hexCharacterPosition.row}
+                            onChange={(e) => setHexCharacterPosition({ ...hexCharacterPosition, row: parseInt(e.target.value) || 0 })}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '4px',
+                              border: '1px solid #3e3e42',
+                              background: '#2a2a2a',
+                              color: '#e0e0e0'
+                            }}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: '12px', color: '#888' }}>Col</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max={hexGridSize.cols - 1}
+                            value={hexCharacterPosition.col}
+                            onChange={(e) => setHexCharacterPosition({ ...hexCharacterPosition, col: parseInt(e.target.value) || 0 })}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '4px',
+                              border: '1px solid #3e3e42',
+                              background: '#2a2a2a',
+                              color: '#e0e0e0'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <button 
+                      className="ghost-button" 
+                      onClick={handleClearHexGrid}
+                    >
+                      Clear Grid
                     </button>
                     <button 
                       className="ghost-button" 
-                      onClick={handleExportPNG}
+                      onClick={handleExportHexGrid}
                       style={{
-                        background: '#2ecc71',
+                        background: '#9b59b6',
                         color: '#fff',
                         fontWeight: '600',
                         border: 'none'
                       }}
                     >
-                      ⬇️ Export as PNG
+                      ⬇️ Export Hex Grid
                     </button>
                   </div>
                 </div>
+
+                {/* Hex Grid Painter */}
                 <div className="customize-column">
-                  <h4>Avatar painter</h4>
+                  <h4>Hex Grid Painter</h4>
                   <div
-                    className="avatar-editor-grid"
+                    style={{
+                      display: 'inline-block',
+                      position: 'relative',
+                      userSelect: 'none'
+                    }}
                     onContextMenu={(e) => e.preventDefault()}
+                    onMouseLeave={() => setIsPaintingHex(false)}
+                    onMouseUp={() => setIsPaintingHex(false)}
                   >
-                    {workingAvatar.map((row, rIdx) => (
-                      <div key={`row-${rIdx}`} className="avatar-editor-row">
-                        {row.map((pixel, cIdx) => (
-                          <div
-                            key={`pix-${rIdx}-${cIdx}`}
-                            className="avatar-editor-cell"
-                            style={{ backgroundColor: pixelToCssRgba(pixel) }}
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setIsPaintingAvatar(true);
-                              const erase = e.altKey || e.button === 2;
-                              setAvatarEraseMode(erase);
-                              handleAvatarPaint(rIdx, cIdx, erase);
-                            }}
-                            onMouseEnter={() => {
-                              if (isPaintingAvatar) {
-                                handleAvatarPaint(rIdx, cIdx, avatarEraseMode);
-                              }
-                            }}
-                          />
-                        ))}
-                      </div>
-                    ))}
+                    <svg
+                      width={hexGridSize.cols * 60 + 30}
+                      height={hexGridSize.rows * 52 + 30}
+                      style={{
+                        background: '#1a1a1a',
+                        borderRadius: '8px',
+                        border: '2px solid #3e3e42'
+                      }}
+                    >
+                      {hexGrid.map((row, rIdx) =>
+                        row.map((cell, cIdx) => {
+                          const hexSize = 25;
+                          const hexWidth = hexSize * Math.sqrt(3);
+                          const vertSpacing = hexSize * 1.5;
+                          const horizSpacing = hexWidth;
+                          const tessellationOffset = (rIdx % 2 === 1) ? (hexWidth / 2) : 0;
+                          
+                          const cx = cIdx * horizSpacing + 15 + (hexWidth / 2) + tessellationOffset;
+                          const cy = rIdx * vertSpacing + 15 + hexSize;
+                          
+                          const isCharacterPos = showCharacterInHex && 
+                                                rIdx === hexCharacterPosition.row && 
+                                                cIdx === hexCharacterPosition.col;
+                          
+                          // Calculate hexagon points
+                          const points = [];
+                          for (let i = 0; i < 6; i++) {
+                            const angle = (Math.PI / 3) * i + Math.PI / 2;
+                            const x = cx + hexSize * Math.cos(angle);
+                            const y = cy + hexSize * Math.sin(angle);
+                            points.push(`${x},${y}`);
+                          }
+                          
+                          return (
+                            <g key={`hex-${rIdx}-${cIdx}`}>
+                              <polygon
+                                points={points.join(' ')}
+                                fill={
+                                  isCharacterPos 
+                                    ? 'rgba(100, 200, 255, 0.3)' 
+                                    : cell.filled 
+                                      ? cell.color 
+                                      : 'transparent'
+                                }
+                                stroke={
+                                  isCharacterPos 
+                                    ? 'rgba(100, 200, 255, 0.9)' 
+                                    : cell.filled 
+                                      ? cell.color 
+                                      : 'rgba(150, 150, 150, 0.3)'
+                                }
+                                strokeWidth={isCharacterPos ? 3 : 2}
+                                style={{
+                                  cursor: isCharacterPos ? 'default' : 'pointer',
+                                  transition: 'all 0.1s'
+                                }}
+                                onMouseDown={(e) => {
+                                  if (isCharacterPos) return;
+                                  e.preventDefault();
+                                  setIsPaintingHex(true);
+                                  const erase = e.altKey || e.button === 2;
+                                  setHexEraseMode(erase);
+                                  handleHexPaint(rIdx, cIdx, erase);
+                                }}
+                                onMouseEnter={() => {
+                                  if (isPaintingHex && !isCharacterPos) {
+                                    handleHexPaint(rIdx, cIdx, hexEraseMode);
+                                  }
+                                }}
+                              />
+                              {isCharacterPos && (
+                                <text
+                                  x={cx}
+                                  y={cy}
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                  fill="rgba(100, 200, 255, 0.9)"
+                                  fontSize="20"
+                                  fontWeight="bold"
+                                >
+                                  👤
+                                </text>
+                              )}
+                            </g>
+                          );
+                        })
+                      )}
+                    </svg>
                   </div>
-                  <div className="avatar-editor-hint">
-                    Tip: Hold Alt or right-click to erase pixels. Use the slider to add transparency.
+                  <div className="avatar-editor-hint" style={{ marginTop: '10px' }}>
+                    Tip: Click to paint hexagons. Hold Alt or right-click to erase. Character position shown with 👤
                   </div>
                 </div>
               </div>
@@ -2306,28 +4213,11 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </div>
       )}
 
-      {/* Reactions Modal */}
-      <ReactionsModal
-        isOpen={showReactionsModal}
-        onClose={() => setShowReactionsModal(false)}
-        movesByType={movesByType}
-        bendingSlotConsumables={bendingSlotConsumables}
-        waterChargeConsumables={waterChargeConsumables}
-        expandedMoves={expandedMoves}
-        onToggleExpand={toggleMoveExpanded}
-        onPinMove={handlePinMove}
-        pinnedMoves={pinnedMoves}
-        movesLoading={movesLoading}
-        movesError={movesError}
-        lightMode={lightMode}
-        characterData={{ pixels: avatarForHeader }}
-      />
-
-      {/* Plan Turn Modal */}
-      <PlanTurnModal
-        isOpen={showPlanModal}
-        onClose={() => setShowPlanModal(false)}
-        movesByType={movesByType}
+      {/* My Moves Modal */}
+      <MyMovesModal
+        isOpen={showMyMovesModal}
+        onClose={() => setShowMyMovesModal(false)}
+        movesByType={filteredMovesByType}
         bendingSlotConsumables={bendingSlotConsumables}
         waterChargeConsumables={waterChargeConsumables}
         usedMoves={usedMoves}
@@ -2336,50 +4226,279 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         onToggleExpand={toggleMoveExpanded}
         onPinMove={handlePinMove}
         pinnedMoves={pinnedMoves}
+        onLearnMove={handleLearnMove}
         onUseMove={handleUseMove}
+        totalLearnedMovesCount={(() => {
+          const allMoves = [
+            ...(movesByType.action || []),
+            ...(movesByType.bonus || []),
+            ...(movesByType.reaction || []),
+            ...(movesByType.danger || [])
+          ];
+          const uniqueMoves = new Map();
+          allMoves.forEach(move => {
+            if (move.isLearned && !move.isLevel1) {
+              // Use move name for deduplication to avoid counting teamup moves twice
+              uniqueMoves.set(move.name, move);
+            }
+          });
+          return uniqueMoves.size;
+        })()}
+        maxLearnedMoves={maxLearnedMoves}
         movesLoading={movesLoading}
         movesError={movesError}
         lightMode={lightMode}
-        characterData={{ pixels: avatarForHeader }}
+        characterData={{ 
+          avatarPng: avatarPngDataUrl,
+          bendingLevels: {
+            air: characterData?.bendingLevels?.air || 0,
+            water: characterData?.bendingLevels?.water || 0,
+            earth: characterData?.bendingLevels?.earth || 0,
+            fire: characterData?.bendingLevels?.fire || 0,
+            spirit: characterData?.bendingLevels?.spirit || 0
+          }
+        }}
         isBleedingOut={isBleedingOut}
+        showLearnableMoves={showLearnableMoves}
+        onToggleShowLearnable={handleToggleShowLearnable}
+        showAllMoves={showAllMoves}
+        onToggleShowAll={handleToggleShowAll}
       />
+
+      {/* Use Move Modal */}
+      {showUseMoveModal && useMoveData && (
+        <div className="modal-overlay" onClick={handleCancelUseMove}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h3>Use Move: {useMoveData.move.name}</h3>
+              <button className="ghost-button" onClick={handleCancelUseMove}>Close</button>
+            </div>
+            
+            <div style={{ padding: '16px 0' }}>
+              <p style={{ 
+                marginBottom: '16px', 
+                color: lightMode ? '#666' : '#aaa',
+                fontSize: '14px'
+              }}>
+                Adjust the amount of resources to consume:
+              </p>
+              
+              {useMoveData.costs.map((cost, idx) => {
+                const element = getElementFromName(cost.name);
+                const elementColor = element ? ELEMENT_COLORS[element] : '#3498db';
+                const currentValue = customCostAmounts[cost.name] !== undefined ? customCostAmounts[cost.name] : cost.amount;
+                
+                // Find the consumable to get current/max values (normalize names for matching)
+                const normalizedCostName = cost.name.toLowerCase().replace(/_/g, ' ');
+                const consumable = characterData.consumables.find(c => {
+                  const normalizedConsumableName = c.name.toLowerCase().replace(/_/g, ' ');
+                  return normalizedConsumableName.includes(normalizedCostName) ||
+                         normalizedCostName.includes(normalizedConsumableName);
+                });
+                
+                // For water charges, show indication if this is optional (user chooses source)
+                const isWaterCharge = cost.isWaterCharge || false;
+                
+                return (
+                  <div 
+                    key={idx}
+                    style={{
+                      marginBottom: '16px',
+                      padding: '12px',
+                      backgroundColor: lightMode ? '#f9f9f9' : 'rgba(255,255,255,0.05)',
+                      borderRadius: '8px',
+                      border: `2px solid ${elementColor}`
+                    }}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ 
+                          fontWeight: '600',
+                          color: elementColor,
+                          fontSize: '14px'
+                        }}>
+                          {cost.name.replace(/charge$/i, 'charges')}
+                        </span>
+                        {isWaterCharge && (
+                          <div style={{ 
+                            fontSize: '11px',
+                            color: lightMode ? '#888' : '#999',
+                            marginTop: '2px'
+                          }}>
+                            Choose amount from this water source
+                          </div>
+                        )}
+                      </div>
+                      {consumable && (
+                        <span style={{ 
+                          fontSize: '12px',
+                          color: lightMode ? '#666' : '#aaa'
+                        }}>
+                          Available: {consumable.current} / {consumable.max}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <button
+                        onClick={() => {
+                          const newValue = Math.max(0, currentValue - 1);
+                          setCustomCostAmounts(prev => ({
+                            ...prev,
+                            [cost.name]: newValue
+                          }));
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          backgroundColor: lightMode ? '#e0e0e0' : '#3e3e42',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          color: lightMode ? '#333' : '#e0e0e0'
+                        }}
+                      >
+                        −
+                      </button>
+                      
+                      <input
+                        type="number"
+                        min="0"
+                        max={consumable?.current || 999}
+                        value={currentValue}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0;
+                          setCustomCostAmounts(prev => ({
+                            ...prev,
+                            [cost.name]: Math.max(0, value)
+                          }));
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          textAlign: 'center',
+                          border: `2px solid ${elementColor}`,
+                          borderRadius: '6px',
+                          backgroundColor: lightMode ? '#fff' : '#2a2a2a',
+                          color: elementColor
+                        }}
+                      />
+                      
+                      <button
+                        onClick={() => {
+                          const maxValue = consumable?.current || 999;
+                          const newValue = Math.min(maxValue, currentValue + 1);
+                          setCustomCostAmounts(prev => ({
+                            ...prev,
+                            [cost.name]: newValue
+                          }));
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          backgroundColor: lightMode ? '#e0e0e0' : '#3e3e42',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          color: lightMode ? '#333' : '#e0e0e0'
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+                    
+                    <div style={{
+                      marginTop: '8px',
+                      fontSize: '12px',
+                      color: lightMode ? '#999' : '#666',
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}>
+                      <span>Available: {consumable?.current || 0}</span>
+                      <span>Max per move: {consumable ? Math.ceil(consumable.current / 2) : 0}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                marginTop: '24px'
+              }}>
+                <button
+                  onClick={handleCancelUseMove}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    backgroundColor: lightMode ? '#e0e0e0' : '#3e3e42',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: lightMode ? '#333' : '#e0e0e0'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmUseMove}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    backgroundColor: '#2ecc71',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Use Move
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={`character-layout ${pinnedMovesCollapsed ? 'pinned-collapsed' : ''}`}>
         <div className="character-main">
 
       {/* Vitals Section - All fields editable except max_hp */}
       <section className="character-section">
-        <h2 
-          onClick={() => setVitalsCollapsed(!vitalsCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: vitalsCollapsed ? '0' : '16px'
-          }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="section-header-wrap" onMouseEnter={() => vitalsCollapsed && setHoveredSection('vitals')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setVitalsCollapsed(!vitalsCollapsed)}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             Vitals
             {vitalsCollapsed && (
-              <span style={{
-                fontSize: '14px',
-                fontWeight: 'normal',
-                opacity: 0.7,
-                marginLeft: '4px'
-              }}>
-                (HP: {characterData.vitals.current_hp}/{characterData.vitals.max_hp})
+              <span className="section-header-meta">
+                HP: {characterData.vitals.current_hp}/{characterData.vitals.max_hp}
               </span>
             )}
           </span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {vitalsCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!vitalsCollapsed ? 'open' : ''}`}>›</span>
         </h2>
+        {vitalsCollapsed && hoveredSection === 'vitals' && <div className="section-glass-preview">{renderSectionPreview('vitals')}</div>}
+        </div>
 
-        {!vitalsCollapsed && (
-          <>
+        <div className={`section-content ${vitalsCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
             {/* Large HP Bar Display */}
             {characterData.vitals.current_hp !== undefined && characterData.vitals.max_hp !== undefined && (
           <>
@@ -2683,8 +4802,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
               );
             })}
         </div>
-          </>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Stress Level Section - Only for Fire and Spirit Benders */}
@@ -2720,36 +4839,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           
           return (
             <section className="character-section">
-              <h2 
-                onClick={() => setStressLevelCollapsed(!stressLevelCollapsed)}
-                style={{ 
-                  cursor: 'pointer', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  userSelect: 'none',
-                  marginBottom: stressLevelCollapsed ? '0' : '16px'
-                }}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>🔥</span>
-                  Stress Level
-                  <span style={{
-                    fontSize: '14px',
-                    fontWeight: 'normal',
-                    opacity: 0.7,
-                    marginLeft: '4px'
-                  }}>
-                    ({stressLevel}/{maxStressLevel})
+              <div className="section-header-wrap" onMouseEnter={() => stressLevelCollapsed && setHoveredSection('stress')} onMouseLeave={() => setHoveredSection(null)}>
+              <h2 onClick={() => setStressLevelCollapsed(!stressLevelCollapsed)}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🔥 Stress Level
+                  <span className="section-header-meta">
+                    {stressLevel}/{maxStressLevel}
                   </span>
                 </span>
-                <span style={{ fontSize: '14px', opacity: 0.7 }}>
-                  {stressLevelCollapsed ? '▼' : '▲'}
-                </span>
+                <span className={`collapse-chevron ${!stressLevelCollapsed ? 'open' : ''}`}>›</span>
               </h2>
+              {stressLevelCollapsed && hoveredSection === 'stress' && <div className="section-glass-preview">{renderSectionPreview('stress')}</div>}
+              </div>
 
-              {!stressLevelCollapsed && (
-                <StressLevel 
+              <div className={`section-content ${stressLevelCollapsed ? 'collapsed' : ''}`}>
+              <div className="section-content-inner">
+                <StressLevel
                   currentLevel={stressLevel}
                   maxLevel={maxStressLevel}
                   fireLevel={fireLevel}
@@ -2757,7 +4862,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   onLevelChange={handleStressLevelChange}
                   onMaxLevelChange={handleMaxStressLevelChange}
                 />
-              )}
+              </div>
+              </div>
             </section>
           );
         }
@@ -2766,21 +4872,18 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
 
       {/* Conditions Section */}
       <section className="character-section">
-        <h2 
-          onClick={() => setConditionsCollapsed(!conditionsCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none'
-          }}
-        >
-          <span>Conditions</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {conditionsCollapsed ? '▼' : '▲'}
+        <div className="section-header-wrap" onMouseEnter={() => conditionsCollapsed && setHoveredSection('conditions')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setConditionsCollapsed(!conditionsCollapsed)}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            Conditions
+            {conditionsCollapsed && visibleActiveConditions.length > 0 && (
+              <span className="section-header-meta">{visibleActiveConditions.length} active</span>
+            )}
           </span>
+          <span className={`collapse-chevron ${!conditionsCollapsed ? 'open' : ''}`}>›</span>
         </h2>
+        {conditionsCollapsed && hoveredSection === 'conditions' && <div className="section-glass-preview">{renderSectionPreview('conditions')}</div>}
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
           <span style={{ fontSize: '12px', opacity: 0.8 }}>Show:</span>
@@ -2895,9 +4998,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </div>
 
         {/* Collapsible content */}
-        {!conditionsCollapsed && (
-          <>
-
+        <div className={`section-content ${conditionsCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
             <div className="consumables-grid">
               {filteredConditionNames.length === 0 && (
                 <div style={{ fontSize: '12px', opacity: 0.7 }}>
@@ -2990,30 +5092,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                 );
               })}
             </div>
-          </>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Core Stats Section - Read-only */}
       <section className="character-section">
-        <h2 
-          onClick={() => setCoreStatsCollapsed(!coreStatsCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: coreStatsCollapsed ? '0' : '16px'
-          }}
-        >
+        <div className="section-header-wrap" onMouseEnter={() => coreStatsCollapsed && setHoveredSection('coreStats')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setCoreStatsCollapsed(!coreStatsCollapsed)}>
           <span>Core Stats</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {coreStatsCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!coreStatsCollapsed ? 'open' : ''}`}>›</span>
         </h2>
+        {coreStatsCollapsed && hoveredSection === 'coreStats' && <div className="section-glass-preview">{renderSectionPreview('coreStats')}</div>}
+        </div>
         
-        {!coreStatsCollapsed && (
+        <div className={`section-content ${coreStatsCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
           <div className="stat-grid stat-grid-6">
           {Object.entries(characterData.coreStats).map(([key, value]) => {
             const tooltip = getStatTooltip(key);
@@ -3034,29 +5128,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             );
           })}
         </div>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Bending Levels Section */}
       <section className="character-section">
-        <h2 
-          onClick={() => setBendingLevelsCollapsed(!bendingLevelsCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: bendingLevelsCollapsed ? '0' : '16px'
-          }}
-        >
+        <div className="section-header-wrap" onMouseEnter={() => bendingLevelsCollapsed && setHoveredSection('bendingLevels')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setBendingLevelsCollapsed(!bendingLevelsCollapsed)}>
           <span>Bending Levels</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {bendingLevelsCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!bendingLevelsCollapsed ? 'open' : ''}`}>›</span>
         </h2>
+        {bendingLevelsCollapsed && hoveredSection === 'bendingLevels' && <div className="section-glass-preview">{renderSectionPreview('bendingLevels')}</div>}
+        </div>
         
-        {!bendingLevelsCollapsed && (
+        <div className={`section-content ${bendingLevelsCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
           <div className="bending-table">
           <table>
             <thead>
@@ -3102,29 +5189,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             </tbody>
           </table>
         </div>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Defense Section */}
       <section className="character-section">
-        <h2 
-          onClick={() => setDefenseCollapsed(!defenseCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: defenseCollapsed ? '0' : '16px'
-          }}
-        >
+        <div className="section-header-wrap" onMouseEnter={() => defenseCollapsed && setHoveredSection('defense')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setDefenseCollapsed(!defenseCollapsed)}>
           <span>Defensive Stats</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {defenseCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!defenseCollapsed ? 'open' : ''}`}>›</span>
         </h2>
-        
-        {!defenseCollapsed && (
+        {defenseCollapsed && hoveredSection === 'defense' && <div className="section-glass-preview">{renderSectionPreview('defense')}</div>}
+        </div>
+
+        <div className={`section-content ${defenseCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
           <div className="stat-grid stat-grid-4">
           {Object.entries(characterData.defense).map(([key, value]) => {
             const tooltip = getStatTooltip(key);
@@ -3143,34 +5223,24 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             );
           })}
         </div>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Bending Slots, Water Charges & Consumable Resources */}
       <section className="character-section">
-        <h2 
-          onClick={() => setResourcesCollapsed(!resourcesCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: resourcesCollapsed ? '0' : '16px'
-          }}
-        >
-          <span>Bending Slots, Water Charges & Consumable Resources</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {resourcesCollapsed ? '▼' : '▲'}
-          </span>
+        <div className="section-header-wrap" onMouseEnter={() => resourcesCollapsed && setHoveredSection('resources')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setResourcesCollapsed(!resourcesCollapsed)}>
+          <span>Bending Slots & Water Charges</span>
+          <span className={`collapse-chevron ${!resourcesCollapsed ? 'open' : ''}`}>›</span>
         </h2>
-        
-        {!resourcesCollapsed && (
-          <>
+        {resourcesCollapsed && hoveredSection === 'resources' && <div className="section-glass-preview">{renderSectionPreview('resources')}</div>}
+        </div>
+
+        <div className={`section-content ${resourcesCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
             <p className="section-note">
-          You can always only use maximum half of your current Bending slots 
-          (rounded up so if you have 3 left you can either spend 2 and then 1 or only 1 but 3 times).
-          You can use maximum of 2 * water level water charges for any Move.
+          You can use maximum half of your current Bending slots or water charges (rounded up).
         </p>
         
         {/* Collapsible Bonus Resources Section - Only shows when there are non-zero bonus resources */}
@@ -3192,29 +5262,25 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 userSelect: 'none',
-                fontSize: '13px',
-                fontWeight: '600',
-                marginBottom: bonusResourcesCollapsed ? '0' : '10px'
+                fontSize: '12px',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: '#8a96a2'
               }}
             >
-              <span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 💎 Bonus Resources
                 {nonZeroBonusCount > 0 && (
-                  <span style={{ fontSize: '11px', opacity: 0.7, fontWeight: 'normal', marginLeft: '8px' }}>
-                    ({nonZeroBonusCount} active)
-                  </span>
+                  <span className="section-header-meta">{nonZeroBonusCount} active</span>
                 )}
-                <span style={{ fontSize: '11px', opacity: 0.6, fontWeight: 'normal', marginLeft: '6px' }}>
-                  (from temporary effects)
-                </span>
               </span>
-              <span style={{ fontSize: '12px', opacity: 0.7 }}>
-                {bonusResourcesCollapsed ? '▼' : '▲'}
-              </span>
+              <span className={`collapse-chevron ${!bonusResourcesCollapsed ? 'open' : ''}`}>›</span>
             </div>
-            
-            {!bonusResourcesCollapsed && (
-              <div className="consumables-grid" style={{ marginTop: '8px' }}>
+
+            <div className={`section-content ${bonusResourcesCollapsed ? 'collapsed' : ''}`}>
+            <div className="section-content-inner">
+              <div className="consumables-grid">
                 {bonusResources.map((item) => {
                   const isWaterCharge = item.label.includes('water');
                   const maxValue = Math.max(item.value.current, 10);
@@ -3298,100 +5364,33 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   );
                 })}
               </div>
-            )}
+            </div>
+            </div>
           </div>
         )}
-        
-        {/* Consumables with checkbox trackers */}
+
+        {/* Bending slot consumables */}
         <div className="consumables-grid">
           {characterData.consumables.map((consumable, idx) => {
+            if (consumable.type === 'water' || consumable.type === 'environmental') return null;
             const element = getElementFromName(consumable.name);
             const elementColor = element ? ELEMENT_COLORS[element] : '#3498db';
             const tooltip = getStatTooltip(consumable.name);
-            
+
             return (
               <div key={idx} className="consumable-card" style={{
                 borderColor: elementColor
               }}>
                 <h3 title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
                   {consumable.name}
-                  {consumable.name === 'Environmental water charge' && (
-                    <button
-                      onClick={refreshEnvironmentalWaterCharge}
-                      style={{
-                        marginLeft: '8px',
-                        padding: '4px 8px',
-                        fontSize: '11px',
-                        backgroundColor: elementColor,
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: '600',
-                        transition: 'opacity 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-                      onMouseLeave={(e) => e.target.style.opacity = '1'}
-                      title="Refresh from global source"
-                    >
-                      ↻
-                    </button>
-                  )}
                 </h3>
                 <div className="consumable-counter">
-                  {consumable.name === 'Environmental water charge' ? (
-                    <>
-                      <span className="counter-display" style={{
-                        backgroundColor: hexToRgba(elementColor, 0.15),
-                        color: elementColor
-                      }}>
-                        {consumable.current} / 
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        value={consumable.max}
-                        onChange={(e) => {
-                          const newMax = Math.max(0, parseInt(e.target.value) || 0);
-                          setCharacterData(prev => {
-                            const consumables = [...prev.consumables];
-                            const newCurrent = Math.min(consumables[idx].current, newMax);
-                            consumables[idx] = { ...consumables[idx], max: newMax, current: newCurrent };
-                            const slots = { ...prev.slots };
-                            const waterCharges = { ...prev.waterCharges };
-                            
-                            // Update in "current/max" format
-                            if (consumable.type === 'water') {
-                              waterCharges[consumable.name] = `${newCurrent}/${newMax}`;
-                            } else {
-                              slots[consumable.name] = `${newCurrent}/${newMax}`;
-                            }
-                            
-                            return { ...prev, consumables, slots, waterCharges };
-                          });
-                        }}
-                        className="max-input"
-                        style={{
-                          width: '50px',
-                          padding: '2px 6px',
-                          fontSize: '14px',
-                          border: `1px solid ${elementColor}`,
-                          borderRadius: '4px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          color: '#2c3e50',
-                          textAlign: 'center',
-                          marginLeft: '4px'
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <span className="counter-display" style={{
-                      backgroundColor: hexToRgba(elementColor, 0.15),
-                      color: elementColor
-                    }}>
-                      {consumable.current} / {consumable.max}
-                    </span>
-                  )}
+                  <span className="counter-display" style={{
+                    backgroundColor: hexToRgba(elementColor, 0.15),
+                    color: elementColor
+                  }}>
+                    {consumable.current} / {consumable.max}
+                  </span>
                 </div>
                 <div className="checkbox-grid">
                   {Array.from({ length: consumable.max }, (_, i) => (
@@ -3400,23 +5399,15 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                         type="checkbox"
                         checked={i < consumable.current}
                         onChange={(e) => {
-                          const newCurrent = e.target.checked 
+                          const newCurrent = e.target.checked
                             ? Math.max(i + 1, consumable.current)
                             : Math.min(i, consumable.current);
                           setCharacterData(prev => {
                             const consumables = [...prev.consumables];
                             consumables[idx] = { ...consumables[idx], current: newCurrent };
                             const slots = { ...prev.slots };
-                            const waterCharges = { ...prev.waterCharges };
-                            
-                            // Update in "current/max" format
-                            if (consumable.type === 'water') {
-                              waterCharges[consumable.name] = `${newCurrent}/${consumable.max}`;
-                            } else {
-                              slots[consumable.name] = `${newCurrent}/${consumable.max}`;
-                            }
-                            
-                            return { ...prev, consumables, slots, waterCharges };
+                            slots[consumable.name] = `${newCurrent}/${consumable.max}`;
+                            return { ...prev, consumables, slots };
                           });
                         }}
                         className="resource-checkbox"
@@ -3432,6 +5423,157 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             );
           })}
         </div>
+
+        {/* Water Charges — collapsible sub-panel */}
+        {characterData.consumables.some(c => c.type === 'water' || c.type === 'environmental') && (
+          <div
+            style={{
+              marginTop: '16px',
+              borderRadius: '8px',
+              border: lightMode ? '1px solid #d6d6d6' : '1px solid #3e3e42',
+              background: lightMode ? '#f9f9f9' : 'rgba(255,255,255,0.03)'
+            }}
+          >
+            <div
+              onClick={() => setWaterChargesCollapsed(!waterChargesCollapsed)}
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                userSelect: 'none',
+                padding: '10px 12px',
+                fontSize: '12px',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: '#8a96a2'
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                💧 Water Charges
+              </span>
+              <span className={`collapse-chevron ${!waterChargesCollapsed ? 'open' : ''}`}>›</span>
+            </div>
+
+            <div className={`section-content ${waterChargesCollapsed ? 'collapsed' : ''}`}>
+              <div className="section-content-inner" style={{ padding: '0 12px 12px' }}>
+                <div className="consumables-grid">
+                  {characterData.consumables.map((consumable, idx) => {
+                    if (consumable.type !== 'water' && consumable.type !== 'environmental') return null;
+                    const element = getElementFromName(consumable.name);
+                    const elementColor = element ? ELEMENT_COLORS[element] : '#3498db';
+                    const tooltip = getStatTooltip(consumable.name);
+
+                    return (
+                      <div key={idx} className="consumable-card" style={{ borderColor: elementColor }}>
+                        <h3 title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                          {consumable.name}
+                          {consumable.name === 'Environmental water charge' && (
+                            <button
+                              onClick={refreshEnvironmentalWaterCharge}
+                              style={{
+                                marginLeft: '8px',
+                                padding: '4px 8px',
+                                fontSize: '11px',
+                                backgroundColor: elementColor,
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                transition: 'opacity 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+                              onMouseLeave={(e) => e.target.style.opacity = '1'}
+                              title="Refresh from global source"
+                            >
+                              ↻
+                            </button>
+                          )}
+                        </h3>
+                        <div className="consumable-counter">
+                          {consumable.name === 'Environmental water charge' ? (
+                            <>
+                              <span className="counter-display" style={{
+                                backgroundColor: hexToRgba(elementColor, 0.15),
+                                color: elementColor
+                              }}>
+                                {consumable.current} /
+                              </span>
+                              <input
+                                type="number"
+                                min="0"
+                                value={consumable.max}
+                                onChange={(e) => {
+                                  const newMax = Math.max(0, parseInt(e.target.value) || 0);
+                                  setCharacterData(prev => {
+                                    const consumables = [...prev.consumables];
+                                    const newCurrent = Math.min(consumables[idx].current, newMax);
+                                    consumables[idx] = { ...consumables[idx], max: newMax, current: newCurrent };
+                                    const waterCharges = { ...prev.waterCharges };
+                                    waterCharges[consumable.name] = `${newCurrent}/${newMax}`;
+                                    return { ...prev, consumables, waterCharges };
+                                  });
+                                }}
+                                className="max-input"
+                                style={{
+                                  width: '50px',
+                                  padding: '2px 6px',
+                                  fontSize: '14px',
+                                  border: `1px solid ${elementColor}`,
+                                  borderRadius: '4px',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                  color: '#2c3e50',
+                                  textAlign: 'center',
+                                  marginLeft: '4px'
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <span className="counter-display" style={{
+                              backgroundColor: hexToRgba(elementColor, 0.15),
+                              color: elementColor
+                            }}>
+                              {consumable.current} / {consumable.max}
+                            </span>
+                          )}
+                        </div>
+                        <div className="checkbox-grid">
+                          {Array.from({ length: consumable.max }, (_, i) => (
+                            <label key={i} className="checkbox-label">
+                              <input
+                                type="checkbox"
+                                checked={i < consumable.current}
+                                onChange={(e) => {
+                                  const newCurrent = e.target.checked
+                                    ? Math.max(i + 1, consumable.current)
+                                    : Math.min(i, consumable.current);
+                                  setCharacterData(prev => {
+                                    const consumables = [...prev.consumables];
+                                    consumables[idx] = { ...consumables[idx], current: newCurrent };
+                                    const waterCharges = { ...prev.waterCharges };
+                                    waterCharges[consumable.name] = `${newCurrent}/${consumable.max}`;
+                                    return { ...prev, consumables, waterCharges };
+                                  });
+                                }}
+                                className="resource-checkbox"
+                              />
+                              <span className="checkbox-mark" style={{
+                                borderColor: i < consumable.current ? elementColor : '#bdc3c7',
+                                backgroundColor: i < consumable.current ? elementColor : '#ecf0f1'
+                              }}></span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Other slots (non-numeric or empty) - excluding consumables tracked with checkboxes and bonus slots */}
         {Object.entries(characterData.slots).some(([key, value]) => {
@@ -3474,10 +5616,333 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   </div>
                 );
               })}
+            {/* Also render non-consumable water charges */}
+            {Object.entries(characterData.waterCharges || {})
+              .filter(([key, value]) => {
+                // Exclude these specific entries
+                if (key === 'Water charge type' || key === 'value') return false;
+                if (key === 'Bonus water charges') return false;
+                
+                // Exclude water charges in "current/max" format (tracked by checkboxes)
+                const slashMatch = String(value).match(/^\d+\s*\/\s*\d+$/);
+                if (slashMatch) return false;
+                
+                const numValue = parseInt(value);
+                return isNaN(numValue) || numValue <= 0 || value === '';
+              })
+              .map(([key, value]) => {
+                const tooltip = getStatTooltip(key);
+                return (
+                  <div key={key} className="stat-card">
+                    <label title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                      {key}
+                    </label>
+                    <input
+                      type="text"
+                      value={value}
+                      onChange={(e) => updateWaterCharge(key, e.target.value)}
+                      className="stat-input"
+                    />
+                  </div>
+                );
+              })}
           </div>
         )}
-          </>
-        )}
+        </div>
+        </div>
+      </section>
+
+      {/* Moves Section */}
+      <section className="character-section">
+        <div className="section-header-wrap" onMouseEnter={() => movesCollapsed && setHoveredSection('moves')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setMovesCollapsed(!movesCollapsed)}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            Moves
+            {movesCollapsed && (
+              <span className="section-header-meta">
+                {(() => {
+                  const allMoves = [
+                    ...(movesByType.action || []),
+                    ...(movesByType.bonus || []),
+                    ...(movesByType.reaction || []),
+                    ...(movesByType.danger || [])
+                  ];
+                  const uniqueMoves = new Map();
+                  allMoves.forEach(move => {
+                    if (move.isLearned && !move.isLevel1) {
+                      uniqueMoves.set(move.path, move);
+                    }
+                  });
+                  return uniqueMoves.size;
+                })()} learned
+              </span>
+            )}
+          </span>
+          <span className={`collapse-chevron ${!movesCollapsed ? 'open' : ''}`}>›</span>
+        </h2>
+        {movesCollapsed && hoveredSection === 'moves' && <div className="section-glass-preview">{renderSectionPreview('moves')}</div>}
+        </div>
+
+        <div className={`section-content ${movesCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
+            {movesLoading ? (
+              <p className="muted-text">Loading moves...</p>
+            ) : movesError ? (
+              <p className="error-text">{movesError}</p>
+            ) : (
+              <>
+                {/* Mode Selector */}
+                <div style={{
+                  marginBottom: '16px',
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ fontSize: '13px', color: '#888' }}>
+                    Learned: {(() => {
+                      const allMoves = [
+                        ...(movesByType.action || []),
+                        ...(movesByType.bonus || []),
+                        ...(movesByType.reaction || []),
+                        ...(movesByType.danger || [])
+                      ];
+                      const uniqueMoves = new Map();
+                      allMoves.forEach(move => {
+                        if (move.isLearned && !move.isLevel1) {
+                          // Use move name for deduplication to avoid counting teamup moves twice
+                          uniqueMoves.set(move.name, move);
+                        }
+                      });
+                      return uniqueMoves.size;
+                    })()}
+                    {maxLearnedMoves !== null ? ` / ${maxLearnedMoves}` : ''}
+                  </span>
+                  
+                  <div style={{
+                    display: 'flex',
+                    backgroundColor: lightMode ? '#e0e0e0' : '#2a2a2a',
+                    borderRadius: '6px',
+                    padding: '2px',
+                    gap: '2px'
+                  }}>
+                    <button
+                      onClick={() => {
+                        handleToggleShowLearnable(false);
+                        handleToggleShowAll(false);
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: !showLearnableMoves && !showAllMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                        color: !showLearnableMoves && !showAllMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                        fontWeight: !showLearnableMoves && !showAllMoves ? '600' : '400'
+                      }}
+                    >
+                      My Moves
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleToggleShowLearnable(true);
+                        handleToggleShowAll(false);
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: showLearnableMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                        color: showLearnableMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                        fontWeight: showLearnableMoves ? '600' : '400'
+                      }}
+                    >
+                      Learnable
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleToggleShowLearnable(false);
+                        handleToggleShowAll(true);
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: showAllMoves ? (lightMode ? '#fff' : '#3e3e42') : 'transparent',
+                        color: showAllMoves ? (lightMode ? '#000' : '#fff') : (lightMode ? '#666' : '#888'),
+                        fontWeight: showAllMoves ? '600' : '400'
+                      }}
+                    >
+                      All Moves
+                    </button>
+                  </div>
+                </div>
+
+                {/* Move Type + Level Filters */}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
+                  {/* Action Type Toggles */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    padding: '4px 8px',
+                    backgroundColor: lightMode ? '#f5f5f5' : '#1e1e1e',
+                    borderRadius: '6px'
+                  }}>
+                    {[
+                      { key: 'action', label: 'Actions', color: '#3498db' },
+                      { key: 'bonus', label: 'Bonus', color: '#9b59b6' },
+                      { key: 'reaction', label: 'Reactions', color: '#e67e22' },
+                      { key: 'danger', label: 'Danger Sense', color: '#e74c3c' }
+                    ].map(({ key, label, color }) => (
+                      <label
+                        key={key}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: inlineVisibleTypes[key] ? '600' : '400',
+                          color: inlineVisibleTypes[key] ? color : (lightMode ? '#999' : '#666'),
+                          transition: 'all 0.2s',
+                          userSelect: 'none'
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={inlineVisibleTypes[key]}
+                          onChange={() => setInlineVisibleTypes(prev => ({ ...prev, [key]: !prev[key] }))}
+                          style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: color }}
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Level Filter */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 8px',
+                    backgroundColor: lightMode ? '#f5f5f5' : '#1e1e1e',
+                    borderRadius: '6px'
+                  }}>
+                    <span style={{ fontSize: '11px', color: lightMode ? '#888' : '#666', marginRight: '2px', whiteSpace: 'nowrap' }}>Lv:</span>
+                    {[1, 2, 3, 4, 5, 6].map(level => {
+                      const levelColors = ['#aaa', '#7ecba1', '#5fa8d3', '#f4a261', '#e76f51', '#9b59b6'];
+                      const active = inlineVisibleLevels[level];
+                      const color = levelColors[level - 1];
+                      return (
+                        <label key={level} title={`Level ${level}`} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                          <input
+                            type="checkbox"
+                            checked={active}
+                            onChange={() => setInlineVisibleLevels(prev => ({ ...prev, [level]: !prev[level] }))}
+                            style={{ display: 'none' }}
+                          />
+                          <div style={{
+                            width: '22px',
+                            height: '22px',
+                            borderRadius: '5px',
+                            border: `2px solid ${active ? color : (lightMode ? '#ccc' : '#444')}`,
+                            backgroundColor: active ? `${color}33` : 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            color: active ? color : (lightMode ? '#bbb' : '#555'),
+                            transition: 'all 0.15s ease',
+                            boxShadow: active ? `0 0 6px ${color}55` : 'none'
+                          }}>
+                            {level}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                {inlineVisibleTypes.action && (
+                  <ActionPanel
+                    title="Actions"
+                    moves={(filteredMovesByType.action || []).filter(m => inlineVisibleLevels[m.level ?? 1] !== false)}
+                    expandedMoves={expandedMoves}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPinMove={handlePinMove}
+                    pinnedMoves={pinnedMoves}
+                    onLearnMove={handleLearnMove}
+                    onUseMove={handleUseMove}
+                    showUseButton={true}
+                    lightMode={lightMode}
+                    characterData={characterData}
+                  />
+                )}
+
+                {/* Bonus Actions */}
+                {inlineVisibleTypes.bonus && !isBleedingOut && (
+                  <ActionPanel
+                    title="Bonus Actions"
+                    moves={(filteredMovesByType.bonus || []).filter(m => inlineVisibleLevels[m.level ?? 1] !== false)}
+                    expandedMoves={expandedMoves}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPinMove={handlePinMove}
+                    pinnedMoves={pinnedMoves}
+                    onLearnMove={handleLearnMove}
+                    onUseMove={handleUseMove}
+                    showUseButton={true}
+                    lightMode={lightMode}
+                    characterData={characterData}
+                  />
+                )}
+
+                {/* Reactions */}
+                {inlineVisibleTypes.reaction && (
+                  <ActionPanel
+                    title="Reactions"
+                    moves={(filteredMovesByType.reaction || []).filter(m => inlineVisibleLevels[m.level ?? 1] !== false)}
+                    expandedMoves={expandedMoves}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPinMove={handlePinMove}
+                    pinnedMoves={pinnedMoves}
+                    onLearnMove={handleLearnMove}
+                    onUseMove={handleUseMove}
+                    showUseButton={true}
+                    lightMode={lightMode}
+                    characterData={characterData}
+                  />
+                )}
+
+                {/* Danger Sense Reactions */}
+                {inlineVisibleTypes.danger && (
+                  <ActionPanel
+                    title="Danger Sense Reactions"
+                    moves={(filteredMovesByType.danger || []).filter(m => inlineVisibleLevels[m.level ?? 1] !== false)}
+                    expandedMoves={expandedMoves}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPinMove={handlePinMove}
+                    pinnedMoves={pinnedMoves}
+                    onLearnMove={handleLearnMove}
+                    onUseMove={handleUseMove}
+                    showUseButton={true}
+                    lightMode={lightMode}
+                    characterData={characterData}
+                  />
+                )}
+              </>
+            )}
+        </div>
+        </div>
       </section>
     </div>
     <aside className={`pinned-panel ${pinnedMovesCollapsed ? 'collapsed' : ''}`}>
@@ -3581,7 +6046,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                     onPin={null}
                     isPinned={true}
                     lightMode={lightMode}
-                    characterData={{ pixels: avatarForHeader }}
+                    characterData={characterData}
                   />
                 </div>
               )}
@@ -3609,7 +6074,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                     onPin={null} // No pin button on already pinned moves
                     isPinned={true}
                     lightMode={lightMode}
-                    characterData={{ pixels: avatarForHeader }}
+                    characterData={characterData}
                   />
                   <button 
                     className="close-button" 
@@ -3638,6 +6103,30 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </>
       )}
     </aside>
+
+    {/* Avatar Image Popup */}
+    {showAvatarPopup && avatarPngDataUrl && (
+      <div 
+        className="avatar-popup-overlay"
+        onClick={() => setShowAvatarPopup(false)}
+      >
+        <div className="avatar-popup-content" onClick={(e) => e.stopPropagation()}>
+          <button 
+            className="avatar-popup-close"
+            onClick={() => setShowAvatarPopup(false)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <img 
+            src={avatarPngDataUrl} 
+            alt={`${characterData.name || 'Character'} full size avatar`}
+            className="avatar-popup-image"
+          />
+        </div>
+      </div>
+    )}
+
     </div>
     </div>
 );

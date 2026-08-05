@@ -1,0 +1,11 @@
+{
+  "moves": [
+    "Firestorm",
+    "Fireball",
+    "Spirit Ward",
+    "Cold Breath",
+    "Emberlash"
+  ],
+  "_comment": "Add move names here (without .md extension) for moves this character has learned above level 1",
+  "lastUpdated": "2026-03-13T10:53:17.535Z"
+}

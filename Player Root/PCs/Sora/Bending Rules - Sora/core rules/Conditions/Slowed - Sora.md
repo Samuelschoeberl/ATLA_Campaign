@@ -1,3 +1,4 @@
-A slowed creatures Movement Speed is halved and it can not use any #Bonus_actions_Sora or #reactions_Sora (including #Danger_Sense_Reaction_Sora). ( #Action_Sora is allowed)
+Your Initiative is halved (rounded down) while this condition is active. It typically ends at the end of your next turn unless a move says otherwise.
 
-#condition_Sora
+#condition_Sora #Curse_Sora #general_Sora
+

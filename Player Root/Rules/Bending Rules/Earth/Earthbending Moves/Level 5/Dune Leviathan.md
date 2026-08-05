@@ -10,7 +10,7 @@
 - Gain +3 Armor and resistance to all physical damage.
 - You manifest **3 Sand Appendages**, each usable once per round:
   - **#Action:** Make a tentacle attack (range [[earth]] meters), dealing 2d8 bludgeoning.
-  - **#Bonus_Action:** Attempt a grapple (Dex Save vs. [[Earthbending DC]]). Grappled creatures are [[Slowed]].
+  - **#Bonus_Action:** Attempt a grapple (Dex Save vs. [[Earthbending DC]]). Grappled creatures are [[Exhausted]].
   - **#Reaction:** Gain d6+[[Earthbending Skill]] temporary Evasion.
 - If you take no damage during a round, you may form a **Sand Spout**, knocking all enemies within 3 meters prone (Str Save).
 
