@@ -12,7 +12,8 @@ const TokenContextMenu = ({
   handleEditDataClick,
   handleRemoveToken,
   handleOpenCharacterSheet,
-  handleOpenNpcCharacterSheet
+  handleOpenNpcCharacterSheet,
+  onShowDetails
 }) => {
   if (!contextMenu) return null;
   
@@ -36,9 +37,43 @@ const TokenContextMenu = ({
         {contextMenu.token.name}
       </div>
       
+      {/* Show Details */}
+      {onShowDetails && (
+        <button
+          onClick={() => {
+            onShowDetails(contextMenu.token);
+            setContextMenu(null);
+          }}
+          style={{
+            width: '100%',
+            padding: '10px 16px',
+            background: 'transparent',
+            border: 'none',
+            color: '#3498db',
+            cursor: 'pointer',
+            textAlign: 'left',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'background 0.2s',
+            borderBottom: '1px solid #34495e',
+            marginBottom: '4px'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = '#34495e'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+        >
+          Details
+        </button>
+      )}
+      
       {/* Toggle HP Bar */}
       <button
-        onClick={() => handleToggleTokenHp(contextMenu.tokenId)}
+        onClick={() => {
+          handleToggleTokenHp(contextMenu.tokenId);
+          setContextMenu(null);
+        }}
         style={{
           width: '100%',
           padding: '10px 16px',
@@ -145,7 +180,7 @@ const TokenContextMenu = ({
         onMouseEnter={(e) => e.currentTarget.style.background = '#34495e'}
         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
       >
-        🔄 Move Token
+        Move Token
       </button>
       
       {/* Edit Token */}
@@ -171,7 +206,7 @@ const TokenContextMenu = ({
         onMouseEnter={(e) => e.currentTarget.style.background = '#34495e'}
         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
       >
-        ✏️ Edit Token
+        Edit Token
       </button>
       
       {/* Open Character Sheet (player tokens) */}
@@ -198,7 +233,7 @@ const TokenContextMenu = ({
           onMouseEnter={(e) => e.currentTarget.style.background = '#34495e'}
           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
         >
-          📄 Open Character Sheet
+          Open Character Sheet
         </button>
       )}
 
@@ -226,13 +261,16 @@ const TokenContextMenu = ({
           onMouseEnter={(e) => e.currentTarget.style.background = '#34495e'}
           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
         >
-          📄 Generate/Show NPC Sheet
+          Generate/Show NPC Sheet
         </button>
       )}
       
       {/* Remove Token */}
       <button
-        onClick={() => handleRemoveToken(contextMenu.tokenId)}
+        onClick={() => {
+          handleRemoveToken(contextMenu.tokenId);
+          setContextMenu(null);
+        }}
         style={{
           width: '100%',
           padding: '10px 16px',
@@ -252,7 +290,7 @@ const TokenContextMenu = ({
         onMouseEnter={(e) => e.currentTarget.style.background = '#34495e'}
         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
       >
-        🗑️ Remove Token
+        Remove Token
       </button>
     </div>
   );

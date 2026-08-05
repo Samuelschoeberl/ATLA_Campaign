@@ -1,5 +1,7 @@
+/* ── Quicklinks ──────────────────────────────────────────────────────────── */
+
 .quicklinks-container {
-  padding: 2rem;
+  padding: 2rem 2rem 6rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
   height: 100vh;
@@ -11,21 +13,34 @@
   color: #2c3e50;
 }
 
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
 .quicklinks-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .quicklinks-container.light-mode .quicklinks-header {
-  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+.hex-decoration {
+  font-size: 1.4rem;
+  opacity: 0.25;
+  line-height: 1;
 }
 
 .quicklinks-header h1 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   margin: 0;
+  letter-spacing: 0.5px;
   color: #e0e0e0;
 }
 
@@ -33,131 +48,356 @@
   color: #2c3e50;
 }
 
+/* ── Sections ───────────────────────────────────────────────────────────── */
+
 .quicklinks-section {
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
 }
 
 .quicklinks-section h2 {
-  font-size: 1.5rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #a0a0a0;
+  margin-bottom: 1.25rem;
+  color: #555;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
+}
+
+.quicklinks-section h2::before {
+  content: '⬡';
+  font-size: 0.65rem;
+  opacity: 0.45;
 }
 
 .quicklinks-container.light-mode .quicklinks-section h2 {
-  color: #6b7280;
+  color: #888;
 }
 
-.quicklinks-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
+/* ── Quick Access Hex Tiles ─────────────────────────────────────────────── */
+
+.quicklinks-hex-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 4px 0;
 }
 
-.quicklink-button {
+.hex-quick-tile {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  transition: transform 0.15s ease;
+  color: inherit;
+}
+
+.hex-quick-tile:hover {
+  transform: translateY(-4px);
+}
+
+/* Glow wrapper: drop-shadow follows child hex shape (no clip-path on this element) */
+.hex-quick-glow {
+  transition: filter 0.2s ease;
+}
+
+.hex-quick-tile:hover .hex-quick-glow {
+  filter: drop-shadow(0 4px 14px var(--link-color, #8899aa));
+}
+
+/* Pointy-top hex:  height = width × 1.1547 */
+.hex-quick-bg {
+  width: 82px;
+  height: 95px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: var(--link-color-bg, rgba(136, 153, 170, 0.12));
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1.25rem 1.5rem;
-  background: transparent;
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  color: #e0e0e0;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-  position: relative;
-  overflow: hidden;
+  justify-content: center;
+  transition: background 0.2s ease;
 }
 
-.quicklinks-container.light-mode .quicklink-button {
-  background: transparent;
-  border: 1.5px solid rgba(0, 0, 0, 0.12);
-  color: #2c3e50;
+.hex-quick-tile:hover .hex-quick-bg {
+  background: var(--link-color-bg-hover, rgba(136, 153, 170, 0.25));
 }
 
-.quicklink-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  z-index: 0;
+.hex-emoji {
+  font-size: 2rem;
+  line-height: 1;
 }
 
-.quicklink-button:hover::before {
-  opacity: 1;
-}
-
-.quicklink-button:hover {
-  transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.quicklinks-container.light-mode .quicklink-button:hover {
-  border-color: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.quicklinks-container.light-mode .quicklink-button::before {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.quicklink-button:active {
-  transform: translateY(0);
-}
-
-.quicklink-button.character {
-  /* Background and border colors are set inline via JavaScript */
-  /* This allows dynamic colors from the file-colors API */
-  transition: all 0.2s ease;
-}
-
-.quicklink-button.character:hover {
-  /* Hover colors are set inline via JavaScript */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.quicklink-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  filter: none;
-  position: relative;
-  z-index: 1;
-  opacity: 0.85;
-}
-
-.quicklink-avatar {
-  flex-shrink: 0;
-}
-
-.quicklink-text {
-  flex: 1;
+.hex-quick-name {
+  font-size: 0.76rem;
   font-weight: 600;
-  letter-spacing: 0.3px;
-  position: relative;
-  z-index: 1; /* Ensure text is above the pseudo-element */
+  color: #888;
+  text-align: center;
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
 }
 
-.quicklinks-loading,
+.quicklinks-container.light-mode .hex-quick-name {
+  color: #555;
+}
+
+/* ── Character Hex Grid ─────────────────────────────────────────────────── */
+/*
+ * Simple flex-wrap grid with equal gap in both axes.
+ * Gap = one token visual size (90px) = "one free space between each token".
+ * Tile button width = 90px glow + 28px padding = 118px.
+ */
+
+.quicklinks-hex-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 90px;
+  padding: 24px 4px 8px;
+}
+
+/* ── Character tile ─────────────────────────────────────────────────────── */
+
+.hex-char-tile {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px 4px 14px;
+  transition: transform 0.15s ease;
+  color: inherit;
+}
+
+.hex-char-tile:hover {
+  transform: translateY(-4px) scale(1.06);
+}
+
+/*
+ * Glow wrapper: fixed 90×90 positioned container.
+ * Both the CharacterToken div and the bubble overlay SVG are
+ * absolutely centered inside here — neither adds to layout flow.
+ */
+.hex-tile-glow {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  transition: filter 0.2s ease;
+  line-height: 0;
+}
+
+.hex-char-tile:hover .hex-tile-glow {
+  filter: drop-shadow(0 4px 18px var(--char-color, #888888));
+}
+
+/* Bubble overlay SVG: absolutely centered over the CharacterToken */
+.quicklink-bubble-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; /* empty areas click-through; bubble groups override below */
+  z-index: 10;
+  overflow: visible;
+}
+
+/* Hide CharacterToken's built-in HP text — our HP bubble replaces it */
+.hex-char-tile .hp-text {
+  display: none !important;
+}
+
+/* Put CharacterToken's SVG overlay BEHIND the avatar div so the avatar masks
+ * the HP pie-slice center — only the ring band shows the HP color. */
+/* Force SVG to 1:1 scale (CharacterToken renders at 1.5× by default for overflow;
+ * here we want ring coordinates to match the avatar's clip-path 1:1). */
+.hex-char-tile .token-overlay {
+  z-index: 0 !important;
+  width: 90px !important;
+  height: 90px !important;
+}
+
+/* The hex ring background uses fill="#2c3e50" which is invisible on dark bg.
+ * Give it a visible stroke so the hex outline shows. */
+.hex-char-tile .token-overlay path[fill-rule="evenodd"] {
+  fill: transparent;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1.5;
+}
+
+/* Expand avatar container to cover the full token area */
+.hex-char-tile .character-token > div {
+  width: 90px !important;
+  height: 90px !important;
+}
+
+/* Clip avatar to r=40px, exposing the outer 2.75px of the ring (r=40–42.75).
+ * SVG is now 1:1 scale so these px coords align with the HP ring geometry. */
+.hex-char-tile .pixel-avatar {
+  width: 90px !important;
+  height: 90px !important;
+  clip-path: polygon(
+    45px   10px,
+    75.3px 27.5px,
+    75.3px 62.5px,
+    45px   80px,
+    14.7px 62.5px,
+    14.7px 27.5px
+  );
+}
+
+/* Suppress CharacterToken's own hover animation — the tile handles it */
+.hex-char-tile .character-token {
+  transition: none !important;
+  cursor: default;
+}
+
+.hex-char-tile .character-token:hover {
+  transform: none !important;
+  filter: none !important;
+}
+
+.hex-char-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a0a0a0;
+  text-align: center;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.quicklinks-container.light-mode .hex-char-name {
+  color: #444;
+}
+
+/* ── Edit Popup ─────────────────────────────────────────────────────────── */
+
+.quicklink-edit-popup {
+  position: fixed;
+  z-index: 9999;
+  background: #2c3e50;
+  border: 2px solid;
+  border-radius: 10px;
+  padding: 14px 16px;
+  width: 200px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+}
+
+.qep-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+
+.qep-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 1.3rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 6px 8px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.qep-input:focus {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Remove number input spinner arrows */
+.qep-input::-webkit-inner-spin-button,
+.qep-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.qep-input[type=number] { -moz-appearance: textfield; }
+
+.qep-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.qep-save {
+  flex: 1;
+  background: rgba(52, 152, 219, 0.3);
+  border: 1px solid #3498db;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.qep-save:hover:not(:disabled) {
+  background: rgba(52, 152, 219, 0.5);
+}
+
+.qep-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qep-cancel {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.qep-cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Loading & Error ─────────────────────────────────────────────────────── */
+
+.quicklinks-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem;
+  font-size: 1rem;
+  color: #555;
+}
+
+.hex-loading-spinner {
+  font-size: 3.5rem;
+  color: #4a6fa5;
+  animation: hex-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes hex-pulse {
+  0%, 100% { transform: scale(1);   opacity: 1;   }
+  50%       { transform: scale(1.2); opacity: 0.4; }
+}
+
 .quicklinks-error {
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
-}
-
-.quicklinks-error {
   color: #e74c3c;
 }
 
@@ -165,17 +405,21 @@
   color: #c0392b;
 }
 
-/* Responsive design */
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .quicklinks-hex-grid {
+    gap: 60px;
+  }
+}
+
 @media (max-width: 768px) {
   .quicklinks-container {
-    padding: 1rem;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    padding: 1rem 1rem 5rem 1rem;
   }
 
   .quicklinks-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     padding-bottom: 1rem;
   }
 
@@ -184,83 +428,47 @@
   }
 
   .quicklinks-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
   }
 
-  .quicklinks-section h2 {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
+  .hex-quick-bg {
+    width: 70px;
+    height: 81px;
   }
 
-  .quicklinks-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+  .hex-emoji {
+    font-size: 1.6rem;
   }
 
-  .quicklink-button {
-    padding: 0.875rem 1rem;
-    font-size: 0.95rem;
+  .hex-quick-name {
+    max-width: 74px;
+    font-size: 0.7rem;
   }
 
-  .quicklink-icon {
-    font-size: 1.25rem;
-  }
-
-  .quicklink-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .quicklinks-hex-grid {
+    gap: 50px;
   }
 }
 
-/* Extra small screens */
 @media (max-width: 480px) {
   .quicklinks-container {
-    padding: 0.75rem;
-  }
-
-  .quicklinks-header {
-    margin-bottom: 1.5rem;
+    padding: 0.75rem 0.75rem 4rem 0.75rem;
   }
 
   .quicklinks-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
-  .quicklinks-section {
-    margin-bottom: 1.5rem;
+  .hex-quick-bg {
+    width: 62px;
+    height: 72px;
   }
 
-  .quicklinks-section h2 {
-    font-size: 1rem;
+  .hex-emoji {
+    font-size: 1.4rem;
   }
 
-  .quicklink-button {
-    padding: 0.75rem 0.875rem;
-    font-size: 0.9rem;
-    gap: 0.5rem;
+  .quicklinks-hex-grid {
+    gap: 40px;
   }
-
-  .quicklink-icon {
-    font-size: 1.1rem;
-  }
-
-  .quicklink-avatar {
-    width: 36px !important;
-    height: 36px !important;
-  }
-}
-
-/* Animation for loading */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.quicklinks-loading {
-  animation: pulse 1.5s ease-in-out infinite;
 }

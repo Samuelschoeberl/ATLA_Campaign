@@ -2,7 +2,7 @@
 #Concentration_X_Testchar
 
 - **Range:** Self
--**Cost:** 2 [[Spiritbending_slot]] (60)
+-**Cost:** 2 [[Spiritbending_slot]] (20)
 **Effect:** You gain the [[Harmonic_Flow]] (0) condition for [[spirit]] (20) level turns.
 
 #Level5_X_Testchar

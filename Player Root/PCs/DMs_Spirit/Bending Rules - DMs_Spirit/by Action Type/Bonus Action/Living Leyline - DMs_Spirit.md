@@ -2,7 +2,7 @@
 #Concentration_DMs_Spirit
 
 - **Range:** Self
--**Cost:** 2 [[Spiritbending_slot]] (30)
+-**Cost:** 2 [[Spiritbending_slot]] (10)
 **Effect:** You gain the [[Harmonic_Flow]] (0) condition for [[spirit]] (10) level turns.
 
 #Level5_DMs_Spirit

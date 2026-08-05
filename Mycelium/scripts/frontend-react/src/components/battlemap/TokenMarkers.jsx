@@ -79,6 +79,7 @@ const TokenMarkers = ({
             strokeWidth="2"
             opacity="0.95"
             style={{ cursor: 'pointer', pointerEvents: 'all' }}
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               const svgRect = e.currentTarget.ownerSVGElement.getBoundingClientRect();
@@ -144,6 +145,7 @@ const TokenMarkers = ({
               strokeWidth="2"
               opacity="0.95"
               style={{ cursor: 'pointer', pointerEvents: 'all' }}
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 const svgRect = e.currentTarget.ownerSVGElement.getBoundingClientRect();
@@ -209,6 +211,7 @@ const TokenMarkers = ({
               strokeWidth="2"
               opacity="0.95"
               style={{ cursor: 'pointer', pointerEvents: 'all' }}
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 const svgRect = e.currentTarget.ownerSVGElement.getBoundingClientRect();

@@ -1,3 +1,3 @@
 54
 
-#vitality #variable_Blimp #character_stat_Blimp #character_stats_Blimp #secondary_stat_Blimp
+#variable #environmental_variables #character_stat #character_stats #secondary_stat

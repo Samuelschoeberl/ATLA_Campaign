@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * MarkerPopup - Popup for editing conditions and defensive stats
  */
 const MarkerPopup = ({ markerPopup, setMarkerPopup, setTokens, onSyncTokenSheet }) => {
-  if (!markerPopup) return null;
-  
   const [editValue, setEditValue] = useState(
-    markerPopup.type === 'defensive' ? markerPopup.data.value : 0
+    markerPopup?.type === 'defensive' ? markerPopup.data.value : 0
   );
   const [currentHp, setCurrentHp] = useState(
-    markerPopup.type === 'hp' ? markerPopup.data.currentHp : 0
+    markerPopup?.type === 'hp' ? markerPopup.data.currentHp : 0
   );
   const [maxHp, setMaxHp] = useState(
-    markerPopup.type === 'hp' ? markerPopup.data.maxHp : 0
+    markerPopup?.type === 'hp' ? markerPopup.data.maxHp : 0
   );
+
+  useEffect(() => {
+    if (markerPopup?.type === 'hp') {
+      setCurrentHp(markerPopup.data.currentHp);
+      setMaxHp(markerPopup.data.maxHp);
+    } else if (markerPopup?.type === 'defensive') {
+      setEditValue(markerPopup.data.value);
+    }
+  }, [markerPopup]);
+
+  if (!markerPopup) return null;
   
   const handleRemoveCondition = () => {
     let nextConditions = [];

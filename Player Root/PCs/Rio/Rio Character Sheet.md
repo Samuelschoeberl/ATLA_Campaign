@@ -72,7 +72,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
 | <details><summary>Bonus air slots</summary>0/0</details> | |
-| Firebending slot       |                       3/3 |
+| Firebending slot       |                       2/3 |
 | <details><summary>Bonus fire slots</summary>0/0</details> | |
 | <details><summary>Bonus earth slots</summary>0/0</details> | |
 | <details><summary>Bonus spirit slots</summary>0/0</details> | |
@@ -82,7 +82,7 @@ You can use maximum of 2 \* water level water charges for any Move.
 
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
-| Waterbottle charge         |                            4/4 |
+| Waterbottle charge         |                              4 |
 | <details><summary>Bonus water charges</summary>0/0</details> | |
 
 

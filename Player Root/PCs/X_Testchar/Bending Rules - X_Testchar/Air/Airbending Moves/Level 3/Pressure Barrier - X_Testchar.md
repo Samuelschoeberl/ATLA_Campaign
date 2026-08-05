@@ -11,7 +11,7 @@ The effect ends when the target leaves the radius.
 
 
 #Level3_X_Testchar
-#earth_X_Testchar 
+#air_X_Testchar  
 
 
 

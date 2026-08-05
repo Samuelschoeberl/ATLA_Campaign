@@ -1,7 +1,7 @@
 #Action_DMs_Spirit 
 
 - Range: self
-- Duration: [[Spiritbending slot]] (30) rounds.
+- Duration: [[Spiritbending slot]] (10) rounds.
 
 **Effect**:
 Lets you perceive spiritual energy.

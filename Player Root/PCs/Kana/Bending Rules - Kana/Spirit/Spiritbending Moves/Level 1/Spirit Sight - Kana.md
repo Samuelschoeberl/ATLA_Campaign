@@ -1,7 +1,7 @@
 #Action_Kana 
 
 - Range: self
-- Duration: [[Spiritbending slot]] (3) rounds.
+- Duration: [[Spiritbending slot]] (1) rounds.
 
 **Effect**:
 Lets you perceive spiritual energy.

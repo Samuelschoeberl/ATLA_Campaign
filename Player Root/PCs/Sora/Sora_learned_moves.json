@@ -1,4 +1,10 @@
 {
-  "moves": [],
-  "_comment": "Add move names here (without .md extension) for moves this character has learned above level 1"
+  "moves": [
+    "Blazing Dash",
+    "Fireball",
+    "Beastshape Rat Ember Scout",
+    "Flame Barrage"
+  ],
+  "_comment": "Add move names here (without .md extension) for moves this character has learned above level 1",
+  "lastUpdated": "2026-04-29T20:58:18.425Z"
 }

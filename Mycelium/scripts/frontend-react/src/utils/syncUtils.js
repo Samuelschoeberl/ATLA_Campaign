@@ -2,7 +2,19 @@ import { API_BASE_URL } from '../config/api';
 import { gridToGraphData, graphDataToGrid } from './hexUtils';
 
 /**
- * Sync utilities for battlemap state management
+ * Sync utilities for battlemap state management.
+ *
+ * NOTE (rework, Phase 2): `saveBattlemapState`/`syncFromServer` below are NOT
+ * actually what BattlemapViewer.jsx's main save/sync loop calls -- that
+ * component has its own inline reimplementation of full-document save
+ * (`saveBattlemapState`, now via vaultResource.subscribe for incoming
+ * changes) and per-token hot-spot PATCH calls (see `patchBattlemapToken` in
+ * `src/data/vaultResource.js`). This file's exports are still used for the
+ * per-background-image hex-grid save/load path
+ * (`saveHexGridForImage`/`loadHexGridForImage`). Reconciling this duplication
+ * properly is Phase 3 work (component decomposition), once BattlemapViewer
+ * is being split up anyway -- not attempted here to avoid a risky partial
+ * merge this late in the Phase 1/2 rework. See the rework plan.
  */
 
 /**

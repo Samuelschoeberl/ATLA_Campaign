@@ -1,0 +1,24 @@
+# Backend (Mycelium/scripts/Python) dependencies for the Flask API server.
+#
+# There was no requirements.txt/pyproject.toml at the repo root before this
+# rework -- this file exists so `waitress` (the production WSGI server added
+# in run_backend.py) and the rest of what the backend actually imports are
+# pinned somewhere. Install with:
+#   pip install -r requirements.txt
+
+Flask>=3.1,<4
+flask-cors>=6.0,<7
+waitress>=3.0,<4          # production WSGI server (run_backend.py); Werkzeug's dev server is still used for local iteration (DEV_RELOAD=1)
+Pillow>=12.0,<13          # PNG ICC-profile stripping (routes_files.py)
+numpy>=2.0,<3             # move-balance visualization stats (routes_generation.py)
+scipy>=1.16,<2            # balance_scorer.py / full_analysis_tuner.py
+matplotlib>=3.10,<4       # balance_tuner.py / full_analysis_tuner.py plots
+plotly>=6.0,<7            # Wikigraphs.py sunburst/treemap generation
+
+# Optional: balance_scorer.py / full_analysis_scorer.py fall back to
+# rule-based scoring if these aren't installed -- uncomment to enable the
+# trained-model scoring path.
+# tensorflow>=2.16,<3
+
+# Dev/test only
+pytest>=7.4,<9

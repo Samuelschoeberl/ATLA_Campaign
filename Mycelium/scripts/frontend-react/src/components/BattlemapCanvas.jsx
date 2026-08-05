@@ -3,7 +3,7 @@ import { pixelToCssRgba } from '../utils/avatarUtils';
 import CharacterToken from './CharacterToken';
 import { fetchCharacterSheet, loadConditionDescriptions } from '../utils/characterSheetParser';
 import { API_BASE_URL } from '../config/api';
-import { animateCellPaint, animateCellErase, animateRipple } from '../utils/battlemapAnimations';
+import { animateCellPaint, animateCellErase, animateRipple, animateTokenMove, animateTokenSpawn } from '../utils/battlemapAnimations';
 import './BattlemapCanvas.css';
 
 const BattlemapCanvas = ({
@@ -26,6 +26,8 @@ const BattlemapCanvas = ({
   const canvasRef = useRef(null);
   const [characterSheets, setCharacterSheets] = useState({});
   const [conditionDescriptions, setConditionDescriptions] = useState({});
+  const tokenRefs = useRef(new Map());
+  const prevPositionsRef = useRef(new Map());
 
   // Calculate scaled dimensions
   const scaledCellWidth = cellSize.width * scale;
@@ -68,6 +70,38 @@ const BattlemapCanvas = ({
     const y = token.row * scaledCellHeight;
     return { x, y };
   };
+
+  // Smoothly animate token spawn and movement
+  useEffect(() => {
+    const seenIds = new Set();
+
+    tokens.forEach((token) => {
+      const el = tokenRefs.current.get(token.id);
+      if (!el) return;
+
+      const pos = getTokenPosition(token);
+      const left = pos.x + scaledCellWidth / 2;
+      const top = pos.y + scaledCellHeight / 2;
+      const previous = prevPositionsRef.current.get(token.id);
+
+      if (!previous) {
+        animateTokenSpawn(el, 420);
+      } else if (previous.left !== left || previous.top !== top) {
+        animateTokenMove(el, { x: previous.left, y: previous.top }, { x: left, y: top });
+      }
+
+      prevPositionsRef.current.set(token.id, { left, top });
+      seenIds.add(token.id);
+    });
+
+    // Cleanup positions for tokens that were removed
+    Array.from(prevPositionsRef.current.keys()).forEach((id) => {
+      if (!seenIds.has(id)) {
+        prevPositionsRef.current.delete(id);
+        tokenRefs.current.delete(id);
+      }
+    });
+  }, [tokens, scaledCellWidth, scaledCellHeight]);
 
   return (
     <div className="battlemap-canvas" ref={(el) => {
@@ -152,6 +186,13 @@ const BattlemapCanvas = ({
         return (
           <div
             key={token.id}
+            ref={(el) => {
+              if (el) {
+                tokenRefs.current.set(token.id, el);
+              } else {
+                tokenRefs.current.delete(token.id);
+              }
+            }}
             style={{
               position: 'absolute',
               left: `${position.x + scaledCellWidth / 2}px`,

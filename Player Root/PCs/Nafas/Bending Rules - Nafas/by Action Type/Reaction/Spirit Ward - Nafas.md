@@ -2,10 +2,10 @@
 #Reaction_Nafas 
 
 - Range: self
-- Duration: [[Spiritbending slot]] (6) rounds.
+- Duration: [[Spiritbending slot]] (2) rounds.
 
 **Effect**:
-Provides [[Spiritbending slot]] (6)d8  [[General Armor]] (0), [[Evasion]] (17),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[Spiritbending slot]] (6) rounds.
+Provides [[Spiritbending slot]] (2)d8  [[General Armor]] (0), [[Evasion]] (17),  [[Barrier]] (0) and [[Fire Damage Bonus]] (0) for [[Spiritbending slot]] (2) rounds.
 
 
 Tags:

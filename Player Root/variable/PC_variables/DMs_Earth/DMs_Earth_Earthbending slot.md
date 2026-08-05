@@ -1,3 +1,3 @@
-30
+30/30
 
-#earth #show_if_earth_ge_1 #variable_DMs_Earth #character_stat_DMs_Earth #character_stats_DMs_Earth #secondary_stat_DMs_Earth
+#variable #character_stat_DMs_Earth #character_stats_DMs_Earth

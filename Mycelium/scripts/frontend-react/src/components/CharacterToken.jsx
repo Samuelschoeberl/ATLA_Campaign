@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import PixelAvatar from './PixelAvatar';
 import { pixelToCssRgba } from '../utils/avatarUtils';
-import { animateTokenSelection, animateHPChange } from '../utils/battlemapAnimations';
+import { animateTokenSelection, animateHPChange, animateTokenSpawn } from '../utils/battlemapAnimations';
 import './CharacterToken.css';
 
 /**
@@ -23,6 +23,7 @@ const CharacterToken = ({
   const [hoveredCondition, setHoveredCondition] = useState(null);
   const tokenRef = useRef(null);
   const prevHpRef = useRef(null);
+  const hasSpawnedRef = useRef(false);
   
   // Extract HP data from character sheet or token
   const hpData = useMemo(() => {
@@ -51,6 +52,13 @@ const CharacterToken = ({
       animateTokenSelection(tokenRef.current, isSelected);
     }
   }, [isSelected]);
+
+  // Soft spawn when the token first mounts
+  useEffect(() => {
+    if (!tokenRef.current || hasSpawnedRef.current) return;
+    animateTokenSpawn(tokenRef.current, 450);
+    hasSpawnedRef.current = true;
+  }, []);
   
   // Animate HP changes
   useEffect(() => {
@@ -338,13 +346,12 @@ const CharacterToken = ({
             borderRadius: '6px',
             fontSize: '12px',
             color: '#fff',
-            whiteSpace: 'nowrap',
+            whiteSpace: 'normal',
             zIndex: 1000,
             border: `2px solid ${CONDITION_COLORS[hoveredCondition.name] || '#e74c3c'}`,
             boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
             pointerEvents: 'none',
-            maxWidth: '250px',
-            whiteSpace: 'normal'
+            maxWidth: '250px'
           }}
         >
           <div style={{ fontWeight: 'bold', marginBottom: '4px', color: CONDITION_COLORS[hoveredCondition.name] }}>

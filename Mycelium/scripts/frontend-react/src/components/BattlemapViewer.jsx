@@ -6,6 +6,7 @@ import EditDataModal from './EditDataModal';
 import TokenMarkers from './battlemap/TokenMarkers';
 import MarkerPopup from './battlemap/MarkerPopup';
 import TokenContextMenu from './battlemap/TokenContextMenu';
+import TokenDetailsPopup from './battlemap/TokenDetailsPopup';
 import { 
   loadConditionDescriptions, 
   fetchCharacterSheet, 
@@ -15,7 +16,7 @@ import {
   loadNpcState,
   saveNpcState
 } from '../utils/characterSheetParser';
-import { animateToolSelection, animateEffectSelection, animateEffectHover } from '../utils/battlemapAnimations';
+import { animateToolSelection, animateEffectSelection, animateEffectHover, animateSectionReveal, animateToolHover, animateTokenMoveSvg } from '../utils/battlemapAnimations';
 import { EFFECT_PRESETS, STANDARD_COLORS, CONDITION_COLORS } from '../constants/effectPresets';
 import { AREA_PATTERNS } from '../constants/areaPatterns';
 import {
@@ -45,6 +46,10 @@ import {
   saveBattlemapState as saveBattlemapStateUtil,
   syncFromServer
 } from '../utils/syncUtils';
+import {
+  subscribe as subscribeToVaultPath,
+  patchBattlemapToken,
+} from '../data/vaultResource';
 
 /**
  * HexBattlemapViewer - Hex-grid based battlemap with token placement and drawing tools
@@ -60,7 +65,7 @@ import {
  */
 
 
-const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect }) => {
+const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect, initialWatcherMode = false, syncIntervalMs = 8000 }) => {
   // Grid state
   const [gridSize, setGridSize] = useState({ rows: 10, cols: 10 });
   const [pendingGridSize, setPendingGridSize] = useState({ rows: 10, cols: 10 });
@@ -110,6 +115,9 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
   const [auraOutlineColor, setAuraOutlineColor] = useState('#ff6b6b'); // Aura outline color
   const [auraMoveHexes, setAuraMoveHexes] = useState(false); // Whether aura should move underlying hexes
   
+  // Stable mount timestamp used for image cache-busting (avoids new URL on every render)
+  const mountTimestamp = useRef(Date.now());
+
   // Animation state
   const [animationFrame, setAnimationFrame] = useState(0);
   const [shadeIntensity, setShadeIntensity] = useState(0.3); // 0-1, controls color variation
@@ -123,7 +131,10 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
   const [tokens, setTokens] = useState([]); // { id, row, col, name, avatar, color, aura, width, height, showHp }
   const [selectedToken, setSelectedToken] = useState(null);
   const [draggedToken, setDraggedToken] = useState(null);
+  const [dragPreview, setDragPreview] = useState(null); // { row, col }
   const [tokenToMove, setTokenToMove] = useState(null); // Token ID to move on next hex click
+  const tokenRefs = useRef(new Map());
+  const prevTokenCentersRef = useRef(new Map());
   
   // Camera panning state (for select/neutral mode)
   const [isPanning, setIsPanning] = useState(false);
@@ -135,6 +146,9 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
   
   // Marker popup state
   const [markerPopup, setMarkerPopup] = useState(null); // { type: 'condition'|'defensive', tokenId, data, x, y }
+  
+  // Token details popup state
+  const [detailsPopupToken, setDetailsPopupToken] = useState(null); // Token object to display details for
   
   // Token placement tool state
   const [tokenToPlace, setTokenToPlace] = useState(null); // { name, avatar, color, icon, type, width, height }
@@ -254,7 +268,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
   })();
   
   // Watcher Mode state
-  const [watcherMode, setWatcherMode] = useState(false);
+  const [watcherMode, setWatcherMode] = useState(initialWatcherMode);
   const [defaultCameraScale, setDefaultCameraScale] = useState(1.0);
   const [preWatcherScale, setPreWatcherScale] = useState(1.0); // Store scale before entering watcher mode
   const [watcherRotation, setWatcherRotation] = useState(0); // Rotation angle for watcher mode (0 or 90 degrees)
@@ -285,8 +299,8 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
   const areaRangeInputRef = useRef(null);
   const toolbarContentRef = useRef(null);
   const drawingToolsContentRef = useRef(null);
-  const edgePanRef = useRef(null); // For edge panning animation frame
-  const edgePanDirectionRef = useRef({ x: 0, y: 0 }); // Current pan direction
+  const pendingPaintsRef = useRef(new Map());
+  const paintRafRef = useRef(null);
   
   // Keep refs in sync with state
   useEffect(() => {
@@ -386,6 +400,52 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
       setActiveSection(visibleIds[0]);
     }
   }, [sectionVisibility, activeSection]);
+
+  // Gently reveal sections when they become visible
+  useEffect(() => {
+    Object.entries(sectionVisibility).forEach(([id, isVisible]) => {
+      if (!isVisible) return;
+      const node = document.querySelector(`[data-section-id="${id}"]`);
+      if (node) {
+        try { animateSectionReveal(node); } catch (e) { /* animejs compat */ }
+      }
+    });
+  }, [sectionVisibility]);
+
+  // Animate token motion inside the SVG layer
+  useEffect(() => {
+    const computeCenter = (token) => {
+      const width = token.width || 1;
+      const height = token.height || 1;
+      const first = getHexCoordinates(token.row, token.col);
+      const last = getHexCoordinates(token.row + height - 1, token.col + width - 1);
+      return {
+        x: (first.cx + last.cx) / 2,
+        y: (first.cy + last.cy) / 2
+      };
+    };
+
+    const seen = new Set();
+    tokens.forEach((token) => {
+      const el = tokenRefs.current.get(token.id);
+      if (!el) return;
+      const center = computeCenter(token);
+      const prev = prevTokenCentersRef.current.get(token.id);
+      if (prev && (prev.x !== center.x || prev.y !== center.y)) {
+        animateTokenMoveSvg(el, prev, center);
+      }
+      prevTokenCentersRef.current.set(token.id, center);
+      seen.add(token.id);
+    });
+
+    // cleanup removed tokens
+    Array.from(prevTokenCentersRef.current.keys()).forEach((id) => {
+      if (!seen.has(id)) {
+        prevTokenCentersRef.current.delete(id);
+        tokenRefs.current.delete(id);
+      }
+    });
+  }, [tokens, hexSize]);
 
   // Directory path for images
   const dirPath = useMemo(() => {
@@ -492,13 +552,13 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
       // Save hex grid for previous image (if it exists and not initial load)
       if (prevImageName) {
         console.log('🔄 Background image changed, saving hex grid for:', prevImageName);
-        await saveHexGridForImage(prevImageName);
+        await saveHexGridForImage(prevImageName, dirPath, gridSize, hexGrid, tokens, hexSize);
       }
 
       // Load hex grid for new image (if it exists)
       if (currentImageName) {
         console.log('🔄 Loading hex grid for new image:', currentImageName);
-        const loadedData = await loadHexGridForImage(currentImageName);
+        const loadedData = await loadHexGridForImage(currentImageName, dirPath);
 
         if (loadedData) {
           // Apply loaded hex grid data
@@ -591,56 +651,26 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     return cells;
   }, []);
 
-  // Get hex grid filename for a specific background image
-  const getHexGridFilename = (imageName) => {
-    if (!imageName || !dirPath) {
-      console.log('⚠️ getHexGridFilename: missing imageName or dirPath', { imageName, dirPath });
-      return null;
-    }
-    // Remove extension from image name and add _hexgrid.json
-    const baseName = imageName.replace(/\.[^/.]+$/, '');
-    const fullPath = `${dirPath}/${baseName}_hexgrid.json`;
-    console.log('📝 Hex grid path:', fullPath);
-    return fullPath;
-  };
-
-  // Save hex grid data for current background image
-  const saveHexGridForImage = async (imageName) => {
-    if (!imageName) return;
-    
-    const hexGridPath = getHexGridFilename(imageName);
-    if (!hexGridPath) return;
-
-    const hexGridData = {
-      format: 'graph',
-      version: '2.0',
-      gridSize,
-      hexGraph: gridToGraphData(hexGrid, gridSize),
-      tokens,
-      hexSize,
-      lastModified: Date.now()
-    };
-
-    console.log('💾 Saving hex grid for image:', imageName, 'to:', hexGridPath);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(hexGridPath)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: JSON.stringify(hexGridData, null, 2)
-        })
+  // Pre-computed Set of "row-col" keys for all token-occupied cells.
+  // Avoids O(tokens × cells) scan inside the hex render loop — O(1) lookup instead.
+  const tokenOccupiedCells = useMemo(() => {
+    const occupied = new Set();
+    tokens.forEach(t => {
+      getTokenCells(t.row, t.col, t.width || 1, t.height || 1).forEach(c => {
+        occupied.add(`${c.row}-${c.col}`);
       });
+    });
+    return occupied;
+  }, [tokens, getTokenCells]);
 
-      if (response.ok) {
-        console.log('✅ Hex grid saved successfully for:', imageName);
-      } else {
-        console.error('❌ Failed to save hex grid:', response.status);
-      }
-    } catch (err) {
-      console.error('❌ Error saving hex grid:', err);
-    }
-  };
+  const waterCellCount = useMemo(() =>
+    hexGrid.reduce((count, row) =>
+      count + row.filter(cell => cell.filled && cell.effect === 'water').length, 0
+    ), [hexGrid]);
+
+  // Use getHexGridFilename from syncUtils
+
+  // Use saveHexGridForImage from syncUtils with current state
 
   // Calculate grid size that covers image dimensions plus 10 hex buffer on each side
   const calculateGridSizeForImage = (imageWidth, imageHeight, hexSize) => {
@@ -661,51 +691,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     return { rows: Math.min(rows, 150), cols: Math.min(cols, 150) };
   };
 
-  // Load hex grid data for a specific background image
-  const loadHexGridForImage = async (imageName) => {
-    if (!imageName) return null;
-
-    const hexGridPath = getHexGridFilename(imageName);
-    if (!hexGridPath) return null;
-
-    console.log('📂 Loading hex grid for image:', imageName, 'from:', hexGridPath);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(hexGridPath)}`);
-      
-      if (response.ok) {
-        const contentType = response.headers.get('content-type');
-        let data;
-
-        if (contentType && contentType.includes('application/json')) {
-          const jsonData = await response.json();
-          if (jsonData.content) {
-            data = JSON.parse(jsonData.content);
-          } else {
-            data = jsonData;
-          }
-        } else {
-          const text = await response.text();
-          if (text && text.trim() !== '') {
-            data = JSON.parse(text);
-          }
-        }
-
-        if (data) {
-          console.log('✅ Hex grid loaded for:', imageName);
-          return data;
-        }
-      } else if (response.status === 404) {
-        console.log('ℹ️ No existing hex grid found for:', imageName);
-      } else {
-        console.error('❌ Failed to load hex grid:', response.status);
-      }
-    } catch (err) {
-      console.error('❌ Error loading hex grid:', err);
-    }
-
-    return null;
-  };
+  // Use loadHexGridForImage from syncUtils
 
   // Save battlemap state to server (debounced)
   const saveBattlemapState = async (useGraphFormat = true) => {
@@ -783,6 +769,8 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
   
   // Debounced auto-save: saves 1 second after last change
   useEffect(() => {
+    // Never auto-save in dedicated watcher mode (read-only tab)
+    if (initialWatcherMode) return;
     // Don't trigger auto-save if changes came from sync
     if (isUpdatingFromSyncRef.current) {
       console.log('BattlemapViewer: Skipping auto-save (changes from sync)');
@@ -793,18 +781,20 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
       clearTimeout(saveTimeoutRef.current);
     }
     
-    saveTimeoutRef.current = setTimeout(() => {
-      console.log('BattlemapViewer: Triggering auto-save (local changes)');
+    saveTimeoutRef.current = setTimeout(async () => {
+      console.log('💾 Auto-save firing (local changes)');
+      saveTimeoutRef.current = null;
       saveBattlemapState();
       // Also save hex grid for current image
       if (selectedImage?.name) {
-        saveHexGridForImage(selectedImage.name);
+        await saveHexGridForImage(selectedImage.name, dirPath, gridSize, hexGrid, tokens, hexSize);
       }
-    }, 3000); // Wait 3 seconds after last change - minimize server load
+    }, 3000);
     
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
       }
     };
   }, [hexGrid, tokens, selectedImage, hexSize, gridSize]);
@@ -821,235 +811,155 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     }
   }, [hexGrid, tokens, selectedImage, hexSize, gridSize]);
   
-  // Sync from server: poll for changes with adaptive interval
+  // Sync from server: used to poll on a timer (8s normally, 1.5s in watcher/
+  // spectator mode) and compare a client-generated `lastModified` timestamp
+  // to decide whether a remote update was "newer" -- vulnerable to clock
+  // skew between different players'/the GM's machines. Now driven by the
+  // shared SSE stream (vaultResource): the backend publishes a
+  // `file_changed` event for this exact path whenever anyone's save lands
+  // (including our own -- see the self-echo check below), so there's no
+  // polling interval and no client-timestamp ordering at all.
   useEffect(() => {
     if (!filePath) return;
-    
-    console.log('BattlemapViewer: Setting up sync for path:', filePath);
-    console.log('BattlemapViewer: API_BASE_URL:', API_BASE_URL);
-    
-    // Track the last fetch request to prevent race conditions
-    let latestFetchId = 0;
-    let consecutiveNoChanges = 0;
-    let isSyncing = false;
-    
-    const syncInterval = setInterval(async () => {
-      // Prevent overlapping requests
-      if (isSyncing) {
-        console.log('⏭️ Skipping sync, previous request still in progress');
+
+    const applyRemoteState = (rawContent) => {
+      if (!rawContent || !rawContent.trim()) return;
+
+      // Self-echo: this SSE event is just confirming our own most recent
+      // save landed, not a genuine remote change -- skip reapplying it.
+      if (rawContent === lastSavedStateRef.current) return;
+
+      let newState;
+      try {
+        newState = JSON.parse(rawContent);
+      } catch (e) {
+        console.error('❌ Battlemap sync: failed to parse remote content', e);
         return;
       }
-      
-      const currentFetchId = ++latestFetchId;
-      isSyncing = true;
-      
-      try {
-        // Use the same endpoint as we use for saving (GET to read)
-        const syncUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(filePath)}`;
-        console.log('🔄 BattlemapViewer: Polling for updates from:', syncUrl, '(fetch #' + currentFetchId + ')');
-        
-        const response = await fetch(syncUrl);
-        
-        // If this is not the latest fetch, ignore the result (race condition prevention)
-        if (currentFetchId !== latestFetchId) {
-          console.log('⚠️ Ignoring stale fetch response #' + currentFetchId + ' (latest is #' + latestFetchId + ')');
-          return;
-        }
-        
-        console.log('Response status:', response.status);
-        
-        if (response.ok) {
-          const contentType = response.headers.get('content-type');
-          console.log('Content-Type:', contentType);
-          
-          let newState;
-          
-          // Check if response is already JSON or needs parsing
-          if (contentType && contentType.includes('application/json')) {
-            // Response might be wrapped: {content: "..."} or direct JSON
-            const jsonResponse = await response.json();
-            console.log('Got JSON response, keys:', Object.keys(jsonResponse));
-            
-            // Check if it's wrapped in {content: "..."}
-            if (jsonResponse.content) {
-              console.log('Content is wrapped, parsing inner content');
-              newState = JSON.parse(jsonResponse.content);
-            } else {
-              // Direct JSON
-              newState = jsonResponse;
-            }
-          } else {
-            // Plain text, parse it
-            const textContent = await response.text();
-            console.log('Got text response, length:', textContent.length);
-            console.log('First 100 chars:', textContent.substring(0, 100));
-            
-            if (!textContent || textContent.trim() === '') {
-              console.log('⚠️ BattlemapViewer: File is empty, skipping sync');
-              return;
-            }
-            
-            newState = JSON.parse(textContent);
-          }
-          
-          console.log('📥 Parsed state - lastModified:', newState.lastModified, '| Local:', lastSyncTimeRef.current);
-          
-          // Early exit if remote state is not newer - skip all processing
-          if (!newState.lastModified || newState.lastModified <= lastSyncTimeRef.current) {
-            consecutiveNoChanges++;
-            return;
-          }
-          
-          console.log('Parsed state format:', newState.format || 'legacy array');
-          console.log('Parsed state - hexGrid rows:', newState.hexGrid?.length, '| tokens:', newState.tokens?.length);
-          
-          // Convert graph format to grid only if we're going to apply changes
-          if (newState.format === 'graph' && newState.hexGraph) {
-            console.log('📊 Converting graph format to grid');
-            newState.hexGrid = graphDataToGrid(newState.hexGraph, newState.gridSize);
-          }
-          
-          // CRITICAL: Verify this fetch is still the latest before applying changes
-          if (currentFetchId !== latestFetchId) {
-            console.log('⚠️ State parsed but fetch is stale (#' + currentFetchId + ' vs #' + latestFetchId + '), discarding');
-            return;
-          }
-          
-          // Remote state is newer, check if different
-          if (newState.lastModified && newState.lastModified > lastSyncTimeRef.current) {
-            const currentStateString = JSON.stringify({
-              gridSize: gridSizeRef.current,
-              hexGrid: hexGridRef.current,
-              tokens: tokensRef.current,
-              backgroundImage: selectedImageRef.current,
-              hexSize: hexSizeRef.current
-            });
-            const newStateString = JSON.stringify({
-              gridSize: newState.gridSize,
-              hexGrid: newState.hexGrid,
-              tokens: newState.tokens,
-              backgroundImage: newState.backgroundImage,
-              hexSize: newState.hexSize
-            });
-            
-            if (currentStateString !== newStateString) {
-              // Check if we have pending unsaved changes (saveTimeout is active)
-              if (saveTimeoutRef.current) {
-                console.log('⚠️ BattlemapViewer: Pending local changes detected, skipping sync to prevent data loss');
-                return;
-              }
-              
-              // Remote changes detected, update local state
-              console.log('✅ BattlemapViewer: Applying remote changes from', new Date(newState.lastModified).toISOString());
-              
-              isUpdatingFromSyncRef.current = true; // Mark that next updates are from sync
-              
-              // Batch state updates to reduce re-renders
-              if (newState.gridSize) setGridSize(newState.gridSize);
-              if (newState.hexGrid) setHexGrid(newState.hexGrid);
-              if (newState.tokens) setTokens(newState.tokens);
-              if (newState.backgroundImage) setSelectedImage(newState.backgroundImage);
-              if (newState.hexSize) setHexSize(newState.hexSize);
-              setLastSyncTime(newState.lastModified);
-              lastSyncTimeRef.current = newState.lastModified; // CRITICAL: Update ref immediately to prevent race condition
-              
-              consecutiveNoChanges = 0;
-            } else {
-              console.log('ℹ️ Remote state is newer but identical, skipping update');
-              consecutiveNoChanges++;
-            }
-          }
-        } else {
-          console.warn('❌ BattlemapViewer: Sync failed with status:', response.status);
-        }
-      } catch (err) {
-        console.error('❌ Failed to sync battlemap:', err);
-      } finally {
-        isSyncing = false;
-      }
-    }, 5000); // Poll every 5 seconds - further reduced server load
-    
-    return () => {
-      console.log('BattlemapViewer: Clearing sync interval');
-      clearInterval(syncInterval);
-    };
-  }, [filePath]); // Only depend on filePath
 
-  // Periodic token stats refresh - refresh HP and conditions every 10 seconds
+      if (newState.format === 'graph' && newState.hexGraph) {
+        newState.hexGrid = graphDataToGrid(newState.hexGraph, newState.gridSize);
+      }
+
+      // Still avoid clobbering an in-flight local edit that hasn't saved yet.
+      if (!initialWatcherMode && saveTimeoutRef.current) {
+        return;
+      }
+
+      isUpdatingFromSyncRef.current = true;
+
+      if (newState.gridSize) setGridSize(newState.gridSize);
+      if (newState.hexGrid) setHexGrid(newState.hexGrid);
+      if (newState.tokens) setTokens(newState.tokens);
+      if (newState.backgroundImage) setSelectedImage(newState.backgroundImage);
+      if (newState.hexSize) setHexSize(newState.hexSize);
+      const now = newState.lastModified || Date.now();
+      setLastSyncTime(now);
+      lastSyncTimeRef.current = now;
+    };
+
+    const unsubscribe = subscribeToVaultPath(filePath, ({ content }) => applyRemoteState(content));
+    return unsubscribe;
+  }, [filePath]);
+
+  // Periodic token stats refresh - refresh HP, conditions, and defensive stats every 15 seconds
   useEffect(() => {
-    // Initial refresh on mount
+    const abortController = new AbortController();
+
     const refreshTokens = async () => {
-      // Use ref to avoid dependency on tokens state
       const currentTokens = tokensRef.current;
-      const playerTokens = currentTokens.filter(t => t.type === 'player' && t.name);
-      if (playerTokens.length === 0) return;
-      
-      console.log('🔄 Periodic token stats refresh...');
-      
-      const updatedTokens = await Promise.all(
-        currentTokens.map(async (token) => {
-          // Only refresh player character tokens
-          if (token.type !== 'player' || !token.name) {
-            return token;
-          }
-          
-          try {
-            const characterData = await fetchCharacterSheet(token.name, API_BASE_URL);
-            
-            if (characterData) {
-              console.log(`  Token ${token.name}: Fetched vitals`, {
-                current_hp: characterData.vitals?.current_hp,
-                max_hp: characterData.vitals?.max_hp
+      const tokensWithSheets = currentTokens.filter(t =>
+        t.characterSheetPath || (t.type === 'player' && t.name)
+      );
+      if (tokensWithSheets.length === 0) return;
+
+      try {
+        const updatedTokens = await Promise.all(
+          currentTokens.map(async (token) => {
+            const sheetPath = token.characterSheetPath ||
+              (token.type === 'player' && token.name
+                ? `PCs/${token.name}/${token.name} character sheet.md`
+                : null);
+            if (!sheetPath) return token;
+
+            try {
+              const endpoint = token.characterSheetEndpoint || 'player_root';
+              const encodedPath = sheetPath.split('/').map(s => encodeURIComponent(s)).join('/');
+              const resp = await fetch(`${API_BASE_URL}/${endpoint}/${encodedPath}`, {
+                cache: 'no-store',
+                signal: abortController.signal
               });
-              
-              const newCurrentHp = characterData.vitals?.current_hp ? parseFloat(characterData.vitals.current_hp) : token.currentHp;
-              const newMaxHp = characterData.vitals?.max_hp ? parseFloat(characterData.vitals.max_hp) : token.maxHp;
-              
-              // Parse conditions array from character data
-              let newConditions = characterData.conditions || token.conditions || [];
-              
+              if (!resp.ok || abortController.signal.aborted) return token;
+
+              const data = await resp.json();
+              const content = data.content || '';
+
+              let npcState = null;
+              if (token.isTempCharacterSheet) {
+                npcState = await loadNpcState(sheetPath, API_BASE_URL);
+              }
+
+              const parsed = parseSheetVitalsAndConditions(content, npcState);
+              if (!parsed) return token;
+
+              const newCurrentHp = parsed.currentHp ?? token.currentHp;
+              const newMaxHp = parsed.maxHp ?? token.maxHp;
+              let newConditions = parsed.conditions?.length ? parsed.conditions : (token.conditions || []);
+
               // Auto-add "Bleeding out" if HP is 0 or below
               const isBleedingOut = newMaxHp > 0 && newCurrentHp <= 0;
               if (isBleedingOut && !newConditions.includes('Bleeding out')) {
                 newConditions = [...newConditions, 'Bleeding out'];
               } else if (!isBleedingOut) {
-                // Remove "Bleeding out" if HP is above 0
                 newConditions = newConditions.filter(c => c !== 'Bleeding out');
               }
-              
+
               return {
                 ...token,
                 currentHp: newCurrentHp,
                 maxHp: newMaxHp,
-                conditions: newConditions
+                conditions: newConditions,
+                defensive: Object.keys(parsed.defensive || {}).length ? parsed.defensive : token.defensive
               };
+            } catch (err) {
+              if (err.name !== 'AbortError') {
+                console.warn(`⚠️ Could not refresh data for ${token.name}:`, err);
+              }
             }
-          } catch (err) {
-            console.warn(`⚠️ Could not refresh data for ${token.name}:`, err);
-          }
-          
-          return token;
-        })
-      );
-      
-      // Only update if there are actual changes
-      if (JSON.stringify(updatedTokens) !== JSON.stringify(tokensRef.current)) {
-        console.log('✅ Token stats updated from character sheets');
-        setTokens(updatedTokens);
+
+            return token;
+          })
+        );
+
+        if (!abortController.signal.aborted && JSON.stringify(updatedTokens) !== JSON.stringify(tokensRef.current)) {
+          setTokens(updatedTokens);
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error refreshing tokens:', err);
+        }
       }
     };
-    
-    // Set up interval for periodic refresh
-    const refreshInterval = setInterval(refreshTokens, 10000); // Every 10 seconds
-    
-    // Run initial refresh after a short delay
-    const initialTimeout = setTimeout(refreshTokens, 2000);
-    
+
+    // Initial refresh after delay
+    const initialTimeout = setTimeout(refreshTokens, 3000);
+
+    // Set up periodic refresh
+    const refreshInterval = setInterval(refreshTokens, 15000); // Every 15 seconds
+
     return () => {
+      abortController.abort();
       clearInterval(refreshInterval);
       clearTimeout(initialTimeout);
     };
-  }, []); // Empty dependency - runs once on mount, uses refs for current values
+  }, []);
+
+  // Cancel pending paint RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (paintRafRef.current) cancelAnimationFrame(paintRafRef.current);
+    };
+  }, []);
 
   // Load saved battlemap state
   useEffect(() => {
@@ -1073,13 +983,30 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
       // Check if content is valid JSON before parsing
       const trimmedContent = content.trim();
       if (!trimmedContent.startsWith('{') && !trimmedContent.startsWith('[')) {
-        console.log('BattlemapViewer: Content is not JSON format, initializing default state');
+        console.warn('BattlemapViewer: Content is not JSON format (appears to be Markdown or other format), initializing default state.');
+        console.warn('BattlemapViewer: Content preview:', trimmedContent.substring(0, 100));
+        console.info('💡 Tip: Select a battlemap.json file instead of a markdown file to load a saved battlemap.');
         const defaultGrid = initializeHexGrid(gridSize.rows, gridSize.cols);
         setHexGrid(defaultGrid);
         return;
       }
       
-      const data = JSON.parse(content);
+      let data;
+      try {
+        data = JSON.parse(trimmedContent);
+      } catch (parseError) {
+        // Treat non-JSON (e.g., markdown files with [[links]]) as empty battlemap instead of erroring
+        console.warn('BattlemapViewer: JSON parse failed, falling back to default battlemap. Error:', parseError.message);
+        console.warn('BattlemapViewer: Content preview (first 200 chars):', trimmedContent.substring(0, 200));
+        const previewTail = trimmedContent.substring(Math.max(trimmedContent.length - 200, 0));
+        console.warn('BattlemapViewer: Content preview (last 200 chars):', previewTail);
+        if (trimmedContent.startsWith('[[')) {
+          console.info('💡 Tip: This looks like a markdown file with wiki links. Open a battlemap JSON file instead.');
+        }
+        setHexGrid(initializeHexGrid(gridSize.rows, gridSize.cols));
+        return;
+      }
+      
       console.log('BattlemapViewer: Loaded state:', data);
       console.log('BattlemapViewer: Format:', data.format || 'legacy array');
       
@@ -1107,167 +1034,167 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
 
   // Load available images from directory and Battlemaps folder
   useEffect(() => {
+    const abortController = new AbortController();
+    
     const fetchImages = async () => {
       try {
         const allFiles = [];
+        const fetchPromises = [];
         
         // Fetch images from current directory if available
         if (dirPath) {
-          try {
-            const resp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(dirPath)}`);
-            if (resp.ok) {
-              const data = await resp.json();
-              const files = (data.entries || []).filter((e) => {
-                const n = (e.name || '').toLowerCase();
-                return n.match(/\.(png|jpe?g|webp)$/);
-              });
-              allFiles.push(...files.map((f) => ({ name: f.name, path: dirPath })));
-            }
-          } catch (err) {
-            console.error('Error loading images from current directory:', err);
-          }
+          fetchPromises.push(
+            fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(dirPath)}`, { signal: abortController.signal })
+              .then(resp => resp.ok ? resp.json() : null)
+              .then(data => {
+                if (data?.entries) {
+                  const files = data.entries.filter(e => e.name?.toLowerCase().match(/\.(png|jpe?g|webp)$/));
+                  return files.map(f => ({ name: f.name, path: dirPath }));
+                }
+                return [];
+              })
+              .catch(err => {
+                if (err.name !== 'AbortError') {
+                  console.error('Error loading images from current directory:', err);
+                }
+                return [];
+              })
+          );
         }
         
-        // Always fetch images from Battlemaps folder
-        try {
-          const battlemapsPath = 'Maps/Battlemaps';
-          const resp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(battlemapsPath)}`);
-          if (resp.ok) {
-            const data = await resp.json();
-            const files = (data.entries || []).filter((e) => {
-              const n = (e.name || '').toLowerCase();
-              return n.match(/\.(png|jpe?g|webp)$/);
-            });
-            allFiles.push(...files.map((f) => ({ name: `[Battlemaps] ${f.name}`, path: battlemapsPath })));
-          }
-        } catch (err) {
-          console.error('Error loading images from Battlemaps:', err);
-        }
+        // Fetch images from Battlemaps folder
+        const battlemapsPath = 'Maps/Battlemaps';
+        fetchPromises.push(
+          fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(battlemapsPath)}`, { signal: abortController.signal })
+            .then(resp => resp.ok ? resp.json() : null)
+            .then(data => {
+              if (data?.entries) {
+                const files = data.entries.filter(e => e.name?.toLowerCase().match(/\.(png|jpe?g|webp)$/));
+                return files.map(f => ({ name: `[Battlemaps] ${f.name}`, path: battlemapsPath }));
+              }
+              return [];
+            })
+            .catch(err => {
+              if (err.name !== 'AbortError') {
+                console.error('Error loading images from Battlemaps:', err);
+              }
+              return [];
+            })
+        );
         
-        setImageOptions(allFiles);
+        const results = await Promise.all(fetchPromises);
+        results.forEach(files => allFiles.push(...files));
+        
+        if (!abortController.signal.aborted) {
+          setImageOptions(allFiles);
+        }
       } catch (err) {
-        console.error('Error loading images:', err);
+        if (err.name !== 'AbortError') {
+          console.error('Error loading images:', err);
+        }
       }
     };
+    
     fetchImages();
+    
+    return () => abortController.abort();
   }, [dirPath]);
 
   // Load available characters for tokens with their avatars
   useEffect(() => {
+    const abortController = new AbortController();
+    
     const fetchCharacters = async () => {
       try {
-        // Get customizations which include character names, avatars, and colors
-        const customResp = await fetch(`${API_BASE_URL}/api/characters/customizations`);
+        // Get customizations
+        const customResp = await fetch(`${API_BASE_URL}/api/characters/customizations`, { signal: abortController.signal });
         if (!customResp.ok) {
           console.error('BattlemapViewer: Failed to fetch customizations:', customResp.status);
           return;
         }
         const customData = await customResp.json();
-        console.log('BattlemapViewer: Customizations API response:', customData);
-        
         const customizations = customData.customizations || customData || {};
-        console.log('BattlemapViewer: Parsed customizations:', customizations);
         
-        // Also scan PCs folder to find characters without customization files
+        // Scan PCs folder in parallel
         try {
-          const pcsResp = await fetch(`${API_BASE_URL}/player_root/PCs`);
+          const pcsResp = await fetch(`${API_BASE_URL}/player_root/PCs`, { signal: abortController.signal });
           if (pcsResp.ok) {
             const pcsData = await pcsResp.json();
-            console.log('BattlemapViewer: PCs folder response:', pcsData);
-            
-            // Handle different possible response structures
             const pcsFolders = pcsData.children || pcsData.folders || (Array.isArray(pcsData) ? pcsData : []);
             
-            if (pcsFolders.length > 0) {
-              // Add any PC folders that aren't in customizations yet
-              pcsFolders.forEach(child => {
-                const childName = child.name || child;
-                const isFolder = child.type === 'folder' || child.type === 'directory' || typeof child === 'string';
-                
-                if (isFolder && childName && !customizations[childName]) {
-                  console.log(`BattlemapViewer: Adding ${childName} without customization`);
-                  customizations[childName] = {
-                    name: childName,
-                    folderColor: null,
-                    avatar: null,
-                    avatarPng: null
-                  };
-                }
-              });
-            } else {
-              console.log('BattlemapViewer: No PC folders found in response');
-            }
-          } else {
-            console.warn('BattlemapViewer: PCs folder fetch returned', pcsResp.status);
+            pcsFolders.forEach(child => {
+              const childName = child.name || child;
+              const isFolder = child.type === 'folder' || child.type === 'directory' || typeof child === 'string';
+              
+              if (isFolder && childName && !customizations[childName]) {
+                customizations[childName] = {
+                  name: childName,
+                  folderColor: null,
+                  avatarPng: null
+                };
+              }
+            });
           }
         } catch (err) {
-          console.warn('BattlemapViewer: Could not scan PCs folder:', err);
-        }
-        
-        // Load avatar PNGs for characters with file paths
-        const avatarImagesRaw = {};
-        const avatarImagesNormalized = {};
-        console.log('BattlemapViewer: Loading avatars for customizations:', Object.keys(customizations));
-        for (const [name, data] of Object.entries(customizations)) {
-          console.log(`BattlemapViewer: Processing ${name}, avatarPng:`, data.avatarPng);
-          if (data.avatarPng) {
-            if (data.avatarPng.startsWith('data:image')) {
-              // It's a data URL, already normalized at upload - use directly
-              console.log(`BattlemapViewer: ${name} has data URL`);
-              avatarImagesRaw[name] = data.avatarPng;
-              avatarImagesNormalized[name] = data.avatarPng;
-            } else {
-              // It's a file path, fetch from server
-              console.log(`BattlemapViewer: ${name} has file path, fetching:`, data.avatarPng);
-              try {
-                const fetchUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(data.avatarPng)}?cb=${Date.now()}`;
-                console.log(`BattlemapViewer: Fetch URL:`, fetchUrl);
-                const imgResponse = await fetch(fetchUrl);
-                console.log(`BattlemapViewer: Fetch response status:`, imgResponse.status);
-                if (imgResponse.ok) {
-                  // Convert blob to base64 data URL
-                  const blob = await imgResponse.blob();
-                  console.log(`BattlemapViewer: Got blob, size:`, blob.size);
-                  const reader = new FileReader();
-                  const dataUrl = await new Promise((resolve, reject) => {
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
-                  });
-                  avatarImagesRaw[name] = dataUrl;
-                  // Already normalized at source - use directly
-                  avatarImagesNormalized[name] = dataUrl;
-                  console.log(`BattlemapViewer: Set avatar for ${name}`);
-                } else {
-                  console.error(`BattlemapViewer: Failed to fetch avatar for ${name}:`, imgResponse.status);
-                }
-              } catch (err) {
-                console.error(`Error loading avatar for ${name}:`, err);
-              }
-            }
-          } else {
-            console.log(`BattlemapViewer: ${name} has no avatarPng`);
+          if (err.name !== 'AbortError') {
+            console.warn('BattlemapViewer: Could not scan PCs folder:', err);
           }
         }
-        console.log('BattlemapViewer: Final avatar images (raw):', Object.keys(avatarImagesRaw));
         
-        // Convert customizations object to array of characters
+        // Batch load avatar images
+        const avatarPromises = Object.entries(customizations).map(async ([name, data]) => {
+          if (!data.avatarPng) return [name, null];
+          
+          if (data.avatarPng.startsWith('data:image')) {
+            return [name, data.avatarPng];
+          }
+          
+          try {
+            const fetchUrl = `${API_BASE_URL}/player_root/${encodeURIComponent(data.avatarPng)}?cb=${Date.now()}`;
+            const imgResponse = await fetch(fetchUrl, { signal: abortController.signal });
+            if (imgResponse.ok) {
+              const blob = await imgResponse.blob();
+              const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              });
+              return [name, dataUrl];
+            }
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              console.error(`Error loading avatar for ${name}:`, err);
+            }
+          }
+          return [name, null];
+        });
+        
+        const avatarResults = await Promise.all(avatarPromises);
+        const avatarImages = Object.fromEntries(avatarResults.filter(([_, url]) => url));
+        
+        if (abortController.signal.aborted) return;
+        
+        // Convert to character array
         const characters = Object.entries(customizations).map(([name, data]) => ({
-          name: name,
-          avatar: data.avatar || null,
-          avatarPng: avatarImagesRaw[name] || null,              // raw for menu display
-          avatarPngNormalized: avatarImagesNormalized[name] || avatarImagesRaw[name] || null, // normalized for tokens
-          color: data.folderColor || 'rgba(0,0,0,0)',  // Default to transparent
+          name,
+          avatarPng: avatarImages[name] || null,
+          avatarPngNormalized: avatarImages[name] || null,
+          color: data.folderColor || 'rgba(0,0,0,0)',
           type: 'player'
         }));
         
-        console.log('BattlemapViewer: Loaded characters with avatars:', characters);
         setAvailableCharacters(characters);
       } catch (err) {
-        console.error('Error loading characters:', err);
+        if (err.name !== 'AbortError') {
+          console.error('Error loading characters:', err);
+        }
       }
     };
+    
     fetchCharacters();
+    
+    return () => abortController.abort();
   }, []);
 
   // Update background URL
@@ -1606,84 +1533,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     setTimeout(() => notification.remove(), 2000);
   };
 
-  // Edge Panning - Automatically pan camera when mouse is near edges
-  const EDGE_PAN_ZONE = 100; // Pixels from edge to trigger panning
-  const EDGE_PAN_BASE_SPEED = 25; // Base pixels per frame to pan
-  
-  useEffect(() => {
-    if (!watcherMode) {
-      // Clean up when not in watcher mode
-      if (edgePanRef.current) {
-        cancelAnimationFrame(edgePanRef.current);
-        edgePanRef.current = null;
-      }
-      return;
-    }
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const handleMouseMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const width = rect.width;
-      const height = rect.height;
-
-      let panX = 0;
-      let panY = 0;
-      
-      // Scale speed with zoom level - faster panning when zoomed in
-      const speedMultiplier = Math.max(1, scale * 1.5);
-      const panSpeed = EDGE_PAN_BASE_SPEED * speedMultiplier;
-
-      // Check horizontal edges
-      if (x < EDGE_PAN_ZONE) {
-        // Left edge - pan left (scroll left decreases)
-        panX = -panSpeed * (1 - x / EDGE_PAN_ZONE);
-      } else if (x > width - EDGE_PAN_ZONE) {
-        // Right edge - pan right (scroll left increases)
-        panX = panSpeed * (1 - (width - x) / EDGE_PAN_ZONE);
-      }
-
-      // Check vertical edges
-      if (y < EDGE_PAN_ZONE) {
-        // Top edge - pan up
-        panY = -panSpeed * (1 - y / EDGE_PAN_ZONE);
-      } else if (y > height - EDGE_PAN_ZONE) {
-        // Bottom edge - pan down
-        panY = panSpeed * (1 - (height - y) / EDGE_PAN_ZONE);
-      }
-
-      edgePanDirectionRef.current = { x: panX, y: panY };
-    };
-
-    const handleMouseLeave = () => {
-      edgePanDirectionRef.current = { x: 0, y: 0 };
-    };
-
-    // Animation loop for smooth panning
-    const panLoop = () => {
-      const { x, y } = edgePanDirectionRef.current;
-      if (x !== 0 || y !== 0) {
-        canvas.scrollLeft += x;
-        canvas.scrollTop += y;
-      }
-      edgePanRef.current = requestAnimationFrame(panLoop);
-    };
-
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
-    edgePanRef.current = requestAnimationFrame(panLoop);
-
-    return () => {
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
-      if (edgePanRef.current) {
-        cancelAnimationFrame(edgePanRef.current);
-      }
-    };
-  }, [watcherMode]);
+  // Edge panning removed - map is panned by click-and-drag only
 
   // Handle grid size change
   const handleGridSizeChange = (rows, cols) => {
@@ -1708,39 +1558,69 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     if (currentTool === 'token') return; // Don't paint in token mode
     
     setHexGrid(prev => {
-      const updated = prev.map((r, rIdx) => 
-        r.map((cell, cIdx) => {
-          if (rIdx === row && cIdx === col) {
-            if (erase) {
-              // Completely reset the cell
-              return { 
-                filled: false, 
-                color: '#3498db',
-                effect: 'none',
-                animationOffset: Math.random() * 10,
-                paintedAt: null
-              };
-            } else {
-              // Use effect colors if available, otherwise use brush color
-              const effectPreset = EFFECT_PRESETS[currentEffect];
-              const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
-              
-              // Completely overwrite with new values
-              return { 
-                filled: true, 
-                color: baseColor,
-                effect: currentEffect,
-                animationOffset: Math.random() * 10,
-                paintedAt: fadeEnabled ? Date.now() : null
-              };
-            }
+      // Only clone the affected row — avoids allocating 22,500 objects per brush stroke
+      return prev.map((r, rIdx) => {
+        if (rIdx !== row) return r;
+        return r.map((cell, cIdx) => {
+          if (cIdx !== col) return cell;
+          if (erase) {
+            // Completely reset the cell
+            return {
+              filled: false,
+              color: '#3498db',
+              effect: 'none',
+              animationOffset: Math.random() * 10,
+              paintedAt: null
+            };
+          } else {
+            // Use effect colors if available, otherwise use brush color
+            const effectPreset = EFFECT_PRESETS[currentEffect];
+            const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
+
+            // Completely overwrite with new values
+            return {
+              filled: true,
+              color: baseColor,
+              effect: currentEffect,
+              animationOffset: Math.random() * 10,
+              paintedAt: fadeEnabled ? Date.now() : null
+            };
           }
-          return cell;
-        })
-      );
-      return updated;
+        });
+      });
     });
   };
+
+  // Flush all pending paint operations into a single setHexGrid call (called via RAF)
+  const flushPendingPaints = useCallback(() => {
+    paintRafRef.current = null;
+    const pending = pendingPaintsRef.current;
+    if (pending.size === 0) return;
+    pendingPaintsRef.current = new Map();
+
+    setHexGrid(prev => {
+      let next = null;
+      for (const [, { row, col, erase, effect, color, animated }] of pending) {
+        if (!next) next = [...prev]; // lazy-clone outer array once
+        if (next[row] === prev[row]) next[row] = [...prev[row]]; // clone row on first touch
+        next[row][col] = erase
+          ? { filled: false, color: '#3498db', effect: 'none', animationOffset: Math.random() * 10, paintedAt: null }
+          : { filled: true, color, effect, animationOffset: Math.random() * 10, paintedAt: animated ? Date.now() : null };
+      }
+      return next || prev;
+    });
+  }, []);
+
+  // Queue a paint for the next animation frame instead of triggering a render per cell
+  const queueHexPaint = useCallback((row, col, erase = false) => {
+    if (currentTool === 'token') return;
+    const effectPreset = EFFECT_PRESETS[currentEffect];
+    const color = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
+    pendingPaintsRef.current.set(`${row}-${col}`, { row, col, erase, effect: currentEffect, color, animated: fadeEnabled });
+    if (!paintRafRef.current) {
+      paintRafRef.current = requestAnimationFrame(flushPendingPaints);
+    }
+  }, [currentTool, currentEffect, brushColor, fadeEnabled, flushPendingPaints]);
 
   // Handle line drawing between two hexes
   const handleLineDraw = (startRow, startCol, endRow, endCol) => {
@@ -1771,24 +1651,40 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     
     // Paint all hexes in the line
     setHexGrid(prev => {
-      const updated = prev.map(r => r.map(c => ({ ...c })));
       const effectPreset = EFFECT_PRESETS[currentEffect];
       const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
-      
+
+      // Build a Set of affected row indices so we only clone those rows
+      const affectedRows = new Set();
       lineHexes.forEach(({ row, col }) => {
         if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
-          // Completely overwrite the cell
-          updated[row][col] = {
+          affectedRows.add(row);
+        }
+      });
+
+      // Build a map of row → Set<col> for O(1) lookup inside the map
+      const cellMap = new Map();
+      lineHexes.forEach(({ row, col }) => {
+        if (row >= 0 && row < gridSize.rows && col >= 0 && col < gridSize.cols) {
+          if (!cellMap.has(row)) cellMap.set(row, new Set());
+          cellMap.get(row).add(col);
+        }
+      });
+
+      return prev.map((r, rIdx) => {
+        if (!affectedRows.has(rIdx)) return r;
+        const cols = cellMap.get(rIdx);
+        return r.map((cell, cIdx) => {
+          if (!cols.has(cIdx)) return cell;
+          return {
             filled: true,
             color: baseColor,
             effect: currentEffect,
             animationOffset: Math.random() * 10,
             paintedAt: fadeEnabled ? Date.now() : null
           };
-        }
+        });
       });
-      
-      return updated;
     });
   };
 
@@ -1798,29 +1694,35 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     if (!pattern || !pattern.pattern) return;
     
     setHexGrid(prev => {
-      const updated = prev.map(r => r.map(c => ({ ...c })));
       const effectPreset = EFFECT_PRESETS[currentEffect];
       const baseColor = (effectPreset && effectPreset.colors) ? effectPreset.colors[0] : brushColor;
-      
-      // Apply pattern using coordinate offsets
+
+      // Build a map of affected row → Set<col> so we only clone those rows
+      const cellMap = new Map();
       pattern.pattern[0].hexes.forEach(offset => {
         const targetRow = startRow + offset.row;
         const targetCol = startCol + offset.col;
-        
-        if (targetRow >= 0 && targetRow < gridSize.rows && 
+        if (targetRow >= 0 && targetRow < gridSize.rows &&
             targetCol >= 0 && targetCol < gridSize.cols) {
-          // Completely overwrite the cell
-          updated[targetRow][targetCol] = { 
-            filled: true, 
+          if (!cellMap.has(targetRow)) cellMap.set(targetRow, new Set());
+          cellMap.get(targetRow).add(targetCol);
+        }
+      });
+
+      return prev.map((r, rIdx) => {
+        if (!cellMap.has(rIdx)) return r;
+        const cols = cellMap.get(rIdx);
+        return r.map((cell, cIdx) => {
+          if (!cols.has(cIdx)) return cell;
+          return {
+            filled: true,
             color: baseColor,
             effect: currentEffect,
             animationOffset: Math.random() * 10,
             paintedAt: fadeEnabled ? Date.now() : null
           };
-        }
+        });
       });
-      
-      return updated;
     });
   };
 
@@ -2058,6 +1960,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     // Start dragging immediately (no dialog)
     setDraggedToken(tokenId);
     setSelectedToken(tokenId);
+    setDragPreview(null);
   };
 
   // Handle aura tool click - attach aura to token at clicked hex
@@ -2224,6 +2127,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     if (hasCollision) {
       console.warn('Token movement would overlap with existing token');
       setDraggedToken(null);
+      setDragPreview(null);
       return;
     }
     
@@ -2240,6 +2144,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
         }
       }
       
+          setDragPreview(null);
       if (auraHexes.length > 0) {
         // Calculate the diameter from the number of aura hexes
         // Use BFS to find the maximum distance from old token position
@@ -2330,13 +2235,27 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     }
     
     // Update token position
-    setTokens(prev => prev.map(token => 
-      token.id === movingTokenId 
+    setTokens(prev => prev.map(token =>
+      token.id === movingTokenId
         ? { ...token, row, col }
         : token
     ));
     setDraggedToken(null);
     setTokenToMove(null);
+
+    // Immediate DB-backed patch for just this token's position -- the
+    // actual per-turn hot path. Previously a token move waited on the
+    // 3-second debounced full-document save (the entire hexGrid + tokens
+    // array + background), so a GM and a player moving different tokens
+    // within that window could have one move silently reverted when the
+    // other's save landed. This doesn't wait for the debounce, and the
+    // battlemap file itself still gets the full-document save afterward as
+    // the durable mirror.
+    if (filePath) {
+      patchBattlemapToken(filePath, movingTokenId, { position: { row, col } }).catch((e) =>
+        console.error('Immediate token-position patch failed (debounced full save will still catch up):', e)
+      );
+    }
   };
 
   const slugifyName = (name) => {
@@ -2521,8 +2440,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
       row,
       col,
       name: character.name,
-      avatar: character.avatar,
-      avatarPng: character.avatarPng,  // Include PNG avatar
+      avatarPng: character.avatarPng,
       icon: character.icon, // For enemy tokens
       type: character.type || 'player', // Preserve type from drag data, default to player
       color: character.color || 'rgba(0,0,0,0)',  // Default to transparent (rgba)
@@ -2570,6 +2488,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     ));
     setContextMenu(null);
     setMarkerPopup(null);
+  };
+  
+  // Show token details popup
+  const handleShowTokenDetails = (token) => {
+    setDetailsPopupToken(token);
   };
 
   const openCharacterSheetByPath = useCallback(async (relativePath, endpoint = 'player_root', allowInApp = true) => {
@@ -2664,6 +2587,20 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     if (!tokenId || !updates || !Object.keys(updates).length) return;
     const token = tokensRef.current.find(t => t.id === tokenId);
     if (!token) return;
+
+    // Immediate DB-backed patch for HP/conditions -- same rationale as the
+    // token-position patch in handleTokenDrop: this is the actual per-turn
+    // hot path (HP ticks during combat), previously only protected by the
+    // 3-second debounced full-document save.
+    if (filePath && ('currentHp' in updates || 'maxHp' in updates || 'conditions' in updates)) {
+      const changes = {};
+      if ('currentHp' in updates) changes.hp = updates.currentHp;
+      if ('maxHp' in updates) changes.maxHp = updates.maxHp;
+      if ('conditions' in updates) changes.conditions = updates.conditions;
+      patchBattlemapToken(filePath, tokenId, changes).catch((e) =>
+        console.error('Immediate token HP/conditions patch failed (debounced full save will still catch up):', e)
+      );
+    }
 
     const targetName = token.name;
     const targetSheetPath = token.characterSheetPath || (token.type === 'player' && token.name
@@ -3363,6 +3300,18 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
     return points.join(' ');
   };
 
+  // Array-form vertices for computed overlays/previews
+  const getHexVerticesArray = (cx, cy) => {
+    const points = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i + Math.PI / 2;
+      const x = cx + hexSize * Math.cos(angle);
+      const y = cy + hexSize * Math.sin(angle);
+      points.push({ x, y });
+    }
+    return points;
+  };
+
   // Get CSS animation class for effects
   const getEffectAnimationClass = (cell) => {
     if (!cell.filled || cell.effect === 'none') {
@@ -3389,96 +3338,135 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
   const svgWidth = gridSize.cols * (hexSize * Math.sqrt(3)) + (hexSize * Math.sqrt(3));
   const svgHeight = gridSize.rows * (hexSize * 1.5) + hexSize;
 
-  const STANDARD_COLORS = [
-    '#ff6b6b', '#ffb347', '#ffd166', '#9b59b6', '#6c5ce7', '#3498db',
-    '#5f81fd', '#2ecc71', '#1abc9c', '#16a085', '#e67e22', '#e74c3c'
-  ];
+  // Pre-compute hex center coordinates and vertex strings for every cell.
+  // Only recalculated when hexSize or grid dimensions change — not on every render.
+  const hexGeometry = useMemo(() => {
+    const hexWidth = hexSize * Math.sqrt(3);
+    const vertSpacing = hexSize * 1.5;
+    const angles = Array.from({ length: 6 }, (_, i) => (Math.PI / 3) * i + Math.PI / 2);
+    const cosines = angles.map(Math.cos);
+    const sines = angles.map(Math.sin);
 
-  // Render custom effect graphics for a hex cell
+    return Array.from({ length: gridSize.rows }, (_, rIdx) => {
+      const tessOffset = (rIdx % 2 === 1) ? (hexWidth / 2) : 0;
+      const cy = rIdx * vertSpacing + hexSize;
+      return Array.from({ length: gridSize.cols }, (_, cIdx) => {
+        const cx = cIdx * hexWidth + (hexWidth / 2) + tessOffset;
+        const points = Array.from({ length: 6 }, (__, i) =>
+          `${cx + hexSize * cosines[i]},${cy + hexSize * sines[i]}`
+        ).join(' ');
+        return { cx, cy, points };
+      });
+    });
+  }, [hexSize, gridSize.rows, gridSize.cols]);
+
+  // Render custom effect graphics for a hex cell.
+  // All animation is driven purely by CSS (compositor thread) — no animationFrame state needed.
+  // Per-cell stagger is achieved via animationDelay calculated from cellOffset.
   const renderEffectGraphics = (effect, cx, cy, rIdx, cIdx) => {
     if (!effect || effect === 'none') return null;
 
     const cellKey = `${rIdx}-${cIdx}`;
-    const cellOffset = (rIdx * gridSize.cols + cIdx) * 17; // Unique offset per cell
-    const frame = (animationFrame + cellOffset) % 60;
+    // Unique integer per cell — used to stagger animationDelay so neighboring cells
+    // don't pulse in lockstep. Negative delays start mid-cycle (already animating).
+    const cellOffset = (rIdx * gridSize.cols + cIdx) * 17;
+    const d = (base, spread = 100, scale = 0.01) =>
+      `${-(((cellOffset + base) % spread) * scale).toFixed(2)}s`;
 
     switch (effect) {
       case 'fire':
-        // Flames erupting from bottom edges
         return (
           <g key={`effect-${cellKey}`} pointerEvents="none">
-            {/* Base glow */}
-            <circle cx={cx} cy={cy} r={hexSize * 0.8} fill="url(#fireGradient)" opacity="0.4" />
-            
-            {/* Flame particles from edges */}
+            <circle cx={cx} cy={cy} r={hexSize * 0.78} fill="url(#fireGradient)" opacity="0.5" />
             {[0, 1, 2, 3, 4, 5].map((edge) => {
-              const angle = (Math.PI / 3) * edge + Math.PI / 2;
-              const baseX = cx + hexSize * 0.85 * Math.cos(angle);
-              const baseY = cy + hexSize * 0.85 * Math.sin(angle);
-              const flameOffset = Math.sin((frame + edge * 10) * 0.2) * 5;
-              const flameHeight = 8 + Math.sin((frame + edge * 15) * 0.15) * 4;
-              
+              const angle = (Math.PI / 3) * edge - Math.PI / 2;
+              const baseX = cx + hexSize * 0.72 * Math.cos(angle);
+              const baseY = cy + hexSize * 0.72 * Math.sin(angle);
               return (
                 <ellipse
                   key={`flame-${edge}`}
                   cx={baseX}
-                  cy={baseY - flameHeight + flameOffset}
-                  rx={3}
-                  ry={flameHeight}
+                  cy={baseY}
+                  rx={hexSize * 0.13}
+                  ry={hexSize * 0.3}
                   fill={['#ff4444', '#ff6b1a', '#ffaa00'][edge % 3]}
-                  opacity={0.6 + Math.sin((frame + edge * 8) * 0.3) * 0.2}
+                  className="effect-flame"
+                  style={{
+                    animationDelay: d(edge * 17),
+                    animationDuration: `${0.9 + (edge % 3) * 0.18}s`
+                  }}
                 />
               );
             })}
           </g>
         );
 
-      case 'ice':
-        // Ice crystals and frost
+      case 'water':
         return (
           <g key={`effect-${cellKey}`} pointerEvents="none">
-            {/* Frozen base */}
-            <polygon
-              points={getHexVertices(cx, cy)}
-              fill="url(#iceGradient)"
-              opacity="0.5"
+            <circle cx={cx} cy={cy} r={hexSize * 0.75} fill="url(#waterGradient)" opacity="0.5" />
+            {[0, 1, 2].map((ring) => (
+              <circle
+                key={`ripple-${ring}`}
+                cx={cx} cy={cy} r={3}
+                fill="none"
+                stroke="#66b3ff"
+                strokeWidth="1.8"
+                className="effect-ripple"
+                style={{
+                  animationDelay: d(ring * 33),
+                  animationDuration: `${1.8 + ring * 0.3}s`
+                }}
+              />
+            ))}
+            <line
+              x1={cx - hexSize * 0.48} y1={cy - hexSize * 0.1}
+              x2={cx + hexSize * 0.48} y2={cy - hexSize * 0.1}
+              stroke="#aaddff" strokeWidth="1.5" strokeLinecap="round"
+              className="effect-wisp"
+              style={{ animationDelay: d(0), animationDuration: '2.2s' }}
             />
-            
-            {/* Ice crystal shards */}
+            <line
+              x1={cx - hexSize * 0.3} y1={cy + hexSize * 0.15}
+              x2={cx + hexSize * 0.3} y2={cy + hexSize * 0.15}
+              stroke="#88ccff" strokeWidth="1.2" strokeLinecap="round"
+              className="effect-wisp"
+              style={{ animationDelay: d(50), animationDuration: '2.6s' }}
+            />
+          </g>
+        );
+
+      case 'ice':
+        return (
+          <g key={`effect-${cellKey}`} pointerEvents="none">
+            <polygon points={getHexVertices(cx, cy)} fill="url(#iceGradient)" opacity="0.55" />
             {[0, 1, 2, 3, 4, 5].map((crystal) => {
               const angle = (Math.PI / 3) * crystal;
               const crystalX = cx + hexSize * 0.5 * Math.cos(angle);
               const crystalY = cy + hexSize * 0.5 * Math.sin(angle);
-              const pulse = 0.7 + Math.sin((frame + crystal * 10) * 0.1) * 0.2;
-              
               return (
-                <g key={`crystal-${crystal}`} opacity={pulse}>
+                <g
+                  key={`crystal-${crystal}`}
+                  className="effect-crystal"
+                  style={{ animationDelay: d(crystal * 20) }}
+                >
                   <line
-                    x1={crystalX}
-                    y1={crystalY}
-                    x2={crystalX + 6 * Math.cos(angle)}
-                    y2={crystalY + 6 * Math.sin(angle)}
-                    stroke="#ccffff"
-                    strokeWidth="2"
-                    opacity="0.8"
+                    x1={crystalX} y1={crystalY}
+                    x2={crystalX + hexSize * 0.36 * Math.cos(angle)}
+                    y2={crystalY + hexSize * 0.36 * Math.sin(angle)}
+                    stroke="#ccffff" strokeWidth="2"
                   />
                   <line
-                    x1={crystalX}
-                    y1={crystalY}
-                    x2={crystalX + 4 * Math.cos(angle + 0.5)}
-                    y2={crystalY + 4 * Math.sin(angle + 0.5)}
-                    stroke="#88ccff"
-                    strokeWidth="1.5"
-                    opacity="0.6"
+                    x1={crystalX} y1={crystalY}
+                    x2={crystalX + hexSize * 0.22 * Math.cos(angle + 0.5)}
+                    y2={crystalY + hexSize * 0.22 * Math.sin(angle + 0.5)}
+                    stroke="#88ccff" strokeWidth="1.5"
                   />
                   <line
-                    x1={crystalX}
-                    y1={crystalY}
-                    x2={crystalX + 4 * Math.cos(angle - 0.5)}
-                    y2={crystalY + 4 * Math.sin(angle - 0.5)}
-                    stroke="#88ccff"
-                    strokeWidth="1.5"
-                    opacity="0.6"
+                    x1={crystalX} y1={crystalY}
+                    x2={crystalX + hexSize * 0.22 * Math.cos(angle - 0.5)}
+                    y2={crystalY + hexSize * 0.22 * Math.sin(angle - 0.5)}
+                    stroke="#88ccff" strokeWidth="1.5"
                   />
                 </g>
               );
@@ -3487,498 +3475,304 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
         );
 
       case 'earth':
-        // Boulder/rock mound
         return (
           <g key={`effect-${cellKey}`} pointerEvents="none">
-            {/* Base earth texture */}
-            <polygon
-              points={getHexVertices(cx, cy)}
-              fill="url(#earthPattern)"
-              opacity="0.7"
-            />
-            
-            {/* Central boulder */}
-            <ellipse
-              cx={cx}
-              cy={cy + 2}
-              rx={hexSize * 0.5}
-              ry={hexSize * 0.4}
-              fill="#6f5436"
-              opacity="0.8"
-            />
-            <ellipse
-              cx={cx - 3}
-              cy={cy - 1}
-              rx={hexSize * 0.4}
-              ry={hexSize * 0.35}
-              fill="#8b6f47"
-              opacity="0.7"
-            />
-            <ellipse
-              cx={cx + 4}
-              cy={cy}
-              rx={hexSize * 0.3}
-              ry={hexSize * 0.25}
-              fill="#9a7b5a"
-              opacity="0.6"
-            />
-            
-            {/* Rock cracks */}
+            <polygon points={getHexVertices(cx, cy)} fill="url(#earthPattern)" opacity="0.7" />
+            <ellipse cx={cx} cy={cy + 2} rx={hexSize * 0.5} ry={hexSize * 0.4} fill="#6f5436" opacity="0.8" />
+            <ellipse cx={cx - 3} cy={cy - 1} rx={hexSize * 0.4} ry={hexSize * 0.35} fill="#8b6f47" opacity="0.7" />
+            <ellipse cx={cx + 4} cy={cy} rx={hexSize * 0.3} ry={hexSize * 0.25} fill="#9a7b5a" opacity="0.6" />
             <path
               d={`M ${cx - 5} ${cy} Q ${cx} ${cy - 3} ${cx + 5} ${cy + 1}`}
-              stroke="#4a3a2a"
-              strokeWidth="1"
-              fill="none"
-              opacity="0.5"
+              stroke="#4a3a2a" strokeWidth="1" fill="none" opacity="0.5"
             />
           </g>
         );
 
-      case 'poison':
-        // Bubbling poison
-        const bubblePositions = [
-          { x: -0.3, y: -0.2 },
-          { x: 0.3, y: -0.3 },
-          { x: -0.2, y: 0.2 },
-          { x: 0.25, y: 0.3 },
-          { x: 0, y: 0 }
-        ];
+      case 'spirit':
         return (
           <g key={`effect-${cellKey}`} pointerEvents="none">
-            {bubblePositions.map((pos, idx) => {
-              const bubblePhase = (frame + idx * 12) % 60;
-              const bubbleScale = bubblePhase < 30 
-                ? bubblePhase / 30 
-                : 1 - (bubblePhase - 30) / 30;
-              const bubbleY = cy + pos.y * hexSize - (bubblePhase * 0.2);
-              
+            <circle cx={cx} cy={cy} r={hexSize * 0.72} fill="url(#spiritGradient)" opacity="0.45" />
+            {[0, 1, 2, 3, 4, 5].map((orb) => {
+              const angle = (Math.PI / 3) * orb;
               return (
                 <circle
-                  key={`bubble-${idx}`}
-                  cx={cx + pos.x * hexSize}
-                  cy={bubbleY}
-                  r={3 * bubbleScale}
-                  fill="#88ff44"
-                  opacity={0.6 * bubbleScale}
+                  key={`orb-${orb}`}
+                  cx={cx + hexSize * 0.52 * Math.cos(angle)}
+                  cy={cy + hexSize * 0.52 * Math.sin(angle)}
+                  r={2.5}
+                  fill={orb % 2 === 0 ? '#dda0dd' : '#b19cd9'}
+                  className="effect-spirit-orb"
+                  style={{ animationDelay: d(orb * 25) }}
                 />
               );
             })}
+            <circle
+              cx={cx} cy={cy} r={hexSize * 0.2}
+              fill="#9370db" opacity="0.6"
+              className="effect-spirit-orb"
+              style={{ animationDelay: d(0), animationDuration: '1.8s' }}
+            />
           </g>
         );
 
-      case 'lightning':
-        // Electric sparks
+      case 'poison': {
+        const bubblePositions = [
+          { x: -0.3, y: -0.2 },
+          { x:  0.3, y: -0.3 },
+          { x: -0.2, y:  0.2 },
+          { x:  0.25, y: 0.3 },
+          { x:  0,    y: 0   }
+        ];
+        return (
+          <g key={`effect-${cellKey}`} pointerEvents="none">
+            {bubblePositions.map((pos, idx) => (
+              <circle
+                key={`bubble-${idx}`}
+                cx={cx + pos.x * hexSize}
+                cy={cy + pos.y * hexSize}
+                r={3.5}
+                fill="#88ff44"
+                className="effect-bubble"
+                style={{
+                  animationDelay: d(idx * 40),
+                  animationDuration: `${1.6 + idx * 0.25}s`
+                }}
+              />
+            ))}
+          </g>
+        );
+      }
+
+      case 'lightning': {
+        // Use deterministic jitter from cellOffset — no Math.random() in render
         return (
           <g key={`effect-${cellKey}`} pointerEvents="none">
             {[0, 1, 2].map((bolt) => {
-              const show = (frame + bolt * 20) % 60 < 10;
-              if (!show) return null;
-              
-              const angle = (bolt * Math.PI * 2 / 3) + (frame * 0.1);
-              const x1 = cx;
-              const y1 = cy;
-              const x2 = cx + Math.cos(angle) * hexSize * 0.7;
-              const y2 = cy + Math.sin(angle) * hexSize * 0.7;
-              const midX = (x1 + x2) / 2 + Math.random() * 8 - 4;
-              const midY = (y1 + y2) / 2 + Math.random() * 8 - 4;
-              
+              const angle = (bolt * Math.PI * 2 / 3) + (cellOffset * 0.031);
+              const x2 = cx + Math.cos(angle) * hexSize * 0.75;
+              const y2 = cy + Math.sin(angle) * hexSize * 0.75;
+              const jitter = ((cellOffset + bolt * 31) % 12) - 6;
+              const midX = (cx + x2) / 2 + jitter;
+              const midY = (cy + y2) / 2 + jitter * 0.5;
               return (
                 <path
                   key={`bolt-${bolt}`}
-                  d={`M ${x1} ${y1} L ${midX} ${midY} L ${x2} ${y2}`}
+                  d={`M ${cx} ${cy} L ${midX} ${midY} L ${x2} ${y2}`}
                   stroke="#ffffff"
                   strokeWidth="2"
                   fill="none"
-                  opacity="0.9"
-                  filter="drop-shadow(0 0 3px #aaffff)"
+                  filter="drop-shadow(0 0 4px #aaffff)"
+                  className="effect-bolt"
+                  style={{
+                    animationDelay: d(bolt * 30, 90),
+                    animationDuration: '0.9s'
+                  }}
                 />
               );
             })}
+            <circle
+              cx={cx} cy={cy} r={hexSize * 0.15}
+              fill="#ffff88" opacity="0.7"
+              className="effect-bolt"
+              style={{ animationDelay: d(0) }}
+            />
           </g>
         );
+      }
 
-      case 'healing':
-        // Sparkles and shimmer
-        const sparkles = [
+      case 'healing': {
+        const sparklePositions = [
           { x: -0.4, y: -0.3 },
-          { x: 0.4, y: -0.2 },
-          { x: -0.3, y: 0.3 },
-          { x: 0.3, y: 0.4 },
-          { x: 0, y: -0.4 },
-          { x: 0, y: 0.4 }
+          { x:  0.4, y: -0.2 },
+          { x: -0.3, y:  0.3 },
+          { x:  0.3, y:  0.4 },
+          { x:  0,   y: -0.45 },
+          { x:  0,   y:  0.45 }
         ];
         return (
           <g key={`effect-${cellKey}`} pointerEvents="none">
-            {sparkles.map((pos, idx) => {
-              const sparklePhase = (frame + idx * 10) % 60;
-              const sparkleOpacity = sparklePhase < 30 
-                ? sparklePhase / 30 
-                : 1 - (sparklePhase - 30) / 30;
-              
-              return (
-                <g key={`sparkle-${idx}`} opacity={sparkleOpacity}>
-                  <line
-                    x1={cx + pos.x * hexSize - 3}
-                    y1={cy + pos.y * hexSize}
-                    x2={cx + pos.x * hexSize + 3}
-                    y2={cy + pos.y * hexSize}
-                    stroke="#ffffaa"
-                    strokeWidth="2"
-                  />
-                  <line
-                    x1={cx + pos.x * hexSize}
-                    y1={cy + pos.y * hexSize - 3}
-                    x2={cx + pos.x * hexSize}
-                    y2={cy + pos.y * hexSize + 3}
-                    stroke="#ffdd88"
-                    strokeWidth="2"
-                  />
-                </g>
-              );
-            })}
+            <circle
+              cx={cx} cy={cy} r={hexSize * 0.38}
+              fill="#ffee88" opacity="0.2"
+              className="effect-sparkle"
+              style={{ animationDelay: d(0), animationDuration: '1.4s' }}
+            />
+            {sparklePositions.map((pos, idx) => (
+              <g
+                key={`sparkle-${idx}`}
+                className="effect-sparkle"
+                style={{
+                  animationDelay: d(idx * 18),
+                  animationDuration: `${1.5 + idx * 0.1}s`
+                }}
+              >
+                <line
+                  x1={cx + pos.x * hexSize - 4} y1={cy + pos.y * hexSize}
+                  x2={cx + pos.x * hexSize + 4} y2={cy + pos.y * hexSize}
+                  stroke="#ffffaa" strokeWidth="2.5" strokeLinecap="round"
+                />
+                <line
+                  x1={cx + pos.x * hexSize} y1={cy + pos.y * hexSize - 4}
+                  x2={cx + pos.x * hexSize} y2={cy + pos.y * hexSize + 4}
+                  stroke="#ffdd88" strokeWidth="2.5" strokeLinecap="round"
+                />
+              </g>
+            ))}
           </g>
         );
+      }
 
       case 'darkness':
-        // Shadowy tendrils
         return (
           <g key={`effect-${cellKey}`} pointerEvents="none">
-            <circle cx={cx} cy={cy} r={hexSize * 0.9} fill="#0a0a0a" opacity="0.7" />
+            <circle cx={cx} cy={cy} r={hexSize * 0.9} fill="#050505" opacity="0.75" />
             {[0, 1, 2, 3, 4].map((tendril) => {
-              const angle = (tendril * Math.PI * 2 / 5) + (frame * 0.05);
-              const wave = Math.sin((frame + tendril * 12) * 0.15) * 5;
-              const x = cx + Math.cos(angle) * (hexSize * 0.6 + wave);
-              const y = cy + Math.sin(angle) * (hexSize * 0.6 + wave);
-              
+              const angle = (tendril * Math.PI * 2 / 5) + (cellOffset * 0.022);
+              const x = cx + Math.cos(angle) * hexSize * 0.65;
+              const y = cy + Math.sin(angle) * hexSize * 0.65;
               return (
                 <line
                   key={`tendril-${tendril}`}
-                  x1={cx}
-                  y1={cy}
-                  x2={x}
-                  y2={y}
-                  stroke="#1a1a1a"
-                  strokeWidth="3"
-                  opacity="0.5"
+                  x1={cx} y1={cy} x2={x} y2={y}
+                  stroke="#2a0a3a"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeDasharray="4 3"
+                  className="effect-tendril"
+                  style={{ animationDelay: d(tendril * 22) }}
                 />
               );
             })}
           </g>
         );
 
-      case 'air':
-        // Swirling air currents with light blue and orange wisps
+      case 'air': {
+        const R = hexSize * 0.58;
+        const r = hexSize * 0.13;
         return (
           <g key={`effect-${cellKey}`} pointerEvents="none">
-            {/* Circular air flow paths */}
-            {[0, 1, 2].map((wisp) => {
-              const baseAngle = (frame + wisp * 20 + cellOffset) * 0.1;
-              const radius = hexSize * 0.6;
-              const wispLength = 8;
-              
-              // Alternate between blue and orange
-              const isBlue = (Math.floor((frame + wisp * 20) / 15)) % 2 === 0;
-              const color = isBlue ? '#e6f3ff' : '#ffd9a8';
-              
-              // Create curved wisp
-              const points = [];
-              for (let i = 0; i < 4; i++) {
-                const angle = baseAngle + (i * 0.3);
-                const r = radius - (i * 3);
-                points.push({
-                  x: cx + Math.cos(angle) * r,
-                  y: cy + Math.sin(angle) * r
-                });
-              }
-              
-              const pathD = `M ${points[0].x} ${points[0].y} ` +
-                           `Q ${points[1].x} ${points[1].y} ${points[2].x} ${points[2].y} ` +
-                           `T ${points[3].x} ${points[3].y}`;
-              
-              const opacity = 0.5 + Math.sin((frame + wisp * 15) * 0.2) * 0.3;
-              
-              return (
-                <path
-                  key={`wisp-${wisp}`}
-                  d={pathD}
-                  stroke={color}
-                  strokeWidth="2"
-                  fill="none"
-                  opacity={opacity}
-                  strokeLinecap="round"
-                />
-              );
-            })}
-            
-            {/* Small swirl particles */}
-            {[0, 1, 2, 3].map((particle) => {
-              const angle = (frame + particle * 15 + cellOffset) * 0.15;
-              const radius = hexSize * 0.4;
-              const px = cx + Math.cos(angle) * radius;
-              const py = cy + Math.sin(angle) * radius;
-              const particlePhase = (frame + particle * 15) % 30;
-              const particleOpacity = particlePhase < 15 ? particlePhase / 15 : 1 - (particlePhase - 15) / 15;
-              
-              const isOrange = particle % 2 === 0;
-              const particleColor = isOrange ? '#ffcc99' : '#d4e9ff';
-              
-              return (
-                <circle
-                  key={`particle-${particle}`}
-                  cx={px}
-                  cy={py}
-                  r="1.5"
-                  fill={particleColor}
-                  opacity={particleOpacity * 0.8}
-                />
-              );
-            })}
+            {/* Outer rotating spiral arms */}
+            <g
+              className="vortex-spin"
+              style={{
+                transformOrigin: `${cx}px ${cy}px`,
+                animationDelay: d(cellOffset * 12),
+                animationDuration: `${3.2 + (cellOffset % 5) * 0.15}s`
+              }}
+            >
+              {[0, 1, 2].map((i) => {
+                const a = (i * Math.PI * 2 / 3) + cellOffset * 0.04;
+                const sx = cx + R * Math.cos(a);
+                const sy = cy + R * Math.sin(a);
+                const ex = cx + r * Math.cos(a + Math.PI);
+                const ey = cy + r * Math.sin(a + Math.PI);
+                const c1x = cx + R * 0.55 * Math.cos(a + Math.PI / 2.8);
+                const c1y = cy + R * 0.55 * Math.sin(a + Math.PI / 2.8);
+                const c2x = cx + r * 2.4 * Math.cos(a + Math.PI * 0.72);
+                const c2y = cy + r * 2.4 * Math.sin(a + Math.PI * 0.72);
+                return (
+                  <path
+                    key={`arm-${i}`}
+                    d={`M ${sx} ${sy} C ${c1x} ${c1y} ${c2x} ${c2y} ${ex} ${ey}`}
+                    stroke={i === 1 ? '#a8d8f8' : '#ddf0ff'}
+                    strokeWidth={i === 0 ? 2.2 : 1.6}
+                    fill="none"
+                    strokeLinecap="round"
+                    opacity="0.78"
+                  />
+                );
+              })}
+            </g>
+            {/* Inner counter-rotating debris particles */}
+            <g
+              className="vortex-spin-reverse"
+              style={{
+                transformOrigin: `${cx}px ${cy}px`,
+                animationDelay: d(cellOffset * 8),
+                animationDuration: `${2.1 + (cellOffset % 4) * 0.12}s`
+              }}
+            >
+              {[0, 1, 2, 3, 4].map((p) => {
+                const angle = (p * Math.PI * 2 / 5) + cellOffset * 0.07;
+                const radius = hexSize * (0.18 + (p % 3) * 0.12);
+                return (
+                  <circle
+                    key={`debris-${p}`}
+                    cx={cx + Math.cos(angle) * radius}
+                    cy={cy + Math.sin(angle) * radius}
+                    r={p % 2 === 0 ? 1.8 : 1.1}
+                    fill={p % 3 === 0 ? '#ffffff' : p % 3 === 1 ? '#b8e0ff' : '#88c4f0'}
+                    opacity="0.72"
+                  />
+                );
+              })}
+            </g>
+            {/* Eye of the vortex */}
+            <circle
+              cx={cx}
+              cy={cy}
+              r={hexSize * 0.09}
+              fill="none"
+              stroke="#e8f6ff"
+              strokeWidth="1.5"
+              className="vortex-eye"
+              style={{ animationDelay: d(cellOffset * 15) }}
+            />
           </g>
         );
+      }
 
       default:
         return null;
     }
   };
 
-  // Helper functions for HP bars and condition rings
-  const generateHexPathPoints = (centerX, centerY, radius) => {
-    const points = [];
-    const segments = 6;
-    
-    // Create hexagon vertices (flat-top orientation) - matches getHexVertices
-    for (let i = 0; i < segments; i++) {
-      const angle = (Math.PI / 3) * i + Math.PI / 2; // Same as getHexVertices
-      const x = centerX + radius * Math.cos(angle);
-      const y = centerY + radius * Math.sin(angle);
-      points.push({ x, y });
-    }
-    
-    return points;
-  };
-
-  const generateArcPath = (centerX, centerY, radius, percentage) => {
-    const points = generateHexPathPoints(centerX, centerY, radius);
-    
-    if (percentage <= 0) return '';
-    if (percentage >= 100) {
-      // Full hexagon outline
-      return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ') + ' Z';
-    }
-    
-    // Calculate how many segments to trace along the edge
-    const totalSegments = 6;
-    const fillSegments = (percentage / 100) * totalSegments;
-    const fullSegments = Math.floor(fillSegments);
-    const partialSegment = fillSegments - fullSegments;
-    
-    // Start at the first point (top of hexagon)
-    let path = `M ${points[0].x},${points[0].y}`;
-    
-    // Trace along full segments
-    for (let i = 1; i <= fullSegments; i++) {
-      const point = points[i % totalSegments];
-      path += ` L ${point.x},${point.y}`;
-    }
-    
-    // Add partial segment if needed
-    if (partialSegment > 0 && fullSegments < totalSegments) {
-      const startPoint = points[fullSegments % totalSegments];
-      const endPoint = points[(fullSegments + 1) % totalSegments];
-      const partialX = startPoint.x + (endPoint.x - startPoint.x) * partialSegment;
-      const partialY = startPoint.y + (endPoint.y - startPoint.y) * partialSegment;
-      path += ` L ${partialX},${partialY}`;
-    }
-    
-    return path;
-  };
-
-  const getHealthBarColor = (percentage) => {
-    if (percentage > 66) return '#2ecc71'; // Green
-    if (percentage > 33) return '#f39c12'; // Orange
-    if (percentage > 0) return '#e74c3c'; // Red
-    return '#95a5a6'; // Gray (dead)
-  };
-
-  const CONDITION_COLORS = {
-    'Bleeding out': '#d7263d',
-    'Blinded': '#2c3e50',
-    'Dazed': '#f39c12',
-    'Immobilised': '#7f8c8d',
-    'Paralysed': '#9b59b6',
-    'Prone': '#95a5a6',
-    'Slowed': '#3498db',
-    'Empowered': '#4ec9b0',
-    'Quickened': '#4ec9b0',
-    'Armor Surge': '#4ec9b0',
-    'Barrier Surge': '#4ec9b0',
-    'Harmonic Flow': '#4ec9b0',
-    'Exhausted': '#c9944eff'
-  };
-
   return (
     <div className="battlemap-shell" style={{ minHeight: '100vh', background: '#1a1a1a', color: '#e0e0e0' }}>
       {/* Sticky Navigation - Hidden in Watcher Mode or Advanced Fullscreen */}
       {!watcherMode && !advancedFullscreen && (
-      <header style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 12000,
-        backdropFilter: 'blur(8px)',
-        background: 'rgba(26,26,26,0.92)',
-        borderBottom: '1px solid #333'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: 700, letterSpacing: '0.5px' }}>
-            <span role="img" aria-label="battlemap">🗺️</span> Battlemap Controls
-          </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <header className="bm-header">
+        <div className="bm-header-bar">
+          <span className="bm-title">🗺️ Battlemap</span>
+          <nav className="bm-nav">
+            {NAV_SECTIONS.map((section) => {
+              const isActive = sectionVisibility[section.id];
+              return (
+                <button
+                  key={section.id}
+                  className={`bm-nav-btn${isActive ? ' active' : ''}`}
+                  onClick={() => {
+                    const wasVisible = sectionVisibility[section.id];
+                    setSectionVisibility(prev => ({ ...prev, [section.id]: !prev[section.id] }));
+                    if (!wasVisible) {
+                      section.onNavigate?.();
+                      requestAnimationFrame(() => scrollToSection(section.id));
+                    } else {
+                      setCurrentTool('select');
+                      if (activeSection === section.id) {
+                        const fallback = NAV_SECTIONS.find(s => s.id !== section.id && sectionVisibility[s.id])?.id;
+                        if (fallback) setActiveSection(fallback);
+                      }
+                    }
+                  }}
+                  title={`${isActive ? 'Hide' : 'Show'} ${section.label}`}
+                >
+                  <span>{section.icon}</span>
+                  <span>{section.label}</span>
+                </button>
+              );
+            })}
             {advancedMode && (
               <button
+                className="bm-nav-btn"
                 onClick={toggleAdvancedFullscreen}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '8px',
-                  border: '1px solid #3e3e42',
-                  background: '#2a2a2a',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: '18px'
-                }}
-                aria-label="Toggle fullscreen"
                 title="Toggle Fullscreen Canvas"
               >
                 {advancedFullscreen ? '🪟' : '🔲'}
               </button>
             )}
-            <button
-              onClick={() => setNavOpen(!navOpen)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '38px',
-                height: '38px',
-                borderRadius: '8px',
-                border: '1px solid #3e3e42',
-                background: '#2a2a2a',
-                color: '#fff',
-                cursor: 'pointer'
-              }}
-              aria-label="Toggle navigation"
-            >
-              ☰
-            </button>
-          </div>
+          </nav>
         </div>
-        <nav style={{
-          display: navOpen ? 'flex' : 'none',
-          gap: '6px',
-          flexWrap: 'wrap',
-          padding: '0 12px 12px',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          {NAV_SECTIONS.map((section) => {
-            const isActive = sectionVisibility[section.id];
-            const isCurrent = activeSection === section.id;
-            return (
-            <button
-              key={section.id}
-              onClick={() => {
-                const wasVisible = sectionVisibility[section.id];
-                setSectionVisibility(prev => ({ ...prev, [section.id]: !prev[section.id] }));
-                if (!wasVisible) {
-                  section.onNavigate?.();
-                  requestAnimationFrame(() => scrollToSection(section.id));
-                } else {
-                  // Reset to select tool when closing a section
-                  setCurrentTool('select');
-                  if (activeSection === section.id) {
-                    const fallback = NAV_SECTIONS.find(s => s.id !== section.id && sectionVisibility[s.id])?.id;
-                    if (fallback) setActiveSection(fallback);
-                  }
-                }
-              }}
-              title={`${isActive ? 'Hide' : 'Show'} ${section.label}`}
-              style={{
-                position: 'relative',
-                width: '52px',
-                height: '60px',
-                padding: 0,
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '2px',
-                transition: 'transform 0.15s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              {/* Hexagon shape */}
-              <div style={{
-                position: 'relative',
-                width: '44px',
-                height: '50px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <svg
-                  viewBox="0 0 100 115"
-                  style={{
-                    position: 'absolute',
-                    width: '100%',
-                    height: '100%',
-                    filter: isActive 
-                      ? `drop-shadow(0 0 ${isCurrent ? '8px' : '4px'} ${section.color})`
-                      : 'none',
-                    transition: 'filter 0.2s ease'
-                  }}
-                >
-                  <polygon
-                    points="50,2 95,28 95,87 50,113 5,87 5,28"
-                    fill={isActive 
-                      ? (isCurrent ? section.color : `${section.color}55`) 
-                      : '#1a1a1a'}
-                    stroke={isActive ? section.color : '#333'}
-                    strokeWidth={isCurrent ? '4' : '2'}
-                    style={{ transition: 'all 0.2s ease' }}
-                  />
-                </svg>
-                <span style={{
-                  position: 'relative',
-                  fontSize: '20px',
-                  zIndex: 1,
-                  filter: isActive ? 'none' : 'grayscale(1) opacity(0.5)',
-                  transition: 'filter 0.2s ease'
-                }}>
-                  {section.icon}
-                </span>
-              </div>
-              {/* Label */}
-              <span style={{
-                fontSize: '9px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                color: isActive ? (isCurrent ? section.color : '#ccc') : '#555',
-                transition: 'color 0.2s ease',
-                whiteSpace: 'nowrap'
-              }}>
-                {section.label}
-              </span>
-            </button>
-          );})}
-        </nav>
       </header>
       )}
 
@@ -3995,32 +3789,21 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
             resize: 'vertical',
             border: '1px solid #333'
           }}>
-        {/* Toolbar Header (static) */}
-        <div
-          style={{
-            padding: '14px 16px',
-            background: 'linear-gradient(135deg, #2f3d4c, #243140)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            borderBottom: '1px solid #3e3e42'
-          }}
-        >
-          <span style={{ fontSize: '18px' }}>⚙️</span>
-          <span style={{ fontWeight: '800', color: '#fff', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-            Toolbar
-          </span>
-          <span style={{ fontSize: '12px', color: '#9aa7b8', letterSpacing: '0.4px' }}>Core controls</span>
+        {/* Toolbar Header */}
+        <div className="bm-section-header">
+          <span>⚙️</span>
+          <span>Toolbar</span>
+          <span style={{ opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>core controls</span>
         </div>
 
         {/* Toolbar Content */}
-      <div 
+      <div
         ref={toolbarContentRef}
-        className="toolbar-content" 
+        className="toolbar-content"
         style={{
-          padding: '16px',
+          padding: '8px 10px',
           display: 'flex',
-          gap: '20px',
+          gap: '10px',
           flexWrap: 'wrap',
           alignItems: 'center',
           background: '#242424'
@@ -4386,192 +4169,61 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
 
       {/* Drawing Tools - Hidden in Watcher Mode, Advanced Fullscreen, or when toggled off */}
       {sectionVisibility.drawing && !watcherMode && !advancedFullscreen && (
-      <div data-section-id="drawing" id="drawing" className="resizable-panel" style={{
+      <div data-section-id="drawing" id="drawing" style={{
         background: '#2a2a2a',
-        borderRadius: '10px',
+        borderRadius: '8px',
         overflow: 'hidden',
         flexShrink: 0,
-        resize: drawingToolsCollapsed ? 'none' : 'vertical',
         border: '1px solid #333'
       }}>
-        {/* Drawing Tools Header (static) */}
-        <div
-          style={{
-            padding: '14px 16px',
-            background: 'linear-gradient(135deg, #2f3d4c, #243140)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            borderBottom: drawingToolsCollapsed ? 'none' : '1px solid #3e3e42'
-          }}
-        >
-          <span style={{ fontSize: '18px' }}>🎨</span>
-          <span style={{ fontWeight: '800', color: '#fff', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-            Drawing Tools
-          </span>
+        {/* Drawing Tools Header */}
+        <div className="bm-section-header" style={{ cursor: 'pointer' }} onClick={() => setDrawingToolsCollapsed(!drawingToolsCollapsed)}>
+          <span>🎨</span>
+          <span>Drawing Tools</span>
           {drawingToolsCollapsed && (
-            <span style={{ 
-              fontSize: '11px', 
-              color: '#2ecc71', 
-              background: 'rgba(46, 204, 113, 0.2)',
-              padding: '3px 8px',
-              borderRadius: '4px',
-              fontWeight: '600',
-              border: '1px solid rgba(46, 204, 113, 0.4)'
-            }}>
-              {currentToolLabel} Active
+            <span style={{ opacity: 0.7, fontWeight: 600, textTransform: 'none', letterSpacing: 0, color: '#2ecc71' }}>
+              — {currentToolLabel} active
             </span>
           )}
-          {!drawingToolsCollapsed && (
-            <span style={{ fontSize: '12px', color: '#9aa7b8', letterSpacing: '0.4px' }}>Painting & shapes</span>
-          )}
-          
-          {/* Collapse/Expand Toggle */}
-          <button
-            onClick={() => setDrawingToolsCollapsed(!drawingToolsCollapsed)}
-            style={{
-              marginLeft: 'auto',
-              padding: '6px 12px',
-              background: drawingToolsCollapsed ? 'rgba(46, 204, 113, 0.2)' : 'rgba(52, 152, 219, 0.2)',
-              border: drawingToolsCollapsed ? '1px solid rgba(46, 204, 113, 0.5)' : '1px solid rgba(52, 152, 219, 0.5)',
-              borderRadius: '6px',
-              color: drawingToolsCollapsed ? '#2ecc71' : '#5dade2',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '600',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            title={drawingToolsCollapsed ? 'Expand UI (tool still active)' : 'Collapse UI (keep tool active)'}
-          >
-            <span>{drawingToolsCollapsed ? '▼' : '▲'}</span>
-            <span>{drawingToolsCollapsed ? 'Expand' : 'Collapse'}</span>
-          </button>
+          <span className={`collapse-chevron${!drawingToolsCollapsed ? ' open' : ''}`} style={{ marginLeft: 'auto' }}>›</span>
         </div>
 
         {/* Drawing Tools Content - Only show when not collapsed */}
         {!drawingToolsCollapsed && (
-      <div 
+      <div
         ref={drawingToolsContentRef}
-        className="resizable-panel" 
         style={{
-          resize: 'vertical',
-          minHeight: '150px',
-          padding: '16px',
+          padding: '8px 10px',
           display: 'flex',
-          gap: '15px',
+          gap: '6px',
           flexWrap: 'wrap',
-          alignItems: 'flex-start',
-          alignContent: 'flex-start',
+          alignItems: 'center',
           background: '#242424'
         }}
       >
-        {/* Tool Selection - Horizontal Design */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(41, 128, 185, 0.15))',
-          padding: '16px 20px',
-          borderRadius: '10px',
-          border: '2px solid rgba(52, 152, 219, 0.4)',
-          boxShadow: '0 4px 12px rgba(52, 152, 219, 0.2)'
-        }}>
-          <label style={{
-            fontWeight: '800',
-            color: '#5dade2',
-            fontSize: '13px',
-            textTransform: 'uppercase',
-            letterSpacing: '1.5px',
-            marginBottom: '2px'
-          }}>
-            🛠️ Tools
-          </label>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {[
-              { id: 'paint', icon: '🖌️', label: 'Paint' },
-              { id: 'eraser', icon: '🧹', label: 'Eraser' },
-              { id: 'edit', icon: '✏️', label: 'Edit Data (tokens & hexes)' },
-              { id: 'measure', icon: '📏', label: 'Measure' },
-              { id: 'sphere', icon: '⭕', label: 'Sphere (click hex or token)' },
-              { id: 'cone', icon: '📐', label: 'Cone (click hex or token)' },
-              { id: 'line', icon: '➖', label: 'Line' },
-              { id: 'aura', icon: '✨', label: 'Aura (click token)' },
-              { id: 'place-token', icon: '🎭', label: 'Place Token' },
-              { id: 'token', icon: '👤', label: 'Move tokens' }
-            ].map(tool => (
-              <button
-                key={tool.id}
-                onClick={(e) => {
-                  setCurrentTool(tool.id);
-                  resetAreaEffect();
-                  if (e.currentTarget) {
-                    animateToolSelection(e.currentTarget, true);
-                  }
-                }}
-                style={{
-                  position: 'relative',
-                  width: '52px',
-                  height: '60px',
-                  padding: 0,
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '2px',
-                  transition: 'transform 0.15s ease'
-                }}
-                title={tool.label}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <div style={{
-                  position: 'relative',
-                  width: '44px',
-                  height: '50px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <svg
-                    viewBox="0 0 100 115"
-                    style={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      filter: currentTool === tool.id
-                        ? 'drop-shadow(0 0 8px #3498db)'
-                        : 'none',
-                      transition: 'filter 0.2s ease'
-                    }}
-                  >
-                    <polygon
-                      points="50,2 95,28 95,87 50,113 5,87 5,28"
-                      fill={currentTool === tool.id ? '#3498db' : '#1a1a1a'}
-                      stroke={currentTool === tool.id ? '#5dade2' : '#333'}
-                      strokeWidth={currentTool === tool.id ? '4' : '2'}
-                      style={{ transition: 'all 0.2s ease' }}
-                    />
-                  </svg>
-                  <span style={{
-                    position: 'relative',
-                    fontSize: '20px',
-                    zIndex: 1,
-                    filter: currentTool === tool.id ? 'none' : 'grayscale(1) opacity(0.5)',
-                    transition: 'filter 0.2s ease'
-                  }}>
-                    {tool.icon}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Tool buttons */}
+        {[
+          { id: 'paint', icon: '🖌️', label: 'Paint' },
+          { id: 'eraser', icon: '🧹', label: 'Eraser' },
+          { id: 'edit', icon: '✏️', label: 'Edit', title: 'Edit Data (tokens & hexes)' },
+          { id: 'measure', icon: '📏', label: 'Measure' },
+          { id: 'sphere', icon: '⭕', label: 'Sphere', title: 'Sphere (click hex or token)' },
+          { id: 'cone', icon: '📐', label: 'Cone', title: 'Cone (click hex or token)' },
+          { id: 'line', icon: '➖', label: 'Line' },
+          { id: 'aura', icon: '✨', label: 'Aura', title: 'Aura (click token)' },
+          { id: 'place-token', icon: '🎭', label: 'Place', title: 'Place Token' },
+          { id: 'token', icon: '👤', label: 'Move', title: 'Move tokens' }
+        ].map(tool => (
+          <button
+            key={tool.id}
+            className={`bm-tool-btn${currentTool === tool.id ? ' active' : ''}`}
+            onClick={() => { setCurrentTool(tool.id); resetAreaEffect(); }}
+            title={tool.title || tool.label}
+          >
+            <span>{tool.icon}</span>
+            <span>{tool.label}</span>
+          </button>
+        ))}
 
         {/* Range Input for Sphere/Cone/Aura */}
         {showAreaInput && areaOrigin && (currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura') && (
@@ -4907,21 +4559,10 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
           border: '1px solid #333'
         }}>
           {/* Camera Header */}
-          <div
-            style={{
-              padding: '14px 16px',
-              background: 'linear-gradient(135deg, #2f3d4c, #243140)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              borderBottom: '1px solid #3e3e42'
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>📹</span>
-            <span style={{ fontWeight: '800', color: '#fff', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-              Camera
-            </span>
-            <span style={{ fontSize: '12px', color: '#9aa7b8', letterSpacing: '0.4px' }}>View & layers</span>
+          <div className="bm-section-header">
+            <span>📹</span>
+            <span>Camera</span>
+            <span style={{ opacity: 0.5, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>view & layers</span>
           </div>
 
           {/* Camera Content */}
@@ -4957,6 +4598,33 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
             >
               👁️ Watcher Mode
             </button>
+
+            {/* Open Watcher Tab Button */}
+            {filePath && (
+              <button
+                onClick={() => window.open(`/?watcher=${encodeURIComponent(filePath)}`, '_blank')}
+                style={{
+                  padding: '10px 16px',
+                  background: 'linear-gradient(135deg, #8e44ad, #6c3483)',
+                  border: '2px solid #8e44ad',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                  transition: 'all 0.3s ease',
+                  fontSize: '13px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+                title="Open battlemap in a dedicated watcher tab (auto-updates within 2s)"
+              >
+                🔗 Open Watcher Tab
+              </button>
+            )}
 
             {/* Set Default Position Button */}
             <button
@@ -5399,8 +5067,8 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
                     transition: 'transform 0.15s ease'
                   }}
                   title={preset.name}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseEnter={(e) => animateToolHover(e.currentTarget, true)}
+                  onMouseLeave={(e) => animateToolHover(e.currentTarget, false)}
                 >
                   <div style={{
                     position: 'relative',
@@ -5877,7 +5545,10 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
               top: 0,
               left: 0
             }}
-            onClick={() => setMarkerPopup(null)}
+            onClick={() => {
+              setMarkerPopup(null);
+              setContextMenu(null);
+            }}
             onMouseUp={() => {
               setIsPainting(false);
               setIsPanning(false);
@@ -5905,7 +5576,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
               }
             }}
           >
-            {/* SVG Definitions for fallback patterns */}
+            {/* SVG Definitions for effect patterns and gradients */}
             <defs>
               {/* Earth static pattern */}
               <pattern id="earthPattern" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -5915,17 +5586,37 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
                 <circle cx="8" cy="15" r="2.5" fill="#6f5436" opacity="0.7" />
                 <circle cx="18" cy="17" r="2" fill="#a0826d" opacity="0.6" />
               </pattern>
+              {/* Fire radial glow gradient */}
+              <radialGradient id="fireGradient" cx="50%" cy="60%" r="50%">
+                <stop offset="0%"   stopColor="#ffaa00" stopOpacity="0.75" />
+                <stop offset="50%"  stopColor="#ff6b1a" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#ff3300" stopOpacity="0" />
+              </radialGradient>
+              {/* Ice radial gradient */}
+              <radialGradient id="iceGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   stopColor="#ccffff" stopOpacity="0.65" />
+                <stop offset="60%"  stopColor="#88ccff" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#4488cc" stopOpacity="0" />
+              </radialGradient>
+              {/* Spirit radial gradient */}
+              <radialGradient id="spiritGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   stopColor="#dda0dd" stopOpacity="0.7" />
+                <stop offset="60%"  stopColor="#9370db" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#6a0dad" stopOpacity="0" />
+              </radialGradient>
+              {/* Water radial gradient */}
+              <radialGradient id="waterGradient" cx="50%" cy="40%" r="55%">
+                <stop offset="0%"   stopColor="#80c8ff" stopOpacity="0.7" />
+                <stop offset="60%"  stopColor="#3399ff" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#1155aa" stopOpacity="0" />
+              </radialGradient>
             </defs>
 
             {hexGrid.map((row, rIdx) =>
               row.map((cell, cIdx) => {
-                const { cx, cy } = getHexCoordinates(rIdx, cIdx);
-                const points = getHexVertices(cx, cy);
-                // Check if any token occupies this cell
-                const hasToken = tokens.some(t => {
-                  const cells = getTokenCells(t.row, t.col, t.width || 1, t.height || 1);
-                  return cells.some(c => c.row === rIdx && c.col === cIdx);
-                });
+                const { cx, cy, points } = hexGeometry[rIdx]?.[cIdx] ?? (() => { const c = getHexCoordinates(rIdx, cIdx); return { ...c, points: getHexVertices(c.cx, c.cy) }; })();
+                // Check if any token occupies this cell (O(1) via pre-computed set)
+                const hasToken = tokenOccupiedCells.has(`${rIdx}-${cIdx}`);
                 
                 // Get base color and effect class
                 const baseColor = cell.filled ? getEffectBaseColor(cell) : 'transparent';
@@ -6002,14 +5693,21 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
                     }}
                     onMouseEnter={() => {
                       if (isPainting && currentTool === 'paint') {
-                        handleHexPaint(rIdx, cIdx, !paintMode);
+                        queueHexPaint(rIdx, cIdx, !paintMode);
                       } else if (isPainting && currentTool === 'eraser') {
-                        handleHexPaint(rIdx, cIdx, true);
+                        queueHexPaint(rIdx, cIdx, true);
+                      } else if (draggedToken) {
+                        setDragPreview({ row: rIdx, col: cIdx });
                       }
                     }}
                     onMouseUp={() => {
                       if (draggedToken) {
                         handleTokenDrop(rIdx, cIdx);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (draggedToken) {
+                        setDragPreview(null);
                       }
                     }}
                     onDragOver={(e) => {
@@ -6163,7 +5861,34 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
             })}
 
             {/* Tokens */}
+            {draggedToken && dragPreview && (() => {
+              const token = tokens.find(t => t.id === draggedToken);
+              if (!token) return null;
+              const tokenWidth = token.width || 1;
+              const tokenHeight = token.height || 1;
+              const previewCells = getTokenCells(dragPreview.row, dragPreview.col, tokenWidth, tokenHeight);
+              return (
+                <g pointerEvents="none" opacity={0.35}>
+                  {previewCells.map(({ row, col }, idx) => {
+                    const { cx, cy } = getHexCoordinates(row, col);
+                    const verts = getHexVerticesArray(cx, cy).map(({ x, y }) => `${x},${y}`).join(' ');
+                    return (
+                      <polygon
+                        key={`drag-preview-${row}-${col}-${idx}`}
+                        points={verts}
+                        fill={token.color || '#64c8ff'}
+                        stroke="#64c8ff"
+                        strokeWidth={3}
+                        fillOpacity={0.25}
+                        strokeOpacity={0.8}
+                      />
+                    );
+                  })}
+                </g>
+              );
+            })()}
             {tokens.map(token => {
+              const isDragging = draggedToken === token.id;
               const tokenWidth = token.width || 1;
               const tokenHeight = token.height || 1;
               const cells = getTokenCells(token.row, token.col, tokenWidth, tokenHeight);
@@ -6183,6 +5908,13 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
               return (
                 <g
                   key={token.id}
+                  ref={(el) => {
+                    if (el) {
+                      tokenRefs.current.set(token.id, el);
+                    } else {
+                      tokenRefs.current.delete(token.id);
+                    }
+                  }}
                   onMouseDown={(e) => {
                     e.stopPropagation(); // Prevent hex click from firing
                     e.preventDefault(); // Prevent default browser behavior
@@ -6229,7 +5961,9 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
                             currentTool === 'token' ? 'pointer' :
                             currentTool === 'select' ? 'grab' :
                             'move',
-                    pointerEvents: (currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura') ? 'none' : 'auto'
+                    pointerEvents: (currentTool === 'sphere' || currentTool === 'cone' || currentTool === 'aura') ? 'none' : 'auto',
+                    opacity: isDragging ? 0.45 : 1,
+                    filter: isDragging ? 'drop-shadow(0 0 8px rgba(100,200,255,0.7))' : undefined
                   }}
                 >
                   {/* Token Background - render hexagons for all occupied cells */}
@@ -6277,7 +6011,7 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
                   )}
                   
                   {/* Token Icon/Avatar - centered across all cells, scaled to fit */}
-                  {(token.customBackgroundPng || token.avatarPng || token.avatar) ? (
+                  {(token.customBackgroundPng || token.avatarPng || token.icon) ? (
                     <g clipPath={`url(#hex-clip-token-${token.id})`}>
                       {(() => {
                         const characterMatch = availableCharacters.find(c => c.name === token.name);
@@ -6285,9 +6019,11 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
                           || token.customBackgroundPng
                           || token.avatarPng
                           || characterMatch?.avatarPng
-                          || token.avatar;
+                          || token.icon;
+                        // Use stable mount timestamp — not Date.now() — so the URL is
+                        // consistent across renders and the browser cache is not busted every frame.
                         const imageSrc = baseImage && typeof baseImage === 'string' && !baseImage.startsWith('data:')
-                          ? `${baseImage}${baseImage.includes('?') ? '&' : '?'}cb=${Date.now()}`
+                          ? `${baseImage}${baseImage.includes('?') ? '&' : '?'}cb=${mountTimestamp.current}`
                           : baseImage;
                         return (
                           <foreignObject
@@ -7095,15 +6831,74 @@ const BattlemapViewer = ({ filePath, content, advancedMode = false, onFileSelect
         handleRemoveToken={handleRemoveToken}
         handleOpenCharacterSheet={handleOpenCharacterSheet}
         handleOpenNpcCharacterSheet={handleOpenNpcCharacterSheet}
+        onShowDetails={handleShowTokenDetails}
       />
       
-      {/* Marker Popup (for conditions and defensive stats) */}
-      <MarkerPopup
-        markerPopup={markerPopup}
-        setMarkerPopup={setMarkerPopup}
-        setTokens={setTokens}
-        onSyncTokenSheet={syncTokenSheetUpdates}
+      {/* Token Details Popup */}
+      <TokenDetailsPopup
+        token={detailsPopupToken}
+        onClose={() => setDetailsPopupToken(null)}
       />
+      
+      {/* Water Cell Count Overlay — left border */}
+      {waterCellCount > 0 && (
+        <div style={{
+          position: 'fixed',
+          left: 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 9000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '6px',
+          background: 'linear-gradient(180deg, rgba(20,40,70,0.92) 0%, rgba(10,30,60,0.96) 100%)',
+          border: '1px solid rgba(77,166,255,0.35)',
+          borderLeft: 'none',
+          borderRadius: '0 10px 10px 0',
+          padding: '14px 10px',
+          boxShadow: '3px 0 18px rgba(30,120,220,0.25)',
+          backdropFilter: 'blur(6px)',
+          minWidth: '52px',
+          pointerEvents: 'none',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 2 C11 2 4 10 4 14.5 C4 18.09 7.13 21 11 21 C14.87 21 18 18.09 18 14.5 C18 10 11 2 11 2Z"
+              fill="rgba(60,160,255,0.7)" stroke="#80c8ff" strokeWidth="1.2"/>
+            <path d="M8 15.5 C8 13.5 9.5 12 11 11" stroke="rgba(200,235,255,0.6)" strokeWidth="1.1" strokeLinecap="round"/>
+          </svg>
+          <span style={{
+            color: '#80c8ff',
+            fontSize: '18px',
+            fontWeight: '700',
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {waterCellCount}
+          </span>
+          <span style={{
+            color: 'rgba(160,210,255,0.7)',
+            fontSize: '9px',
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            textAlign: 'center',
+            lineHeight: 1.2,
+          }}>
+            water<br/>cells
+          </span>
+        </div>
+      )}
+
+      {/* Marker Popup (for conditions and defensive stats) */}
+      {markerPopup && (
+        <MarkerPopup
+          markerPopup={markerPopup}
+          setMarkerPopup={setMarkerPopup}
+          setTokens={setTokens}
+          onSyncTokenSheet={syncTokenSheetUpdates}
+        />
+      )}
     </div>
     </div>
     </div>

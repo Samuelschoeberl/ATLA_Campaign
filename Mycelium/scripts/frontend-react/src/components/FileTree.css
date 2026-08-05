@@ -6,10 +6,6 @@
   transition: all 0.3s ease;
 }
 
-.file-tree.collapsed {
-  max-width: 50px;
-  min-width: 50px;
-}
 
 .file-tree-header {
   padding: 12px 16px;
@@ -34,9 +30,6 @@
   color: #cccccc;
 }
 
-.file-tree.collapsed .file-tree-header h3 {
-  display: none;
-}
 
 .collapse-btn {
   background: transparent;

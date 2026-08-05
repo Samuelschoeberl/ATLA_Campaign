@@ -48,13 +48,13 @@ Total Bending Level: 3
 ## Bending Slots
 You can always only use maximum half of you current Bending slots (rounded up so if you have 3 left you can either spend 2 and then 1 or only 1 but 3 times)
 
-| Slot                   |                    Amount |
+| Slot                   | 2/2 |
 | ---------------------- | ------------------------: |
 | <details><summary>Bonus air slots</summary>0/0</details> | |
 | <details><summary>Bonus fire slots</summary>0/0</details> | |
 | Earthbending slot      |     3/3 |
 | <details><summary>Bonus earth slots</summary>0/0</details> | |
-| Spiritbending slot     |    6/6 |
+| Spiritbending slot     |    2/2 |
 | <details><summary>Bonus spirit slots</summary>0/0</details> | |
 
 ## Water charges

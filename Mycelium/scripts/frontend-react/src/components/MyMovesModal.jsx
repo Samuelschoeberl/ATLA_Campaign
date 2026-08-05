@@ -19,6 +19,8 @@ const ACTION_COLORS = {
 /**
  * MyMovesModal - Combined modal displaying all move types with toggles
  */
+const LEVEL_COLORS = ['#aaa', '#7ecba1', '#5fa8d3', '#f4a261', '#e76f51', '#9b59b6'];
+
 const MyMovesModal = ({
   isOpen,
   onClose,
@@ -52,6 +54,10 @@ const MyMovesModal = ({
     danger: true
   });
 
+  const [visibleLevels, setVisibleLevels] = useState({
+    1: true, 2: true, 3: true, 4: true, 5: true, 6: true
+  });
+
   if (!isOpen) return null;
 
   const getElementFromName = (name) => {
@@ -74,6 +80,15 @@ const MyMovesModal = ({
       ...prev,
       [type]: !prev[type]
     }));
+  };
+
+  const toggleLevel = (level) => {
+    setVisibleLevels(prev => ({ ...prev, [level]: !prev[level] }));
+  };
+
+  const filterByLevel = (moves) => {
+    if (!moves) return [];
+    return moves.filter(move => visibleLevels[move.level ?? 1] !== false);
   };
 
   return (
@@ -197,9 +212,56 @@ const MyMovesModal = ({
               ))}
             </div>
 
+            {/* Level Filter */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 8px',
+              backgroundColor: lightMode ? '#f5f5f5' : '#1e1e1e',
+              borderRadius: '6px'
+            }}>
+              <span style={{ fontSize: '11px', color: lightMode ? '#888' : '#666', marginRight: '2px', whiteSpace: 'nowrap' }}>Lv:</span>
+              {[1, 2, 3, 4, 5, 6].map(level => {
+                const active = visibleLevels[level];
+                const color = LEVEL_COLORS[level - 1];
+                return (
+                  <label
+                    key={level}
+                    title={`Level ${level}`}
+                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={active}
+                      onChange={() => toggleLevel(level)}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{
+                      width: '22px',
+                      height: '22px',
+                      borderRadius: '5px',
+                      border: `2px solid ${active ? color : (lightMode ? '#ccc' : '#444')}`,
+                      backgroundColor: active ? `${color}33` : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      color: active ? color : (lightMode ? '#bbb' : '#555'),
+                      transition: 'all 0.15s ease',
+                      boxShadow: active ? `0 0 6px ${color}55` : 'none'
+                    }}>
+                      {level}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+
             {usedMoves.length > 0 && (
-              <button 
-                className="ghost-button" 
+              <button
+                className="ghost-button"
                 onClick={onClearUsedMoves}
                 style={{
                   backgroundColor: '#e74c3c',
@@ -322,7 +384,7 @@ const MyMovesModal = ({
             {visibleTypes.action && (
               <ActionPanel
                 title="Actions"
-                moves={movesByType.action || []}
+                moves={filterByLevel(movesByType.action || [])}
                 expandedMoves={expandedMoves}
                 onToggleExpand={onToggleExpand}
                 onPinMove={onPinMove}
@@ -334,12 +396,12 @@ const MyMovesModal = ({
                 characterData={characterData}
               />
             )}
-            
+
             {/* Bonus Actions */}
             {visibleTypes.bonus && !isBleedingOut && (
               <ActionPanel
                 title="Bonus Actions"
-                moves={movesByType.bonus || []}
+                moves={filterByLevel(movesByType.bonus || [])}
                 expandedMoves={expandedMoves}
                 onToggleExpand={onToggleExpand}
                 onPinMove={onPinMove}
@@ -351,12 +413,12 @@ const MyMovesModal = ({
                 characterData={characterData}
               />
             )}
-            
+
             {/* Reactions */}
             {visibleTypes.reaction && (
               <ActionPanel
                 title="Reactions"
-                moves={movesByType.reaction || []}
+                moves={filterByLevel(movesByType.reaction || [])}
                 expandedMoves={expandedMoves}
                 onToggleExpand={onToggleExpand}
                 onPinMove={onPinMove}
@@ -366,12 +428,12 @@ const MyMovesModal = ({
                 characterData={characterData}
               />
             )}
-            
+
             {/* Danger Sense Reactions */}
             {visibleTypes.danger && (
               <ActionPanel
                 title="Danger Sense Reactions"
-                moves={movesByType.danger || []}
+                moves={filterByLevel(movesByType.danger || [])}
                 expandedMoves={expandedMoves}
                 onToggleExpand={onToggleExpand}
                 onPinMove={onPinMove}

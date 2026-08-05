@@ -1,5 +1,11 @@
 {
-  "moves": [],
+  "moves": [
+    "Stone Step",
+    "Ground Unlock",
+    "Boulder Barrier",
+    "Quake Strike",
+    "Flow Guard"
+  ],
   "_comment": "Add move names here (without .md extension) for moves this character has learned above level 1",
-  "lastUpdated": "2026-01-21T21:50:14.109Z"
+  "lastUpdated": "2026-04-29T20:57:18.209Z"
 }

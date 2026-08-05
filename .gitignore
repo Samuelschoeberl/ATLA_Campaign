@@ -7,6 +7,12 @@
 *.obsidian/workspace.json
 *logs
 *.log
+
+# Runtime SQLite DB (hot-contention fields cache) - fully regenerable from
+# the vault via Mycelium/scripts/Python/rebuild_database.py
+mycelium_runtime.db
+mycelium_runtime.db-wal
+mycelium_runtime.db-shm
 # All paths that contain the word "Collectionfiles" or "ExpandedCollections"
 */deleted/
 # Ignore backups and vault/workspace folders

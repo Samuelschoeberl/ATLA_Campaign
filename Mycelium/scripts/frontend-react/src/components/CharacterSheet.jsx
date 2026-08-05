@@ -15,6 +15,11 @@ import PixelAvatar from './PixelAvatar';
 import {
   AVATAR_SIZE
 } from '../utils/avatarUtils';
+import {
+  subscribe as subscribeToVaultPath,
+  patchSheetFields,
+  saveResource,
+} from '../data/vaultResource';
 
 const CONDITION_NAMES = [
   'Bleeding out',
@@ -234,6 +239,8 @@ const DiceRollText = ({ text }) => {
   const [defenseCollapsed, setDefenseCollapsed] = useState(true);
   const [resourcesCollapsed, setResourcesCollapsed] = useState(false);
   const [bonusResourcesCollapsed, setBonusResourcesCollapsed] = useState(true);
+  const [waterChargesCollapsed, setWaterChargesCollapsed] = useState(true);
+  const [hoveredSection, setHoveredSection] = useState(null);
   const [movesCollapsed, setMovesCollapsed] = useState(true);
   const [pinnedMovesCollapsed, setPinnedMovesCollapsed] = useState(true);
   const [expandedPinnedMoveInSlim, setExpandedPinnedMoveInSlim] = useState(null); // Track which move is expanded in slim view
@@ -252,6 +259,8 @@ const DiceRollText = ({ text }) => {
   const [learnedMoves, setLearnedMoves] = useState(new Set()); // Moves the character has learned (from JSON file)
   const [showLearnableMoves, setShowLearnableMoves] = useState(false); // Toggle to show moves character can learn based on their level
   const [showAllMoves, setShowAllMoves] = useState(false); // Toggle to show ALL moves from all elements/levels regardless of character level
+  const [inlineVisibleTypes, setInlineVisibleTypes] = useState({ action: true, bonus: true, reaction: true, danger: true });
+  const [inlineVisibleLevels, setInlineVisibleLevels] = useState({ 1: true, 2: true, 3: true, 4: true, 5: true, 6: true });
   const [maxLearnedMoves, setMaxLearnedMoves] = useState(null); // Maximum number of learned moves from pc_primary_stats.md
   const [showUseMoveModal, setShowUseMoveModal] = useState(false);
   const [useMoveData, setUseMoveData] = useState(null);
@@ -267,6 +276,7 @@ const DiceRollText = ({ text }) => {
   const [customizeTab, setCustomizeTab] = useState('general'); // general | avatar | hexExporter
   const [deathSaveSuccesses, setDeathSaveSuccesses] = useState(0);
   const [deathSaveFailures, setDeathSaveFailures] = useState(0);
+  const [showAvatarPopup, setShowAvatarPopup] = useState(false);
 
   // Hex grid exporter state
   const [hexGridSize, setHexGridSize] = useState({ rows: 5, cols: 5 });
@@ -287,6 +297,10 @@ const DiceRollText = ({ text }) => {
   const saveTimeoutRef = useRef(null);
   const initialLoadRef = useRef(true);
   const lastReadyUpdateRef = useRef(0); // Track last ready update timestamp
+  const sheetVersionRef = useRef(null); // Last-known server content-hash version, for conflict-aware saves
+  const lastSavedEnvWaterChargeRef = useRef(null); // Skip the environmental PUT unless it actually changed
+  const isLearningMoveRef = useRef(false);
+  const allMovesLoadingRef = useRef(false);
   
   // Ready state from context
   const { setReady, isReady } = useReadyState();
@@ -706,6 +720,11 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       return;
     }
     
+    // Wait for characterData to be loaded before loading moves (needed for bending level filtering)
+    if (!characterData?.bendingLevels) {
+      return;
+    }
+    
     if (characterName !== movesLoadedFor) {
       // For NPCs (temp token sheets), use general bending rules instead of character-specific folders
       const isNpc = file?.path?.includes('temp_token_') || false;
@@ -716,7 +735,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         loadBendingMoves(characterName);
       }
     }
-  }, [file, movesLoadedFor]);
+  }, [file, movesLoadedFor, characterData?.bendingLevels]);
 
   useEffect(() => {
     const name = characterData?.name || getCharacterNameFromPath(file?.path);
@@ -725,69 +744,47 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     loadCustomization(name);
   }, [characterData?.name, file]);
 
-  // Periodic check for ready state updates every 10 seconds
+  // Ready-state sync: used to poll this same file every 10 seconds just to
+  // re-check one row. Now subscribed to vaultResource instead -- the backend
+  // publishes a `file_changed` SSE event for this path whenever anyone
+  // (including another tab/player) saves it, and vaultResource refetches +
+  // notifies only then, instead of blind-polling on a timer.
   useEffect(() => {
     if (!file || !characterData?.name) {
       return;
     }
 
-    const intervalId = setInterval(async () => {
-      // Skip if currently saving to avoid race conditions
-      if (saving) {
-        return;
-      }
-      
-      const now = Date.now();
-      const lastUpdate = lastReadyUpdateRef.current;
-      const timeSince = now - lastUpdate;
-      
-      // Skip if we recently updated ready state (within last 3 seconds)
-      if (timeSince < 3000) {
-        return;
-      }
+    const applyReadyFromContent = (content) => {
+      // Skip if currently saving to avoid stomping our own optimistic state,
+      // or if we recently updated ready state ourselves (within 3s).
+      if (saving) return;
+      if (Date.now() - lastReadyUpdateRef.current < 3000) return;
 
-      try {
-        const normalizedPath = (file.path || '').replace(/^Player Root\//i, '');
-        const segments = normalizedPath.split('/').map(s => encodeURIComponent(s)).join('/');
-        const url = `${API_BASE_URL}/player_root/${segments}`;
-        
-        const response = await fetch(url, { cache: 'no-store' });
-        if (response.ok) {
-          const data = await response.json();
-          const content = data.content || '';
-          
-          // Parse only the ready state from Vitals section
-          const lines = content.split('\n');
-          let inVitals = false;
-          for (const line of lines) {
-            if (line.includes('## Vitals')) {
-              inVitals = true;
-              continue;
-            }
-            if (inVitals && line.startsWith('##')) {
-              break;
-            }
-            if (inVitals && line.includes('| ready')) {
-              const parts = line.split('|').map(p => p.trim());
-              if (parts.length >= 3) {
-                const readyValue = parts[2].toLowerCase();
-                const isReadyFromFile = readyValue === 'yes';
-                const currentState = isReady(characterData.name);
-                // Only update if different from current state
-                if (currentState !== isReadyFromFile) {
-                  setReady(characterData.name, isReadyFromFile);
-                }
-              }
-              break;
+      const lines = (content || '').split('\n');
+      let inVitals = false;
+      for (const line of lines) {
+        if (line.includes('## Vitals')) {
+          inVitals = true;
+          continue;
+        }
+        if (inVitals && line.startsWith('##')) {
+          break;
+        }
+        if (inVitals && line.includes('| ready')) {
+          const parts = line.split('|').map(p => p.trim());
+          if (parts.length >= 3) {
+            const isReadyFromFile = parts[2].toLowerCase() === 'yes';
+            if (isReady(characterData.name) !== isReadyFromFile) {
+              setReady(characterData.name, isReadyFromFile);
             }
           }
+          break;
         }
-      } catch (error) {
-        console.error('Error checking ready state:', error);
       }
-    }, 10000); // Check every 10 seconds
+    };
 
-    return () => clearInterval(intervalId);
+    const unsubscribe = subscribeToVaultPath(file.path, ({ content }) => applyReadyFromContent(content));
+    return unsubscribe;
   }, [file, characterData?.name, isReady, setReady, saving]);
 
   // Auto-save effect with debouncing
@@ -821,35 +818,59 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     };
   }, [characterData]);
 
+  // Auto-collapse water charges panel for characters with no water level
+  useEffect(() => {
+    const waterLevel = characterData?.bendingLevels?.water ?? 0;
+    setWaterChargesCollapsed(waterLevel === 0);
+  }, [characterData?.bendingLevels?.water]);
+
   // Memoized filtered moves for performance - only recalculate when movesByType or toggles change
   const filteredMovesByType = useMemo(() => {
     // Determine which move source to use
     let sourceMoves = movesByType;
     
-    // For NPCs or when "Show All Moves" is on, use allMovesByType
-    if ((isNpcSheet || showAllMoves) && allMovesByType) {
+    // For NPCs, "Show All Moves", or "Show Learnable Moves", use allMovesByType
+    if ((isNpcSheet || showAllMoves || showLearnableMoves) && allMovesByType) {
       // Update isLearned status based on learnedMoves set
       sourceMoves = {
-        action: (allMovesByType.action || []).map(move => ({
-          ...move,
-          isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(move.path.toLowerCase().replace(/\.md$/i, ''))
-        })),
-        bonus: (allMovesByType.bonus || []).map(move => ({
-          ...move,
-          isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(move.path.toLowerCase().replace(/\.md$/i, ''))
-        })),
-        reaction: (allMovesByType.reaction || []).map(move => ({
-          ...move,
-          isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(move.path.toLowerCase().replace(/\.md$/i, ''))
-        })),
-        danger: (allMovesByType.danger || []).map(move => ({
-          ...move,
-          isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(move.path.toLowerCase().replace(/\.md$/i, ''))
-        }))
+        action: (allMovesByType.action || []).map(move => {
+          // Extract just the filename without path or extension for learned check
+          const fileName = move.path.split('/').pop().toLowerCase().replace(/\.md$/i, '');
+          return {
+            ...move,
+            isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(fileName)
+          };
+        }),
+        bonus: (allMovesByType.bonus || []).map(move => {
+          const fileName = move.path.split('/').pop().toLowerCase().replace(/\.md$/i, '');
+          return {
+            ...move,
+            isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(fileName)
+          };
+        }),
+        reaction: (allMovesByType.reaction || []).map(move => {
+          const fileName = move.path.split('/').pop().toLowerCase().replace(/\.md$/i, '');
+          return {
+            ...move,
+            isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(fileName)
+          };
+        }),
+        danger: (allMovesByType.danger || []).map(move => {
+          const fileName = move.path.split('/').pop().toLowerCase().replace(/\.md$/i, '');
+          return {
+            ...move,
+            isLearned: move.isLevel1 || move.level === 1 || learnedMoves.has(fileName)
+          };
+        })
       };
     }
     
     const filterMove = (move) => {
+      // If "All Moves" is on, show everything with no filtering
+      if (showAllMoves) {
+        return true;
+      }
+      
       // If "Show Learnable Moves" is on, show moves character can learn (based on their level)
       if (showLearnableMoves) {
         // Hide level 1 moves FIRST (they're always learned, not "learnable")
@@ -863,14 +884,24 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         
         // Check if this is a teamup move with multiple elements
         const isTeamup = move.tags && move.tags.some(tag => tag.toLowerCase().includes('teamup'));
-        
+
         if (isTeamup) {
           // Extract all element tags from the move
-          const elementTags = ['air', 'water', 'earth', 'fire', 'spirit'];
-          const moveElements = elementTags.filter(element => 
+          const knownElements = ['air', 'water', 'earth', 'fire', 'spirit'];
+          let moveElements = knownElements.filter(element =>
             move.tags.some(tag => tag.toLowerCase().includes(element))
           );
-          
+
+          // For same-element teamups (e.g. water+water), the element may not appear
+          // explicitly in tags — fall back to move.element or path
+          if (moveElements.length === 0) {
+            const pathElement = move.path
+              ? knownElements.find(e => move.path.toLowerCase().includes(`/${e}/`))
+              : null;
+            const fallbackEl = (move.element || pathElement || '').toLowerCase();
+            if (fallbackEl) moveElements = [fallbackEl];
+          }
+
           // For teamup moves, character needs ANY of the elements at the required level
           if (moveElements.length > 0) {
             return moveElements.some(element => {
@@ -878,8 +909,9 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
               return charLevel >= move.level;
             });
           }
+          return false;
         }
-        
+
         // For non-teamup moves, check the single element
         if (!move.element) return false;
         const charLevel = characterData?.bendingLevels?.[move.element.toLowerCase()] || 0;
@@ -890,12 +922,31 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       return move.isLearned;
     };
     
-    return {
+    const filtered = {
       action: (sourceMoves.action || []).filter(filterMove),
       bonus: (sourceMoves.bonus || []).filter(filterMove),
       reaction: (sourceMoves.reaction || []).filter(filterMove),
       danger: (sourceMoves.danger || []).filter(filterMove)
     };
+    
+    console.log('Filtered moves:', {
+      showAllMoves,
+      showLearnableMoves,
+      sourceMovesCount: {
+        action: sourceMoves.action?.length || 0,
+        bonus: sourceMoves.bonus?.length || 0,
+        reaction: sourceMoves.reaction?.length || 0,
+        danger: sourceMoves.danger?.length || 0
+      },
+      filteredCount: {
+        action: filtered.action.length,
+        bonus: filtered.bonus.length,
+        reaction: filtered.reaction.length,
+        danger: filtered.danger.length
+      }
+    });
+    
+    return filtered;
   }, [movesByType, allMovesByType, showAllMoves, showLearnableMoves, characterData?.bendingLevels, isNpcSheet, learnedMoves]);
 
   const loadMaxLearnedMoves = async (characterName) => {
@@ -960,10 +1011,11 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       
       const data = await response.json();
       setContent(data.content || '');
-      
+      sheetVersionRef.current = data.version || data.hash || null;
+
       // Parse character sheet
       const parsedData = parseCharacterSheet(data.content || '');
-      
+
       // Update ready state from the parsed vitals
       if (parsedData.vitals.ready) {
         const isReadyFromFile = parsedData.vitals.ready.toLowerCase() === 'yes';
@@ -971,18 +1023,19 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         // Remove ready from vitals since it's stored in context
         delete parsedData.vitals.ready;
       }
-      
+
       // Fetch environmental water charge from global file
       try {
         const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable/environmental_water_charge`);
         if (envResponse.ok) {
           const envData = await envResponse.json();
-          
+          lastSavedEnvWaterChargeRef.current = `${envData.current}/${envData.max}`;
+
           // Remove any existing environmental water charge from consumables
           parsedData.consumables = parsedData.consumables.filter(
             c => c.name !== 'Environmental water charge'
           );
-          
+
           // Add the global environmental water charge
           parsedData.consumables.push({
             name: 'Environmental water charge',
@@ -1364,11 +1417,12 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
 
   // Load ALL moves from general Bending Rules folder
   const loadAllBendingMoves = async () => {
-    // Only load once (cache it)
-    if (allMovesByType) return;
-    
+    // Only load once (cache it); guard against concurrent calls
+    if (allMovesByType || allMovesLoadingRef.current) return;
+    allMovesLoadingRef.current = true;
+
     console.log('Loading all bending moves from general Rules folder...');
-    
+
     try {
       const basePath = `Rules/Bending Rules`;
       const elements = ['Air', 'Water', 'Earth', 'Fire', 'Spirit'];
@@ -1444,13 +1498,43 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                     else if (summary.tags.some(t => t.toLowerCase().includes('reaction'))) key = 'reaction';
                   }
                   
-                  aggregated[key].push({
-                    ...summary,
-                    name: prettifyMoveName(fileEntry.name),
-                    path: fullPath,
-                    isLearned: false, // Not learned by default for general moves
-                    isLevel1: summary.level === 1
-                  });
+                  // Check if this is a signature move for a specific character
+                  // For NPCs and "Show All Moves", we still want to exclude character-specific signature moves
+                  // unless they're for the current character (if we have one)
+                  const isSignatureMove = summary.tags?.some(tag => tag.toLowerCase() === 'signature_move');
+                  let shouldSkip = false;
+                  
+                  if (isSignatureMove) {
+                    // Extract potential character name tags (excluding common tags)
+                    const characterTagsInMove = summary.tags?.filter(tag => {
+                      const lowerTag = tag.toLowerCase();
+                      if (['signature_move', 'action', 'bonus_action', 'reaction', 'danger_sense_reaction',
+                           'fire', 'water', 'air', 'earth', 'spirit', 
+                           'level1', 'level2', 'level3', 'level4', 'level5',
+                           'level_1', 'level_2', 'level_3', 'level_4', 'level_5'].includes(lowerTag)) {
+                        return false;
+                      }
+                      return true;
+                    });
+                    
+                    // If there are character-specific tags, mark as character-specific signature move
+                    // For "Show All Moves" view, we can show these but mark them somehow
+                    // For now, we'll include them but could add a flag if needed
+                    if (characterTagsInMove && characterTagsInMove.length > 0) {
+                      // Add character info to the summary so it can be displayed
+                      summary.signatureFor = characterTagsInMove;
+                    }
+                  }
+                  
+                  if (!shouldSkip) {
+                    aggregated[key].push({
+                      ...summary,
+                      name: prettifyMoveName(fileEntry.name),
+                      path: fullPath,
+                      isLearned: false, // Not learned by default for general moves
+                      isLevel1: summary.level === 1
+                    });
+                  }
                 } catch (err) {
                   console.error('Error loading move file:', fullPath, err);
                 }
@@ -1485,6 +1569,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       setAllMovesByType(aggregated);
     } catch (err) {
       console.error('Error loading all bending moves:', err);
+    } finally {
+      allMovesLoadingRef.current = false;
     }
   };
 
@@ -1592,6 +1678,130 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         }
       }
       
+      // Load global moves from Rules/Bending Rules/ filtered by character's bending types and levels
+      const bendingLevels = characterData?.bendingLevels || {};
+      const elements = ['Air', 'Water', 'Earth', 'Fire', 'Spirit'];
+      
+      console.log('Loading global moves for character with bending levels:', bendingLevels);
+      
+      for (const element of elements) {
+        const elementLower = element.toLowerCase();
+        const charLevel = bendingLevels[elementLower] || 0;
+        
+        // Skip if character doesn't have this bending type
+        if (charLevel === 0) continue;
+        
+        console.log(`Loading ${element} moves up to level ${charLevel}`);
+        
+        // Load moves for each level up to character's level
+        for (let level = 1; level <= charLevel; level++) {
+          const globalPath = `Rules/Bending Rules/${element}/${element}bending Moves/Level ${level}`;
+          
+          try {
+            const listResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(globalPath)}`);
+            if (!listResp.ok) continue;
+            
+            const listData = await listResp.json();
+            const files = (listData.entries || []).filter(entry => (entry.type || '').toLowerCase().includes('file'));
+            
+            console.log(`Found ${files.length} files in ${globalPath}:`, files.map(f => f.name));
+            
+            for (const fileEntry of files) {
+              const fullPath = `${globalPath}/${fileEntry.name}`;
+              
+              try {
+                const fileResp = await fetch(`${API_BASE_URL}/player_root/${encodeURIComponent(fullPath)}`);
+                if (!fileResp.ok) continue;
+                
+                const fileData = await fileResp.json();
+                const summary = parseMoveSummary(
+                  fileData.content || '',
+                  elementLower,
+                  null, // Will determine action type from tags
+                  fullPath
+                );
+                
+                // Determine action type from tags
+                let actionType = 'action'; // default
+                const tags = summary.tags || [];
+                const tagStr = tags.join(' ').toLowerCase();
+                
+                if (tagStr.includes('danger_sense_reaction')) {
+                  actionType = 'danger';
+                } else if (tagStr.includes('reaction')) {
+                  actionType = 'reaction';
+                } else if (tagStr.includes('bonus_action') || tagStr.includes('bonus action')) {
+                  actionType = 'bonus';
+                }
+                
+                // Extract move base name for learned check
+                const baseName = fileEntry.name.replace(/\.md$/i, '').toLowerCase();
+                const isLevel1 = level === 1;
+                const isLearned = learnedSet.has(baseName);
+                
+                // Check if this is a signature move for another character
+                const isSignatureMove = summary.tags?.some(tag => tag.toLowerCase() === 'signature_move');
+                let isForAnotherCharacter = false;
+                
+                if (isSignatureMove) {
+                  // If it's a signature move, check if it's tagged for a different character
+                  // Look for character name tags (tags that match known character names)
+                  const characterTagsInMove = summary.tags?.filter(tag => {
+                    // Skip common tags that aren't character names
+                    const lowerTag = tag.toLowerCase();
+                    if (['signature_move', 'action', 'bonus_action', 'reaction', 'danger_sense_reaction',
+                         'fire', 'water', 'air', 'earth', 'spirit', 
+                         'level1', 'level2', 'level3', 'level4', 'level5',
+                         'level_1', 'level_2', 'level_3', 'level_4', 'level_5'].includes(lowerTag)) {
+                      return false;
+                    }
+                    return true;
+                  });
+                  
+                  // If there are character tags and none match the current character, skip this move
+                  if (characterTagsInMove && characterTagsInMove.length > 0) {
+                    const currentCharLower = characterName.toLowerCase();
+                    const hasMatchingCharTag = characterTagsInMove.some(tag => 
+                      tag.toLowerCase() === currentCharLower
+                    );
+                    
+                    if (!hasMatchingCharTag) {
+                      isForAnotherCharacter = true;
+                      console.log(`⏭️ Skipped ${fileEntry.name} - signature move for another character (${characterTagsInMove.join(', ')})`);
+                    }
+                  }
+                }
+                
+                // Check if this move already exists (character-specific version takes precedence)
+                const existingMove = aggregated[actionType].find(m => 
+                  m.name.toLowerCase().includes(baseName)
+                );
+                
+                console.log(`Processing ${fileEntry.name}: element=${summary.element}, level=${summary.level}, actionType=${actionType}, isLevel1=${isLevel1}, isLearned=${isLearned}, existingMove=${!!existingMove}, isSignatureMove=${isSignatureMove}, isForAnotherCharacter=${isForAnotherCharacter}`);
+                
+                if (!existingMove && !isForAnotherCharacter) {
+                  aggregated[actionType].push({
+                    ...summary,
+                    name: fileEntry.name.replace(/\.md$/i, ''),
+                    path: fullPath,
+                    isLearned: isLevel1 || isLearned,
+                    isLevel1,
+                    isGlobal: true // Mark as global move
+                  });
+                  console.log(`✅ Added ${fileEntry.name} to ${actionType} moves`);
+                } else if (existingMove) {
+                  console.log(`⏭️ Skipped ${fileEntry.name} - already exists in ${actionType}`);
+                }
+              } catch (err) {
+                console.error('Error loading global bending move file:', err);
+              }
+            }
+          } catch (err) {
+            // Global folder doesn't exist for this element/level - expected, skip silently
+          }
+        }
+      }
+      
       // Sort by level then name for each bucket BEFORE setting state
       Object.keys(aggregated).forEach(key => {
         aggregated[key].sort((a, b) => {
@@ -1601,6 +1811,14 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           return a.name.localeCompare(b.name);
         });
       });
+      
+      console.log('Final aggregated moves before setting state:', {
+        action: aggregated.action.length,
+        bonus: aggregated.bonus.length,
+        reaction: aggregated.reaction.length,
+        danger: aggregated.danger.length
+      });
+      console.log('Danger moves:', aggregated.danger.map(m => ({ name: m.name, isLearned: m.isLearned, isLevel1: m.isLevel1 })));
       
       setMovesByType(aggregated);
       setMovesLoadedFor(characterName);
@@ -1999,40 +2217,50 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       setError(null);
 
       const markdown = serializeCharacterSheet(characterData, overrideReadyState);
-      
-      const normalizedPath = (file.path || '').replace(/^Player Root\//i, '');
-      const segments = normalizedPath.split('/').map(s => encodeURIComponent(s)).join('/');
-      const url = `${API_BASE_URL}/player_root/${segments}`;
 
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: markdown })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to save file: ${response.status}`);
+      // Version-aware save: if another tab/player saved this sheet since we
+      // last loaded/saved it, the server rejects with a conflict instead of
+      // silently letting whichever tab's save lands last win. There's no
+      // field-level merge here yet (that's Phase 3, once the monolith is
+      // split) -- as a stopgap we take the server's version as the new
+      // baseline and let the in-memory characterData (which the user is
+      // still actively editing) win on the *next* autosave tick, rather than
+      // blocking the UI on a manual merge prompt.
+      const result = await saveResource(file.path, markdown, sheetVersionRef.current);
+      if (result.conflict) {
+        console.warn('Character sheet save conflict for', file.path, '-- adopting server version as new baseline; next autosave will re-apply local edits.');
+        sheetVersionRef.current = result.serverVersion;
+      } else {
+        sheetVersionRef.current = result.version;
       }
 
-      // Also save environmental water charge if it changed
+      // Also save environmental water charge, but only if it actually
+      // changed since we last saved it -- this used to fire unconditionally
+      // on every unrelated sheet save, racing another character's
+      // concurrent edit to the same shared global resource.
       const envWaterCharge = characterData.consumables.find(c => c.name === 'Environmental water charge' && c.isGlobal);
       if (envWaterCharge) {
-        try {
-          const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: 'environmental_water_charge',
-              current: envWaterCharge.current,
-              max: envWaterCharge.max
-            })
-          });
-          
-          if (!envResponse.ok) {
-            console.error('Failed to save environmental water charge');
+        const envKey = `${envWaterCharge.current}/${envWaterCharge.max}`;
+        if (envKey !== lastSavedEnvWaterChargeRef.current) {
+          try {
+            const envResponse = await fetch(`${API_BASE_URL}/api/environmental_variable`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: 'environmental_water_charge',
+                current: envWaterCharge.current,
+                max: envWaterCharge.max
+              })
+            });
+
+            if (!envResponse.ok) {
+              console.error('Failed to save environmental water charge');
+            } else {
+              lastSavedEnvWaterChargeRef.current = envKey;
+            }
+          } catch (envErr) {
+            console.error('Error saving environmental water charge:', envErr);
           }
-        } catch (envErr) {
-          console.error('Error saving environmental water charge:', envErr);
         }
       }
 
@@ -2048,10 +2276,25 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     }
   };
 
-  const handleRest = () => {
+  const handleRest = async () => {
     if (!confirm('Reset all consumable resources to maximum? This simulates a rest.')) {
       return;
     }
+
+    // Recalculate defensive stats using the same logic as character sheet recreation
+    const cl = characterData.vitals?.cl || Object.values(characterData.bendingLevels || {}).reduce((sum, v) => sum + v, 0);
+    const rolled_hp = characterData.vitals?.rolled_hp || 0;
+    const secondaryStats = await calculateSecondaryStats(characterData.coreStats || {}, characterData.bendingLevels || {}, cl, rolled_hp);
+
+    const defensive = {
+      Evasion: secondaryStats.evasion || 0,
+      Barrier: secondaryStats.barrier || 0,
+      'General Armor': secondaryStats['general_armor'] || secondaryStats.general_armor || 0,
+      'Physical Armor': secondaryStats['physical_armor'] || secondaryStats.physical_armor || 0,
+      'Fire Armor': secondaryStats['fire_armor'] || secondaryStats.fire_armor || 0,
+      'Ice Armor': secondaryStats['ice_armor'] || secondaryStats.ice_armor || 0,
+      'Spirit Armor': secondaryStats['spirit_armor'] || secondaryStats.spirit_armor || 0
+    };
 
     setCharacterData(prev => {
       // Reset all consumables to their max values
@@ -2083,7 +2326,9 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         consumables,
         slots,
         waterCharges,
-        vitals
+        vitals,
+        defense: { ...(prev.defense || {}), ...defensive },
+        defensive: { ...(prev.defensive || {}), ...defensive }
       };
     });
 
@@ -2097,6 +2342,24 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       ...prev,
       vitals: { ...prev.vitals, [key]: value }
     }));
+
+    // HP is the single hottest-contention field in the app -- two tabs on
+    // the same character (or the GM adjusting HP via the initiative
+    // tracker/battlemap while the player's sheet is open) used to only ever
+    // reconcile via the 1s-debounced full-document save with no version
+    // check at all. Fire the DB-backed PATCH immediately, in parallel with
+    // (ahead of) the regular debounced full-sheet save below, so this
+    // specific field is protected by a real transaction instead of relying
+    // on whichever tab's full-document overwrite lands last.
+    if ((key === 'current_hp' || key === 'max_hp') && characterData?.name) {
+      const field = key === 'current_hp' ? 'currentHp' : 'maxHp';
+      const numeric = parseFloat(value);
+      if (!Number.isNaN(numeric)) {
+        patchSheetFields(characterData.name, { [field]: numeric }).catch((e) =>
+          console.error('Immediate HP patch failed (full-sheet autosave will still catch up):', e)
+        );
+      }
+    }
   };
 
   const updateCoreStat = (key, value) => {
@@ -2221,7 +2484,9 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
 
   const handleLearnMove = async (move) => {
     if (!characterData?.name) return;
-    
+    if (isLearningMoveRef.current) return;
+    isLearningMoveRef.current = true;
+
     try {
       const characterName = characterData.name;
       let learnedPath;
@@ -2290,10 +2555,12 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
       
       // Reload moves to reflect changes
       await loadBendingMoves(characterName);
-      
+
     } catch (err) {
       console.error('Error toggling learned move:', err);
       alert('Failed to update learned moves. Please try again.');
+    } finally {
+      isLearningMoveRef.current = false;
     }
   };
 
@@ -2302,6 +2569,7 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
     setShowLearnableMoves(checked);
     if (checked) {
       setShowAllMoves(false); // Turn off "Show All" when "Show Learnable" is enabled
+      loadAllBendingMoves(); // Need all moves to determine what's learnable
     }
   };
 
@@ -3072,18 +3340,167 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
   );
   const accentColor = workingFolderColor || customization?.folderColor || '#888888';
 
+  const renderSectionPreview = (sectionId) => {
+    const ELEM_ICONS = { air: '🌬️', water: '💧', earth: '🪨', fire: '🔥', spirit: '👻' };
+    const ELEM_COLORS = ELEMENT_COLORS;
+
+    switch (sectionId) {
+      case 'vitals': {
+        const cur = parseFloat(characterData.vitals?.current_hp) || 0;
+        const max = parseFloat(characterData.vitals?.max_hp) || 1;
+        const pct = Math.max(0, Math.min(100, (cur / max) * 100));
+        const barColor = pct > 50 ? '#4caf76' : pct > 25 ? '#e6a817' : '#e05252';
+        const init = characterData.vitals?.initiative ?? '—';
+        const eva = characterData.vitals?.evasion ?? characterData.defense?.Evasion ?? '—';
+        const mov = characterData.vitals?.movement ?? '—';
+        return (
+          <>
+            <div className="preview-hp-bar"><div className="preview-hp-bar-fill" style={{ width: `${pct}%`, background: barColor }} /></div>
+            <div className="preview-row">
+              <div className="preview-stat"><span className="preview-stat-label">HP</span><span className="preview-stat-value" style={{ color: barColor }}>{cur}/{max}</span></div>
+              <div className="preview-stat"><span className="preview-stat-label">Init</span><span className="preview-stat-value">{init}</span></div>
+              <div className="preview-stat"><span className="preview-stat-label">Eva</span><span className="preview-stat-value">{eva}</span></div>
+              <div className="preview-stat"><span className="preview-stat-label">Move</span><span className="preview-stat-value">{mov}</span></div>
+            </div>
+          </>
+        );
+      }
+      case 'stress': {
+        const cur = parseFloat(characterData.vitals?.['Stress Level'] || characterData.vitals?.['stress level']) || 0;
+        const max = parseFloat(characterData.vitals?.['Max Stress Level'] || characterData.vitals?.['max stress level']) || 10;
+        const pct = max > 0 ? (cur / max) * 100 : 0;
+        const barColor = pct > 66 ? '#e05252' : pct > 33 ? '#e6a817' : '#4caf76';
+        return (
+          <>
+            <div className="preview-hp-bar"><div className="preview-hp-bar-fill" style={{ width: `${pct}%`, background: barColor }} /></div>
+            <div className="preview-row">
+              <div className="preview-stat"><span className="preview-stat-label">Stress</span><span className="preview-stat-value" style={{ color: barColor }}>{cur} / {max}</span></div>
+            </div>
+          </>
+        );
+      }
+      case 'conditions': {
+        const condColors = { 'Bleeding out': '#e05252', 'Blinded': '#9b8fa0', 'Dazed': '#7a9abf', 'Immobilised': '#8c6b3e', 'Paralysed': '#6a5acd', 'Prone': '#a0896b', 'Slowed': '#5f8fa0', 'Exhausted': '#7a7a7a', 'Empowered': '#4caf76', 'Quickened': '#3498db', 'Armor Surge': '#c8f0a6', 'Barrier Surge': '#91bbff', 'Harmonic Flow': '#ffcaf4' };
+        const active = visibleActiveConditions;
+        if (active.length === 0) return <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>No active conditions</span>;
+        return (
+          <div className="preview-row">
+            {active.map(c => (
+              <span key={c} className="preview-pill" style={{ background: hexToRgba(condColors[c] || '#888', 0.22), color: condColors[c] || '#ccc', border: `1px solid ${hexToRgba(condColors[c] || '#888', 0.4)}` }}>
+                {c}
+              </span>
+            ))}
+          </div>
+        );
+      }
+      case 'coreStats': {
+        const stats = characterData.coreStats || {};
+        return (
+          <div className="preview-row" style={{ justifyContent: 'space-between' }}>
+            {Object.entries(stats).map(([key, val]) => (
+              <div key={key} className="preview-stat">
+                <span className="preview-stat-label">{key.slice(0, 3)}</span>
+                <span className="preview-stat-value">{val}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      case 'bendingLevels': {
+        const levels = characterData.bendingLevels || {};
+        return (
+          <div className="preview-row">
+            {Object.entries(levels).map(([elem, lvl]) => (
+              lvl > 0 ? (
+                <span key={elem} className="preview-pill" style={{ background: hexToRgba(ELEM_COLORS[elem] || '#888', 0.18), color: ELEM_COLORS[elem] || '#ccc', border: `1px solid ${hexToRgba(ELEM_COLORS[elem] || '#888', 0.4)}` }}>
+                  {ELEM_ICONS[elem]} {elem.charAt(0).toUpperCase() + elem.slice(1)} {lvl}
+                </span>
+              ) : (
+                <span key={elem} className="preview-pill" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {ELEM_ICONS[elem]} {elem.charAt(0).toUpperCase() + elem.slice(1)} —
+                </span>
+              )
+            ))}
+          </div>
+        );
+      }
+      case 'defense': {
+        const def = characterData.defense || {};
+        return (
+          <div className="preview-row" style={{ gap: '12px' }}>
+            {Object.entries(def).map(([key, val]) => (
+              <div key={key} className="preview-stat">
+                <span className="preview-stat-label">{key.replace(' Armor', '').replace('General', 'Gen').replace('Physical', 'Phys').replace('Spirit', 'Spr')}</span>
+                <span className="preview-stat-value">{val}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      case 'resources': {
+        const slots = characterData.consumables.filter(c => c.type === 'slot');
+        if (slots.length === 0) return <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>No slots</span>;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {slots.map(s => {
+              const elem = Object.keys(ELEM_COLORS).find(e => s.name.toLowerCase().includes(e));
+              const color = elem ? ELEM_COLORS[elem] : '#3498db';
+              return (
+                <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', width: '80px', textAlign: 'right' }}>{s.name.replace(' slot', '')}</span>
+                  <div className="preview-mini-bar">
+                    {Array.from({ length: s.max }, (_, i) => (
+                      <div key={i} className="preview-mini-pip" style={{ background: i < s.current ? hexToRgba(color, 0.85) : 'rgba(255,255,255,0.1)', border: `1px solid ${i < s.current ? color : 'rgba(255,255,255,0.15)'}` }} />
+                    ))}
+                  </div>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{s.current}/{s.max}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+      case 'moves': {
+        const counts = {
+          Actions: (movesByType.action || []).filter(m => m.isLearned).length,
+          Bonus: (movesByType.bonus || []).filter(m => m.isLearned).length,
+          Reactions: (movesByType.reaction || []).filter(m => m.isLearned).length,
+        };
+        return (
+          <div className="preview-row">
+            {Object.entries(counts).map(([label, count]) => (
+              <div key={label} className="preview-stat">
+                <span className="preview-stat-label">{label}</span>
+                <span className="preview-stat-value">{count}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className={`character-sheet ${lightMode ? 'light-mode' : ''}`}>
       <div className="character-header">
         <div className="character-title">
-          <PixelAvatar
-            className="character-avatar-preview"
-            avatarPng={avatarPngDataUrl}
-            size={64}
-            borderColor={accentColor}
-            placeholderLabel={characterData.name?.[0] || 'C'}
-            background={lightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}
-          />
+          <div 
+            className="character-avatar-wrapper"
+            onClick={() => avatarPngDataUrl && setShowAvatarPopup(true)}
+            style={{ cursor: avatarPngDataUrl ? 'pointer' : 'default' }}
+            title={avatarPngDataUrl ? 'Click to view full size' : ''}
+          >
+            <PixelAvatar
+              className="character-avatar-preview"
+              avatarPng={avatarPngDataUrl}
+              size={64}
+              borderColor={accentColor}
+              placeholderLabel={characterData.name?.[0] || 'C'}
+              background={lightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}
+            />
+          </div>
           <h1>{characterData.name || 'Character Sheet'}</h1>
           <button
             onClick={openCustomizeModal}
@@ -3122,6 +3539,13 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
               lastReadyUpdateRef.current = Date.now();
               // Update context immediately for UI responsiveness
               setReady(characterData?.name, newReadyState);
+              // Immediate DB-backed patch (other tabs/the initiative tracker
+              // see this via SSE right away) ahead of the full-document save.
+              if (characterData?.name) {
+                patchSheetFields(characterData.name, { ready: newReadyState }).catch((e) =>
+                  console.error('Immediate ready-state patch failed (full-sheet save will still catch up):', e)
+                );
+              }
               // Save to file with the explicit new state to avoid race conditions
               await handleSave(newReadyState);
             }}
@@ -3814,7 +4238,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           const uniqueMoves = new Map();
           allMoves.forEach(move => {
             if (move.isLearned && !move.isLevel1) {
-              uniqueMoves.set(move.path, move);
+              // Use move name for deduplication to avoid counting teamup moves twice
+              uniqueMoves.set(move.name, move);
             }
           });
           return uniqueMoves.size;
@@ -4057,37 +4482,23 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
 
       {/* Vitals Section - All fields editable except max_hp */}
       <section className="character-section">
-        <h2 
-          onClick={() => setVitalsCollapsed(!vitalsCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: vitalsCollapsed ? '0' : '16px'
-          }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="section-header-wrap" onMouseEnter={() => vitalsCollapsed && setHoveredSection('vitals')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setVitalsCollapsed(!vitalsCollapsed)}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             Vitals
             {vitalsCollapsed && (
-              <span style={{
-                fontSize: '14px',
-                fontWeight: 'normal',
-                opacity: 0.7,
-                marginLeft: '4px'
-              }}>
-                (HP: {characterData.vitals.current_hp}/{characterData.vitals.max_hp})
+              <span className="section-header-meta">
+                HP: {characterData.vitals.current_hp}/{characterData.vitals.max_hp}
               </span>
             )}
           </span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {vitalsCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!vitalsCollapsed ? 'open' : ''}`}>›</span>
         </h2>
+        {vitalsCollapsed && hoveredSection === 'vitals' && <div className="section-glass-preview">{renderSectionPreview('vitals')}</div>}
+        </div>
 
-        {!vitalsCollapsed && (
-          <>
+        <div className={`section-content ${vitalsCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
             {/* Large HP Bar Display */}
             {characterData.vitals.current_hp !== undefined && characterData.vitals.max_hp !== undefined && (
           <>
@@ -4391,8 +4802,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
               );
             })}
         </div>
-          </>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Stress Level Section - Only for Fire and Spirit Benders */}
@@ -4428,36 +4839,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
           
           return (
             <section className="character-section">
-              <h2 
-                onClick={() => setStressLevelCollapsed(!stressLevelCollapsed)}
-                style={{ 
-                  cursor: 'pointer', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  userSelect: 'none',
-                  marginBottom: stressLevelCollapsed ? '0' : '16px'
-                }}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>🔥</span>
-                  Stress Level
-                  <span style={{
-                    fontSize: '14px',
-                    fontWeight: 'normal',
-                    opacity: 0.7,
-                    marginLeft: '4px'
-                  }}>
-                    ({stressLevel}/{maxStressLevel})
+              <div className="section-header-wrap" onMouseEnter={() => stressLevelCollapsed && setHoveredSection('stress')} onMouseLeave={() => setHoveredSection(null)}>
+              <h2 onClick={() => setStressLevelCollapsed(!stressLevelCollapsed)}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🔥 Stress Level
+                  <span className="section-header-meta">
+                    {stressLevel}/{maxStressLevel}
                   </span>
                 </span>
-                <span style={{ fontSize: '14px', opacity: 0.7 }}>
-                  {stressLevelCollapsed ? '▼' : '▲'}
-                </span>
+                <span className={`collapse-chevron ${!stressLevelCollapsed ? 'open' : ''}`}>›</span>
               </h2>
+              {stressLevelCollapsed && hoveredSection === 'stress' && <div className="section-glass-preview">{renderSectionPreview('stress')}</div>}
+              </div>
 
-              {!stressLevelCollapsed && (
-                <StressLevel 
+              <div className={`section-content ${stressLevelCollapsed ? 'collapsed' : ''}`}>
+              <div className="section-content-inner">
+                <StressLevel
                   currentLevel={stressLevel}
                   maxLevel={maxStressLevel}
                   fireLevel={fireLevel}
@@ -4465,7 +4862,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   onLevelChange={handleStressLevelChange}
                   onMaxLevelChange={handleMaxStressLevelChange}
                 />
-              )}
+              </div>
+              </div>
             </section>
           );
         }
@@ -4474,21 +4872,18 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
 
       {/* Conditions Section */}
       <section className="character-section">
-        <h2 
-          onClick={() => setConditionsCollapsed(!conditionsCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none'
-          }}
-        >
-          <span>Conditions</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {conditionsCollapsed ? '▼' : '▲'}
+        <div className="section-header-wrap" onMouseEnter={() => conditionsCollapsed && setHoveredSection('conditions')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setConditionsCollapsed(!conditionsCollapsed)}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            Conditions
+            {conditionsCollapsed && visibleActiveConditions.length > 0 && (
+              <span className="section-header-meta">{visibleActiveConditions.length} active</span>
+            )}
           </span>
+          <span className={`collapse-chevron ${!conditionsCollapsed ? 'open' : ''}`}>›</span>
         </h2>
+        {conditionsCollapsed && hoveredSection === 'conditions' && <div className="section-glass-preview">{renderSectionPreview('conditions')}</div>}
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
           <span style={{ fontSize: '12px', opacity: 0.8 }}>Show:</span>
@@ -4603,9 +4998,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </div>
 
         {/* Collapsible content */}
-        {!conditionsCollapsed && (
-          <>
-
+        <div className={`section-content ${conditionsCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
             <div className="consumables-grid">
               {filteredConditionNames.length === 0 && (
                 <div style={{ fontSize: '12px', opacity: 0.7 }}>
@@ -4698,30 +5092,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                 );
               })}
             </div>
-          </>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Core Stats Section - Read-only */}
       <section className="character-section">
-        <h2 
-          onClick={() => setCoreStatsCollapsed(!coreStatsCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: coreStatsCollapsed ? '0' : '16px'
-          }}
-        >
+        <div className="section-header-wrap" onMouseEnter={() => coreStatsCollapsed && setHoveredSection('coreStats')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setCoreStatsCollapsed(!coreStatsCollapsed)}>
           <span>Core Stats</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {coreStatsCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!coreStatsCollapsed ? 'open' : ''}`}>›</span>
         </h2>
+        {coreStatsCollapsed && hoveredSection === 'coreStats' && <div className="section-glass-preview">{renderSectionPreview('coreStats')}</div>}
+        </div>
         
-        {!coreStatsCollapsed && (
+        <div className={`section-content ${coreStatsCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
           <div className="stat-grid stat-grid-6">
           {Object.entries(characterData.coreStats).map(([key, value]) => {
             const tooltip = getStatTooltip(key);
@@ -4742,29 +5128,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             );
           })}
         </div>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Bending Levels Section */}
       <section className="character-section">
-        <h2 
-          onClick={() => setBendingLevelsCollapsed(!bendingLevelsCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: bendingLevelsCollapsed ? '0' : '16px'
-          }}
-        >
+        <div className="section-header-wrap" onMouseEnter={() => bendingLevelsCollapsed && setHoveredSection('bendingLevels')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setBendingLevelsCollapsed(!bendingLevelsCollapsed)}>
           <span>Bending Levels</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {bendingLevelsCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!bendingLevelsCollapsed ? 'open' : ''}`}>›</span>
         </h2>
+        {bendingLevelsCollapsed && hoveredSection === 'bendingLevels' && <div className="section-glass-preview">{renderSectionPreview('bendingLevels')}</div>}
+        </div>
         
-        {!bendingLevelsCollapsed && (
+        <div className={`section-content ${bendingLevelsCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
           <div className="bending-table">
           <table>
             <thead>
@@ -4810,29 +5189,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             </tbody>
           </table>
         </div>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Defense Section */}
       <section className="character-section">
-        <h2 
-          onClick={() => setDefenseCollapsed(!defenseCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: defenseCollapsed ? '0' : '16px'
-          }}
-        >
+        <div className="section-header-wrap" onMouseEnter={() => defenseCollapsed && setHoveredSection('defense')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setDefenseCollapsed(!defenseCollapsed)}>
           <span>Defensive Stats</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {defenseCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!defenseCollapsed ? 'open' : ''}`}>›</span>
         </h2>
-        
-        {!defenseCollapsed && (
+        {defenseCollapsed && hoveredSection === 'defense' && <div className="section-glass-preview">{renderSectionPreview('defense')}</div>}
+        </div>
+
+        <div className={`section-content ${defenseCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
           <div className="stat-grid stat-grid-4">
           {Object.entries(characterData.defense).map(([key, value]) => {
             const tooltip = getStatTooltip(key);
@@ -4851,30 +5223,22 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             );
           })}
         </div>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Bending Slots, Water Charges & Consumable Resources */}
       <section className="character-section">
-        <h2 
-          onClick={() => setResourcesCollapsed(!resourcesCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: resourcesCollapsed ? '0' : '16px'
-          }}
-        >
-          <span>Bending Slots and Water Charges</span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {resourcesCollapsed ? '▼' : '▲'}
-          </span>
+        <div className="section-header-wrap" onMouseEnter={() => resourcesCollapsed && setHoveredSection('resources')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setResourcesCollapsed(!resourcesCollapsed)}>
+          <span>Bending Slots & Water Charges</span>
+          <span className={`collapse-chevron ${!resourcesCollapsed ? 'open' : ''}`}>›</span>
         </h2>
-        
-        {!resourcesCollapsed && (
-          <>
+        {resourcesCollapsed && hoveredSection === 'resources' && <div className="section-glass-preview">{renderSectionPreview('resources')}</div>}
+        </div>
+
+        <div className={`section-content ${resourcesCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
             <p className="section-note">
           You can use maximum half of your current Bending slots or water charges (rounded up).
         </p>
@@ -4898,29 +5262,25 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 userSelect: 'none',
-                fontSize: '13px',
-                fontWeight: '600',
-                marginBottom: bonusResourcesCollapsed ? '0' : '10px'
+                fontSize: '12px',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: '#8a96a2'
               }}
             >
-              <span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 💎 Bonus Resources
                 {nonZeroBonusCount > 0 && (
-                  <span style={{ fontSize: '11px', opacity: 0.7, fontWeight: 'normal', marginLeft: '8px' }}>
-                    ({nonZeroBonusCount} active)
-                  </span>
+                  <span className="section-header-meta">{nonZeroBonusCount} active</span>
                 )}
-                <span style={{ fontSize: '11px', opacity: 0.6, fontWeight: 'normal', marginLeft: '6px' }}>
-                  (from temporary effects)
-                </span>
               </span>
-              <span style={{ fontSize: '12px', opacity: 0.7 }}>
-                {bonusResourcesCollapsed ? '▼' : '▲'}
-              </span>
+              <span className={`collapse-chevron ${!bonusResourcesCollapsed ? 'open' : ''}`}>›</span>
             </div>
-            
-            {!bonusResourcesCollapsed && (
-              <div className="consumables-grid" style={{ marginTop: '8px' }}>
+
+            <div className={`section-content ${bonusResourcesCollapsed ? 'collapsed' : ''}`}>
+            <div className="section-content-inner">
+              <div className="consumables-grid">
                 {bonusResources.map((item) => {
                   const isWaterCharge = item.label.includes('water');
                   const maxValue = Math.max(item.value.current, 10);
@@ -5004,100 +5364,33 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   );
                 })}
               </div>
-            )}
+            </div>
+            </div>
           </div>
         )}
-        
-        {/* Consumables with checkbox trackers */}
+
+        {/* Bending slot consumables */}
         <div className="consumables-grid">
           {characterData.consumables.map((consumable, idx) => {
+            if (consumable.type === 'water' || consumable.type === 'environmental') return null;
             const element = getElementFromName(consumable.name);
             const elementColor = element ? ELEMENT_COLORS[element] : '#3498db';
             const tooltip = getStatTooltip(consumable.name);
-            
+
             return (
               <div key={idx} className="consumable-card" style={{
                 borderColor: elementColor
               }}>
                 <h3 title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
                   {consumable.name}
-                  {consumable.name === 'Environmental water charge' && (
-                    <button
-                      onClick={refreshEnvironmentalWaterCharge}
-                      style={{
-                        marginLeft: '8px',
-                        padding: '4px 8px',
-                        fontSize: '11px',
-                        backgroundColor: elementColor,
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: '600',
-                        transition: 'opacity 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-                      onMouseLeave={(e) => e.target.style.opacity = '1'}
-                      title="Refresh from global source"
-                    >
-                      ↻
-                    </button>
-                  )}
                 </h3>
                 <div className="consumable-counter">
-                  {consumable.name === 'Environmental water charge' ? (
-                    <>
-                      <span className="counter-display" style={{
-                        backgroundColor: hexToRgba(elementColor, 0.15),
-                        color: elementColor
-                      }}>
-                        {consumable.current} / 
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        value={consumable.max}
-                        onChange={(e) => {
-                          const newMax = Math.max(0, parseInt(e.target.value) || 0);
-                          setCharacterData(prev => {
-                            const consumables = [...prev.consumables];
-                            const newCurrent = Math.min(consumables[idx].current, newMax);
-                            consumables[idx] = { ...consumables[idx], max: newMax, current: newCurrent };
-                            const slots = { ...prev.slots };
-                            const waterCharges = { ...prev.waterCharges };
-                            
-                            // Update in "current/max" format
-                            if (consumable.type === 'water') {
-                              waterCharges[consumable.name] = `${newCurrent}/${newMax}`;
-                            } else {
-                              slots[consumable.name] = `${newCurrent}/${newMax}`;
-                            }
-                            
-                            return { ...prev, consumables, slots, waterCharges };
-                          });
-                        }}
-                        className="max-input"
-                        style={{
-                          width: '50px',
-                          padding: '2px 6px',
-                          fontSize: '14px',
-                          border: `1px solid ${elementColor}`,
-                          borderRadius: '4px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                          color: '#2c3e50',
-                          textAlign: 'center',
-                          marginLeft: '4px'
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <span className="counter-display" style={{
-                      backgroundColor: hexToRgba(elementColor, 0.15),
-                      color: elementColor
-                    }}>
-                      {consumable.current} / {consumable.max}
-                    </span>
-                  )}
+                  <span className="counter-display" style={{
+                    backgroundColor: hexToRgba(elementColor, 0.15),
+                    color: elementColor
+                  }}>
+                    {consumable.current} / {consumable.max}
+                  </span>
                 </div>
                 <div className="checkbox-grid">
                   {Array.from({ length: consumable.max }, (_, i) => (
@@ -5106,23 +5399,15 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                         type="checkbox"
                         checked={i < consumable.current}
                         onChange={(e) => {
-                          const newCurrent = e.target.checked 
+                          const newCurrent = e.target.checked
                             ? Math.max(i + 1, consumable.current)
                             : Math.min(i, consumable.current);
                           setCharacterData(prev => {
                             const consumables = [...prev.consumables];
                             consumables[idx] = { ...consumables[idx], current: newCurrent };
                             const slots = { ...prev.slots };
-                            const waterCharges = { ...prev.waterCharges };
-                            
-                            // Update in "current/max" format
-                            if (consumable.type === 'water') {
-                              waterCharges[consumable.name] = `${newCurrent}/${consumable.max}`;
-                            } else {
-                              slots[consumable.name] = `${newCurrent}/${consumable.max}`;
-                            }
-                            
-                            return { ...prev, consumables, slots, waterCharges };
+                            slots[consumable.name] = `${newCurrent}/${consumable.max}`;
+                            return { ...prev, consumables, slots };
                           });
                         }}
                         className="resource-checkbox"
@@ -5138,6 +5423,157 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
             );
           })}
         </div>
+
+        {/* Water Charges — collapsible sub-panel */}
+        {characterData.consumables.some(c => c.type === 'water' || c.type === 'environmental') && (
+          <div
+            style={{
+              marginTop: '16px',
+              borderRadius: '8px',
+              border: lightMode ? '1px solid #d6d6d6' : '1px solid #3e3e42',
+              background: lightMode ? '#f9f9f9' : 'rgba(255,255,255,0.03)'
+            }}
+          >
+            <div
+              onClick={() => setWaterChargesCollapsed(!waterChargesCollapsed)}
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                userSelect: 'none',
+                padding: '10px 12px',
+                fontSize: '12px',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: '#8a96a2'
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                💧 Water Charges
+              </span>
+              <span className={`collapse-chevron ${!waterChargesCollapsed ? 'open' : ''}`}>›</span>
+            </div>
+
+            <div className={`section-content ${waterChargesCollapsed ? 'collapsed' : ''}`}>
+              <div className="section-content-inner" style={{ padding: '0 12px 12px' }}>
+                <div className="consumables-grid">
+                  {characterData.consumables.map((consumable, idx) => {
+                    if (consumable.type !== 'water' && consumable.type !== 'environmental') return null;
+                    const element = getElementFromName(consumable.name);
+                    const elementColor = element ? ELEMENT_COLORS[element] : '#3498db';
+                    const tooltip = getStatTooltip(consumable.name);
+
+                    return (
+                      <div key={idx} className="consumable-card" style={{ borderColor: elementColor }}>
+                        <h3 title={tooltip || undefined} style={tooltip ? { cursor: 'help', textDecoration: 'underline dotted' } : {}}>
+                          {consumable.name}
+                          {consumable.name === 'Environmental water charge' && (
+                            <button
+                              onClick={refreshEnvironmentalWaterCharge}
+                              style={{
+                                marginLeft: '8px',
+                                padding: '4px 8px',
+                                fontSize: '11px',
+                                backgroundColor: elementColor,
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                transition: 'opacity 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+                              onMouseLeave={(e) => e.target.style.opacity = '1'}
+                              title="Refresh from global source"
+                            >
+                              ↻
+                            </button>
+                          )}
+                        </h3>
+                        <div className="consumable-counter">
+                          {consumable.name === 'Environmental water charge' ? (
+                            <>
+                              <span className="counter-display" style={{
+                                backgroundColor: hexToRgba(elementColor, 0.15),
+                                color: elementColor
+                              }}>
+                                {consumable.current} /
+                              </span>
+                              <input
+                                type="number"
+                                min="0"
+                                value={consumable.max}
+                                onChange={(e) => {
+                                  const newMax = Math.max(0, parseInt(e.target.value) || 0);
+                                  setCharacterData(prev => {
+                                    const consumables = [...prev.consumables];
+                                    const newCurrent = Math.min(consumables[idx].current, newMax);
+                                    consumables[idx] = { ...consumables[idx], max: newMax, current: newCurrent };
+                                    const waterCharges = { ...prev.waterCharges };
+                                    waterCharges[consumable.name] = `${newCurrent}/${newMax}`;
+                                    return { ...prev, consumables, waterCharges };
+                                  });
+                                }}
+                                className="max-input"
+                                style={{
+                                  width: '50px',
+                                  padding: '2px 6px',
+                                  fontSize: '14px',
+                                  border: `1px solid ${elementColor}`,
+                                  borderRadius: '4px',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                  color: '#2c3e50',
+                                  textAlign: 'center',
+                                  marginLeft: '4px'
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <span className="counter-display" style={{
+                              backgroundColor: hexToRgba(elementColor, 0.15),
+                              color: elementColor
+                            }}>
+                              {consumable.current} / {consumable.max}
+                            </span>
+                          )}
+                        </div>
+                        <div className="checkbox-grid">
+                          {Array.from({ length: consumable.max }, (_, i) => (
+                            <label key={i} className="checkbox-label">
+                              <input
+                                type="checkbox"
+                                checked={i < consumable.current}
+                                onChange={(e) => {
+                                  const newCurrent = e.target.checked
+                                    ? Math.max(i + 1, consumable.current)
+                                    : Math.min(i, consumable.current);
+                                  setCharacterData(prev => {
+                                    const consumables = [...prev.consumables];
+                                    consumables[idx] = { ...consumables[idx], current: newCurrent };
+                                    const waterCharges = { ...prev.waterCharges };
+                                    waterCharges[consumable.name] = `${newCurrent}/${consumable.max}`;
+                                    return { ...prev, consumables, waterCharges };
+                                  });
+                                }}
+                                className="resource-checkbox"
+                              />
+                              <span className="checkbox-mark" style={{
+                                borderColor: i < consumable.current ? elementColor : '#bdc3c7',
+                                backgroundColor: i < consumable.current ? elementColor : '#ecf0f1'
+                              }}></span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Other slots (non-numeric or empty) - excluding consumables tracked with checkboxes and bonus slots */}
         {Object.entries(characterData.slots).some(([key, value]) => {
@@ -5212,33 +5648,19 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
               })}
           </div>
         )}
-          </>
-        )}
+        </div>
+        </div>
       </section>
 
       {/* Moves Section */}
       <section className="character-section">
-        <h2 
-          onClick={() => setMovesCollapsed(!movesCollapsed)}
-          style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            userSelect: 'none',
-            marginBottom: movesCollapsed ? '0' : '16px'
-          }}
-        >
-          <span>
+        <div className="section-header-wrap" onMouseEnter={() => movesCollapsed && setHoveredSection('moves')} onMouseLeave={() => setHoveredSection(null)}>
+        <h2 onClick={() => setMovesCollapsed(!movesCollapsed)}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             Moves
             {movesCollapsed && (
-              <span style={{
-                fontSize: '14px',
-                fontWeight: 'normal',
-                opacity: 0.7,
-                marginLeft: '8px'
-              }}>
-                ({(() => {
+              <span className="section-header-meta">
+                {(() => {
                   const allMoves = [
                     ...(movesByType.action || []),
                     ...(movesByType.bonus || []),
@@ -5252,17 +5674,17 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                     }
                   });
                   return uniqueMoves.size;
-                })()} learned)
+                })()} learned
               </span>
             )}
           </span>
-          <span style={{ fontSize: '14px', opacity: 0.7 }}>
-            {movesCollapsed ? '▼' : '▲'}
-          </span>
+          <span className={`collapse-chevron ${!movesCollapsed ? 'open' : ''}`}>›</span>
         </h2>
-        
-        {!movesCollapsed && (
-          <>
+        {movesCollapsed && hoveredSection === 'moves' && <div className="section-glass-preview">{renderSectionPreview('moves')}</div>}
+        </div>
+
+        <div className={`section-content ${movesCollapsed ? 'collapsed' : ''}`}>
+        <div className="section-content-inner">
             {movesLoading ? (
               <p className="muted-text">Loading moves...</p>
             ) : movesError ? (
@@ -5288,7 +5710,8 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                       const uniqueMoves = new Map();
                       allMoves.forEach(move => {
                         if (move.isLearned && !move.isLevel1) {
-                          uniqueMoves.set(move.path, move);
+                          // Use move name for deduplication to avoid counting teamup moves twice
+                          uniqueMoves.set(move.name, move);
                         }
                       });
                       return uniqueMoves.size;
@@ -5363,26 +5786,114 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                   </div>
                 </div>
 
+                {/* Move Type + Level Filters */}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
+                  {/* Action Type Toggles */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    padding: '4px 8px',
+                    backgroundColor: lightMode ? '#f5f5f5' : '#1e1e1e',
+                    borderRadius: '6px'
+                  }}>
+                    {[
+                      { key: 'action', label: 'Actions', color: '#3498db' },
+                      { key: 'bonus', label: 'Bonus', color: '#9b59b6' },
+                      { key: 'reaction', label: 'Reactions', color: '#e67e22' },
+                      { key: 'danger', label: 'Danger Sense', color: '#e74c3c' }
+                    ].map(({ key, label, color }) => (
+                      <label
+                        key={key}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: inlineVisibleTypes[key] ? '600' : '400',
+                          color: inlineVisibleTypes[key] ? color : (lightMode ? '#999' : '#666'),
+                          transition: 'all 0.2s',
+                          userSelect: 'none'
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={inlineVisibleTypes[key]}
+                          onChange={() => setInlineVisibleTypes(prev => ({ ...prev, [key]: !prev[key] }))}
+                          style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: color }}
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Level Filter */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 8px',
+                    backgroundColor: lightMode ? '#f5f5f5' : '#1e1e1e',
+                    borderRadius: '6px'
+                  }}>
+                    <span style={{ fontSize: '11px', color: lightMode ? '#888' : '#666', marginRight: '2px', whiteSpace: 'nowrap' }}>Lv:</span>
+                    {[1, 2, 3, 4, 5, 6].map(level => {
+                      const levelColors = ['#aaa', '#7ecba1', '#5fa8d3', '#f4a261', '#e76f51', '#9b59b6'];
+                      const active = inlineVisibleLevels[level];
+                      const color = levelColors[level - 1];
+                      return (
+                        <label key={level} title={`Level ${level}`} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                          <input
+                            type="checkbox"
+                            checked={active}
+                            onChange={() => setInlineVisibleLevels(prev => ({ ...prev, [level]: !prev[level] }))}
+                            style={{ display: 'none' }}
+                          />
+                          <div style={{
+                            width: '22px',
+                            height: '22px',
+                            borderRadius: '5px',
+                            border: `2px solid ${active ? color : (lightMode ? '#ccc' : '#444')}`,
+                            backgroundColor: active ? `${color}33` : 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            color: active ? color : (lightMode ? '#bbb' : '#555'),
+                            transition: 'all 0.15s ease',
+                            boxShadow: active ? `0 0 6px ${color}55` : 'none'
+                          }}>
+                            {level}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Actions */}
-                <ActionPanel
-                  title="Actions"
-                  moves={filteredMovesByType.action || []}
-                  expandedMoves={expandedMoves}
-                  onToggleExpand={toggleMoveExpanded}
-                  onPinMove={handlePinMove}
-                  pinnedMoves={pinnedMoves}
-                  onLearnMove={handleLearnMove}
-                  onUseMove={handleUseMove}
-                  showUseButton={true}
-                  lightMode={lightMode}
-                  characterData={characterData}
-                />
+                {inlineVisibleTypes.action && (
+                  <ActionPanel
+                    title="Actions"
+                    moves={(filteredMovesByType.action || []).filter(m => inlineVisibleLevels[m.level ?? 1] !== false)}
+                    expandedMoves={expandedMoves}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPinMove={handlePinMove}
+                    pinnedMoves={pinnedMoves}
+                    onLearnMove={handleLearnMove}
+                    onUseMove={handleUseMove}
+                    showUseButton={true}
+                    lightMode={lightMode}
+                    characterData={characterData}
+                  />
+                )}
 
                 {/* Bonus Actions */}
-                {!isBleedingOut && (
+                {inlineVisibleTypes.bonus && !isBleedingOut && (
                   <ActionPanel
                     title="Bonus Actions"
-                    moves={filteredMovesByType.bonus || []}
+                    moves={(filteredMovesByType.bonus || []).filter(m => inlineVisibleLevels[m.level ?? 1] !== false)}
                     expandedMoves={expandedMoves}
                     onToggleExpand={toggleMoveExpanded}
                     onPinMove={handlePinMove}
@@ -5396,38 +5907,42 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
                 )}
 
                 {/* Reactions */}
-                <ActionPanel
-                  title="Reactions"
-                  moves={filteredMovesByType.reaction || []}
-                  expandedMoves={expandedMoves}
-                  onToggleExpand={toggleMoveExpanded}
-                  onPinMove={handlePinMove}
-                  pinnedMoves={pinnedMoves}
-                  onLearnMove={handleLearnMove}
-                  onUseMove={handleUseMove}
-                  showUseButton={true}
-                  lightMode={lightMode}
-                  characterData={characterData}
-                />
+                {inlineVisibleTypes.reaction && (
+                  <ActionPanel
+                    title="Reactions"
+                    moves={(filteredMovesByType.reaction || []).filter(m => inlineVisibleLevels[m.level ?? 1] !== false)}
+                    expandedMoves={expandedMoves}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPinMove={handlePinMove}
+                    pinnedMoves={pinnedMoves}
+                    onLearnMove={handleLearnMove}
+                    onUseMove={handleUseMove}
+                    showUseButton={true}
+                    lightMode={lightMode}
+                    characterData={characterData}
+                  />
+                )}
 
                 {/* Danger Sense Reactions */}
-                <ActionPanel
-                  title="Danger Sense Reactions"
-                  moves={filteredMovesByType.danger || []}
-                  expandedMoves={expandedMoves}
-                  onToggleExpand={toggleMoveExpanded}
-                  onPinMove={handlePinMove}
-                  pinnedMoves={pinnedMoves}
-                  onLearnMove={handleLearnMove}
-                  onUseMove={handleUseMove}
-                  showUseButton={true}
-                  lightMode={lightMode}
-                  characterData={characterData}
-                />
+                {inlineVisibleTypes.danger && (
+                  <ActionPanel
+                    title="Danger Sense Reactions"
+                    moves={(filteredMovesByType.danger || []).filter(m => inlineVisibleLevels[m.level ?? 1] !== false)}
+                    expandedMoves={expandedMoves}
+                    onToggleExpand={toggleMoveExpanded}
+                    onPinMove={handlePinMove}
+                    pinnedMoves={pinnedMoves}
+                    onLearnMove={handleLearnMove}
+                    onUseMove={handleUseMove}
+                    showUseButton={true}
+                    lightMode={lightMode}
+                    characterData={characterData}
+                  />
+                )}
               </>
             )}
-          </>
-        )}
+        </div>
+        </div>
       </section>
     </div>
     <aside className={`pinned-panel ${pinnedMovesCollapsed ? 'collapsed' : ''}`}>
@@ -5588,6 +6103,30 @@ const parseMoveSummary = (content, fallbackElement, actionType, path) => {
         </>
       )}
     </aside>
+
+    {/* Avatar Image Popup */}
+    {showAvatarPopup && avatarPngDataUrl && (
+      <div 
+        className="avatar-popup-overlay"
+        onClick={() => setShowAvatarPopup(false)}
+      >
+        <div className="avatar-popup-content" onClick={(e) => e.stopPropagation()}>
+          <button 
+            className="avatar-popup-close"
+            onClick={() => setShowAvatarPopup(false)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <img 
+            src={avatarPngDataUrl} 
+            alt={`${characterData.name || 'Character'} full size avatar`}
+            className="avatar-popup-image"
+          />
+        </div>
+      </div>
+    )}
+
     </div>
     </div>
 );

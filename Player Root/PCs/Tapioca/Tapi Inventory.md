@@ -7,6 +7,10 @@
 - bow & 10 arrow
 
 ### Magic Items:
+- purple crystals (glow in the dark)
+- luminescent scale (disadvantage for attacker once as reaction)
+- 5 fist-big red shiny crystal (from siwong desert rock) maybe amplifiers?
+- 2 flying talking frogs
 
 ### Viles:
 - cactus juice (makes you high)
@@ -14,13 +18,12 @@
 - poison from chanchu
 - shroom liquor (dark turquoise, alcohol)
 
+### Food:
+- a lot of mushrooms (yummy)
+
 ### Other Equipment:
 - empty viles
-- purple crystals (glow in the dark)
-- a lot of mushrooms (yummy)
 - ruby (from ornament)
 - muddy glas stone (we made)
-- 5 fist-big red shiny crystal (from siwong desert rock) maybe amplifiers?
-- luminescent scale (disadvantage for attacker once as reaction)
 - blue shard from spirit monastery
-- 
+- 2 flying frogs

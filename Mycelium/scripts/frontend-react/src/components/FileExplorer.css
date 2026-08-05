@@ -11,8 +11,8 @@
   max-width: none;
   background-color: #1e1e1e;
   border-right: 1px solid #333;
-  overflow-y: auto;
-  transition: all 0.3s ease;
+  overflow: hidden;
+  transition: width 0.3s ease, border 0.3s ease;
 }
 
 .file-explorer-main {

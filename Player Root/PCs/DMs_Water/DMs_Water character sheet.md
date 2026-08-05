@@ -59,7 +59,7 @@ You can use maximum of 2 \* water level water charges for any Move.
 | Water charge type          |                          value |
 | -------------------------- | -----------------------------: |
 | Environmental water charge | 4/4 |
-| Waterbottle charge         |         20/20 |
+| Waterbottle charge         | 20 |
 | <details><summary>Bonus water charges</summary>0/0</details> | |
 
 

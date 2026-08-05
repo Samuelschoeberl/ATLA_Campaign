@@ -6,7 +6,7 @@ Name: Tapioca
 | key               |                 value |
 | ----------------- | --------------------: |
 | max_hp            |                    36 |
-| current_hp        |                    36 |
+| current_hp        |                    25 |
 | Initiative        |              1d20 + 7 |
 | Movement          |                    11 |
 | ready             |                    no |
@@ -69,7 +69,7 @@ You can always only use maximum half of you current Bending slots (rounded up so
 
 | Slot                   |                    Amount |
 | ---------------------- | ------------------------: |
-| Airbending slot        |                       6/6 |
+| Airbending slot        |                       2/6 |
 | <details><summary>Bonus air slots</summary>0/0</details> | |
 | Danger Sense Reactions |                       2/2 |
 | <details><summary>Bonus fire slots</summary>0/0</details> | |

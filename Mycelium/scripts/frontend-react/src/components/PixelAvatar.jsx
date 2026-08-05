@@ -9,14 +9,6 @@ const PixelAvatar = ({
   placeholderLabel = '',
   className = ''
 }) => {
-  console.log('PixelAvatar render:', {
-    placeholderLabel,
-    avatarPng: avatarPng ? `${avatarPng.substring(0, 50)}...` : 'NULL/EMPTY',
-    avatarPngType: typeof avatarPng,
-    avatarPngTruthy: !!avatarPng,
-    avatarPngLength: avatarPng?.length
-  });
-  
   return (
     <div
       className={`pixel-avatar ${className}`}
@@ -38,8 +30,6 @@ const PixelAvatar = ({
             width: '100%',
             height: '100%',
             imageRendering: 'pixelated',
-            imageRendering: '-moz-crisp-edges',
-            imageRendering: 'crisp-edges',
             filter: 'none',
             mixBlendMode: 'normal'
           }}
